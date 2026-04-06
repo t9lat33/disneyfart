@@ -1461,15 +1461,15 @@ onValue(connectionsRef, (snapshot) => {
 <style>
   .tnav {
     top:0;
-    height:25px;
-    opacity:50%; 
+    height:30px;
+    opacity:75%; 
     background-color:black;
     position:fixed;
-    left:50%;
+    left:0;
 transform: translateX(-50%);
       border: 1px solid rgba(255, 255, 255, 0.2);
-    width:25%;
-    border-radius: 0px 0px 15px 15px;
+    width:100%;
+    border-radius: 0px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -2106,7 +2106,11 @@ requestAnimationFrame(trackFPS);
   position: absolute; width: 80px; text-align: center; cursor: default;}
 
 .icon img {
-   width: 48px; height: 48px; pointer-events: none;}
+   width: 48px;
+    height: 48px;
+   pointer-events: none;
+   border-radius: 15px;
+  }
 
 .icon span {
    display: block; font-size: 12px; margin-top: 6px; line-height: 1.2; color:white; word-break: break-word; pointer-events: none; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
