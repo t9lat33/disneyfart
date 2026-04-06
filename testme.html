@@ -72,10 +72,7 @@ color: white;
       left: 50%;
       transform: translateX(-50%);
       height: 56px;
-         background: linear-gradient(160deg,
-        rgba(255,255,255,0.08),
-        rgba(0,0,0,0.65)
-      );
+       background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(255,255,255,0.25);
       border-radius: 16px;
       display: flex;
@@ -116,15 +113,11 @@ color: white;
       background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
     }
 
-    .navbar img {
-      width: 30px;
-      height: 30px;
-      transition: transform 0.15s ease;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
-      border-radius: 15px;
-      cursor: pointer;
-      will-change: transform;
-    }
+.navbar img {
+  border-radius: 10px;     
+  transform-origin: bottom; 
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.2); 
+}
 
     .navbar img:hover {
       transform: scale(1.25) translateY(-3px);
