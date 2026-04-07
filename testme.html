@@ -67,98 +67,109 @@ color: white;
   }
 
 .navbar {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
 
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+    }
 
-  height: 58px;
-  border-radius: 22px;
+    .navbar:hover {
+      height: 64px;
+      border-radius: 20px;
+      border-color: rgba(0,180,255,0.6);
+    }
 
-  /* Glass look */
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+    .navbar::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    .navbar:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
 
-  box-shadow:
-    0 12px 35px rgba(0, 0, 0, 0.6),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    .navbar img {
+      width: 30px;
+      height: 30px;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      cursor: pointer;
+      will-change: transform;
+    }
 
-  transition: all 0.25s ease;
-}
+    .navbar img:hover {
+      transform: scale(1.25) translateY(-3px);
+    }
+    .navbar img:active{
+        transform: scale(0.97);
+    }
 
-/* Glow under navbar */
-.navbar::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 20px;
+      .navbar.sidebar {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: 64px;
+      height: auto;
+      flex-direction: column;
+      gap: 14px;
+      padding: 12px 0;
+      border-radius: 18px;
+      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
+    }
 
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.5),
-    transparent 70%
-  );
+    .navbar.sidebar:hover {
+      width: 72px;
+      height: auto;
+      border-radius: 24px;
+    }
 
-  filter: blur(10px);
-  z-index: -1;
-}
+    .navbar.sidebar img:hover {
+      transform: scale(1.25) translateX(3px);
+    }
+.navbar.sidebar img:active{
+        transform: scale(0.97);
+    }
+    .navbar.sidebar::after {
+      inset: 0;
+      box-shadow: 0 0 0 0 rgba(0,180,255,.5);
+      transition: box-shadow 0.3s;
+      background: none;
+    }
 
-/* Icons */
-.navbar img {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  object-fit: cover;
-
-  transition: 
-    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-    filter 0.2s ease;
-}
-
-/* Hover (dock effect) */
-.navbar img:hover {
-  transform: translateY(-6px) scale(1.2);
-  filter: brightness(1.15);
-}
-
-/* Click */
-.navbar img:active {
-  transform: scale(0.9);
-}
-
-/* Navbar hover */
-.navbar:hover {
-  background: rgba(15, 15, 15, 0.75);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Sidebar version */
-.navbar.sidebar {
-  top: 50%;
-  left: 20px;
-  bottom: auto;
-  transform: translateY(-50%);
-  flex-direction: column;
-  width: 58px;
-  height: auto;
-  padding: 14px 8px;
-}
-
-.navbar.sidebar img:hover {
-  transform: translateX(6px) scale(1.2);
-}
+    .navbar.sidebar:hover::after {
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+      background: none;
+    }
 
 
 
@@ -402,8 +413,11 @@ backdrop-filter: blur(7px);
     #updateDiv {
     margin-top: 20px;
     padding: 10px;
-background-color: rgba(24, 81, 106, 0.504);
-  border: 1px solid rgba(0,180,255,.5);
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     inset: 0;
     margin:auto;
