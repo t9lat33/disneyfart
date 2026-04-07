@@ -67,118 +67,77 @@ color: white;
   }
 
  .navbar {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      height: 56px;
-     background: linear-gradient(
-    170deg, 
-    rgba(255, 255, 255, 0.12) 0%, 
-    rgba(255, 255, 255, 0.05) 100%
-  );
+  /* Positioning */
+  position: fixed;
+  bottom: 20px; /* Elevated slightly more like the image */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
 
-  /* The "Glass Edge" - this makes it look like a physical object */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  /* Flex Layout */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
   
-  /* A subtle shadow so it doesn't disappear on light backgrounds */
+  /* Dimensions & Shape */
+  height: 52px;
+  border-radius: 18px;
+
+  /* The "Dark Glass" Look */
+  background: rgba(15, 15, 15, 0.75); /* Dark base */
+  backdrop-filter: blur(12px) saturate(180%); /* Crucial for the blurred background */
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+
+  /* Borders & Depth */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1); 
-    
-  backdrop-filter: none;
+    0 10px 30px rgba(0, 0, 0, 0.5), /* Outer shadow */
+    inset 0 1px 1px rgba(255, 255, 255, 0.1); /* Subtle top inner highlight */
 
-      border-radius: 16px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-      padding: 0 10px;
-       box-shadow: 
-    0 12px 28px rgba(0,0,0,0.45),
-    0 0 0 1px rgba(255,255,255,0.15) inset;
-      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
-      opacity: 0.92;
-      z-index: 9999;
-      will-change: height, border-radius;
-
-    }
-
-    .navbar:hover {
-      height: 64px;
-      border-radius: 20px;
-      border-color: rgba(0,180,255,0.6);
-    }
-
-    .navbar::after {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: inherit;
-      pointer-events: none;
-      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
-      opacity: 1;
-      transition: opacity 0.2s ease;
-    }
-
-    .navbar:hover::after {
-      opacity: 1;
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
-    }
-
-.navbar img {
-  border-radius: 10px;     
-  transform-origin: bottom; 
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.2); 
+  /* Transitions */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-    .navbar img:hover {
-      transform: scale(1.25) translateY(-3px);
-    }
-    .navbar img:active{
-        transform: scale(0.97);
-    }
+/* Icon Styling */
+.navbar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px; /* Slightly more "squircle" than round */
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
 
-      .navbar.sidebar {
-      position: fixed;
-      top: 50%;
-      left: 12px;
-      bottom: auto;
-      transform: translateY(-50%);
-      width: 64px;
-      height: auto;
-      flex-direction: column;
-      gap: 14px;
-      padding: 12px 0;
-      border-radius: 18px;
-      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
-    }
+/* Hover Effects */
+.navbar:hover {
+  background: rgba(20, 20, 20, 0.85);
+  border-color: rgba(255, 255, 255, 0.2);
+}
 
-    .navbar.sidebar:hover {
-      width: 72px;
-      height: auto;
-      border-radius: 24px;
-    }
+.navbar img:hover {
+  transform: scale(1.15) translateY(-4px);
+}
 
-    .navbar.sidebar img:hover {
-      transform: scale(1.25) translateX(3px);
-    }
-.navbar.sidebar img:active{
-        transform: scale(0.97);
-    }
-    .navbar.sidebar::after {
-      inset: 0;
-      box-shadow: 0 0 0 0 rgba(0,180,255,.5);
-      transition: box-shadow 0.3s;
-      background: none;
-    }
+.navbar img:active {
+  transform: scale(0.95);
+}
 
-    .navbar.sidebar:hover::after {
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
-      background: none;
-    }
+/* Sidebar Variant Logic (Cleaned up) */
+.navbar.sidebar {
+  top: 50%;
+  left: 20px;
+  bottom: auto;
+  transform: translateY(-50%);
+  flex-direction: column;
+  width: 52px;
+  height: auto;
+  padding: 14px 8px;
+}
 
+.navbar.sidebar img:hover {
+  transform: scale(1.15) translateX(4px);
+}
 
 
 
