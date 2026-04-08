@@ -242,23 +242,20 @@ background-color: rgba(5, 139, 196, 0.504);
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
-animation: openWindow 0.45s cubic-bezier(.2,.8,.2,1) forwards;
+animation: osOpen 0.28s cubic-bezier(0.2, 0, 0, 1) forwards;
   }
-  @keyframes openWindow {
+@keyframes osOpen {
   0% {
     opacity: 0;
-    transform: scale(0.85) translateY(40px);
-    filter: blur(10px);
+    transform: scale(0.96) translateY(12px);
   }
-  60% {
+  40% {
     opacity: 1;
-    transform: scale(1.03) translateY(-5px);
-    filter: blur(2px);
+    transform: scale(0.985) translateY(4px);
   }
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
-    filter: blur(0);
   }
 }
     #aiDiv {
@@ -445,7 +442,7 @@ backdrop-filter: blur(7px);
     height: 500px; 
     overflow-x: hidden;
     overflow-y: auto;
-animation: openWindow 0.45s cubic-bezier(.2,.8,.2,1) forwards;
+animation: osOpen 0.28s cubic-bezier(0.2, 0, 0, 1) forwards;
   }
     #widgetDiv {
     margin-top: 20px;
