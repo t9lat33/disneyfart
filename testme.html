@@ -3067,39 +3067,47 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-  var _paq = window._paq = window._paq || [];
-  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="https://t9osspace.matomo.cloud/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '1']);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src='https://cdn.matomo.cloud/t9osspace.matomo.cloud/matomo.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<!-- End Matomo Code -->
-<script>
 const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
   if(!div) return;
-  const originalDisplay = div.style.display;
-  
-  Object.defineProperty(div.style, 'display', {
-    set(val) {
-      if(val === 'block') {
-        this.cssText = this.cssText.replace(/display:[^;]+;?/, '');
-        div.style.animation = 'none';
-        div.offsetHeight;
-        div.style.animation = '';
-      }
-      div.style.cssText += `display: ${val};`;
-    }
+  const animName = getComputedStyle(div).animationName;
+  div.addEventListener('show', () => {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
   });
 });
+
+function openDiv(id) {
+  const div = document.getElementById(id);
+  if(!div) return;
+  if(div.style.display === 'block'){
+    div.style.display = 'none';
+  } else {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
+    div.style.display = 'block';
+  }
+}
+
+function movie(){ openDiv('movieDiv'); }
+function music(){ openDiv('musicDiv'); }
+function ai(){ openDiv('aiDiv'); }
+function www(){ openDiv('wwwDiv'); }
+function Chat(){ openDiv('ChatDiv'); }
+function terminal(){ openDiv('terminalDiv'); }
+function ro(){ openDiv('roDiv'); }
+function settings(){ openDiv('settingsDiv'); }
+function calc(){ openDiv('calcDiv'); }
+function s(){ openDiv('searchDiv'); }
+function hacks(){ openDiv('hacksDiv'); }
+function emulator(){ openDiv('emulatorDiv'); }
+function collab(){ openDiv('collabDiv'); }
+function sound(){ openDiv('soundDiv'); }
+function admin(){ openDiv('adminDiv'); }
 </script>
 
   <!--testing part-->
