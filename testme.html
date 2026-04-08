@@ -3080,7 +3080,27 @@ window.addEventListener("blur",stopAll);
   })();
 </script>
 <!-- End Matomo Code -->
+<script>
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
 
+toggleFns.forEach(id => {
+  const div = document.getElementById(id);
+  if(!div) return;
+  const originalDisplay = div.style.display;
+  
+  Object.defineProperty(div.style, 'display', {
+    set(val) {
+      if(val === 'block') {
+        this.cssText = this.cssText.replace(/display:[^;]+;?/, '');
+        div.style.animation = 'none';
+        div.offsetHeight;
+        div.style.animation = '';
+      }
+      div.style.cssText += `display: ${val};`;
+    }
+  });
+});
+</script>
 
   <!--testing part-->
 
