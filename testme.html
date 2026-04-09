@@ -65,6 +65,33 @@ color: white;
 
 
   }
+  .fpscounter {
+      position: fixed;
+      bottom: 12px;
+      left: 25%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
 
 .navbar {
       position: fixed;
@@ -764,33 +791,31 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 
 
-<!-- Navbar -->
-<div id="navbar" class="navbar">
+<div  class="fpscounter">
   
-  <a id="toggleDivButton">
-    <img src="classwork2.png">
-  </a>
- 
-  <a onclick="www()">
-    <img src="saturn.png">
-  </a>
-   <a onclick="ai()">
-    <img src="chatgpt.png">
-  </a>
-  <a onclick="movie()">
-    <img src="netflix2.png">
-  </a>
-   <a onclick="music()">
-    <img src="spotify.png">
-  </a>
- 
- 
-
-    <a onclick="Chat()">
-    <img src="message.png">
-  </a>
+ <h2 style="color:white; font-family: sans-serif; text-align: center;" id="fpsCounter">FPS:</h2>
   
+<script>
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
 
+function updateFPS(now) {
+    frameCount++;
+
+    if (now - lastTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastTime = now;
+
+        document.getElementById("fpsCounter").textContent = "FPS: " + fps;
+    }
+
+    requestAnimationFrame(updateFPS);
+}
+
+requestAnimationFrame(updateFPS);
+</script>
 
 </div>
 
