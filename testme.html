@@ -65,6 +65,33 @@ color: white;
 
 
   }
+   .musicplayer {
+      position: fixed;
+      bottom: 12px;
+      left: 21%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
   .fpscounter {
       position: fixed;
       bottom: 12px;
@@ -816,6 +843,90 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   
 
 
+</div>
+
+<div id="musicNav"  class="musicplayer">
+
+<div class="mp-wrap">
+  <img id="mp-art" class="mp-art">
+
+  <div class="mp-text">
+    <span id="mp-title">Nothing playing</span>
+  </div>
+
+  <button id="mp-play" onclick="mpCmd('toggle')">▶</button>
+</div>
+<style>
+  .mp-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.mp-art {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #222;
+}
+
+.mp-text {
+  flex: 1;
+  min-width: 0;
+}
+
+#mp-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* button */
+#mp-play {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  color: #000;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+#mp-play:hover {
+  transform: scale(1.1);
+}
+  </style>
+  <script>
+    window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!d || !d.type) return;
+
+  if (d.type === 'track') {
+    mp-title.innerText = d.title;
+    mp-art.src = d.artwork;
+  }
+
+  if (d.type === 'playing') {
+    mp-play.innerText = '⏸';
+  }
+
+  if (d.type === 'paused') {
+    mp-play.innerText = '▶';
+  }
+});
+
+function mpCmd(cmd) {
+  frameMusic.contentWindow.postMessage({ type: cmd }, '*');
+}
+
+  </script>
 </div>
 
 <div id="fpsDiv"  class="fpscounter">
@@ -1615,7 +1726,6 @@ requestAnimationFrame(trackFPS);
 
 
 
-<iframe id="frameMusic" src="music4.html"></iframe>
   <style>
     #frameMusic{
       width:100%;
@@ -1839,7 +1949,7 @@ requestAnimationFrame(trackFPS);
 
         <script>
     // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv'];
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav'];
 
     // Store each div's original colors when the page opens
     const originalColors = {};
