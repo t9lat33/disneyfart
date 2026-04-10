@@ -17,10 +17,7 @@
     <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'G-WX5VS54ZDW');
     </script>
@@ -34,7 +31,7 @@
     <meta property="og:description" content="Play games online. Fast, free, no downloads.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Games">
-<meta name="ppck-ver" content="3a583f64da995abf422fabcf5da9644e" />
+    <meta name="ppck-ver" content="3a583f64da995abf422fabcf5da9644e" />
     <meta name="twitter:description" content="Play games online. Fast, free, no downloads.">
     <meta name="monetag" content="bb44d9f98c1988aa33c02a34ccc0ed1b">
     <style>
@@ -51,16 +48,9 @@
             --radius-lg: 100px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body {
-            height: 100%;
-            overflow-x: hidden;
-        }
+        html, body { height: 100%; overflow-x: hidden; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
@@ -75,12 +65,8 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        body::-webkit-scrollbar {
-            width: 0;
-            height: 0;
-        }
+        body::-webkit-scrollbar { width: 0; height: 0; }
 
-        /* Floating Search Header */
         header {
             position: fixed;
             top: 10px;
@@ -123,9 +109,7 @@
             text-align: center;
         }
 
-        #searchBar::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
+        #searchBar::placeholder { color: rgba(255, 255, 255, 0.5); }
 
         #searchBar:focus {
             border-color: #8fdcff;
@@ -162,10 +146,7 @@
             max-width: 1400px;
         }
 
-        /* Section Headers */
-        details {
-            margin-bottom: 20px;
-        }
+        details { margin-bottom: 20px; }
 
         summary {
             font-size: 1.2rem;
@@ -177,17 +158,10 @@
             list-style: none;
         }
 
-        summary::-webkit-details-marker {
-            display: none;
-        }
+        summary::-webkit-details-marker { display: none; }
 
-        hr {
-            border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 20px 0;
-        }
+        hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; }
 
-        /* Game Grid */
         #container, #featuredZones {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -195,7 +169,6 @@
             margin-top: 15px;
         }
 
-        /* Zone Items - Styled as rounded buttons like second batch */
         .zone-item {
             background: transparent;
             border: none;
@@ -210,17 +183,8 @@
             box-shadow: none;
         }
 
-        .zone-item:hover {
-            transform: translateY(-3px);
-        }
-
-        .zone-item:hover::before {
-            opacity: 0;
-        }
-
-        .zone-item::before {
-            display: none;
-        }
+        .zone-item:hover { transform: translateY(-3px); }
+        .zone-item::before { display: none; }
 
         .zone-item img {
             width: 200px;
@@ -240,11 +204,8 @@
             opacity: 0.8;
         }
 
-        .zone-item button {
-            display: none;
-        }
+        .zone-item button { display: none; }
 
-        /* Zone Viewer Modal */
         #zoneViewer {
             position: fixed;
             inset: 0;
@@ -286,9 +247,7 @@
             color: white;
         }
 
-        #zoneId {
-            display: none;
-        }
+        #zoneId { display: none; }
 
         #zoneAuthor {
             font-size: 14px;
@@ -297,15 +256,9 @@
             transition: all 0.2s ease;
         }
 
-        #zoneAuthor:hover {
-            color: #8fdcff;
-            text-decoration: underline;
-        }
+        #zoneAuthor:hover { color: #8fdcff; text-decoration: underline; }
 
-        .zone-controls {
-            display: flex;
-            gap: 10px;
-        }
+        .zone-controls { display: flex; gap: 10px; }
 
         .zone-controls button {
             background: rgba(255, 255, 255, 0.1);
@@ -334,7 +287,6 @@
             background: black;
         }
 
-        /* Popup Overlay */
         #popupOverlay {
             position: fixed;
             inset: 0;
@@ -348,10 +300,7 @@
             animation: fadeIn 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .popup {
             background: rgba(0, 0, 0, 0.9);
@@ -405,16 +354,9 @@
             justify-content: center;
         }
 
-        #popupClose:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
+        #popupClose:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
 
-        #popupBody {
-            padding: 20px;
-            overflow-y: auto;
-            color: white;
-        }
+        #popupBody { padding: 20px; overflow-y: auto; color: white; }
 
         #popupBody input[type="text"],
         #popupBody input[type="file"] {
@@ -436,7 +378,6 @@
             box-shadow: 0 0 15px rgba(140, 220, 255, 0.3);
         }
 
-        /* Footer */
         footer {
             position: fixed;
             bottom: 0;
@@ -473,7 +414,6 @@
             box-shadow: 0 5px 15px rgba(140, 220, 255, 0.2);
         }
 
-        /* Info Button */
         .info-button {
             background: rgba(255, 255, 255, 0.1);
             border: none;
@@ -489,12 +429,8 @@
             color: white;
         }
 
-        .info-button:hover {
-            background: rgba(140, 220, 255, 0.2);
-            transform: scale(1.1);
-        }
+        .info-button:hover { background: rgba(140, 220, 255, 0.2); transform: scale(1.1); }
 
-        /* Tooltip */
         #tooltip {
             position: fixed;
             background: rgba(0, 0, 0, 0.9);
@@ -512,105 +448,8 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        #tooltip.show {
-            opacity: 1;
-        }
+        #tooltip.show { opacity: 1; }
 
-        /* Ad Zone Item */
-        .ad-zone-item {
-            background: rgba(255, 193, 7, 0.1);
-            border: 2px solid rgba(255, 193, 7, 0.5);
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            cursor: default;
-        }
-
-        .ad-zone-item .ad-label {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(255, 193, 7, 0.9);
-            color: #000;
-            font-size: 12px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 6px;
-            z-index: 10;
-            pointer-events: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .ad-zone-item .ad-content {
-            width: 100%;
-            aspect-ratio: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 100px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .search-container {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            #searchBar {
-                width: 100%;
-            }
-
-            #sortOptions, #filterOptions {
-                flex: 1;
-            }
-
-            main {
-                padding: 100px 15px 120px;
-            }
-
-            #container, #featuredZones {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 20px;
-            }
-
-            .zone-item img {
-                width: 150px;
-                height: 150px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #container, #featuredZones {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                gap: 15px;
-            }
-
-            .zone-item img {
-                width: 120px;
-                height: 120px;
-            }
-
-            .zone-controls {
-                flex-wrap: wrap;
-            }
-
-            .zone-controls button {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-        }
-
-        /* Zone Count */
         #zoneCount {
             margin: 0 0 15px;
             font-size: 14px;
@@ -618,7 +457,6 @@
             font-weight: 600;
         }
 
-        /* Settings Button */
         .settings-button {
             background: rgba(140, 220, 255, 0.2);
             color: white;
@@ -640,11 +478,7 @@
             box-shadow: 0 5px 20px rgba(140, 220, 255, 0.3);
         }
 
-        /* Control Buttons */
-        .control-buttons {
-            display: flex;
-            gap: 10px;
-        }
+        .control-buttons { display: flex; gap: 10px; }
 
         .control-buttons button {
             background: rgba(255, 255, 255, 0.1);
@@ -675,8 +509,23 @@
             filter: brightness(0) invert(1);
         }
 
-        .control-button:hover img {
-            transform: rotate(40deg);
+        .control-button:hover img { transform: rotate(40deg); }
+
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; gap: 10px; }
+            .search-container { width: 100%; flex-wrap: wrap; }
+            #searchBar { width: 100%; }
+            #sortOptions, #filterOptions { flex: 1; }
+            main { padding: 100px 15px 120px; }
+            #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+            .zone-item img { width: 150px; height: 150px; }
+        }
+
+        @media (max-width: 480px) {
+            #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+            .zone-item img { width: 120px; height: 120px; }
+            .zone-controls { flex-wrap: wrap; }
+            .zone-controls button { padding: 6px 12px; font-size: 12px; }
         }
     </style>
     <link rel="manifest" href="manifest.json">
@@ -684,7 +533,7 @@
 </head>
 <body>
     <span id="tooltip"></span>
-    
+
     <header>
         <div class="header-content">
             <div class="search-container">
@@ -701,7 +550,8 @@
         </div>
     </header>
 
-<script type="text/javascript"> (wapTag.Init = window.wapTag.Init || []).push(function () { wAPITag.initStickyBanner("pw_49753"); }); </script>
+    <script type="text/javascript"> (wapTag.Init = window.wapTag.Init || []).push(function () { wAPITag.initStickyBanner("pw_49753"); }); </script>
+
     <main>
         <br>
         <details id="featuredZonesWrapper" open>
@@ -728,6 +578,7 @@
                     </svg>
                 </button>
                 <span id="zoneId" style="display: none;"></span>
+                <span id="zoneSource" style="display: none;"></span>
                 <a id="zoneAuthor" href="#" target="_blank">by Author</a>
             </div>
             <div class="zone-controls">
@@ -746,9 +597,7 @@
                 <h3 id="popupTitle">Title</h3>
                 <button id="popupClose" onclick="closePopup()">×</button>
             </div>
-            <div id="popupBody">
-                Content will be here
-            </div>
+            <div id="popupBody">Content will be here</div>
         </div>
     </div>
 
@@ -769,124 +618,131 @@
         const sortOptions = document.getElementById('sortOptions');
         const filterOptions = document.getElementById('filterOptions');
         const tooltip = document.getElementById('tooltip');
-        
-        const zonesurls = [
-            "https://cdn.jsdelivr.net/%67%68/%67%6e%2d%6d%61%74%68/%61%73%73%65%74%73@%6d%61%69%6e/%7a%6f%6e%65%73%2e%6a%73%6f%6e",
-            "https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json",
-            "https://cdn.jsdelivr.net/gh/gn-math/assets@master/zones.json",
-            "https://cdn.jsdelivr.net/gh/gn-math/assets/zones.json"
+
+        // ── Source definitions ────────────────────────────────────────────────
+        const SOURCES = [
+            {
+                key: 'gnmath',
+                label: 'gn-math',
+                zonesurls: [
+                    "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json",
+                    "https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json",
+                    "https://cdn.jsdelivr.net/gh/gn-math/assets@master/zones.json",
+                    "https://cdn.jsdelivr.net/gh/gn-math/assets/zones.json"
+                ],
+                shaAPI:    "https://api.github.com/repos/gn-math/assets/commits",
+                shaTxt:    "https://raw.githubusercontent.com/gn-math/xml/refs/heads/main/sha.txt",
+                shaFmt:    sha => `https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`,
+                coverURL:  "https://cdn.jsdelivr.net/gh/gn-math/covers@main",
+                htmlURL:   "https://cdn.jsdelivr.net/gh/gn-math/html@main",
+                statsURL:  "https://data.jsdelivr.com/v1/stats/packages/gh/gn-math/html@main/files",
+                commitsURL: id => `https://api.github.com/repos/gn-math/html/commits?path=${id}.html`
+            },
+            {
+                key: 'freebuisness',
+                label: 'freebuisness',
+                zonesurls: [
+                    "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
+                    "https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json",
+                    "https://cdn.jsdelivr.net/gh/freebuisness/assets@master/zones.json",
+                    "https://cdn.jsdelivr.net/gh/freebuisness/assets/zones.json"
+                ],
+                shaAPI:    "https://api.github.com/repos/freebuisness/assets/commits",
+                shaTxt:    "https://raw.githubusercontent.com/freebuisness/xml/refs/heads/main/sha.txt",
+                shaFmt:    sha => `https://cdn.jsdelivr.net/gh/freebuisness/assets@${sha}/zones.json`,
+                coverURL:  "https://cdn.jsdelivr.net/gh/freebuisness/covers@main",
+                htmlURL:   "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
+                statsURL:  "https://data.jsdelivr.com/v1/stats/packages/gh/freebuisness/html@main/files",
+                commitsURL: id => `https://api.github.com/repos/freebuisness/html/commits?path=${id}.html`
+            }
         ];
-        let zonesURL = zonesurls[Math.floor(Math.random() * zonesurls.length)];
-        const coverURL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-        const htmlURL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
-        let zones = [];
-        let popularityData = {};
+
+        let zones = [];            // merged array; each entry has ._source set
+        let popularityData = {};   // keyed by source.key then id
         const featuredContainer = document.getElementById('featuredZones');
-        
+
         function toTitleCase(str) {
-            return str.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase());
+            return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase());
         }
-        
-        async function listZones() {
+
+        // ── Fetch zones from one source ───────────────────────────────────────
+        async function fetchSourceZones(src) {
+            let zonesURL = src.zonesurls[Math.floor(Math.random() * src.zonesurls.length)];
             try {
-                let sharesponse;
-                let shajson;
-                let sha;
-                try {
-                    sharesponse = await fetch("https://api.github.com/repos/gn-math/assets/commits?t=" + Date.now());
-                } catch (error) {}
-                if (sharesponse && sharesponse.status === 200) {
+                const shaRes = await fetch(src.shaAPI + "?t=" + Date.now());
+                if (shaRes && shaRes.status === 200) {
                     try {
-                        shajson = await sharesponse.json();
-                        sha = shajson[0]['sha'];
-                        if (sha) {
-                            zonesURL = `https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`;
-                        }
-                    } catch (error) {
+                        const shaJson = await shaRes.json();
+                        const sha = shaJson[0]['sha'];
+                        if (sha) zonesURL = src.shaFmt(sha);
+                    } catch {
                         try {
-                            let secondarysharesponse = await fetch("https://raw.githubusercontent.com/gn-math/xml/refs/heads/main/sha.txt?t=" + Date.now());
-                            if (secondarysharesponse && secondarysharesponse.status === 200) {
-                                sha = (await secondarysharesponse.text()).trim();
-                                if (sha) {
-                                    zonesURL = `https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`;
-                                }
+                            const txtRes = await fetch(src.shaTxt + "?t=" + Date.now());
+                            if (txtRes && txtRes.status === 200) {
+                                const sha = (await txtRes.text()).trim();
+                                if (sha) zonesURL = src.shaFmt(sha);
                             }
-                        } catch(error) {}
+                        } catch {}
                     }
                 }
-                const response = await fetch(zonesURL + "?t=" + Date.now());
-                const json = await response.json();
-                zones = json;
-                zones[0].featured = true;
-                await fetchPopularity();
+            } catch {}
+
+            const response = await fetch(zonesURL + "?t=" + Date.now());
+            const json = await response.json();
+            // Tag every zone with its source
+            return json.map(z => ({ ...z, _source: src.key }));
+        }
+
+        // ── Fetch popularity for one source ──────────────────────────────────
+        async function fetchPopularity(src) {
+            try {
+                const res = await fetch(src.statsURL + "?period=year");
+                const data = await res.json();
+                if (!popularityData[src.key]) popularityData[src.key] = {};
+                data.forEach(file => {
+                    const m = file.name.match(/\/(\d+)\.html$/);
+                    if (m) popularityData[src.key][parseInt(m[1])] = file.hits.total;
+                });
+            } catch {
+                if (!popularityData[src.key]) popularityData[src.key] = {};
+            }
+        }
+
+        // ── Load all sources ──────────────────────────────────────────────────
+        async function listZones() {
+            container.innerHTML = "Loading...";
+            try {
+                const results = await Promise.allSettled(SOURCES.map(src => fetchSourceZones(src)));
+                zones = [];
+                results.forEach((r, i) => {
+                    if (r.status === 'fulfilled') {
+                        // mark first zone of first source as featured
+                        if (i === 0 && r.value.length > 0) r.value[0].featured = true;
+                        zones.push(...r.value);
+                    }
+                });
+
+                await Promise.allSettled(SOURCES.map(src => fetchPopularity(src)));
+
                 sortZones();
+
+                // Handle ?id= deep link (check all sources)
                 const search = new URLSearchParams(window.location.search);
                 const id = search.get('id');
-                const embed = window.location.hash.includes("embed");
+                const srcParam = search.get('src');
                 if (id) {
-                    const zone = zones.find(zone => zone.id + '' == id + '');
-                    if (zone) {
-                        if (embed) {
-                            if (zone.url.startsWith("http")) {
-                                window.open(zone.url, "_blank");
-                            } else {
-                                const url = zone.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-                                fetch(url + "?t=" + Date.now()).then(response => response.text()).then(html => {
-                                    document.documentElement.innerHTML = html;
-                                    const popup = document.createElement("div");
-                                    popup.style.position = "fixed";
-                                    popup.style.bottom = "20px";
-                                    popup.style.right = "20px";
-                                    popup.style.backgroundColor = "#cce5ff";
-                                    popup.style.color = "#004085";
-                                    popup.style.padding = "10px";
-                                    popup.style.border = "1px solid #b8daff";
-                                    popup.style.borderRadius = "5px";
-                                    popup.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.1)";
-                                    popup.style.fontFamily = "Arial, sans-serif";
-                                    popup.innerHTML = `Play more games online!`;
-                                    const closeBtn = document.createElement("button");
-                                    closeBtn.innerText = "×";
-                                    closeBtn.style.marginLeft = "10px";
-                                    closeBtn.style.background = "none";
-                                    closeBtn.style.border = "none";
-                                    closeBtn.style.cursor = "pointer";
-                                    closeBtn.style.color = "#004085";
-                                    closeBtn.style.fontWeight = "bold";
-                                    closeBtn.onclick = () => popup.remove();
-                                    popup.appendChild(closeBtn);
-                                    document.body.appendChild(popup);
-                                    document.documentElement.querySelectorAll('script').forEach(oldScript => {
-                                        const newScript = document.createElement('script');
-                                        if (oldScript.src) {
-                                            newScript.src = oldScript.src;
-                                        } else {
-                                            newScript.textContent = oldScript.textContent;
-                                        }
-                                        document.body.appendChild(newScript);
-                                    });
-                                }).catch(error => alert("Failed to load zone: " + error));
-                            }
-                        } else {
-                            openZone(zone);
-                        }
-                    }
+                    const zone = zones.find(z => z.id + '' === id + '' && (!srcParam || z._source === srcParam));
+                    if (zone) openZone(zone);
                 }
 
+                // Build tag filter
                 let alltags = [];
-                for (const obj of json) {
-                    if (Array.isArray(obj.special)) {
-                        alltags.push(...obj.special);
-                    }
+                for (const obj of zones) {
+                    if (Array.isArray(obj.special)) alltags.push(...obj.special);
                 }
-
                 alltags = [...new Set(alltags)];
-                let filteroption = document.getElementById("filterOptions");
-                if (filteroption && filteroption.children.length > 1) {
-                    while (filteroption.children.length > 1) {
-                        filteroption.removeChild(filteroption.lastElementChild);
-                    }
-                }
+                const filteroption = document.getElementById("filterOptions");
+                while (filteroption.children.length > 1) filteroption.removeChild(filteroption.lastElementChild);
                 for (const tag of alltags) {
                     const opt = document.createElement("option");
                     opt.value = tag;
@@ -898,23 +754,27 @@
                 container.innerHTML = `Error loading zones: ${error}`;
             }
         }
-        
-        async function fetchPopularity() {
-            try {
-                const response = await fetch("https://data.jsdelivr.com/v1/stats/packages/gh/gn-math/html@main/files?period=year");
-                const data = await response.json();
-                data.forEach(file => {
-                    const idMatch = file.name.match(/\/(\d+)\.html$/);
-                    if (idMatch) {
-                        const id = parseInt(idMatch[1]);
-                        popularityData[id] = file.hits.total;
-                    }
-                });
-            } catch (error) {
-                popularityData[0] = 0;
-            }
+
+        // ── Helpers to resolve per-zone URLs ─────────────────────────────────
+        function getSrc(zone) {
+            return SOURCES.find(s => s.key === zone._source) || SOURCES[0];
         }
 
+        function resolveURL(zone) {
+            const src = getSrc(zone);
+            return zone.url
+                .replace("{COVER_URL}", src.coverURL)
+                .replace("{HTML_URL}", src.htmlURL);
+        }
+
+        function resolveCover(zone) {
+            const src = getSrc(zone);
+            return zone.cover
+                .replace("{COVER_URL}", src.coverURL)
+                .replace("{HTML_URL}", src.htmlURL);
+        }
+
+        // ── Sort & display ────────────────────────────────────────────────────
         function sortZones() {
             const sortBy = sortOptions.value;
             if (sortBy === 'name') {
@@ -922,126 +782,51 @@
             } else if (sortBy === 'id') {
                 zones.sort((a, b) => a.id - b.id);
             } else if (sortBy === 'popular') {
-                zones.sort((a, b) => (popularityData[b.id] || 0) - (popularityData[a.id] || 0));
+                zones.sort((a, b) =>
+                    ((popularityData[b._source]?.[b.id]) || 0) -
+                    ((popularityData[a._source]?.[a.id]) || 0)
+                );
             }
             zones.sort((a, b) => (a.id === -1 ? -1 : b.id === -1 ? 1 : 0));
             if (featuredContainer.innerHTML === "") {
-                const featured = zones.filter(z => z.featured);
-                displayFeaturedZones(featured);
+                displayFeaturedZones(zones.filter(z => z.featured));
             }
             displayZones(zones);
         }
 
-        function displayFeaturedZones(featuredZones) {
-            featuredContainer.innerHTML = "";
-            featuredZones.forEach((file, index) => {
-                const zoneItem = document.createElement("div");
-                zoneItem.className = "zone-item";
-                zoneItem.onclick = () => openZone(file);
-                
-                const img = document.createElement("img");
-                img.dataset.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-                img.alt = file.name;
-                img.loading = "lazy";
-                img.className = "lazy-zone-img";
-                
-                // Tooltip events
-                img.addEventListener('mouseenter', function(e) {
-                    tooltip.textContent = file.name;
-                    tooltip.classList.add('show');
-                });
-                img.addEventListener('mousemove', function(e) {
-                    tooltip.style.left = e.clientX + 15 + 'px';
-                    tooltip.style.top = e.clientY + 15 + 'px';
-                });
-                img.addEventListener('mouseleave', function() {
-                    tooltip.classList.remove('show');
-                });
-                
-                zoneItem.appendChild(img);
-                
-                const button = document.createElement("button");
-                button.textContent = file.name;
-                button.onclick = (event) => {
-                    event.stopPropagation();
-                    openZone(file);
-                };
-                zoneItem.appendChild(button);
-                featuredContainer.appendChild(zoneItem);
-            });
-            if (featuredContainer.innerHTML === "") {
-                featuredContainer.innerHTML = "No featured games found.";
-            } else {
-                document.getElementById("allZonesSummary").textContent = `Featured Games (${featuredZones.length})`;
-            }
+        function makeZoneItem(file) {
+            const zoneItem = document.createElement("div");
+            zoneItem.className = "zone-item";
+            zoneItem.onclick = () => openZone(file);
 
-            const lazyImages = document.querySelectorAll('#featuredZones img.lazy-zone-img');
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.classList.remove("lazy-zone-img");
-                        observer.unobserve(img);
-                    }
-                });
-            }, {
-                rootMargin: "100px",
-                threshold: 0.1
-            });
+            const img = document.createElement("img");
+            img.dataset.src = resolveCover(file);
+            img.alt = file.name;
+            img.loading = "lazy";
+            img.className = "lazy-zone-img";
 
-            lazyImages.forEach(img => {
-                imageObserver.observe(img);
+            img.addEventListener('mouseenter', e => {
+                tooltip.textContent = file.name;
+                tooltip.classList.add('show');
             });
+            img.addEventListener('mousemove', e => {
+                tooltip.style.left = e.clientX + 15 + 'px';
+                tooltip.style.top  = e.clientY + 15 + 'px';
+            });
+            img.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+
+            zoneItem.appendChild(img);
+
+            const button = document.createElement("button");
+            button.textContent = file.name;
+            button.onclick = e => { e.stopPropagation(); openZone(file); };
+            zoneItem.appendChild(button);
+
+            return zoneItem;
         }
-        
-        function displayZones(zones) {
-            container.innerHTML = "";
 
-            zones.forEach((file, index) => {
-                const zoneItem = document.createElement("div");
-                zoneItem.className = "zone-item";
-                zoneItem.onclick = () => openZone(file);
-
-                const img = document.createElement("img");
-                img.dataset.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-                img.alt = file.name;
-                img.loading = "lazy";
-                img.className = "lazy-zone-img";
-                
-                // Tooltip events
-                img.addEventListener('mouseenter', function(e) {
-                    tooltip.textContent = file.name;
-                    tooltip.classList.add('show');
-                });
-                img.addEventListener('mousemove', function(e) {
-                    tooltip.style.left = e.clientX + 15 + 'px';
-                    tooltip.style.top = e.clientY + 15 + 'px';
-                });
-                img.addEventListener('mouseleave', function() {
-                    tooltip.classList.remove('show');
-                });
-                
-                zoneItem.appendChild(img);
-
-                const button = document.createElement("button");
-                button.textContent = file.name;
-                button.onclick = (e) => {
-                    e.stopPropagation();
-                    openZone(file);
-                };
-                zoneItem.appendChild(button);
-
-                container.appendChild(zoneItem);
-            });
-
-            if (!zones.length) {
-                container.textContent = "No games found.";
-            } else {
-                document.getElementById("allSummary").textContent = `All Games (${zones.length})`;
-            }
-
-            const lazyImages = document.querySelectorAll("img.lazy-zone-img");
+        function attachLazyObserver(selector) {
+            const lazyImages = document.querySelectorAll(selector + ' img.lazy-zone-img');
             const observer = new IntersectionObserver((entries, obs) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -1051,9 +836,30 @@
                         obs.unobserve(img);
                     }
                 });
-            }, { rootMargin: "100px" });
-
+            }, { rootMargin: "100px", threshold: 0.1 });
             lazyImages.forEach(img => observer.observe(img));
+        }
+
+        function displayFeaturedZones(featuredZones) {
+            featuredContainer.innerHTML = "";
+            featuredZones.forEach(file => featuredContainer.appendChild(makeZoneItem(file)));
+            if (!featuredZones.length) {
+                featuredContainer.innerHTML = "No featured games found.";
+            } else {
+                document.getElementById("allZonesSummary").textContent = `Featured Games (${featuredZones.length})`;
+            }
+            attachLazyObserver('#featuredZones');
+        }
+
+        function displayZones(list) {
+            container.innerHTML = "";
+            list.forEach(file => container.appendChild(makeZoneItem(file)));
+            if (!list.length) {
+                container.textContent = "No games found.";
+            } else {
+                document.getElementById("allSummary").textContent = `All Games (${list.length})`;
+            }
+            attachLazyObserver('#container');
         }
 
         function filterZones2() {
@@ -1061,29 +867,29 @@
             if (query === "none") {
                 displayZones(zones);
             } else {
-                const filteredZones = zones.filter(zone => zone.special?.includes(query));
-                if (query.length !== 0) {
-                    document.getElementById("featuredZonesWrapper").removeAttribute("open");
-                }
-                displayZones(filteredZones);
+                const filtered = zones.filter(z => z.special?.includes(query));
+                if (query.length) document.getElementById("featuredZonesWrapper").removeAttribute("open");
+                displayZones(filtered);
             }
         }
 
         function filterZones() {
             const query = searchBar.value.toLowerCase();
-            const filteredZones = zones.filter(zone => zone.name.toLowerCase().includes(query));
-            if (query.length !== 0) {
-                document.getElementById("featuredZonesWrapper").removeAttribute("open");
-            }
-            displayZones(filteredZones);
+            const filtered = zones.filter(z => z.name.toLowerCase().includes(query));
+            if (query.length) document.getElementById("featuredZonesWrapper").removeAttribute("open");
+            displayZones(filtered);
         }
 
+        // ── Open / close zone ─────────────────────────────────────────────────
         function openZone(file) {
             if (file.url.startsWith("http")) {
                 window.open(file.url, "_blank");
-            } else {
-                const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-                fetch(url + "?t=" + Date.now()).then(response => response.text()).then(html => {
+                return;
+            }
+            const url = resolveURL(file);
+            fetch(url + "?t=" + Date.now())
+                .then(r => r.text())
+                .then(html => {
                     if (zoneFrame.contentDocument === null) {
                         zoneFrame = document.createElement("iframe");
                         zoneFrame.id = "zoneFrame";
@@ -1094,87 +900,155 @@
                     zoneFrame.contentDocument.close();
                     document.getElementById('zoneName').textContent = file.name;
                     document.getElementById('zoneId').textContent = file.id;
+                    document.getElementById('zoneSource').textContent = file._source;
                     document.getElementById('zoneAuthor').textContent = "by " + file.author;
-                    if (file.authorLink) {
-                        document.getElementById('zoneAuthor').href = file.authorLink;
-                    }
+                    if (file.authorLink) document.getElementById('zoneAuthor').href = file.authorLink;
                     zoneViewer.style.display = "flex";
-                    const url = new URL(window.location);
-                    url.searchParams.set('id', file.id);
-                    history.pushState(null, '', url.toString());
-                }).catch(error => alert("Failed to load zone: " + error));
-            }
+                    const u = new URL(window.location);
+                    u.searchParams.set('id', file.id);
+                    u.searchParams.set('src', file._source);
+                    history.pushState(null, '', u.toString());
+                })
+                .catch(error => alert("Failed to load zone: " + error));
         }
 
         function aboutBlank() {
+            const id  = document.getElementById('zoneId').textContent;
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id + '' === id && z._source === key);
             const newWindow = window.open("about:blank", "_blank");
-            let zone = zones.find(zone => zone.id + '' === document.getElementById('zoneId').textContent).url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-            fetch(zone + "?t=" + Date.now()).then(response => response.text()).then(html => {
-                if (newWindow) {
-                    newWindow.document.open();
-                    newWindow.document.write(html);
-                    newWindow.document.close();
-                }
-            })
+            fetch(resolveURL(zone) + "?t=" + Date.now())
+                .then(r => r.text())
+                .then(html => {
+                    if (newWindow) {
+                        newWindow.document.open();
+                        newWindow.document.write(html);
+                        newWindow.document.close();
+                    }
+                });
         }
 
         function closeZone() {
             zoneViewer.style.display = "none";
-            if (zoneFrame.parentNode) {
-                zoneViewer.removeChild(zoneFrame);
-            }
-            const url = new URL(window.location);
-            url.searchParams.delete('id');
-            history.pushState(null, '', url.toString());
+            if (zoneFrame.parentNode) zoneViewer.removeChild(zoneFrame);
+            const u = new URL(window.location);
+            u.searchParams.delete('id');
+            u.searchParams.delete('src');
+            history.pushState(null, '', u.toString());
         }
 
         function downloadZone() {
-            let zone = zones.find(zone => zone.id + '' === document.getElementById('zoneId').textContent);
-            fetch(zone.url.replace("{HTML_URL}", htmlURL) + "?t=" + Date.now()).then(res => res.text()).then(text => {
-                const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = zone.name + ".html";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            });
+            const id  = document.getElementById('zoneId').textContent;
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id + '' === id && z._source === key);
+            fetch(resolveURL(zone) + "?t=" + Date.now())
+                .then(r => r.text())
+                .then(text => {
+                    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+                    const url  = URL.createObjectURL(blob);
+                    const a    = document.createElement('a');
+                    a.href = url;
+                    a.download = zone.name + ".html";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
         }
 
         function fullscreenZone() {
-            if (zoneFrame.requestFullscreen) {
-                zoneFrame.requestFullscreen();
-            } else if (zoneFrame.mozRequestFullScreen) {
-                zoneFrame.mozRequestFullScreen();
-            } else if (zoneFrame.webkitRequestFullscreen) {
-                zoneFrame.webkitRequestFullscreen();
-            } else if (zoneFrame.msRequestFullscreen) {
-                zoneFrame.msRequestFullscreen();
-            }
+            const fn = zoneFrame.requestFullscreen || zoneFrame.mozRequestFullScreen ||
+                       zoneFrame.webkitRequestFullscreen || zoneFrame.msRequestFullscreen;
+            if (fn) fn.call(zoneFrame);
         }
 
-        function sanitizeData(obj, maxStringLen = 1000, maxArrayLen = 10000) {
-            if (typeof obj === 'string') {
-                return obj.length > maxStringLen ? obj.slice(0, maxStringLen) + '...[truncated]' : obj;
-            }
-            if (obj instanceof Uint8Array) {
-                if (obj.length > maxArrayLen) {
-                    return `[Uint8Array too large (${obj.length} bytes), truncated]`;
-                }
-                return obj;
-            }
-            if (Array.isArray(obj)) {
-                return obj.map(item => sanitizeData(item, maxStringLen, maxArrayLen));
-            }
-            if (obj && typeof obj === 'object') {
-                const newObj = {};
-                for (const key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        newObj[key] = sanitizeData(obj[key], maxStringLen, maxArrayLen);
+        // ── Zone info popup ───────────────────────────────────────────────────
+        let _statsCache = {};
+
+        async function getAllStats(src) {
+            if (_statsCache[src.key]) return _statsCache[src.key];
+            const BASE_URL = src.statsURL;
+            const PERIOD = "year";
+            const PAGE_BATCH = 5;
+            let page = 1, done = false;
+            const map = Object.create(null);
+            while (!done) {
+                const pages = Array.from({ length: PAGE_BATCH }, (_, i) => page + i);
+                const responses = await Promise.all(
+                    pages.map(p => fetch(`${BASE_URL}?period=${PERIOD}&page=${p}&limit=100`).then(r => r.ok ? r.json() : []))
+                );
+                for (const data of responses) {
+                    if (!Array.isArray(data) || data.length === 0) { done = true; break; }
+                    for (const item of data) {
+                        if (!item?.name) continue;
+                        const m = item.name.match(/^\/(\d+)([.-])/);
+                        if (!m) continue;
+                        const id = m[1];
+                        if (!map[id]) map[id] = { hits: 0, bandwidth: 0 };
+                        map[id].hits      += item.hits?.total ?? 0;
+                        map[id].bandwidth += item.bandwidth?.total ?? 0;
                     }
                 }
+                page += PAGE_BATCH;
+            }
+            _statsCache[src.key] = map;
+            return map;
+        }
+
+        async function getStats(zone) {
+            const src = getSrc(zone);
+            const allStats = await getAllStats(src);
+            return allStats[String(zone.id)]?.hits ?? 0;
+        }
+
+        function showZoneInfo() {
+            const id  = Number(document.getElementById('zoneId').textContent);
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id === id && z._source === key);
+            const src = getSrc(zone);
+
+            document.getElementById('popupTitle').textContent = "Info";
+            const popupBody = document.getElementById('popupBody');
+            popupBody.innerHTML = `<p>Loading...</p>`;
+            popupBody.contentEditable = false;
+            document.getElementById('popupOverlay').style.display = "flex";
+
+            fetch(src.commitsURL(id))
+                .then(r => r.json())
+                .then(async json => {
+                    const stats = await getStats(zone);
+                    document.getElementById('popupTitle').textContent = `${zone.name} Info`;
+                    const date = new Date(json.at(-1).commit.author.date);
+                    const formatteddate = new Intl.DateTimeFormat("en-US", {
+                        month: "long", day: "numeric", year: "numeric",
+                        hour: "numeric", minute: "2-digit", hour12: true
+                    }).format(date);
+                    popupBody.innerHTML = `
+                        <p>
+                            <b>Id</b>: ${id}<br>
+                            <b>Name</b>: ${zone.name}<br>
+                            ${zone.author     ? `<b>Game Author</b>: ${zone.author}<br>` : ""}
+                            ${zone.authorLink ? `<b>Game Author Link</b>: <a style="color:#8fdcff;" href="${zone.authorLink}">${zone.authorLink}</a><br>` : ""}
+                            ${zone.special    ? `<b>Tags</b>: ${zone.special}<br>` : ""}
+                            <b>Source</b>: ${src.label}<br>
+                            <b>Date Added</b>: ${formatteddate}<br>
+                            <b>Times Played (Globally)</b>: ${Number(stats).toLocaleString("en-US")}
+                        </p>`;
+                });
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = "none";
+        }
+
+        // ── Data export / import ──────────────────────────────────────────────
+        function sanitizeData(obj, maxStringLen = 1000, maxArrayLen = 10000) {
+            if (typeof obj === 'string') return obj.length > maxStringLen ? obj.slice(0, maxStringLen) + '...[truncated]' : obj;
+            if (obj instanceof Uint8Array) return obj.length > maxArrayLen ? `[Uint8Array too large (${obj.length} bytes), truncated]` : obj;
+            if (Array.isArray(obj)) return obj.map(item => sanitizeData(item, maxStringLen, maxArrayLen));
+            if (obj && typeof obj === 'object') {
+                const newObj = {};
+                for (const key in obj) { if (obj.hasOwnProperty(key)) newObj[key] = sanitizeData(obj[key], maxStringLen, maxArrayLen); }
                 return newObj;
             }
             return obj;
@@ -1197,10 +1071,7 @@
                     openRequest.onsuccess = () => {
                         const db = openRequest.result;
                         const storeNames = Array.from(db.objectStoreNames);
-                        if (storeNames.length === 0) {
-                            resolve();
-                            return;
-                        }
+                        if (storeNames.length === 0) { resolve(); return; }
                         const transaction = db.transaction(storeNames, "readonly");
                         const storePromises = [];
                         for (const storeName of storeNames) {
@@ -1220,7 +1091,6 @@
                     };
                 });
             }
-
             result.caches = {};
             const cacheNames = await caches.keys();
             for (const cacheName of cacheNames) {
@@ -1234,21 +1104,13 @@
                     const contentType = cloned.headers.get('content-type') || '';
                     let body;
                     try {
-                        if (contentType.includes('application/json')) {
-                            body = await cloned.json();
-                        } else if (contentType.includes('text') || contentType.includes('javascript')) {
-                            body = await cloned.text();
-                        } else {
-                            const buffer = await cloned.arrayBuffer();
-                            body = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-                        }
-                    } catch (e) {
-                        body = '[Unable to read body]';
-                    }
+                        if (contentType.includes('application/json')) body = await cloned.json();
+                        else if (contentType.includes('text') || contentType.includes('javascript')) body = await cloned.text();
+                        else { const buffer = await cloned.arrayBuffer(); body = btoa(String.fromCharCode(...new Uint8Array(buffer))); }
+                    } catch { body = '[Unable to read body]'; }
                     result.caches[cacheName].push({ url: req.url, body, contentType });
                 }
             }
-  
             alert("Done, wait for the download to come");
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/octet-stream" }));
@@ -1257,28 +1119,16 @@
             link.click();
             document.body.removeChild(link);
         }
-  
+
         async function loadData(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = async function (e) {
                 const data = JSON.parse(e.target.result);
-                if (data.cookies) {
-                    data.cookies.split(';').forEach(cookie => {
-                        document.cookie = cookie.trim();
-                    });
-                }
-                if (data.localStorage) {
-                    for (const key in data.localStorage) {
-                        localStorage.setItem(key, data.localStorage[key]);
-                    }
-                }
-                if (data.sessionStorage) {
-                    for (const key in data.sessionStorage) {
-                        sessionStorage.setItem(key, data.sessionStorage[key]);
-                    }
-                }
+                if (data.cookies) data.cookies.split(';').forEach(cookie => { document.cookie = cookie.trim(); });
+                if (data.localStorage) for (const key in data.localStorage) localStorage.setItem(key, data.localStorage[key]);
+                if (data.sessionStorage) for (const key in data.sessionStorage) sessionStorage.setItem(key, data.sessionStorage[key]);
                 if (data.indexedDB) {
                     for (const dbName in data.indexedDB) {
                         const stores = data.indexedDB[dbName];
@@ -1287,9 +1137,7 @@
                             request.onupgradeneeded = e => {
                                 const db = e.target.result;
                                 for (const storeName in stores) {
-                                    if (!db.objectStoreNames.contains(storeName)) {
-                                        db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-                                    }
+                                    if (!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
                                 }
                             };
                             request.onsuccess = e => {
@@ -1300,11 +1148,8 @@
                                 for (const storeName in stores) {
                                     const objectStore = transaction.objectStore(storeName);
                                     objectStore.clear().onsuccess = () => {
-                                        for (const item of stores[storeName]) {
-                                            objectStore.put(item);
-                                        }
-                                        pendingStores--;
-                                        if (pendingStores === 0) resolve();
+                                        for (const item of stores[storeName]) objectStore.put(item);
+                                        if (--pendingStores === 0) resolve();
                                     };
                                 }
                             };
@@ -1318,22 +1163,15 @@
                         await cache.keys().then(keys => Promise.all(keys.map(k => cache.delete(k))));
                         for (const entry of data.caches[cacheName]) {
                             let responseBody;
-                            if (entry.contentType.includes('application/json')) {
-                                responseBody = JSON.stringify(entry.body);
-                            } else if (entry.contentType.includes('text') || entry.contentType.includes('javascript')) {
-                                responseBody = entry.body;
-                            } else {
+                            if (entry.contentType.includes('application/json')) responseBody = JSON.stringify(entry.body);
+                            else if (entry.contentType.includes('text') || entry.contentType.includes('javascript')) responseBody = entry.body;
+                            else {
                                 const binaryStr = atob(entry.body);
-                                const len = binaryStr.length;
-                                const bytes = new Uint8Array(len);
-                                for (let i = 0; i < len; i++) {
-                                    bytes[i] = binaryStr.charCodeAt(i);
-                                }
+                                const bytes = new Uint8Array(binaryStr.length);
+                                for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
                                 responseBody = bytes.buffer;
                             }
-                            const headers = new Headers({ 'content-type': entry.contentType });
-                            const response = new Response(responseBody, { headers });
-                            await cache.put(entry.url, response);
+                            await cache.put(entry.url, new Response(responseBody, { headers: new Headers({ 'content-type': entry.contentType }) }));
                         }
                     }
                 }
@@ -1343,27 +1181,17 @@
             reader.readAsText(file);
         }
 
-        function darkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
+        function darkMode() { document.body.classList.toggle("dark-mode"); }
 
         function cloakIcon(url) {
             const link = document.querySelector("link[rel~='icon']");
             link.rel = "icon";
-            if ((url + "").trim().length === 0) {
-                link.href = "favicon.png";
-            } else {
-                link.href = url;
-            }
+            link.href = (url + "").trim().length === 0 ? "favicon.png" : url;
             document.head.appendChild(link);
         }
-        
+
         function cloakName(string) {
-            if ((string + "").trim().length === 0) {
-                document.title = "Games";
-                return;
-            }
-            document.title = string;
+            document.title = (string + "").trim().length === 0 ? "Games" : string;
         }
 
         function tabCloak() {
@@ -1371,11 +1199,11 @@
             document.getElementById('popupTitle').textContent = "Tab Cloak";
             const popupBody = document.getElementById('popupBody');
             popupBody.innerHTML = `
-                <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Title:</label><br>
-                <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
+                <label style="font-weight: bold;">Set Tab Title:</label><br>
+                <input type="text" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
                 <br><br><br><br>
-                <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Icon:</label><br>
-                <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab icon..." oninput='cloakIcon(this.value)'>
+                <label style="font-weight: bold;">Set Tab Icon:</label><br>
+                <input type="text" placeholder="Enter new tab icon URL..." oninput='cloakIcon(this.value)'>
                 <br><br><br>
             `;
             popupBody.contentEditable = false;
@@ -1384,249 +1212,89 @@
 
         function showContact() {
             document.getElementById('popupTitle').textContent = "Contact";
-            const popupBody = document.getElementById('popupBody');
-            popupBody.innerHTML = `
+            document.getElementById('popupBody').innerHTML = `
                 <p>Discord: https://discord.gg/NAFw4ykZ7n</p>
-                <p>Email: gn.math.business@gmail.com</p>
-            `;
-            popupBody.contentEditable = false;
+                <p>Email: gn.math.business@gmail.com</p>`;
+            document.getElementById('popupBody').contentEditable = false;
             document.getElementById('popupOverlay').style.display = "flex";
         }
 
         function loadPrivacy() {
             document.getElementById('popupTitle').textContent = "Privacy Policy";
-            const popupBody = document.getElementById('popupBody');
-            popupBody.innerHTML = `
+            document.getElementById('popupBody').innerHTML = `
                 <div style="max-height: 60vh; overflow-y: auto;">
                     <h2>PRIVACY POLICY</h2>
                     <p>Last updated April 17, 2025</p>
                     <p>This Privacy Notice describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services").</p>
                     <p>Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices.</p>
                     <h3>SUMMARY OF KEY POINTS</h3>
-                    <p>This summary provides key points from our Privacy Notice.</p>
                     <p><strong>What personal information do we process?</strong> When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use.</p>
                     <p><strong>Do we process any sensitive personal information?</strong> We do not process sensitive personal information.</p>
                     <p><strong>Do we collect any information from third parties?</strong> We do not collect any information from third parties.</p>
                     <p><strong>How do we process your information?</strong> We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law.</p>
                     <p><strong>How do we keep your information safe?</strong> We have adequate organizational and technical processes and procedures in place to protect your personal information.</p>
                     <p><strong>What are your rights?</strong> Depending on where you are located geographically, the applicable privacy law may mean you have certain rights regarding your personal information.</p>
-                </div>
-            `;
-            popupBody.contentEditable = false;
+                </div>`;
+            document.getElementById('popupBody').contentEditable = false;
             document.getElementById('popupOverlay').style.display = "flex";
         }
 
         function loadDMCA() {
             document.getElementById('popupTitle').textContent = "DMCA";
-            const popupBody = document.getElementById('popupBody');
-            popupBody.innerHTML = `
+            document.getElementById('popupBody').innerHTML = `
                 <div class="dmca-content">
                     <p>If you own or developed a game on this site and would like it removed, please contact us:</p>
                     <ol>
-                        <li>
-                            <a href="https://discord.gg/D4c9VFYWyU" target="_blank" rel="noopener noreferrer" style="color: #8fdcff;">
-                                Join the Discord
-                            </a> and send a direct message
-                            <strong>[INSTANT RESPONSE]</strong>
-                        </li>
-                        <li>
-                            Email at 
-                            <a href="mailto:gn.math.business@gmail.com" style="color: #8fdcff;">gn.math.business@gmail.com</a> 
-                            with the subject starting with <code>!DMCA</code>.
-                            <strong>[DELAYED RESPONSE]</strong>
-                        </li>
+                        <li><a href="https://discord.gg/D4c9VFYWyU" target="_blank" rel="noopener noreferrer" style="color: #8fdcff;">Join the Discord</a> and send a direct message <strong>[INSTANT RESPONSE]</strong></li>
+                        <li>Email at <a href="mailto:gn.math.business@gmail.com" style="color: #8fdcff;">gn.math.business@gmail.com</a> with the subject starting with <code>!DMCA</code>. <strong>[DELAYED RESPONSE]</strong></li>
                     </ol>
                     <p>Please provide proof of ownership with your request.</p>
-                </div>
-            `;
-            popupBody.contentEditable = false;
+                </div>`;
+            document.getElementById('popupBody').contentEditable = false;
             document.getElementById('popupOverlay').style.display = "flex";
         }
 
-        let _allStatsCache = null;
-
-        async function getAllStats() {
-            if (_allStatsCache) {
-                return _allStatsCache;
-            }
-
-            const BASE_URL = "https://data.jsdelivr.com/v1/stats/packages/gh/gn-math/html@main/files";
-            const PERIOD = "year";
-            const PAGE_BATCH = 5;
-
-            let page = 1;
-            let done = false;
-            const combinedMap = Object.create(null);
-
-            while (!done) {
-                const pages = Array.from({ length: PAGE_BATCH }, (_, i) => page + i);
-
-                const responses = await Promise.all(
-                    pages.map(p =>
-                        fetch(`${BASE_URL}?period=${PERIOD}&page=${p}&limit=100`)
-                            .then(r => (r.ok ? r.json() : []))
-                    )
-                );
-
-                for (const data of responses) {
-                    if (!Array.isArray(data) || data.length === 0) {
-                        done = true;
-                        break;
-                    }
-
-                    for (const item of data) {
-                        if (!item?.name) continue;
-
-                        const match = item.name.match(/^\/(\d+)([.-])/);
-                        if (!match) continue;
-
-                        const id = match[1];
-
-                        if (!combinedMap[id]) {
-                            combinedMap[id] = { hits: 0, bandwidth: 0 };
-                        }
-
-                        combinedMap[id].hits += item.hits?.total ?? 0;
-                        combinedMap[id].bandwidth += item.bandwidth?.total ?? 0;
-                    }
-                }
-
-                page += PAGE_BATCH;
-            }
-
-            _allStatsCache = combinedMap;
-            return combinedMap;
-        }
-
-        async function getStats(id) {
-            id = String(id);
-            const allStats = await getAllStats();
-            return allStats[id]?.hits ?? 0;
-        }
-
-        function showZoneInfo() {
-            let id = Number(document.getElementById('zoneId').textContent);
-            document.getElementById('popupTitle').textContent = "Info";
-            const popupBody = document.getElementById('popupBody');
-            popupBody.innerHTML = `<p>Loading...</p>`;
-            popupBody.contentEditable = false;
-            document.getElementById('popupOverlay').style.display = "flex";
-            fetch(`https://api.github.com/repos/gn-math/html/commits?path=${id}.html`).then(res => res.json()).then(async json => {
-                let stats = await getStats(id);
-                let idjson = zones.filter(a => a.id === id)[0];
-                document.getElementById('popupTitle').textContent = `${idjson.name} Info`;
-                const date = new Date(json.at(-1).commit.author.date);
-                let formatteddate = new Intl.DateTimeFormat("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true
-                }).format(date);
-                popupBody.innerHTML = `
-                    <p>
-                        <b>Id</b>: ${id}<br>
-                        <b>Name</b>: ${idjson.name}<br>
-                        ${idjson.author ? `<b>Game Author</b>: ${idjson.author}<br>` : ""}
-                        ${idjson.authorLink ? `<b>Game Author Link</b>: <a style="color:#8fdcff;" href=${idjson.authorLink}>${idjson.authorLink}</a><br>` : ""}
-                        ${idjson.special ? `<b>Tags</b>: ${idjson.special}<br>` : ""}
-                        <b>Date Added</b>: ${formatteddate}<br>
-                        <b>Times Played (Globally)</b>: ${Number(stats).toLocaleString("en-US")}
-                    </p>
-                `;
-            });
-        }
-
-        function closePopup() {
-            document.getElementById('popupOverlay').style.display = "none";
-        }
-        
-        listZones();
-
+        // ── Block school filters ──────────────────────────────────────────────
         const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];
-
         function isBlockedDomain(url) {
-            const domain = new URL(url, location.origin).hostname + "/";
-            return schoolList.some(school => domain.includes(school));
+            try {
+                const domain = new URL(url, location.origin).hostname + "/";
+                return schoolList.some(s => domain.includes(s));
+            } catch { return false; }
         }
-
         const originalFetch = window.fetch;
         window.fetch = function (url, options) {
-            if (isBlockedDomain(url)) {
-                console.warn(`lam`);
-                return Promise.reject(new Error("lam"));
-            }
+            if (isBlockedDomain(url)) { console.warn('lam'); return Promise.reject(new Error("lam")); }
             return originalFetch.apply(this, arguments);
         };
-
         const originalOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function (method, url) {
-            if (isBlockedDomain(url)) {
-                console.warn(`lam`);
-                return;
-            }
+            if (isBlockedDomain(url)) { console.warn('lam'); return; }
             return originalOpen.apply(this, arguments);
         };
+        HTMLCanvasElement.prototype.toDataURL = function (...args) { return ""; };
 
-        HTMLCanvasElement.prototype.toDataURL = function (...args) {
-            return "";
-        };
+        listZones();
     </script>
+
     <script>
         const search = new URLSearchParams(window.location.search);
         const privacy = search.get('privacy');
-        if (privacy) {
-            loadPrivacy();
-        }
+        if (privacy) loadPrivacy();
     </script>
     <script>
         navigator.serviceWorker.register(location.protocol + "//" + location.hostname + "/sw.js");
     </script>
     <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("background-select");
-  const upload = document.getElementById("background-upload");
-  const body = document.body;
-
-  // Apply background
-  function setBackground(src) {
-    body.style.backgroundImage = src ? `url(${src})` : "";
-    localStorage.setItem("selectedBackground", src || "");
-  }
-
-  // Load saved background
-  const savedBg = localStorage.getItem("selectedBackground");
-  if (savedBg) setBackground(savedBg);
-
-  // Dropdown change
-  select.addEventListener("change", () => {
-    if (select.value) {
-      setBackground(select.value);
-    }
-  });
-
-  // Upload custom background
-  upload.addEventListener("change", () => {
-    const file = upload.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setBackground(reader.result); // base64 image
-      select.value = ""; // reset dropdown
-    };
-    reader.readAsDataURL(file);
-  });
-});
-</script>
-
-
-
-
-
-
-
-
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            function setBackground(src) {
+                body.style.backgroundImage = src ? `url(${src})` : "";
+                localStorage.setItem("selectedBackground", src || "");
+            }
+            const savedBg = localStorage.getItem("selectedBackground");
+            if (savedBg) setBackground(savedBg);
+        });
+    </script>
 </body>
 </html>
