@@ -861,7 +861,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
       </div>
     </div>
 
-    <button id="mp-play" onclick="mpCmd('toggle')">▶</button>
+    <button id="mp-play" onclick="controlMusicDiv()">▶</button>
   </div>
 
   <style>
@@ -885,41 +885,79 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     #mp-play { width:28px; height:28px; border-radius:50%; border:none; background:#fff; color:#000; font-size:.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform .15s; padding:0; line-height:1 }
     #mp-play:hover { transform:scale(1.1) }
   </style>
-
-  <script>
-    const mpTitle  = document.getElementById('mp-title');
-    const mpArt    = document.getElementById('mp-art');
-    const mpPlay   = document.getElementById('mp-play');
-    const mpEq     = document.getElementById('mp-eq');
-    const mpArtist = document.getElementById('mp-artist');
-
-    function setPlaying(yes) {
-      mpPlay.innerText = yes ? '⏸' : '▶';
-      mpEq.classList.toggle('playing', yes);
-    }
-    function setTrack(title, artist, artwork) {
-      mpTitle.innerText = title;
-      mpArtist.innerText = artist || '';
-      mpArt.src = artwork || '';
-      mpEq.classList.add('active');
-      const wrap = mpTitle.parentElement;
-      mpTitle.classList.remove('scrolling');
-      void mpTitle.offsetWidth;
-      if (mpTitle.scrollWidth > wrap.clientWidth + 4) mpTitle.classList.add('scrolling');
-    }
-    window.addEventListener('message', (e) => {
-      const d = e.data;
-      if (!d || !d.type) return;
-      if (d.type === 'track')   setTrack(d.title, d.artist, d.artwork);
-      if (d.type === 'playing') setPlaying(true);
-      if (d.type === 'paused')  setPlaying(false);
-    });
-    function mpCmd(cmd) {
-      const f = document.getElementById('frameMusic');
-      if (f && f.contentWindow) f.contentWindow.postMessage({ type: cmd }, '*');
-    }
-  </script>
 </div>
+
+<script>
+// Function to control the music player inside the iframe
+function controlMusicDiv() {
+  const iframe = document.getElementById('frameMusic');
+  if (iframe && iframe.contentWindow) {
+    // Try to find and control the audio element inside the iframe
+    iframe.contentWindow.postMessage({ type: 'toggle' }, '*');
+    
+    // Also try to directly find the audio element
+    try {
+      const audioElement = iframe.contentDocument.querySelector('audio');
+      if (audioElement) {
+        if (audioElement.paused) {
+          audioElement.play();
+          document.getElementById('mp-play').innerText = '⏸';
+          document.getElementById('mp-eq').classList.add('playing');
+        } else {
+          audioElement.pause();
+          document.getElementById('mp-play').innerText = '▶';
+          document.getElementById('mp-eq').classList.remove('playing');
+        }
+      }
+    } catch(e) {
+      // Cross-origin restrictions - can't access iframe content
+      console.log('Cannot access iframe content due to security restrictions');
+    }
+  }
+}
+
+// Listen for messages from the iframe
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!d || !d.type) return;
+  
+  const playBtn = document.getElementById('mp-play');
+  const eq = document.getElementById('mp-eq');
+  
+  if (d.type === 'track') {
+    document.getElementById('mp-title').innerText = d.title || 'Unknown';
+    document.getElementById('mp-artist').innerText = d.artist || 'Unknown';
+    if (d.artwork) document.getElementById('mp-art').src = d.artwork;
+    eq.classList.add('active');
+    
+    // Check if marquee scrolling is needed
+    const titleEl = document.getElementById('mp-title');
+    const wrap = titleEl.parentElement;
+    titleEl.classList.remove('scrolling');
+    if (titleEl.scrollWidth > wrap.clientWidth + 4) {
+      titleEl.classList.add('scrolling');
+    }
+  }
+  
+  if (d.type === 'playing') {
+    playBtn.innerText = '⏸';
+    eq.classList.add('playing');
+  }
+  
+  if (d.type === 'paused') {
+    playBtn.innerText = '▶';
+    eq.classList.remove('playing');
+  }
+});
+
+// Try to sync with the iframe every few seconds
+setInterval(() => {
+  const iframe = document.getElementById('frameMusic');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({ type: 'getStatus' }, '*');
+  }
+}, 2000);
+</script>
 
 <div id="fpsDiv"  class="fpscounter">
   
