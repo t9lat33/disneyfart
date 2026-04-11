@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 Games</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: url("space2.png") no-repeat center/cover;
+  overflow: auto;
+}
+
+#searchBar{
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 15px;
+  border: 2px solid white;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  z-index: 1000;
+}
+
+#imageContainer{
+  margin-top: 70px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn{
+  width: 200px;
+  height: 200px;
+  border-radius: 100px;
+  transition: .2s;
+}
+
+.btn:hover{
+  transform: translateY(-5px);
+  border-radius: 40px;
+}
+
+#tooltip {
+  position: fixed;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: .2s;
+  z-index: 10000;
+}
+
+#tooltip.show{
+  opacity: 1;
+}
+
+#viewer{
+  position: fixed;
+  inset: 0;
+  background: black;
+  display: none;
+  z-index: 9999;
+}
+
+#viewer iframe{
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#closeBtn{
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: red;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 10000;
+}
+</style>
+</head>
+
+<body>
+
+<input id="searchBar" placeholder="Search games...">
+<div id="tooltip"></div>
+<div id="imageContainer"></div>
+
+<div id="viewer">
+  <div id="closeBtn">X</div>
+  <iframe id="gameFrame"></iframe>
+</div>
+
+<script>
+const repos = [
+  "sea-bean-unblocked/Folder-1",
+  "sea-bean-unblocked/Folder-2",
+  "sea-bean-unblocked/Folder-3"
+];
+
+let games = [];
+const container = document.getElementById("imageContainer");
+const tooltip = document.getElementById("tooltip");
+
+async function loadGames(){
+  container.innerHTML = "Loading...";
+  try{
+    const results = await Promise.all(
+      repos.map(repo =>
+        fetch(`https://api.github.com/repos/${repo}/contents/`)
+        .then(r => r.json())
+        .then(files =>
+          files
+          .filter(f => f.name.endsWith(".html"))
+          .map(f => ({
+            name: cleanName(f.name),
+            url: fixURL(repo, f.name)
+          }))
+        )
+      )
+    );
+    games = removeDuplicates(results.flat());
+    displayGames(games);
+  } catch(e) {
+    container.innerHTML = "Failed to load games";
+    console.error(e);
+  }
+}
+
+function fixURL(repo, file){
+  return `https://cdn.jsdelivr.net/gh/${repo}@main/${file}`;
+}
+
+function cleanName(name){
+  return name
+    .replace(".html","")
+    .replace(/[-_]/g," ")
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function removeDuplicates(arr){
+  const seen = new Set();
+  return arr.filter(g => {
+    if(seen.has(g.name)) return false;
+    seen.add(g.name);
+    return true;
+  });
+}
+
+function displayGames(list){
+  container.innerHTML = "";
+  list.forEach(game => {
+    const a = document.createElement("a");
+    a.href = "#";
+
+    const img = document.createElement("img");
+    img.className = "btn";
+    img.src = "newlogo.png";
+    img.alt = game.name;
+
+    a.onclick = (e) => {
+      e.preventDefault();
+      openGame(game.url);
+    };
+
+    img.onmouseenter = () => {
+      tooltip.textContent = game.name;
+      tooltip.classList.add("show");
+    };
+
+    img.onmousemove = (e) => {
+      tooltip.style.left = e.clientX + 15 + "px";
+      tooltip.style.top  = e.clientY + 15 + "px";
+    };
+
+    img.onmouseleave = () => {
+      tooltip.classList.remove("show");
+    };
+
+    a.appendChild(img);
+    container.appendChild(a);
+  });
+}
+
+document.getElementById("searchBar").addEventListener("input", function(){
+  const q = this.value.toLowerCase();
+  displayGames(games.filter(g => g.name.toLowerCase().includes(q)));
+});
+
+let currentBlobUrl = null;
+
+function openGame(url){
+  const viewer = document.getElementById("viewer");
+  const frame  = document.getElementById("gameFrame");
+  viewer.style.display = "block";
+  frame.src = "";
+
+  fetch(url)
+    .then(r => r.text())
+    .then(html => {
+      // Revoke previous blob to avoid memory leak
+      if(currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      const blob = new Blob([html], { type: "text/html" });
+      currentBlobUrl = URL.createObjectURL(blob);
+      frame.src = currentBlobUrl;
+    })
+    .catch(err => {
+      console.error("Failed to load game:", err);
+      frame.src = url; // last-resort fallback
+    });
+}
+
+document.getElementById("closeBtn").onclick = () => {
+  document.getElementById("viewer").style.display = "none";
+  document.getElementById("gameFrame").src = "";
+  if(currentBlobUrl){
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
+};
+
+loadGames();
+</script>
+
+</body>
+</html>
