@@ -13,7 +13,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      gap: 20px;
+      gap: 100px;
     }
 
     img {
@@ -70,28 +70,31 @@
       </a>
     </div>
   </div>
-  <script>
+ <script>
     const tooltip = document.getElementById('tooltip');
-  const images = document.querySelectorAll('#imageContainer img');
+    const images = document.querySelectorAll('img');
 
-  images.forEach(img => {
-    img.addEventListener('mouseenter', function(e) {
-      const gameName = this.getAttribute('alt');
-      if (gameName) {
-        tooltip.textContent = gameName;
-        tooltip.classList.add('show');
-      }
-    });
+    images.forEach(img => {
+      img.addEventListener('mouseenter', function () {
+        const name = this.getAttribute('alt');
+        if (name) {
+          tooltip.textContent = name;
+          tooltip.classList.add('show');
+        }
+      });
 
-    img.addEventListener('mousemove', function(e) {
-      tooltip.style.left = e.pageX + 15 + 'px';
-      tooltip.style.top = e.pageY + 15 + 'px';
-    });
+      img.addEventListener('mousemove', function (e) {
+        tooltip.style.left = e.pageX + 15 + 'px';
+        tooltip.style.top = e.pageY + 15 + 'px';
+      });
 
-    img.addEventListener('mouseleave', function() {
-      tooltip.classList.remove('show');
+      img.addEventListener('mouseleave', function () {
+        tooltip.classList.remove('show');
+      });
     });
-  });
   </script>
+
+    <span id="tooltip"></span>
+
 </body>
 </html>
