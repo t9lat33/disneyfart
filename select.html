@@ -9,7 +9,7 @@
 
     .container {
       display: flex;
-      flex-direction: column;  /* stacks h1 on top of images */
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -22,55 +22,64 @@
       object-fit: cover;
       border-radius: 15px;
     }
+    img:hover{
+            transform: translateY(-3px);
+
+
+    }
     
-    h1{
-        font-family: sans-serif;
-        color:white;
+    h1 {
+      font-family: sans-serif;
+      color: white;
     }
 
     .images {
       display: flex;
       gap: 20px;
     }
-    #tooltip {
-    position: fixed;
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: sans-serif;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 10000;
-    white-space: nowrap;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
 
-#tooltip.show {
-    opacity: 1;
-}
+    #tooltip {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: sans-serif;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10000;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    #tooltip.show {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
+
+  <span id="tooltip"></span>  <!-- MOVED TO TOP -->
+
   <div class="container">
     <h1>Select Game Archive</h1>
     <div class="images">
-    <a href="test200.html">
-      <img src="newlogo.png" alt="T9 g@mes">
+      <a href="test200.html">
+        <img src="newlogo.png" alt="T9 g@mes">
       </a>
       <a href="gnmath.html">
-      <img src="gn.png" alt="gn-math g@mes">
+        <img src="gn.png" alt="gn-math g@mes">
       </a>
-
       <a href="mastera.html">
-      <img src="ugs.png" alt="master archive g@mes">
+        <img src="ugs.png" alt="master archive g@mes">
       </a>
     </div>
   </div>
- <script>
+
+  <script>
     const tooltip = document.getElementById('tooltip');
     const images = document.querySelectorAll('img');
 
@@ -93,8 +102,6 @@
       });
     });
   </script>
-
-    <span id="tooltip"></span>
 
 </body>
 </html>
