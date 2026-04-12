@@ -9,8 +9,8 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: url("space2.png") no-repeat center/cover;
   overflow: auto;
+  background-image:url("space2.png");
 }
 
 #searchBar{
@@ -39,6 +39,7 @@ body {
   height: 200px;
   border-radius: 100px;
   transition: .2s;
+  object-fit: cover;
 }
 
 .btn:hover{
@@ -102,34 +103,45 @@ body {
 </div>
 
 <script>
-const repos = [
-  "sea-bean-unblocked/Folder-1",
-  "sea-bean-unblocked/Folder-2",
-  "sea-bean-unblocked/Folder-3"
-];
+const jsonUrl     = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/for-a-friedn-@main/1.json";
+const source1URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-1@main/";
+const source2URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-2@main/";
+const source3URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-3@main/";
 
-let games = [];
+// Map placeholder tokens → real base URLs
+const urlMap = {
+  "{HTML_URL1}":  source1URL,
+  "{HTML_URL2}":  source2URL,
+  "{HTML_URL3}":  source3URL,
+  "{COVER_URL1}": source1URL,
+  "{COVER_URL2}": source2URL,
+  "{COVER_URL3}": source3URL,
+};
+
+function resolvePlaceholders(str) {
+  return str.replace(/\{(HTML|COVER)_URL\d\}/g, match => urlMap[match] ?? match);
+}
+
+function cleanName(name) {
+  // Strip leading "cl" prefix (e.g. "clFIFA11" → "FIFA11")
+  return name.replace(/^cl/i, "");
+}
+
+
 const container = document.getElementById("imageContainer");
-const tooltip = document.getElementById("tooltip");
+const tooltip   = document.getElementById("tooltip");
 
-async function loadGames(){
+async function loadGames() {
   container.innerHTML = "Loading...";
-  try{
-    const results = await Promise.all(
-      repos.map(repo =>
-        fetch(`https://api.github.com/repos/${repo}/contents/`)
-        .then(r => r.json())
-        .then(files =>
-          files
-          .filter(f => f.name.endsWith(".html"))
-          .map(f => ({
-            name: cleanName(f.name),
-            url: fixURL(repo, f.name)
-          }))
-        )
-      )
-    );
-    games = removeDuplicates(results.flat());
+  try {
+    const data = await fetch(jsonUrl).then(r => r.json());
+
+    games = data.map(entry => ({
+      name:  cleanName(entry.name),
+      url:   resolvePlaceholders(entry.url),
+      cover: resolvePlaceholders(entry.cover),
+    }));
+
     displayGames(games);
   } catch(e) {
     container.innerHTML = "Failed to load games";
@@ -137,27 +149,7 @@ async function loadGames(){
   }
 }
 
-function fixURL(repo, file){
-  return `https://cdn.jsdelivr.net/gh/${repo}@main/${file}`;
-}
-
-function cleanName(name){
-  return name
-    .replace(".html","")
-    .replace(/[-_]/g," ")
-    .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function removeDuplicates(arr){
-  const seen = new Set();
-  return arr.filter(g => {
-    if(seen.has(g.name)) return false;
-    seen.add(g.name);
-    return true;
-  });
-}
-
-function displayGames(list){
+function displayGames(list) {
   container.innerHTML = "";
   list.forEach(game => {
     const a = document.createElement("a");
@@ -165,8 +157,10 @@ function displayGames(list){
 
     const img = document.createElement("img");
     img.className = "btn";
-    img.src = "newlogo.png";
+    img.src = game.cover;
     img.alt = game.name;
+    // Fallback if cover image fails to load
+    img.onerror = () => { img.src = "https://t9os.space/newlogo.png"; };
 
     a.onclick = (e) => {
       e.preventDefault();
@@ -192,14 +186,14 @@ function displayGames(list){
   });
 }
 
-document.getElementById("searchBar").addEventListener("input", function(){
+document.getElementById("searchBar").addEventListener("input", function() {
   const q = this.value.toLowerCase();
   displayGames(games.filter(g => g.name.toLowerCase().includes(q)));
 });
 
 let currentBlobUrl = null;
 
-function openGame(url){
+function openGame(url) {
   const viewer = document.getElementById("viewer");
   const frame  = document.getElementById("gameFrame");
   viewer.style.display = "block";
@@ -208,8 +202,7 @@ function openGame(url){
   fetch(url)
     .then(r => r.text())
     .then(html => {
-      // Revoke previous blob to avoid memory leak
-      if(currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
       const blob = new Blob([html], { type: "text/html" });
       currentBlobUrl = URL.createObjectURL(blob);
       frame.src = currentBlobUrl;
@@ -223,7 +216,7 @@ function openGame(url){
 document.getElementById("closeBtn").onclick = () => {
   document.getElementById("viewer").style.display = "none";
   document.getElementById("gameFrame").src = "";
-  if(currentBlobUrl){
+  if (currentBlobUrl) {
     URL.revokeObjectURL(currentBlobUrl);
     currentBlobUrl = null;
   }
