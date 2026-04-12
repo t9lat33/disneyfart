@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T9 Games</title>
+<title>cool bikes</title>
 
 <style>
 body {
@@ -108,7 +108,6 @@ const source1URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-1@mai
 const source2URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-2@main/";
 const source3URL  = "https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-3@main/";
 
-// Map placeholder tokens → real base URLs
 const urlMap = {
   "{HTML_URL1}":  source1URL,
   "{HTML_URL2}":  source2URL,
@@ -123,7 +122,7 @@ function resolvePlaceholders(str) {
 }
 
 function cleanName(name) {
-  // Strip leading "cl" prefix (e.g. "clFIFA11" → "FIFA11")
+
   return name.replace(/^cl/i, "");
 }
 
@@ -159,8 +158,8 @@ function displayGames(list) {
     img.className = "btn";
     img.src = game.cover;
     img.alt = game.name;
-    // Fallback if cover image fails to load
-    img.onerror = () => { img.src = "https://t9os.space/newlogo.png"; };
+
+    img.onerror = () => { img.src = "classwork2.png"; };
 
     a.onclick = (e) => {
       e.preventDefault();
@@ -209,7 +208,7 @@ function openGame(url) {
     })
     .catch(err => {
       console.error("Failed to load game:", err);
-      frame.src = url; // last-resort fallback
+      frame.src = url; 
     });
 }
 
@@ -224,6 +223,38 @@ document.getElementById("closeBtn").onclick = () => {
 
 loadGames();
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("background-select");
+  const upload = document.getElementById("background-upload");
+  const body = document.body;
 
+  function setBackground(src) {
+    body.style.backgroundImage = src ? `url(${src})` : "";
+    localStorage.setItem("selectedBackground", src || "");
+  }
+
+  const savedBg = localStorage.getItem("selectedBackground");
+  if (savedBg) setBackground(savedBg);
+
+  select.addEventListener("change", () => {
+    if (select.value) {
+      setBackground(select.value);
+    }
+  });
+
+  upload.addEventListener("change", () => {
+    const file = upload.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBackground(reader.result); 
+      select.value = ""; 
+    };
+    reader.readAsDataURL(file);
+  });
+});
+</script>
 </body>
 </html>
