@@ -862,6 +862,29 @@
     <script>
         const audio = document.getElementById('player');
         const lyricsContainer = document.getElementById('lyrics-container');
+
+        // ── BroadcastChannel for testme.html ──────────────────────────────
+        const bc = new BroadcastChannel('t9_music_channel');
+
+        function broadcastTrack(data) {
+            bc.postMessage({
+                type: 'track',
+                title:   data.song || data.title || 'Unknown',
+                artist:  data.artist || '',
+                album:   data.album  || 'Single',
+                artwork: data.artwork || '',
+                playing: true
+            });
+        }
+
+        function broadcastPlayState(playing) {
+            bc.postMessage({ type: 'playstate', playing });
+        }
+
+        function broadcastProgress(currentTime, duration) {
+            bc.postMessage({ type: 'progress', currentTime, duration });
+        }
+        // ─────────────────────────────────────────────────────────────────
         
         let queue = JSON.parse(localStorage.getItem('t9_queue') || '[]');
         let currentIndex = -1;
@@ -921,6 +944,9 @@
                 
                 audio.play();
                 updateQueueUI();
+
+                // Broadcast new track info to testme.html
+                broadcastTrack(data);
                 
                 if (isLyricMode) fetchLyrics(data.artist, data.song || data.title);
             } catch (e) { alert("Playback Error"); }
@@ -958,6 +984,12 @@
             document.getElementById('time-cur').innerText = formatTime(audio.currentTime);
             document.getElementById('time-dur').innerText = formatTime(audio.duration);
 
+            // Broadcast progress every ~500ms (throttled)
+            if (!audio._lastBroadcast || Date.now() - audio._lastBroadcast > 500) {
+                broadcastProgress(audio.currentTime, audio.duration);
+                audio._lastBroadcast = Date.now();
+            }
+
             if (isLyricMode && lyricsData.length > 0) {
                 const idx = lyricsData.findIndex((l, i) => 
                     audio.currentTime >= l.time && 
@@ -980,10 +1012,12 @@
                 audio.play();
                 document.getElementById('hero-play-btn').innerText = '⏸';
                 document.getElementById('bottom-play-btn').innerText = '⏸';
+                broadcastPlayState(true);
             } else {
                 audio.pause();
                 document.getElementById('hero-play-btn').innerText = '▶';
                 document.getElementById('bottom-play-btn').innerText = '▶';
+                broadcastPlayState(false);
             }
         }
 

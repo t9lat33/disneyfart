@@ -119,6 +119,33 @@ color: white;
       will-change: height, border-radius;
 
     }
+    .musicNav {
+      position: fixed;
+      bottom: 12px;
+      left: 21%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
 
 .navbar {
       position: fixed;
@@ -845,7 +872,52 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 </div>
 
+<div id="musicNav" class="musicNav">
+  <img id="t9-thumb" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:none;flex-shrink:0;">
+  <div style="display:flex;flex-direction:column;justify-content:center;overflow:hidden;max-width:140px;">
+    <span id="t9-title" style="color:#fff;font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Nothing playing</span>
+    <span id="t9-artist" style="color:rgba(255,255,255,0.45);font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;"></span>
+  </div>
+  <div id="t9-bars" style="display:flex;align-items:flex-end;gap:2px;height:18px;flex-shrink:0;"></div>
+</div>
 
+<script>
+  const barsEl = document.getElementById('t9-bars');
+  const bars = Array.from({length: 4}, () => {
+    const b = document.createElement('div');
+    b.style.cssText = 'width:3px;background:#1db954;border-radius:2px;height:3px;transition:height 0.12s ease;';
+    barsEl.appendChild(b);
+    return b;
+  });
+
+  let playing = false, animFrame;
+
+  function animateBars() {
+    if (!playing) return;
+    bars.forEach(b => b.style.height = (Math.floor(Math.random() * 14) + 3) + 'px');
+    animFrame = setTimeout(animateBars, 110);
+  }
+
+  function setPlaying(state) {
+    playing = state;
+    clearTimeout(animFrame);
+    state ? animateBars() : bars.forEach(b => b.style.height = '3px');
+  }
+
+  const bc = new BroadcastChannel('t9_music_channel');
+  bc.onmessage = ({ data }) => {
+    if (data.type === 'track') {
+      document.getElementById('t9-title').textContent = data.title;
+      document.getElementById('t9-artist').textContent = data.artist;
+      const thumb = document.getElementById('t9-thumb');
+      thumb.src = data.artwork;
+      thumb.style.display = 'block';
+      setPlaying(true);
+    } else if (data.type === 'playstate') {
+      setPlaying(data.playing);
+    }
+  };
+</script>
 
 <div id="fpsDiv"  class="fpscounter">
   
