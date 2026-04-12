@@ -119,10 +119,31 @@ color: white;
       will-change: height, border-radius;
 
     }
+        .fpscounter:hover {
+      height: 64px;
+      border-radius: 40px;
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .fpscounter::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .fpscounter:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
     .musicNav {
       position: fixed;
       bottom: 12px;
-      left: 21%;
+      left: 23%;
       transform: translateX(-50%);
       height: 56px;
          background: linear-gradient(160deg,
@@ -145,6 +166,27 @@ color: white;
       z-index: 9999;
       will-change: height, border-radius;
 
+    }
+        .musicNav:hover {
+      height: 64px;
+      border-radius: 40px;
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .musicNav::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .musicNav:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
     }
 
 .navbar {
