@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>flux embed</title>
+        <script src="/scram/scramjet.all.js"></script>
+        <script src="/baremux/index.js"></script>
+        <script src="/register-sw.js"></script>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+            #loading {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #000;
+                z-index: 9999;
+            }
+
+            .loading-bar {
+                width: 80%;
+                max-width: 900px;
+                height: 10px;
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 999px;
+                overflow: hidden;
+            }
+
+            .loading-bar .progress {
+                height: 100%;
+                width: 0%;
+                border-radius: 999px;
+                background: linear-gradient(
+                    90deg,
+                    #e8404a 0%,
+                    #f07080 40%,
+                    #ffd0d8 80%,
+                    #e8404a 100%
+                );
+                background-size: 200% 100%;
+                animation: shimmer 1.8s ease-in-out infinite;
+                transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            @keyframes shimmer {
+                0%   { background-position: 200% center; }
+                100% { background-position: -200% center; }
+            }
+
+            #error {
+                display: none;
+                position: fixed;
+                inset: 0;
+                align-items: center;
+                justify-content: center;
+                background: #000;
+                color: #e55;
+                font-family: sans-serif;
+                font-size: 14px;
+                text-align: center;
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="loading">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+                <div class="loading-bar">
+                    <div class="progress" id="progress-fill"></div>
+                </div>
+                <span style="color:rgba(255,255,255,0.4);font-family:sans-serif;font-size:16px;letter-spacing:0.05em;">this might take a while...</span>
+            </div>
+        </div>
+        <div id="error"></div>
+
+        <script>
+            const fill = document.getElementById("progress-fill");
+
+            function setProgress(value) {
+                fill.style.width = Math.min(100, Math.max(0, value)) + "%";
+            }
+
+            (async () => {
+                const targetUrl = new URLSearchParams(location.search).get("url") || "";
+                if (!targetUrl) {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("error").style.display = "flex";
+                    document.getElementById("error").textContent =
+                        "No URL provided. Use embed.html?url=https://example.com";
+                    return;
+                }
+
+                // Set tab title to domain while loading, update after frame loads
+                try {
+                    document.title = new URL(targetUrl).hostname;
+                } catch(e) {}
+                try {
+                    const domain = new URL(targetUrl).hostname;
+                    let favicon = document.querySelector("link[rel='icon']");
+                    if (!favicon) {
+                        favicon = document.createElement("link");
+                        favicon.rel = "icon";
+                        document.head.appendChild(favicon);
+                    }
+                    favicon.href = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                } catch(e) {}
+
+                try {
+                    setProgress(5);
+
+                    const { ScramjetController } = $scramjetLoadController();
+                    const ctrl = new ScramjetController({
+                        files: {
+                            wasm: "/scram/scramjet.wasm.wasm",
+                            all: "/scram/scramjet.all.js",
+                            sync: "/scram/scramjet.sync.js",
+                        },
+                    });
+
+                    setProgress(20);
+                    await ctrl.init();
+
+                    setProgress(45);
+                    await registerSW();
+
+                    setProgress(65);
+                    const bmConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+                    const wispUrl =
+                        (location.protocol === "https:" ? "wss://" : "ws://") +
+                        location.host + "/wisp/";
+                    await bmConnection.setTransport("/libcurl/index.mjs", [
+                        { websocket: wispUrl },
+                    ]);
+
+                    setProgress(82);
+
+                    const frame = ctrl.createFrame();
+                    frame.frame.style.cssText =
+                        "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:1;";
+                    document.body.appendChild(frame.frame);
+
+                    setProgress(95);
+
+                    function onFrameLoaded() {
+                        setProgress(100);
+                        // Try to get real page title from frame
+                        try {
+                            const frameTitle = frame.frame.contentDocument?.title;
+                            if (frameTitle) document.title = frameTitle;
+                        } catch(e) {}
+                        setTimeout(() => {
+                            document.getElementById("loading").style.display = "none";
+                        }, 200);
+                    }
+
+                    frame.frame.onload = onFrameLoaded;
+                    frame.frame.addEventListener("load", onFrameLoaded, { once: true });
+
+                    frame.go(targetUrl);
+                } catch (err) {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("error").style.display = "flex";
+                    document.getElementById("error").textContent =
+                        "Failed to load: " + err.message;
+                }
+            })();
+        </script>
+    </body>
+</html>
