@@ -3,58 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPLASH | T9</title>
+    <title>SPLASH T9</title>
     
-    <script>
-        // Your Splash Config
-        window.SPLASH_CONFIG = window.SPLASH_CONFIG || {
-            wisp: { default: "wss://wisp.rhw.one/wisp/", allowInject: true },
-        };
-    </script>
+    <link rel="stylesheet" href="/styles.css" />
     <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
-    <link rel="stylesheet" href="/styles.css" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg: #0d0d0f; --surface: #17171a; --surface2: #1f1f24;
-            --border: #2a2a30; --accent: #4f8fff; --text: #e8e8ed;
-            --text-muted: #6e6e7a; --red: #e05c5c; --chrome-h: 84px;
-        }
+        :root { --bg: #0d0d0f; --surface: #17171a; --border: #2a2a30; --accent: #00ff41; --text: #e8e8ed; --chrome-h: 84px; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { height: 100vh; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
-        
         #chrome { position: fixed; top: 0; left: 0; right: 0; height: var(--chrome-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
-        #tabrow { display: flex; align-items: center; height: 38px; padding: 0 8px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
-        .tab { height: 28px; min-width: 120px; background: transparent; border: 1px solid transparent; display: flex; align-items: center; padding: 0 10px; border-radius: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .tab.active { background: var(--bg); border-color: var(--border); color: var(--text); }
-        .tab .cls { margin-left: auto; font-size: 10px; opacity: 0.5; padding: 4px; }
-        .tab .cls:hover { color: var(--red); opacity: 1; }
-        
+        #tabrow { display: flex; align-items: center; height: 38px; padding: 0 8px; gap: 4px; }
+        .tab { height: 28px; min-width: 140px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .tab.active { background: var(--bg); border-color: var(--accent); }
         #toolbar { display: flex; align-items: center; height: 46px; padding: 0 10px; gap: 8px; }
-        #urlbar { flex: 1; height: 32px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 0 12px; font-family: 'DM Mono', monospace; outline: none; transition: 0.2s; }
-        #urlbar:focus { border-color: var(--accent); background: var(--bg); }
-        
-        #content { position: fixed; top: var(--chrome-h); left: 0; right: 0; bottom: 0; }
-        .viewframe { width: 100%; height: 100%; border: none; display: none; background: #fff; }
+        #urlbar { flex: 1; height: 32px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: var(--accent); padding: 0 12px; font-family: 'DM Mono'; outline: none; }
+        #content { position: fixed; top: var(--chrome-h); left: 0; right: 0; bottom: 0; background: #fff; }
+        .viewframe { width: 100%; height: 100%; border: none; display: none; }
         .viewframe.active { display: block; }
-        #loadbar { position: fixed; top: var(--chrome-h); left: 0; height: 2px; width: 0%; background: var(--accent); transition: width 0.3s, opacity 0.3s; z-index: 200; }
     </style>
 </head>
 <body>
 
-<div id="loadbar"></div>
 <div id="chrome">
-    <div id="tabrow">
-        <button id="newtab-btn" onclick="newTab()" style="background:none; border:none; color:white; cursor:pointer; font-size:18px; padding: 0 10px;">+</button>
-    </div>
+    <div id="tabrow"><button onclick="newTab()" style="background:none; border:none; color:white; cursor:pointer;">+</button></div>
     <div id="toolbar">
-        <div style="font-family:'DM Mono'; font-weight:700; color:var(--accent); padding-left: 5px;">SPLASH</div>
-        <input type="text" id="urlbar" placeholder="Search or enter address">
+        <div style="font-family:'DM Mono'; color:var(--accent)">SPLASH</div>
+        <input type="text" id="urlbar" placeholder="Enter URL or Search">
     </div>
 </div>
 <div id="content"></div>
@@ -64,104 +43,86 @@
     let activeId = null;
     let counter = 0;
 
-    async function setupProxy() {
-        // Scramjet usually attaches its config to the window after index.config.js loads
-        const scramConfig = window.__scramjet$config || window.__sj$config;
-        
-        if (!scramConfig) {
-            console.error("Scramjet engine not detected. Ensure index.config.js is correct.");
-            return;
-        }
-
-        if ("serviceWorker" in navigator) {
-            await navigator.serviceWorker.register("./sw.js", { scope: scramConfig.prefix });
-        }
-
-        const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-        // Use the WISP URL from your SPLASH_CONFIG
-        const wispUrl = window.SPLASH_CONFIG.wisp.default;
-        await connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+    // 1. DYNAMIC CONFIG LOCATOR
+    function getProxyConfig() {
+        // We look for every possible name Scramjet uses
+        return window.__scramjet$config || 
+               window.__sj$config || 
+               window.scramjetConfig ||
+               (window.SPLASH_CONFIG && window.SPLASH_CONFIG.scramjet);
     }
 
-    function newTab(url = "") {
+    async function init() {
+        const config = getProxyConfig();
+        
+        if (!config) {
+            console.error("COULD NOT FIND CONFIG. Manually setting defaults.");
+            // Fallback: If your index.config.js is broken, we try to guess the paths
+            window.__scramjet$config = {
+                prefix: '/search/',
+                encodeUrl: (url) => btoa(url).replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '')
+            };
+        }
+
+        const activeConfig = getProxyConfig();
+
+        // Register Service Worker
+        if ("serviceWorker" in navigator) {
+            await navigator.serviceWorker.register("./sw.js", { scope: activeConfig.prefix });
+        }
+
+        // Connect Baremux
+        try {
+            const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+            const wisp = window.SPLASH_CONFIG?.wisp?.default || "wss://wisp.rhw.one/wisp/";
+            await conn.setTransport("/libcurl/index.mjs", [{ websocket: wisp }]);
+        } catch(e) { console.error("BareMux Fail:", e); }
+
+        newTab();
+    }
+
+    function newTab() {
         const id = counter++;
         const tab = { id, url: "" };
         tabs.push(tab);
 
-        const tabEl = document.createElement("div");
-        tabEl.className = "tab";
-        tabEl.id = `tab-${id}`;
-        tabEl.innerHTML = `<span>New Tab</span><span class="cls" onclick="closeTab(event, ${id})">✕</span>`;
-        tabEl.onclick = () => switchTab(id);
-        document.getElementById("tabrow").insertBefore(tabEl, document.getElementById("newtab-btn"));
+        const t = document.createElement("div");
+        t.className = "tab"; t.id = `t-${id}`;
+        t.innerHTML = `Tab ${id+1}`;
+        t.onclick = () => switchTab(id);
+        document.getElementById("tabrow").insertBefore(t, document.querySelector("#tabrow button"));
 
-        const frame = document.createElement("iframe");
-        frame.className = "viewframe";
-        frame.id = `frame-${id}`;
-        document.getElementById("content").appendChild(frame);
+        const f = document.createElement("iframe");
+        f.className = "viewframe"; f.id = `f-${id}`;
+        document.getElementById("content").appendChild(f);
 
         switchTab(id);
-        if (url) navigate(url);
     }
 
     function switchTab(id) {
         activeId = id;
         document.querySelectorAll(".tab, .viewframe").forEach(el => el.classList.remove("active"));
-        document.getElementById(`tab-${id}`).classList.add("active");
-        document.getElementById(`frame-${id}`).classList.add("active");
-        
-        const tab = tabs.find(t => t.id === id);
-        document.getElementById("urlbar").value = tab.url;
-    }
-
-    function closeTab(e, id) {
-        e.stopPropagation();
-        if (tabs.length === 1) return;
-        tabs = tabs.filter(t => t.id !== id);
-        document.getElementById(`tab-${id}`).remove();
-        document.getElementById(`frame-${id}`).remove();
-        if (activeId === id) switchTab(tabs[0].id);
+        document.getElementById(`t-${id}`).classList.add("active");
+        document.getElementById(`f-${id}`).classList.add("active");
+        document.getElementById("urlbar").value = tabs.find(t => t.id === id).url;
     }
 
     async function navigate(val) {
-        const scramConfig = window.__scramjet$config || window.__sj$config;
-        if (!scramConfig) return alert("Proxy Engine Missing");
-
         let url = val.trim();
         if (!url.startsWith("http")) {
             url = url.includes(".") ? "https://" + url : "https://www.google.com/search?q=" + encodeURIComponent(url);
         }
 
-        const tab = tabs.find(t => t.id === activeId);
-        tab.url = url;
-        document.getElementById("urlbar").value = url;
-
-        const encoded = scramConfig.prefix + scramConfig.encodeUrl(url);
-        const frame = document.getElementById(`frame-${activeId}`);
-        const loadbar = document.getElementById("loadbar");
+        const config = getProxyConfig();
+        const encoded = config.prefix + config.encodeUrl(url);
         
-        loadbar.style.width = "40%"; loadbar.style.opacity = "1";
-        frame.src = encoded;
-
-        frame.onload = () => {
-            loadbar.style.width = "100%";
-            setTimeout(() => loadbar.style.opacity = "0", 200);
-            try {
-                const title = frame.contentWindow.document.title;
-                document.querySelector(`#tab-${activeId} span`).innerText = title || "Untitled";
-            } catch(e) {}
-        };
+        tabs.find(t => t.id === activeId).url = url;
+        document.getElementById(`f-${activeId}`).src = encoded;
     }
 
-    document.getElementById("urlbar").onkeydown = (e) => {
-        if (e.key === "Enter") navigate(e.target.value);
-    };
+    document.getElementById("urlbar").onkeydown = (e) => { if(e.key === "Enter") navigate(e.target.value); };
 
-    // Initialize logic
-    window.addEventListener('load', async () => {
-        await setupProxy();
-        newTab();
-    });
+    init();
 </script>
 </body>
 </html>
