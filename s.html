@@ -3,65 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T9 | Scramjet Edition</title>
+    <title>SPLASH | T9</title>
     
-    <link rel="stylesheet" href="/styles.css" />
+    <script>
+        // Your Splash Config
+        window.SPLASH_CONFIG = window.SPLASH_CONFIG || {
+            wisp: { default: "wss://wisp.rhw.one/wisp/", allowInject: true },
+        };
+    </script>
     <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
+    <link rel="stylesheet" href="/styles.css" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #0d0d0f;
-            --surface: #17171a;
-            --surface2: #1f1f24;
-            --border: #2a2a30;
-            --accent: #4f8fff;
-            --text: #e8e8ed;
-            --text-muted: #6e6e7a;
-            --red: #e05c5c;
-            --chrome-h: 84px;
+            --bg: #0d0d0f; --surface: #17171a; --surface2: #1f1f24;
+            --border: #2a2a30; --accent: #4f8fff; --text: #e8e8ed;
+            --text-muted: #6e6e7a; --red: #e05c5c; --chrome-h: 84px;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { height: 100vh; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
-
-        /* CHROME UI */
-        #chrome {
-            position: fixed; top: 0; left: 0; right: 0; height: var(--chrome-h);
-            background: var(--surface); border-bottom: 1px solid var(--border);
-            display: flex; flex-direction: column; z-index: 100;
-        }
-
-        #tabrow { display: flex; align-items: center; height: 38px; padding: 0 8px; gap: 4px; overflow-x: auto; }
-        .tab { 
-            height: 28px; min-width: 120px; background: transparent; border: 1px solid transparent;
-            display: flex; align-items: center; padding: 0 10px; border-radius: 6px;
-            font-size: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s;
-        }
+        
+        #chrome { position: fixed; top: 0; left: 0; right: 0; height: var(--chrome-h); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
+        #tabrow { display: flex; align-items: center; height: 38px; padding: 0 8px; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .tab { height: 28px; min-width: 120px; background: transparent; border: 1px solid transparent; display: flex; align-items: center; padding: 0 10px; border-radius: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .tab.active { background: var(--bg); border-color: var(--border); color: var(--text); }
-        .tab .cls { margin-left: auto; font-size: 10px; opacity: 0.5; }
+        .tab .cls { margin-left: auto; font-size: 10px; opacity: 0.5; padding: 4px; }
         .tab .cls:hover { color: var(--red); opacity: 1; }
-
+        
         #toolbar { display: flex; align-items: center; height: 46px; padding: 0 10px; gap: 8px; }
-        #urlbar {
-            flex: 1; height: 32px; background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text); padding: 0 12px; font-family: 'DM Mono', monospace;
-            outline: none; transition: 0.2s;
-        }
+        #urlbar { flex: 1; height: 32px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 0 12px; font-family: 'DM Mono', monospace; outline: none; transition: 0.2s; }
         #urlbar:focus { border-color: var(--accent); background: var(--bg); }
-
-        /* CONTENT AREA */
+        
         #content { position: fixed; top: var(--chrome-h); left: 0; right: 0; bottom: 0; }
         .viewframe { width: 100%; height: 100%; border: none; display: none; background: #fff; }
         .viewframe.active { display: block; }
-
-        #loadbar { 
-            position: fixed; top: var(--chrome-h); left: 0; height: 2px; width: 0%;
-            background: var(--accent); transition: width 0.3s, opacity 0.3s; z-index: 200;
-        }
+        #loadbar { position: fixed; top: var(--chrome-h); left: 0; height: 2px; width: 0%; background: var(--accent); transition: width 0.3s, opacity 0.3s; z-index: 200; }
     </style>
 </head>
 <body>
@@ -69,10 +50,10 @@
 <div id="loadbar"></div>
 <div id="chrome">
     <div id="tabrow">
-        <button id="newtab-btn" onclick="newTab()" style="background:none; border:none; color:white; cursor:pointer; font-size:18px;">+</button>
+        <button id="newtab-btn" onclick="newTab()" style="background:none; border:none; color:white; cursor:pointer; font-size:18px; padding: 0 10px;">+</button>
     </div>
     <div id="toolbar">
-        <div style="font-family:'DM Mono'; font-weight:700; color:var(--accent)">T9</div>
+        <div style="font-family:'DM Mono'; font-weight:700; color:var(--accent); padding-left: 5px;">SPLASH</div>
         <input type="text" id="urlbar" placeholder="Search or enter address">
     </div>
 </div>
@@ -83,20 +64,25 @@
     let activeId = null;
     let counter = 0;
 
-    // 1. Initialize Baremux / Transport (From your source 1 logic)
-    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-    
     async function setupProxy() {
-        if ("serviceWorker" in navigator) {
-            await navigator.serviceWorker.register("./sw.js", {
-                scope: __scramjet$config.prefix
-            });
+        // Scramjet usually attaches its config to the window after index.config.js loads
+        const scramConfig = window.__scramjet$config || window.__sj$config;
+        
+        if (!scramConfig) {
+            console.error("Scramjet engine not detected. Ensure index.config.js is correct.");
+            return;
         }
-        // Assuming WISP server from typical Scramjet setups
-        await connection.setTransport("/libcurl/index.mjs", [{ websocket: `wss://${location.host}/wisp/` }]);
+
+        if ("serviceWorker" in navigator) {
+            await navigator.serviceWorker.register("./sw.js", { scope: scramConfig.prefix });
+        }
+
+        const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+        // Use the WISP URL from your SPLASH_CONFIG
+        const wispUrl = window.SPLASH_CONFIG.wisp.default;
+        await connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
     }
 
-    // 2. Tab Management
     function newTab(url = "") {
         const id = counter++;
         const tab = { id, url: "" };
@@ -137,8 +123,10 @@
         if (activeId === id) switchTab(tabs[0].id);
     }
 
-    // 3. Navigation using Scramjet Encoding
     async function navigate(val) {
+        const scramConfig = window.__scramjet$config || window.__sj$config;
+        if (!scramConfig) return alert("Proxy Engine Missing");
+
         let url = val.trim();
         if (!url.startsWith("http")) {
             url = url.includes(".") ? "https://" + url : "https://www.google.com/search?q=" + encodeURIComponent(url);
@@ -148,16 +136,13 @@
         tab.url = url;
         document.getElementById("urlbar").value = url;
 
-        // Use the __scramjet$config from your index.config.js
-        const encoded = __scramjet$config.prefix + __scramjet$config.encodeUrl(url);
-        
+        const encoded = scramConfig.prefix + scramConfig.encodeUrl(url);
         const frame = document.getElementById(`frame-${activeId}`);
         const loadbar = document.getElementById("loadbar");
         
-        loadbar.style.width = "30%";
-        loadbar.style.opacity = "1";
-        
+        loadbar.style.width = "40%"; loadbar.style.opacity = "1";
         frame.src = encoded;
+
         frame.onload = () => {
             loadbar.style.width = "100%";
             setTimeout(() => loadbar.style.opacity = "0", 200);
@@ -172,8 +157,11 @@
         if (e.key === "Enter") navigate(e.target.value);
     };
 
-    // Boot
-    setupProxy().then(() => newTab());
+    // Initialize logic
+    window.addEventListener('load', async () => {
+        await setupProxy();
+        newTab();
+    });
 </script>
 </body>
 </html>
