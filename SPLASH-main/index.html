@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="./ghost.js"></script>
+    <!-- this breaks iFrames rn, will fix soon prolly -->
+    <!-- <script src="splash.guard.js"></script> -->
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="./index.config.js"></script>
+    <script src="./surf/baremux/index.js"></script>
+    <script src="./surf/scram/scramjet.all.js"></script>
+    <script src="./app.js" defer></script>
+    <title>SPLASH</title>
+    <meta name="title" content="SPLASH" />
+    <meta name="description" content="a modern web proxy with terminal-like interface" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://splash.rhw.one/" />
+    <meta property="og:title" content="SPLASH" />
+    <meta property="og:description" content="a modern web proxy with terminal-like interface" />
+    <meta property="og:image" content="https://splash.rhw.one/card.png" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://splash.rhw.one/" />
+    <meta property="twitter:title" content="SPLASH" />
+    <meta property="twitter:description" content="a modern web proxy with terminal-like interface" />
+    <meta property="twitter:image" content="https://splash.rhw.one/card.png" />
+    <script>
+      // Only redirect to HTTPS if NOT on localhost or 127.0.0.1, so local dev still works.
+      if (
+        location.protocol !== 'https:' &&
+        location.hostname !== 'localhost' &&
+        location.hostname !== '127.0.0.1'
+      ) {
+        location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+      }
+    </script>
+    <!-- I hate GA4 but rybbit isn't working -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WDHVNCL11H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WDHVNCL11H');
+    </script>
+  </head>
+  <body class="mode-terminal">
+    <div id="app">
+      <div id="proxy-shell">
+        <iframe id="proxy-frame" title="SPLASH Proxy"></iframe>
+        <div id="proxy-loading">
+          <pre id="proxy-loading-art">
+    ___       ___       ___       ___       ___       ___       ___   
+   /\__\     /\  \     /\  \     /\  \     /\  \     /\__\     /\  \  
+  /:/  /    /::\  \   /::\  \   /::\  \   _\:\  \   /:| _|_   /::\  \ 
+ /:/__/    /:/\:\__\ /::\:\__\ /:/\:\__\ /\/::\__\ /::|/\__\ /:/\:\__\
+ \:\  \    \:\/:/  / \/\::/  / \:\/:/  / \::/\/__/ \/|::/  / \:\:\/__/
+  \:\__\    \::/  /    /:/  /   \::/  /   \:\__\     |:/  /   \::/  / 
+   \/__/     \/__/     \/__/     \/__/     \/__/     \/__/     \/__/  </pre
+          >
+        </div>
+        <div id="proxy-watermark">
+          <pre class="watermark-logo" id="watermark-logo"></pre>
+          <div class="watermark-hint">ctrl + ` or click to open</div>
+        </div>
+      </div>
+      <div id="terminal-shell">
+        <div id="term">
+          <div id="term-output">
+            <div id="term-status">
+              <span class="term-status-label">url:</span>
+              <span id="term-location"></span>
+            </div>
+            <form id="term-input-row">
+              <span id="term-prefix">root@splash:~$&nbsp;</span>
+              <input id="term-input" autocomplete="off" spellcheck="false" />
+              <span id="term-cursor" aria-hidden="true"></span>
+              <span id="term-cursor-measure" aria-hidden="true"></span>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
