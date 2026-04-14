@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T9 Browser</title>
+    <!-- Scramjet -->
+    <script src="/surf/scram/scramjet.all.js"></script>
+    <script src="/surf/baremux/index.js"></script>
+    <script src="/index.config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #080809;
+            --surface:   #0f0f12;
+            --surface2:  #161619;
+            --surface3:  #1d1d22;
+            --border:    #252529;
+            --border2:   #2e2e34;
+            --accent:    #00d4ff;
+            --accent2:   #7c3aed;
+            --accent3:   #ff6b35;
+            --text:      #f0f0f5;
+            --text-dim:  #9090a0;
+            --text-muted:#55555f;
+            --red:       #ff4757;
+            --green:     #00ffa3;
+            --chrome-h:  82px;
+            --tab-h:     36px;
+            --bar-h:     46px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Geist', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ─── CHROME ─── */
+        #chrome {
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: var(--chrome-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* subtle top glow line */
+        #chrome::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent2) 70%, transparent 100%);
+            opacity: 0.4;
+        }
+
+        /* ─── TAB ROW ─── */
+        #tabrow {
+            display: flex;
+            align-items: center;
+            height: var(--tab-h);
+            padding: 0 8px;
+            gap: 2px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--border);
+        }
+        #tabrow::-webkit-scrollbar { display: none; }
+
+        .tab {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 26px;
+            min-width: 90px;
+            max-width: 200px;
+            padding: 0 8px 0 10px;
+            border-radius: 5px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-family: 'Geist', sans-serif;
+            font-size: 11.5px;
+            font-weight: 400;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background .12s, color .12s, border-color .12s;
+            white-space: nowrap;
+            overflow: hidden;
+            letter-spacing: 0.01em;
+        }
+        .tab:hover { background: var(--surface3); color: var(--text-dim); }
+        .tab.active {
+            background: var(--bg);
+            border-color: var(--border2);
+            color: var(--text);
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 20%; right: 20%;
+            height: 1px;
+            background: var(--accent);
+            opacity: 0.6;
+        }
+        .tab img.fav {
+            width: 12px; height: 12px;
+            flex-shrink: 0;
+            border-radius: 2px;
+        }
+        .tab .ttitle {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tab .cls {
+            flex-shrink: 0;
+            width: 14px; height: 14px;
+            border-radius: 3px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            color: var(--text-muted);
+            transition: background .1s, color .1s;
+            opacity: 0;
+        }
+        .tab:hover .cls,
+        .tab.active .cls { opacity: 1; }
+        .tab .cls:hover { background: var(--red); color: #fff; }
+
+        #newtab-btn {
+            flex-shrink: 0;
+            width: 24px; height: 24px;
+            border-radius: 5px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .12s, color .12s, border-color .12s;
+            font-family: 'Geist Mono', monospace;
+            line-height: 1;
+        }
+        #newtab-btn:hover {
+            background: var(--surface3);
+            border-color: var(--border2);
+            color: var(--accent);
+        }
+
+        /* ─── TOOLBAR ─── */
+        #toolbar {
+            display: flex;
+            align-items: center;
+            height: var(--bar-h);
+            padding: 0 8px;
+            gap: 3px;
+        }
+
+        /* brand */
+        #brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            padding: 0 8px 0 2px;
+            flex-shrink: 0;
+            user-select: none;
+            position: relative;
+        }
+        #brand .ver {
+            font-size: 9px;
+            font-weight: 300;
+            color: var(--text-muted);
+            margin-left: 3px;
+            letter-spacing: 0.12em;
+            vertical-align: super;
+        }
+
+        .tbtn {
+            flex-shrink: 0;
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .12s;
+        }
+        .tbtn:hover:not(:disabled) {
+            background: var(--surface3);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        .tbtn:active:not(:disabled) {
+            transform: scale(0.93);
+        }
+        .tbtn:disabled { opacity: 0.2; cursor: default; }
+
+        /* url bar wrapper */
+        #urlwrap {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+        #url-proto {
+            position: absolute;
+            left: 10px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .15s;
+            letter-spacing: 0.03em;
+        }
+        #url-proto.show { opacity: 0.7; }
+
+        #urlbar {
+            width: 100%;
+            height: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            padding: 0 10px 0 10px;
+            outline: none;
+            transition: border-color .15s, background .15s, box-shadow .15s;
+            letter-spacing: 0.01em;
+        }
+        #urlbar:focus {
+            border-color: var(--accent);
+            background: var(--bg);
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.08);
+        }
+        #urlbar::placeholder { color: var(--text-muted); }
+        #urlbar.has-url { padding-left: 10px; }
+
+        /* security badge */
+        #sec-badge {
+            position: absolute;
+            right: 8px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 9.5px;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            opacity: 0;
+            transition: opacity .2s;
+            pointer-events: none;
+        }
+        #sec-badge.show { opacity: 1; }
+        #sec-badge .dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        /* ─── CONTENT ─── */
+        #content {
+            position: fixed;
+            top: var(--chrome-h);
+            inset: var(--chrome-h) 0 0 0;
+        }
+
+        .viewframe {
+            position: absolute;
+            inset: 0;
+            border: none;
+            display: none;
+            background: #fff;
+        }
+        .viewframe.active { display: block; }
+
+        /* ─── NEW TAB PAGE ─── */
+        .newtabpage {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            gap: 0;
+        }
+        .newtabpage.active { display: flex; }
+
+        /* grid bg */
+        .newtabpage::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--surface) 1px, transparent 1px),
+                linear-gradient(90deg, var(--surface) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .newtabpage::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 40%, var(--bg) 100%);
+            pointer-events: none;
+        }
+
+        .ntp-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .ntp-wordmark {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 600;
+            font-size: 64px;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            color: var(--text);
+            position: relative;
+        }
+        .ntp-wordmark::before {
+            content: 'T9';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, var(--accent3) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ntp-tagline {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10.5px;
+            color: var(--text-muted);
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            margin-top: -12px;
+        }
+
+        .ntp-search-wrap {
+            width: 500px;
+            max-width: 92vw;
+            position: relative;
+        }
+        .ntp-search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .ntp-search-input {
+            width: 100%;
+            height: 44px;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            padding: 0 48px 0 42px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+            letter-spacing: 0.01em;
+        }
+        .ntp-search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+        }
+        .ntp-search-input::placeholder { color: var(--text-muted); }
+        .ntp-search-go {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all .12s;
+        }
+        .ntp-search-go:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg);
+        }
+
+        .ntp-pills {
+            display: flex;
+            gap: 6px;
+        }
+        .ntp-pill {
+            font-family: 'Geist', sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all .12s;
+            letter-spacing: 0.03em;
+        }
+        .ntp-pill:hover {
+            border-color: var(--border2);
+            color: var(--text-dim);
+            background: var(--surface2);
+        }
+
+        /* ─── LOAD BAR ─── */
+        #loadbar {
+            position: fixed;
+            top: var(--chrome-h);
+            left: 0;
+            height: 2px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+            z-index: 200;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        #loadbar.loading {
+            opacity: 1;
+            animation: lp 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        #loadbar.done {
+            opacity: 1;
+            width: 100% !important;
+            transition: width .15s ease;
+        }
+        @keyframes lp {
+            0%   { width: 0%; }
+            100% { width: 82%; }
+        }
+
+        /* ─── STATUS BAR ─── */
+        #statusbar {
+            position: fixed;
+            bottom: 0; left: 0;
+            height: 18px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        #statusbar.show { opacity: 1; }
+        #statusbar .sb-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1.5s ease infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ─── SCROLLBARS ─── */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- LOAD BAR -->
+<div id="loadbar"></div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+    <div class="sb-dot"></div>
+    <span id="sb-text">connecting...</span>
+</div>
+
+<!-- CHROME -->
+<div id="chrome">
+    <div id="tabrow">
+        <button id="newtab-btn" onclick="newTab()" title="New Tab (Ctrl+T)">+</button>
+    </div>
+    <div id="toolbar">
+        <div id="brand">T9<span class="ver">scram</span></div>
+
+        <button class="tbtn" id="btn-back" onclick="goBack()" title="Back" disabled>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 2L3.5 6.5l5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tbtn" id="btn-fwd" onclick="goForward()" title="Forward" disabled>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.5 2l5 4.5-5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tbtn" id="btn-reload" onclick="reloadTab()" title="Reload">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7A4.5 4.5 0 1 0 4 3.5L2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2v3h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div id="urlwrap">
+            <input type="text" id="urlbar" placeholder="Search or enter URL…" autocomplete="off" spellcheck="false">
+            <div id="sec-badge"><div class="dot"></div><span>SECURE</span></div>
+        </div>
+
+        <button class="tbtn" id="btn-pop" onclick="popOut()" title="Pop out">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 1.5H12.5V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.5 1.5L6 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content"></div>
+
+<script>
+    /* ── CONFIG ── */
+    const SE = localStorage.getItem("t9_se") || "https://search.brave.com/search?q=";
+    const WISP = "wss://wisp.rhw.one/";
+
+    /* ── SCRAMJET INIT ── */
+    const connection = new BareMux.BareMuxConnection("/surf/baremux/worker.js");
+
+    const scram = new ScramjetController({
+        prefix: "/surf/scramjet-service/",
+        files: {
+            wasm:   "/surf/scram/scramjet.wasm.js",
+            worker: "/surf/scram/scramjet.worker.js",
+            client: "/surf/scram/scramjet.client.js",
+            shared: "/surf/scram/scramjet.shared.js",
+            sync:   "/surf/scram/scramjet.sync.js",
+        },
+    });
+
+    async function initProxy() {
+        await scram.init("/surf/scramjet-service-worker.js");
+        await connection.setTransport("/surf/baremux/epoxy.js", [{ wisp: WISP }]);
+        showStatus("proxy ready", 1800);
+    }
+
+    /* ── STATE ── */
+    let tabs = [], activeId = null, counter = 0;
+
+    /* ── DOM ── */
+    const tabrow  = document.getElementById("tabrow");
+    const ntbtn   = document.getElementById("newtab-btn");
+    const content = document.getElementById("content");
+    const urlbar  = document.getElementById("urlbar");
+    const loadbar = document.getElementById("loadbar");
+    const btnBack = document.getElementById("btn-back");
+    const btnFwd  = document.getElementById("btn-fwd");
+    const secBadge= document.getElementById("sec-badge");
+    const statusEl= document.getElementById("statusbar");
+    const sbText  = document.getElementById("sb-text");
+
+    /* ── STATUS BAR ── */
+    let sbTimer = null;
+    function showStatus(msg, duration = 0) {
+        sbText.textContent = msg;
+        statusEl.classList.add("show");
+        clearTimeout(sbTimer);
+        if (duration) sbTimer = setTimeout(() => statusEl.classList.remove("show"), duration);
+    }
+
+    /* ── URL BAR EVENTS ── */
+    urlbar.addEventListener("keydown", e => { if (e.key === "Enter") navigate(urlbar.value); });
+    urlbar.addEventListener("focus",   () => { urlbar.select(); secBadge.classList.remove("show"); });
+    urlbar.addEventListener("blur",    () => { const t = getTab(activeId); if (t?.url) updateSecBadge(t.url); });
+
+    function updateSecBadge(url) {
+        const isHttps = url.startsWith("https://");
+        secBadge.classList.toggle("show", isHttps);
+        const dot = secBadge.querySelector(".dot");
+        if (dot) dot.style.background = isHttps ? "var(--green)" : "var(--red)";
+    }
+
+    /* ── TABS ── */
+    function newTab(url = "") {
+        const id = counter++;
+        const tab = { id, title: "New Tab", url: "", history: [], histIdx: -1 };
+        tabs.push(tab);
+
+        // Tab element
+        const el = document.createElement("div");
+        el.className = "tab";
+        el.dataset.tabId = id;
+        el.innerHTML = `
+            <img class="fav" src="" alt="" style="display:none">
+            <span class="ttitle">New Tab</span>
+            <span class="cls" title="Close">✕</span>
+        `;
+        el.addEventListener("click", e => { if (!e.target.closest(".cls")) switchTab(id); });
+        el.querySelector(".cls").addEventListener("click", e => { e.stopPropagation(); closeTab(id); });
+        tabrow.insertBefore(el, ntbtn);
+
+        // Iframe
+        const frame = document.createElement("iframe");
+        frame.className = "viewframe";
+        frame.dataset.frameId = id;
+        frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox");
+        content.appendChild(frame);
+
+        // New tab page
+        const ntp = document.createElement("div");
+        ntp.className = "newtabpage";
+        ntp.dataset.ntpId = id;
+        ntp.innerHTML = `
+            <div class="ntp-inner">
+                <div class="ntp-wordmark">T9</div>
+                <div class="ntp-tagline">scramjet · fast · private</div>
+                <div class="ntp-search-wrap">
+                    <svg class="ntp-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <input class="ntp-search-input" data-ntp-input="${id}" type="text"
+                           placeholder="Search or enter URL…" autocomplete="off" spellcheck="false">
+                    <button class="ntp-search-go" data-ntp-go="${id}">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="ntp-pills">
+                    <div class="ntp-pill" data-ntp-pill="https://google.com">Google</div>
+                    <div class="ntp-pill" data-ntp-pill="https://github.com">GitHub</div>
+                    <div class="ntp-pill" data-ntp-pill="https://reddit.com">Reddit</div>
+                    <div class="ntp-pill" data-ntp-pill="https://youtube.com">YouTube</div>
+                    <div class="ntp-pill" data-ntp-pill="https://wikipedia.org">Wiki</div>
+                </div>
+            </div>
+        `;
+        ntp.querySelector(`[data-ntp-input="${id}"]`)
+           .addEventListener("keydown", e => { if (e.key === "Enter") navigate(e.target.value); });
+        ntp.querySelector(`[data-ntp-go="${id}"]`)
+           .addEventListener("click", () => {
+               const v = ntp.querySelector(`[data-ntp-input="${id}"]`).value;
+               navigate(v);
+           });
+        ntp.querySelectorAll("[data-ntp-pill]").forEach(p =>
+            p.addEventListener("click", () => navigate(p.dataset.ntpPill))
+        );
+        content.appendChild(ntp);
+
+        switchTab(id);
+        if (url) navigate(url);
+        return id;
+    }
+
+    function switchTab(id) {
+        activeId = id;
+        document.querySelectorAll(".tab").forEach(t =>
+            t.classList.toggle("active", +t.dataset.tabId === id));
+        document.querySelectorAll(".viewframe").forEach(f =>
+            f.classList.toggle("active", +f.dataset.frameId === id));
+        document.querySelectorAll(".newtabpage").forEach(n =>
+            n.classList.toggle("active", +n.dataset.ntpId === id));
+
+        const tab = getTab(id);
+        if (tab) {
+            urlbar.value = tab.url;
+            updateNavBtns(tab);
+            updateSecBadge(tab.url);
+            if (tab.url) {
+                document.querySelector(`.newtabpage[data-ntp-id="${id}"]`)?.classList.remove("active");
+                document.querySelector(`.viewframe[data-frame-id="${id}"]`)?.classList.add("active");
+            }
+        }
+    }
+
+    function closeTab(id) {
+        if (tabs.length === 1) { getTab(id).url = ""; getTab(id).history = []; getTab(id).histIdx = -1; urlbar.value = ""; switchTab(id); return; }
+        const idx = tabs.findIndex(t => t.id === id);
+        tabs.splice(idx, 1);
+        document.querySelector(`.tab[data-tab-id="${id}"]`)?.remove();
+        document.querySelector(`.viewframe[data-frame-id="${id}"]`)?.remove();
+        document.querySelector(`.newtabpage[data-ntp-id="${id}"]`)?.remove();
+        if (activeId === id) switchTab(tabs[Math.min(idx, tabs.length - 1)].id);
+    }
+
+    function getTab(id) { return tabs.find(t => t.id === id); }
+
+    function updateNavBtns(tab) {
+        if (!tab) return;
+        btnBack.disabled = tab.histIdx <= 0;
+        btnFwd.disabled  = tab.histIdx >= tab.history.length - 1;
+    }
+
+    function setTabTitle(id, title) {
+        const el = document.querySelector(`.tab[data-tab-id="${id}"] .ttitle`);
+        if (el) el.textContent = title || "Untitled";
+    }
+
+    function setTabFav(id, url) {
+        const img = document.querySelector(`.tab[data-tab-id="${id}"] .fav`);
+        if (!img) return;
+        try {
+            const domain = new URL(url).hostname;
+            img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+            img.style.display = "block";
+            img.onerror = () => { img.style.display = "none"; };
+        } catch { img.style.display = "none"; }
+    }
+
+    /* ── NAVIGATE ── */
+    async function navigate(raw) {
+        if (!raw?.trim()) return;
+        let url = raw.trim();
+
+        if (!url.includes(".") || url.includes(" ")) {
+            url = SE + encodeURIComponent(url);
+        } else if (!/^https?:\/\//.test(url)) {
+            url = "https://" + url;
+        }
+
+        const tab = getTab(activeId);
+        if (!tab) return;
+
+        // history
+        if (tab.histIdx < tab.history.length - 1)
+            tab.history = tab.history.slice(0, tab.histIdx + 1);
+        tab.history.push(url);
+        tab.histIdx++;
+        tab.url = url;
+        urlbar.value = url;
+        updateNavBtns(tab);
+        updateSecBadge(url);
+
+        // ensure transport
+        if (!await connection.getTransport()) {
+            await connection.setTransport("/surf/baremux/epoxy.js", [{ wisp: WISP }]);
+        }
+
+        const encoded = scram.encodeUrl(url);
+        loadStart();
+        showStatus("loading " + new URL(url).hostname);
+
+        const frame = document.querySelector(`.viewframe[data-frame-id="${activeId}"]`);
+        const ntp   = document.querySelector(`.newtabpage[data-ntp-id="${activeId}"]`);
+        if (!frame) return;
+
+        ntp?.classList.remove("active");
+        frame.classList.add("active");
+        frame.src = encoded;
+
+        setTabFav(activeId, url);
+
+        frame.onload = () => {
+            loadEnd();
+            showStatus("", 0);
+            statusEl.classList.remove("show");
+            try {
+                const title = frame.contentDocument?.title || new URL(url).hostname;
+                setTabTitle(activeId, title);
+                tab.title = title;
+            } catch { setTabTitle(activeId, new URL(url).hostname); }
+        };
+    }
+
+    /* ── NAV BUTTONS ── */
+    function goBack() {
+        const tab = getTab(activeId);
+        if (!tab || tab.histIdx <= 0) return;
+        tab.histIdx--;
+        tab.url = tab.history[tab.histIdx];
+        urlbar.value = tab.url;
+        updateNavBtns(tab);
+        updateSecBadge(tab.url);
+        const frame = document.querySelector(`.viewframe[data-frame-id="${activeId}"]`);
+        if (frame) { loadStart(); frame.src = scram.encodeUrl(tab.url); frame.onload = loadEnd; }
+    }
+
+    function goForward() {
+        const tab = getTab(activeId);
+        if (!tab || tab.histIdx >= tab.history.length - 1) return;
+        tab.histIdx++;
+        tab.url = tab.history[tab.histIdx];
+        urlbar.value = tab.url;
+        updateNavBtns(tab);
+        updateSecBadge(tab.url);
+        const frame = document.querySelector(`.viewframe[data-frame-id="${activeId}"]`);
+        if (frame) { loadStart(); frame.src = scram.encodeUrl(tab.url); frame.onload = loadEnd; }
+    }
+
+    function reloadTab() {
+        const frame = document.querySelector(`.viewframe[data-frame-id="${activeId}"]`);
+        if (frame?.src) { loadStart(); frame.src = frame.src; frame.onload = loadEnd; }
+    }
+
+    function popOut() {
+        const frame = document.querySelector(`.viewframe[data-frame-id="${activeId}"]`);
+        if (frame?.src) window.open(frame.src, "_blank");
+    }
+
+    /* ── LOAD BAR ── */
+    let loadTimer = null;
+    function loadStart() {
+        clearTimeout(loadTimer);
+        loadbar.className = "";
+        void loadbar.offsetWidth; // reflow
+        loadbar.style.width = "0%";
+        loadbar.classList.add("loading");
+    }
+    function loadEnd() {
+        loadbar.classList.remove("loading");
+        loadbar.classList.add("done");
+        loadTimer = setTimeout(() => {
+            loadbar.classList.remove("done");
+            loadbar.style.width = "0%";
+        }, 350);
+    }
+
+    /* ── KEYBOARD ── */
+    document.addEventListener("keydown", e => {
+        const mod = e.ctrlKey || e.metaKey;
+        if (mod && e.key === "t") { e.preventDefault(); newTab(); }
+        if (mod && e.key === "w") { e.preventDefault(); closeTab(activeId); }
+        if (mod && e.key === "l") { e.preventDefault(); urlbar.focus(); }
+        if (mod && e.key === "r") { e.preventDefault(); reloadTab(); }
+        if (mod && e.shiftKey && e.key === "ArrowLeft")  { e.preventDefault(); goBack(); }
+        if (mod && e.shiftKey && e.key === "ArrowRight") { e.preventDefault(); goForward(); }
+    });
+
+    /* ── BOOT ── */
+    showStatus("initializing scramjet…");
+    initProxy().catch(err => {
+        console.error("[T9] proxy init failed:", err);
+        showStatus("proxy init failed — check console");
+    });
+    newTab();
+</script>
+</body>
+</html>
