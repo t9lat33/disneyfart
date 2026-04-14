@@ -1,150 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPLASH | Poki</title>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPLASH T9</title>
+    
     <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-      :root {
-        --bg: #000;
-        --accent: #4c3ed8; /* Poki-inspired purple */
-      }
-
-      body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: var(--bg);
-        overflow: hidden;
-        font-family: system-ui, -apple-system, sans-serif;
-      }
-
-      #app-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-      }
-
-      /* Minimal Header */
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px 15px;
-        background: #111;
-        border-bottom: 1px solid #222;
-        height: 40px;
-      }
-
-      .logo {
-        color: #fff;
-        font-weight: bold;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-      }
-
-      .controls button {
-        background: var(--accent);
-        border: none;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.8rem;
-      }
-
-      /* Viewport */
-      #view {
-        flex-grow: 1;
-        position: relative;
-      }
-
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-
-      #status {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: var(--bg);
-        color: #fff;
-        z-index: 10;
-      }
-
-      .loader {
-        width: 30px;
-        height: 30px;
-        border: 3px solid #333;
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: 15px;
-      }
-
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app-container">
-      <header>
-        <div class="logo">SPLASH // POKI</div>
-        <div class="controls">
-          <button onclick="location.reload()">Reload Proxy</button>
-        </div>
-      </header>
-
-      <main id="view">
-        <div id="status">
-          <div class="loader"></div>
-          <p>Initializing Tunnel...</p>
-        </div>
-        <iframe id="proxy-frame"></iframe>
-      </main>
-    </div>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', async () => {
-        const frame = document.getElementById('proxy-frame');
-        const status = document.getElementById('status');
-        const targetUrl = 'https://poki.com';
-
-        // 1. Register Service Worker for the proxy
-        if ('serviceWorker' in navigator) {
-          try {
-            await navigator.serviceWorker.register('./sw.js', {
-              scope: __scramjet$config.prefix
-            });
-            
-            // 2. Encode and Load Poki
-            const encoded = __scramjet$config.encodeUrl(targetUrl);
-            frame.src = __scramjet$config.prefix + encoded;
-
-          } catch (err) {
-            status.innerHTML = `<p style="color:red">Proxy Error: Check console</p>`;
-            console.error(err);
-          }
+        :root {
+            --bg: #0d0d0f;
+            --surface: #17171a;
+            --surface2: #1f1f24;
+            --border: #2a2a30;
+            --accent: #00ff41; /* Scramjet/Splash Green */
+            --accent2: #008f11;
+            --text: #e8e8ed;
+            --text-muted: #6e6e7a;
+            --red: #e05c5c;
+            --tab-w: 180px;
+            --chrome-h: 84px;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
+
+        /* Navigation Chrome */
+        #chrome {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: var(--chrome-h); background: var(--surface);
+            border-bottom: 1px solid var(--border); z-index: 100;
+            display: flex; flex-direction: column;
+        }
+
+        #tabrow { display: flex; align-items: center; height: 38px; padding: 0 6px; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+        #tabrow::-webkit-scrollbar { display: none; }
+
+        .tab {
+            display: flex; align-items: center; gap: 6px; height: 28px; min-width: 100px; max-width: var(--tab-w);
+            padding: 0 8px 0 10px; border-radius: 6px; color: var(--text-muted); font-size: 12px; cursor: pointer;
+            transition: .15s; white-space: nowrap; overflow: hidden; border: 1px solid transparent;
+        }
+        .tab.active { background: var(--bg); border-color: var(--border); color: var(--text); }
+        .tab:hover:not(.active) { background: var(--surface2); color: var(--text); }
+        .tab .cls { margin-left: auto; width: 16px; height: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: .1s; }
+        .tab .cls:hover { background: var(--red); color: #fff; }
+
+        #newtab-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0 10px; font-size: 20px; }
+
+        #toolbar { display: flex; align-items: center; height: 46px; padding: 0 8px; gap: 4px; }
+        #brand { font-family: 'DM Mono', monospace; color: var(--accent); padding: 0 10px; font-weight: 500; }
+        
+        #urlbar {
+            flex: 1; height: 30px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 7px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12.5px;
+            padding: 0 10px; outline: none; transition: border-color .15s;
+        }
+        #urlbar:focus { border-color: var(--accent); background: var(--bg); }
+
+        /* Viewport */
+        #content { position: fixed; top: var(--chrome-h); left: 0; right: 0; bottom: 0; }
+        .viewframe { position: absolute; width: 100%; height: 100%; border: none; display: none; background: #fff; }
+        .viewframe.active { display: block; }
+
+        .newtabpage {
+            position: absolute; width: 100%; height: 100%; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            background: var(--bg); gap: 20px;
+        }
+        .newtabpage.active { display: flex; }
+        .ntp-logo { font-family: 'DM Mono', monospace; font-size: 52px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        #loadbar { position: fixed; top: var(--chrome-h); left: 0; height: 2px; width: 0%; background: var(--accent); z-index: 200; opacity: 0; transition: width .4s ease, opacity .3s; }
+        #loadbar.loading { opacity: 1; animation: loadpulse 1.4s infinite; }
+        @keyframes loadpulse { 0% { width: 0%; } 60% { width: 80%; } 100% { width: 80%; } }
+    </style>
+</head>
+<body>
+
+<div id="loadbar"></div>
+
+<div id="chrome">
+    <div id="tabrow">
+        <button id="newtab-btn" onclick="newTab()">+</button>
+    </div>
+    <div id="toolbar">
+        <div id="brand">SPLASH</div>
+        <input type="text" id="urlbar" placeholder="Search or type a URL..." autocomplete="off">
+    </div>
+</div>
+
+<div id="content"></div>
+
+<script>
+    /* ── CONFIG & STATE ── */
+    const SE = "https://www.google.com/search?q=";
+    let tabs = [];
+    let activeId = null;
+    let counter = 0;
+
+    /* ── SCRAMJET BOOT ── */
+    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+    
+    async function initProxy() {
+        if ("serviceWorker" in navigator) {
+            await navigator.serviceWorker.register("./sw.js", {
+                scope: __scramjet$config.prefix
+            });
+        }
+        // Set up transport for Baremux as per your source
+        await connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }]);
+    }
+
+    /* ── TAB MANAGEMENT ── */
+    function newTab(url = "") {
+        const id = counter++;
+        const tab = { id, url: "", title: "New Tab" };
+        tabs.push(tab);
+
+        // Tab UI
+        const el = document.createElement("div");
+        el.className = "tab";
+        el.dataset.tabId = id;
+        el.innerHTML = `<span class="ttitle">New Tab</span><span class="cls">✕</span>`;
+        el.onclick = (e) => { if(!e.target.classList.contains('cls')) switchTab(id); };
+        el.querySelector('.cls').onclick = (e) => { e.stopPropagation(); closeTab(id); };
+        document.getElementById("tabrow").insertBefore(el, document.getElementById("newtab-btn"));
+
+        // Iframe View
+        const frame = document.createElement("iframe");
+        frame.className = "viewframe";
+        frame.dataset.frameId = id;
+        document.getElementById("content").appendChild(frame);
+
+        // New Tab Page
+        const ntp = document.createElement("div");
+        ntp.className = "newtabpage";
+        ntp.dataset.ntpId = id;
+        ntp.innerHTML = `<div class="ntp-logo">SPLASH</div><div style="color:var(--text-muted); font-family:'DM Mono'">SCRAMJET ENGINE</div>`;
+        document.getElementById("content").appendChild(ntp);
+
+        switchTab(id);
+        if (url) navigate(url);
+    }
+
+    function switchTab(id) {
+        activeId = id;
+        document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", +t.dataset.tabId === id));
+        document.querySelectorAll(".viewframe").forEach(f => f.classList.toggle("active", +f.dataset.frameId === id));
+        document.querySelectorAll(".newtabpage").forEach(n => n.classList.toggle("active", +n.dataset.ntpId === id));
+        
+        const tab = tabs.find(t => t.id === id);
+        document.getElementById("urlbar").value = tab.url || "";
+    }
+
+    function closeTab(id) {
+        if (tabs.length === 1) return;
+        tabs = tabs.filter(t => t.id !== id);
+        document.querySelector(`[data-tab-id="${id}"]`).remove();
+        document.querySelector(`[data-frame-id="${id}"]`).remove();
+        document.querySelector(`[data-ntp-id="${id}"]`).remove();
+        if (activeId === id) switchTab(tabs[tabs.length - 1].id);
+    }
+
+    /* ── NAVIGATION (SCRAMJET ENGINE) ── */
+    async function navigate(raw) {
+        if (!raw.trim()) return;
+        let url = raw.trim();
+
+        if (!url.includes(".") || url.includes(" ")) {
+            url = SE + encodeURIComponent(url);
+        } else if (!url.startsWith("http")) {
+            url = "https://" + url;
+        }
+
+        const tab = tabs.find(t => t.id === activeId);
+        tab.url = url;
+        document.getElementById("urlbar").value = url;
+
+        // Using Scramjet's encoding and prefix from index.config.js
+        const encoded = __scramjet$config.prefix + __scramjet$config.encodeUrl(url);
+        
+        const frame = document.querySelector(`[data-frame-id="${activeId}"]`);
+        const ntp = document.querySelector(`[data-ntp-id="${activeId}"]`);
+        const loadbar = document.getElementById("loadbar");
+
+        loadbar.style.width = "0%";
+        loadbar.classList.add("loading");
+        
+        ntp.classList.remove("active");
+        frame.classList.add("active");
+        frame.src = encoded;
+
         frame.onload = () => {
-          // Add a slight delay to ensure content is ready
-          setTimeout(() => {
-            status.style.display = 'none';
-          }, 500);
+            loadbar.classList.remove("loading");
+            loadbar.style.width = "100%";
+            setTimeout(() => { loadbar.style.opacity = "0"; }, 200);
+            
+            try {
+                const title = frame.contentWindow.document.title || new URL(url).hostname;
+                document.querySelector(`[data-tab-id="${activeId}"] .ttitle`).innerText = title;
+            } catch(e) {
+                document.querySelector(`[data-tab-id="${activeId}"] .ttitle`).innerText = new URL(url).hostname;
+            }
         };
-      });
-    </script>
-  </body>
+    }
+
+    document.getElementById("urlbar").onkeydown = (e) => {
+        if (e.key === "Enter") navigate(e.target.value);
+    };
+
+    // Initialize
+    initProxy().then(() => newTab());
+</script>
+</body>
 </html>
