@@ -181,7 +181,6 @@
     color: white;
   }
 
-  /* Premium badge - only shows on premium users' messages */
   .premium-badge {
     background: linear-gradient(135deg, #f1c40f, #d4a017);
     color: #1c1c1e;
@@ -198,7 +197,6 @@
     font-weight: 600;
   }
 
-  /* Location badge for premium users */
   .location-badge {
     font-size: 0.65rem;
     color: #6c6c70;
@@ -206,7 +204,6 @@
     font-weight: 400;
   }
 
-  /* AI message */
   .msg.ai-msg {
     align-self: flex-start;
     max-width: 75%;
@@ -341,12 +338,6 @@
     margin: 6px 0;
     box-shadow: none;
     align-self: flex-start;
-  }
-
-  .poll-card.own {
-    align-self: flex-end;
-    background: #007aff10;
-    border-color: #007aff30;
   }
 
   .poll-header {
@@ -524,6 +515,7 @@
     border-radius: 12px;
     font-weight: 500;
     margin-bottom: 14px;
+    cursor: pointer;
   }
 
   #createPollBtn {
@@ -612,7 +604,6 @@ const banFirebaseConfig = {
 const banApp = firebase.initializeApp(banFirebaseConfig);
 const banDB  = firebase.database(banApp);
 
-// Make OWNER_IDS available globally
 window.OWNER_IDS = OWNER_IDS;
 
 async function resolveUserID() {
@@ -694,9 +685,13 @@ const cancelPollBtn = document.getElementById('cancelPollBtn');
 const pollDuration = document.getElementById('pollDuration');
 const pollDurationUnit = document.getElementById('pollDurationUnit');
 
-let myID = null, username = "Anonymous", currentRoom = "public", currentListener = null;
+let myID = null, username = "Anonymous", currentRoom = "public";
+// FIX: currentListener now stores the unsubscribe *function* returned by onChildAdded
+let currentUnsubscribe = null;
 let violationCount = 0, lastMessageTime = 0, isAIThinking = false;
+let joinedRooms = new Set(['public']);
 const MAX_CHARS = 300, MESSAGE_COOLDOWN = 5000;
+const activePollListeners = {};
 
 // Geo data storage
 let userGeoData = null;
@@ -712,10 +707,9 @@ fetch('https://get.geojs.io/v1/ip/geo.json')
 
 const profanityPatterns = [/n+[i1!|]+[gq9]+[e3a@]+r+/gi, /f+[\s\.\-_]*u+[\s\.\-_]*c+[\s\.\-_]*k+/gi];
 function containsProfanity(t){ return profanityPatterns.some(p=>p.test(t)); }
-function escapeHtml(s){ return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function escapeHtml(s){ return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 function showWarning(m){ const t=document.createElement('div'); t.className='warning-toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
 
-// Check if a user ID is premium (owner)
 function isPremiumUser(id) {
   return window.OWNER_IDS && window.OWNER_IDS.includes(id);
 }
@@ -728,10 +722,75 @@ async function getMyID(){
   return localStorage.getItem("numericUserID")||"unknown"; 
 }
 
+function refreshJoinedRoomsUI() {
+  joinedRoomsEl.innerHTML = '';
+  joinedRooms.forEach(room => {
+    if (room === 'public') return;
+    
+    const div = document.createElement('div');
+    div.className = 'sidebar-item';
+    div.textContent = `💬 ${room}`;
+    div.dataset.room = room;
+    
+    div.addEventListener('click', () => {
+      switchRoom(room);
+    });
+    
+    if (room === currentRoom) {
+      div.classList.add('active');
+    }
+    
+    joinedRoomsEl.appendChild(div);
+  });
+}
+
+function switchRoom(room) {
+  if (!room || room === currentRoom) return;
+  
+  // FIX: Call the unsubscribe function directly instead of off(currentUnsubscribe)
+  if (currentUnsubscribe) {
+    currentUnsubscribe();
+    currentUnsubscribe = null;
+  }
+
+  // Detach any active poll listeners for the old room
+  Object.keys(activePollListeners).forEach(k => {
+    if (typeof activePollListeners[k] === 'function') activePollListeners[k]();
+    delete activePollListeners[k];
+  });
+  
+  // Update current room
+  currentRoom = room;
+  roomTitle.textContent = room === 'public' ? 'Public' : room;
+  
+  // Clear messages
+  messagesEl.innerHTML = '';
+  
+  // Update active states
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  
+  if (room === 'public') {
+    publicRoomBtn.classList.add('active');
+  } else {
+    joinedRoomsEl.querySelectorAll('.sidebar-item').forEach(item => {
+      if (item.dataset.room === room) item.classList.add('active');
+    });
+  }
+  
+  // Load messages for the new room
+  loadMessages(room);
+}
+
 function appendMessage(payload){
-  if(payload.isAI){ appendAIMessage(payload.text); return; }
+  if(payload.isAI){ 
+    appendAIMessage(payload.text); 
+    return; 
+  }
   if(payload.isPoll){ 
-    onValue(ref(db,'polls/'+currentRoom+'/'+payload.pollId), s=>{ if(s.val()) renderPollCard(s.val(),payload.pollId); },{onlyOnce:true}); 
+    const pollRef = ref(db, 'polls/' + currentRoom + '/' + payload.pollId);
+    onValue(pollRef, s => { 
+      if(s.val()) renderPollCard(s.val(), payload.pollId); 
+    }, { onlyOnce: true }); 
     return; 
   }
   
@@ -742,14 +801,10 @@ function appendMessage(payload){
   
   div.className = 'msg' + (isOwnMessage ? ' own' : '');
   
-  // Build name display
   const displayName = payload.name || 'Anon';
   const nameWithId = `${displayName} (${payload.id})`;
-  
-  // Premium badge - only show if the SENDER is premium
   const premiumBadge = isPremiumSender ? '<span class="premium-badge">Premium</span>' : '';
   
-  // Location badge - only show if I'M premium AND geo data exists
   let locationBadge = '';
   if (amPremium && payload.geo) {
     const geo = payload.geo;
@@ -769,7 +824,7 @@ function appendMessage(payload){
 function appendAIMessage(t){ 
   const d=document.createElement('div'); 
   d.className='msg ai-msg'; 
-  d.innerHTML=`<div class="msg-name">🤖 Siri <span class="ai-badge">AI</span></div><div class="msg-bubble">${escapeHtml(t)}</div>`; 
+  d.innerHTML=`<div class="msg-name">🤖 T9 AI <span class="ai-badge">AI</span></div><div class="msg-bubble">${escapeHtml(t)}</div>`; 
   messagesEl.appendChild(d); 
   messagesEl.scrollTop=messagesEl.scrollHeight; 
 }
@@ -778,30 +833,53 @@ function showAITyping(){
   const d=document.createElement('div'); 
   d.id='aiTyping'; 
   d.className='msg ai-msg ai-typing'; 
-  d.innerHTML=`<div class="msg-name">🤖 Siri</div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`; 
+  d.innerHTML=`<div class="msg-name">🤖 T9 AI</div><div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`; 
   messagesEl.appendChild(d); 
 }
 
-function removeAITyping(){ document.getElementById('aiTyping')?.remove(); }
+function removeAITyping(){ 
+  document.getElementById('aiTyping')?.remove(); 
+}
 
 async function callAI(prompt){
-  if(isAIThinking)return; 
-  isAIThinking=true; 
-  sendBtn.disabled=true; 
+  if(isAIThinking) {
+    showWarning('AI is still thinking...');
+    return;
+  }
+  
+  isAIThinking = true; 
+  sendBtn.disabled = true; 
   showAITyping();
-  try{
-    const res = await fetch(AI_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:prompt}),signal:AbortSignal.timeout(15000)});
+  
+  try {
+    const res = await fetch(AI_API, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: prompt}),
+      signal: AbortSignal.timeout(15000)
+    });
+    
     const text = await res.text(); 
     let reply = text; 
-    try{ reply = JSON.parse(text).response||reply; }catch{}
+    try { 
+      const json = JSON.parse(text);
+      reply = json.response || json.reply || json.message || json.text || text;
+    } catch {}
+    
     removeAITyping(); 
-    await push(ref(db,"messages/"+currentRoom),{name:"Siri",id:"AI_BOT",text:reply,timestamp:Date.now(),isAI:true});
-  }catch(e){ 
+    await push(ref(db, "messages/" + currentRoom), {
+      name: "T9 AI",
+      id: "AI_BOT",
+      text: reply,
+      timestamp: Date.now(),
+      isAI: true
+    });
+  } catch(e) { 
     removeAITyping(); 
-    appendAIMessage("⚠️ AI error"); 
+    appendAIMessage("⚠️ AI error: Unable to get response"); 
   } finally { 
-    isAIThinking=false; 
-    sendBtn.disabled=false; 
+    isAIThinking = false; 
+    sendBtn.disabled = false; 
   }
 }
 
@@ -809,41 +887,96 @@ async function sendMessage(){
   const txt = msgInput.value.trim(); 
   if(!txt) return;
   
-  if(txt.startsWith('!ai ')){ 
-    msgInput.value=''; 
+  if(txt.toLowerCase().startsWith('!ai ')){ 
+    const prompt = txt.slice(4).trim();
+    if(!prompt) {
+      showWarning('Please provide a prompt after !ai');
+      return;
+    }
+    msgInput.value = ''; 
     updateCharCounter(); 
-    appendMessage({id:myID, name:username, text:txt, geo: userGeoData}); 
-    callAI(txt.slice(4)); 
+    appendMessage({id: myID, name: username, text: txt, geo: userGeoData}); 
+    callAI(prompt); 
     return; 
   }
   
-  if(Date.now()-lastMessageTime < MESSAGE_COOLDOWN){ showWarning('Slow down'); return; }
-  if(txt.length>MAX_CHARS || containsProfanity(txt)){ showWarning('Invalid'); return; }
+  if(Date.now() - lastMessageTime < MESSAGE_COOLDOWN){ 
+    showWarning(`Please wait ${Math.ceil((MESSAGE_COOLDOWN - (Date.now() - lastMessageTime))/1000)} seconds`); 
+    return; 
+  }
+  if(txt.length > MAX_CHARS){ 
+    showWarning(`Message too long! Maximum ${MAX_CHARS} characters.`); 
+    return; 
+  }
+  if(containsProfanity(txt)){ 
+    msgInput.value = ''; 
+    updateCharCounter(); 
+    violationCount++;
+    if(violationCount >= 3) {
+      showWarning('You have been banned for 3 violations');
+      const bannedRef = window.banDatabase.ref("bannedIDs");
+      const snap = await bannedRef.get();
+      let banned = snap.val() || [];
+      if(!banned.includes(myID)) {
+        banned.push(myID);
+        await bannedRef.set(banned);
+      }
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showWarning(`Warning ${violationCount}/3: Inappropriate language`);
+    }
+    return; 
+  }
   
-  sendBtn.disabled=true;
+  sendBtn.disabled = true;
   
-  // Include geo data in the message payload
-  await push(ref(db,"messages/"+currentRoom),{
-    name: username, 
-    id: myID, 
-    text: txt, 
-    timestamp: Date.now(),
-    geo: userGeoData
-  });
+  try {
+    await push(ref(db, "messages/" + currentRoom), {
+      name: username, 
+      id: myID, 
+      text: txt, 
+      timestamp: Date.now(),
+      geo: userGeoData
+    });
+    
+    msgInput.value = ''; 
+    updateCharCounter(); 
+    lastMessageTime = Date.now();
+  } catch(e) {
+    console.error('Error sending message:', e);
+    showWarning('Failed to send message');
+  }
   
-  msgInput.value=''; 
-  updateCharCounter(); 
-  lastMessageTime=Date.now(); 
-  setTimeout(()=>sendBtn.disabled=false, MESSAGE_COOLDOWN);
+  setTimeout(() => sendBtn.disabled = false, MESSAGE_COOLDOWN);
 }
 
 function updateCharCounter(){ 
-  const l=msgInput.value.length; 
-  charCounter.textContent=`${l}/${MAX_CHARS}`; 
+  const l = msgInput.value.length; 
+  charCounter.textContent = `${l}/${MAX_CHARS}`;
+  charCounter.classList.remove('warning', 'error');
+  if(l > MAX_CHARS * 0.9) charCounter.classList.add('error');
+  else if(l > MAX_CHARS * 0.75) charCounter.classList.add('warning');
 }
 
-// Poll rendering
-const activePollListeners = {};
+// Poll functions
+function getWinnerIdx(pollData) {
+  const votes = pollData.votes || {};
+  let max = -1, winner = 0;
+  pollData.options.forEach((_, i) => {
+    const v = votes[i] || 0;
+    if (v > max) { max = v; winner = i; }
+  });
+  return winner;
+}
+
+function formatTimeLeft(ms) {
+  if (ms <= 0) return 'Ended';
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + 's left';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm left';
+  return Math.floor(m / 60) + 'h left';
+}
 
 function renderPollCard(pollData, pollId) {
   const existing = document.getElementById('poll-' + pollId);
@@ -898,6 +1031,7 @@ function renderPollCard(pollData, pollId) {
 
   if (!activePollListeners[pollId]) {
     const pollRef = ref(db, 'polls/' + currentRoom + '/' + pollId);
+    // FIX: store the unsubscribe function returned by onValue
     activePollListeners[pollId] = onValue(pollRef, snap => {
       const data = snap.val();
       if (data) updatePollCard(document.getElementById('poll-' + pollId), data);
@@ -949,25 +1083,6 @@ function updatePollCard(card, pollData) {
   }
 }
 
-function getWinnerIdx(pollData) {
-  const votes = pollData.votes || {};
-  let max = -1, winner = 0;
-  pollData.options.forEach((_, i) => {
-    const v = votes[i] || 0;
-    if (v > max) { max = v; winner = i; }
-  });
-  return winner;
-}
-
-function formatTimeLeft(ms) {
-  if (ms <= 0) return 'Ended';
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return s + 's left';
-  const m = Math.floor(s / 60);
-  if (m < 60) return m + 'm left';
-  return Math.floor(m / 60) + 'h left';
-}
-
 async function castVote(pollId, optionIdx) {
   if (!myID) return;
   const pollRef = ref(db, 'polls/' + currentRoom + '/' + pollId);
@@ -984,153 +1099,159 @@ async function castVote(pollId, optionIdx) {
   });
 }
 
-function loadMessages(room){ 
-  if(currentListener) off(currentListener); 
-  messagesEl.innerHTML=''; 
-  currentListener = onChildAdded(query(ref(db,"messages/"+room),limitToLast(80)), s=>{ 
-    if(s.val()) appendMessage(s.val()); 
-  }); 
+function loadMessages(room){
+  // FIX: Call the unsubscribe function, not off()
+  if (currentUnsubscribe) {
+    currentUnsubscribe();
+    currentUnsubscribe = null;
+  }
+  
+  messagesEl.innerHTML = '';
+  
+  const messagesRef = ref(db, "messages/" + room);
+  const limitedQuery = query(messagesRef, limitToLast(100));
+  
+  // FIX: onChildAdded returns an unsubscribe function — store it directly
+  currentUnsubscribe = onChildAdded(limitedQuery, (snap) => { 
+    const data = snap.val();
+    if(data) appendMessage(data); 
+  }, (error) => {
+    console.error('Error loading messages:', error);
+  });
 }
 
 async function handleNameSubmit(e){ 
   e?.preventDefault(); 
-  const n=nameInput.value.trim(); 
-  if(!n)return; 
-  username=n.slice(0,32); 
-  myID=await getMyID(); 
+  const n = nameInput.value.trim(); 
+  if(!n) return; 
+  if(containsProfanity(n)) {
+    alert('Name contains inappropriate language');
+    return;
+  }
+  username = n.slice(0, 32); 
+  myID = await getMyID(); 
   
-  // Show poll button for premium users
   const premiumIDs = ["6528690208","3222695271","0376780508","0635354315","3293484597","9937301888","5069664537","1362852477","2126917941"];
-  if(premiumIDs.includes(myID)) createPollBtn.style.display='block'; 
+  if(premiumIDs.includes(myID)) createPollBtn.style.display = 'block'; 
   
   nameModal.remove(); 
   loadMessages(currentRoom); 
 }
 
 // Event listeners
-msgInput.addEventListener('input',updateCharCounter); 
-sendBtn.addEventListener('click',sendMessage); 
-msgInput.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});
-nameSubmit.addEventListener('click',handleNameSubmit); 
-nameInput.addEventListener('keydown',e=>e.key==='Enter'&&handleNameSubmit(e));
+msgInput.addEventListener('input', updateCharCounter); 
+sendBtn.addEventListener('click', sendMessage); 
+msgInput.addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+nameSubmit.addEventListener('click', handleNameSubmit); 
+nameInput.addEventListener('keydown', e => e.key === 'Enter' && handleNameSubmit(e));
 
-let joinedRooms=new Set(['public']);
-function switchRoom(r){ 
-  currentRoom=r; 
-  roomTitle.innerText=r==='public'?'Public':r; 
-  loadMessages(r); 
-  
-  // Update active states
-  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-  if (r === 'public') {
-    publicRoomBtn.classList.add('active');
-  }
-}
+publicRoomBtn.onclick = () => switchRoom('public');
 
-publicRoomBtn.onclick=()=>switchRoom('public');
-createRoomBtn.onclick=()=>{ 
-  const r=prompt("Room name")?.trim(); 
-  if(r){ 
-    joinedRooms.add(r); 
-    const div = document.createElement('div');
-    div.className = 'sidebar-item';
-    div.innerText = r;
-    div.addEventListener('click', () => switchRoom(r));
-    joinedRoomsEl.appendChild(div);
+createRoomBtn.onclick = () => { 
+  const r = prompt("Enter new room name:")?.trim(); 
+  if(r) { 
+    if(r === 'public') {
+      showWarning('Cannot create a room named "public"');
+      return;
+    }
+    if(containsProfanity(r)) {
+      showWarning('Room name contains inappropriate language');
+      return;
+    }
+    if(!joinedRooms.has(r)) {
+      joinedRooms.add(r);
+      refreshJoinedRoomsUI();
+    }
     switchRoom(r); 
   } 
 };
 
-joinRoomBtn.onclick=()=>{ 
-  const r=prompt("Join room")?.trim(); 
-  if(r){ 
-    joinedRooms.add(r); 
-    const div = document.createElement('div');
-    div.className = 'sidebar-item';
-    div.innerText = r;
-    div.addEventListener('click', () => switchRoom(r));
-    joinedRoomsEl.appendChild(div);
+joinRoomBtn.onclick = () => { 
+  const r = prompt("Enter room name to join:")?.trim(); 
+  if(r) { 
+    if(!joinedRooms.has(r)) {
+      joinedRooms.add(r);
+      refreshJoinedRoomsUI();
+    }
     switchRoom(r); 
   } 
 };
 
 // Poll modal wiring
-addOptionBtn.onclick=()=>{ 
-  const c=pollOptionsEl.children.length+1; 
-  if(c<=8){ 
-    const row=document.createElement('div'); 
-    row.className='option-row'; 
-    row.innerHTML=`<input placeholder="Option ${c}" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`; 
-    row.querySelector('button').onclick=()=>{
-      if (pollOptionsEl.children.length > 2) row.remove();
+addOptionBtn.onclick = () => { 
+  const c = pollOptionsEl.children.length + 1; 
+  if(c <= 8){ 
+    const row = document.createElement('div'); 
+    row.className = 'option-row'; 
+    row.innerHTML = `<input placeholder="Option ${c}" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`; 
+    row.querySelector('button').onclick = () => {
+      if(pollOptionsEl.children.length > 2) row.remove();
       else showWarning('Need at least 2 options');
     };
     pollOptionsEl.appendChild(row); 
   } 
 };
 
-// Wire existing remove buttons
 pollOptionsEl.querySelectorAll('.remove-opt-btn').forEach(btn => {
   btn.onclick = () => {
-    if (pollOptionsEl.children.length > 2) btn.closest('.option-row').remove();
+    if(pollOptionsEl.children.length > 2) btn.closest('.option-row').remove();
     else showWarning('Need at least 2 options');
   };
 });
 
-cancelPollBtn.onclick=()=>pollModal.style.display='none';
+cancelPollBtn.onclick = () => pollModal.style.display = 'none';
 
-submitPollBtn.onclick=async ()=>{
-  const q=pollQuestion.value.trim(); 
+submitPollBtn.onclick = async () => {
+  const q = pollQuestion.value.trim(); 
   if(!q){ showWarning('Enter a question'); return; }
   
-  const opts=Array.from(document.querySelectorAll('.poll-opt-input')).map(i=>i.value.trim()).filter(Boolean); 
-  if(opts.length<2){ showWarning('Need at least 2 options'); return; }
+  const opts = Array.from(document.querySelectorAll('.poll-opt-input')).map(i => i.value.trim()).filter(Boolean); 
+  if(opts.length < 2){ showWarning('Need at least 2 options'); return; }
   
-  const dur = (parseInt(pollDuration.value)||5)*(parseInt(pollDurationUnit.value));
-  const pollRef = await push(ref(db,'polls/'+currentRoom),{
-    question:q, 
-    options:opts, 
-    creatorId:myID, 
-    creatorName:username, 
-    createdAt:Date.now(), 
-    endsAt:Date.now()+dur,
-    votes:{}, 
-    voters:{}
+  const dur = (parseInt(pollDuration.value)||5) * (parseInt(pollDurationUnit.value));
+  const pollRef = await push(ref(db, 'polls/' + currentRoom), {
+    question: q, 
+    options: opts, 
+    creatorId: myID, 
+    creatorName: username, 
+    createdAt: Date.now(), 
+    endsAt: Date.now() + dur,
+    votes: {}, 
+    voters: {}
   });
   
-  await push(ref(db,'messages/'+currentRoom),{
-    name:username, 
-    id:myID, 
-    text:`📊 Poll: ${q}`, 
-    timestamp:Date.now(), 
-    isPoll:true, 
-    pollId:pollRef.key,
+  await push(ref(db, 'messages/' + currentRoom), {
+    name: username, 
+    id: myID, 
+    text: `📊 Poll: ${q}`, 
+    timestamp: Date.now(), 
+    isPoll: true, 
+    pollId: pollRef.key,
     geo: userGeoData
   });
   
-  pollModal.style.display='none'; 
-  pollQuestion.value=''; 
+  pollModal.style.display = 'none'; 
+  pollQuestion.value = ''; 
   
-  // Reset options
-  pollOptionsEl.innerHTML='';
-  const row1 = document.createElement('div'); row1.className='option-row'; 
-  row1.innerHTML=`<input placeholder="Option 1" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`;
-  row1.querySelector('button').onclick=()=>{ if(pollOptionsEl.children.length>2) row1.remove(); };
+  pollOptionsEl.innerHTML = '';
+  const row1 = document.createElement('div'); row1.className = 'option-row'; 
+  row1.innerHTML = `<input placeholder="Option 1" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`;
+  row1.querySelector('button').onclick = () => { if(pollOptionsEl.children.length > 2) row1.remove(); };
   pollOptionsEl.appendChild(row1);
   
-  const row2 = document.createElement('div'); row2.className='option-row';
-  row2.innerHTML=`<input placeholder="Option 2" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`;
-  row2.querySelector('button').onclick=()=>{ if(pollOptionsEl.children.length>2) row2.remove(); };
+  const row2 = document.createElement('div'); row2.className = 'option-row';
+  row2.innerHTML = `<input placeholder="Option 2" class="poll-opt-input"/><button class="remove-opt-btn">✕</button>`;
+  row2.querySelector('button').onclick = () => { if(pollOptionsEl.children.length > 2) row2.remove(); };
   pollOptionsEl.appendChild(row2);
   
-  pollDuration.value='5';
+  pollDuration.value = '5';
 };
 
-createPollBtn.onclick=()=>{ 
-  pollModal.style.display='flex'; 
+createPollBtn.onclick = () => { 
+  pollModal.style.display = 'flex'; 
 };
 
-setTimeout(()=>nameInput.focus(),100);
+setTimeout(() => nameInput.focus(), 100);
 </script>
 </body>
 </html>

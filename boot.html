@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T9 OS Boot</title>
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: #00ffcc;
+  font-family: Consolas, monospace;
+  overflow: hidden;
+}
+
+/* Actual site (hidden at first) */
+#mainSite {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: none;
+}
+
+/* Logo screen */
+#logoScreen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+  transition: opacity 0.8s ease;
+  z-index: 2;
+}
+
+#logoScreen img {
+  width: 180px;
+}
+
+/* Boot logs */
+#bootScreen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  padding: 25px;
+  display: none;
+  z-index: 2;
+}
+
+.line {
+  white-space: pre;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<iframe id="mainSite" src="testme.html"></iframe>
+
+<div id="logoScreen">
+  <img src="newlogo.png">
+</div>
+
+<div id="bootScreen"></div>
+
+<script>
+const bootLines = [
+  "[ OK ] Loading software",
+  "[ OK ] Loading Games...",
+  "[ OK ] Setting up T9 Chat...",
+  "[ OK ] Loading Modules...",
+  "[ OK ] Loading Don Pollos's aura...",
+  "[ OK ] Loading Mr T9's KFC bucket...",
+  "[ OK ] Modules very loaded...",
+  "[ OK ] Establishing secure connection to T9 apps...",
+  "[ OK ] Rizzing up snow bunnies...",
+  "[ OK ] Launching UI...",
+  "[ OK ] Optimizing...",
+  "[ OK ] Final system checks completed successfully...",
+  "",
+  ">>> T9 OS Booted Successfully"
+];
+
+const bootScreen = document.getElementById("bootScreen");
+const logoScreen = document.getElementById("logoScreen");
+const mainSite = document.getElementById("mainSite");
+
+let lineIndex = 0;
+let charIndex = 0;
+
+function typeLine() {
+  if (lineIndex >= bootLines.length) {
+    finishBoot();
+    return;
+  }
+
+  let currentLine = bootLines[lineIndex];
+  let lineDiv = document.createElement("div");
+  lineDiv.classList.add("line");
+  bootScreen.appendChild(lineDiv);
+
+  function typeChar() {
+    if (charIndex < currentLine.length) {
+      lineDiv.textContent += currentLine[charIndex];
+      charIndex++;
+      setTimeout(typeChar, 8);
+    } else {
+      charIndex = 0;
+      lineIndex++;
+      setTimeout(typeLine, 60);
+    }
+  }
+
+  typeChar();
+}
+
+function finishBoot() {
+  setTimeout(() => {
+    // show real site
+    mainSite.style.display = "block";
+
+    // fade out boot
+    document.body.style.transition = "opacity 0.8s";
+    document.body.style.opacity = "0";
+
+    setTimeout(() => {
+      document.body.style.opacity = "1";
+      logoScreen.style.display = "none";
+      bootScreen.style.display = "none";
+    }, 800);
+
+  }, 500);
+}
+
+// Start sequence
+setTimeout(() => {
+  logoScreen.style.opacity = 0;
+
+  setTimeout(() => {
+    logoScreen.style.display = "none";
+    bootScreen.style.display = "block";
+    typeLine();
+  }, 800);
+
+}, 1200);
+</script>
+
+</body>
+</html>
