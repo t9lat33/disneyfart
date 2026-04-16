@@ -1970,8 +1970,7 @@ requestAnimationFrame(trackFPS);
 
 </select>
 
-<input type="file" id="background-upload" accept="image/*">
-
+<input type="file" id="background-upload" accept="image/*,video/*">
 
 
   
@@ -2540,44 +2539,133 @@ document.addEventListener('selectstart', e => e.preventDefault());
 
 </style>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const select = document.getElementById("background-select");
   const upload = document.getElementById("background-upload");
   const body = document.body;
-
-  // Apply background
-  function setBackground(src) {
-    body.style.backgroundImage = src ? `url(${src})` : "";
-    localStorage.setItem("selectedBackground", src || "");
+  
+  // Create or get video element for backgrounds
+  let videoBackground = document.getElementById("video-background");
+  if (!videoBackground) {
+    videoBackground = document.createElement("video");
+    videoBackground.id = "video-background";
+    videoBackground.autoplay = true;
+    videoBackground.loop = true;
+    videoBackground.muted = true;
+    videoBackground.playsInline = true;
+    videoBackground.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      pointer-events: none;
+    `;
+    document.body.insertBefore(videoBackground, document.body.firstChild);
   }
 
-  // Load saved background
-  const savedBg = localStorage.getItem("selectedBackground");
-  if (savedBg) setBackground(savedBg);
+  // Apply background (supports images and videos)
+  function setBackground(src, type = 'image') {
+    // Hide video and remove image background
+    videoBackground.style.display = 'none';
+    videoBackground.src = '';
+    body.style.backgroundImage = '';
+    
+    if (type === 'video') {
+      videoBackground.src = src;
+      videoBackground.style.display = 'block';
+      localStorage.setItem("selectedBackground", src);
+      localStorage.setItem("backgroundType", "video");
+    } else if (type === 'image') {
+      body.style.backgroundImage = src ? `url(${src})` : "";
+      body.style.backgroundSize = "cover";
+      body.style.backgroundPosition = "center";
+      body.style.backgroundRepeat = "no-repeat";
+      body.style.backgroundAttachment = "fixed";
+      localStorage.setItem("selectedBackground", src || "");
+      localStorage.setItem("backgroundType", "image");
+    }
+  }
 
-  // Dropdown change
+  // Load saved background on startup
+  const savedBg = localStorage.getItem("selectedBackground");
+  const savedType = localStorage.getItem("backgroundType") || 'image';
+  if (savedBg) {
+    setBackground(savedBg, savedType);
+  }
+
+  // Dropdown change (preset images)
   select.addEventListener("change", () => {
     if (select.value) {
-      setBackground(select.value);
+      setBackground(select.value, 'image');
     }
   });
 
-  // Upload custom background
+  // Upload custom background (image or video)
   upload.addEventListener("change", () => {
     const file = upload.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
-      setBackground(reader.result); // base64 image
-      select.value = ""; // reset dropdown
+      const fileType = file.type;
+      
+      if (fileType.startsWith('video/')) {
+        // Handle MP4 and other video formats
+        setBackground(reader.result, 'video');
+        select.value = ""; // reset dropdown
+      } else if (fileType.startsWith('image/')) {
+        // Handle images
+        setBackground(reader.result, 'image');
+        select.value = ""; // reset dropdown
+      } else {
+        alert('Please select an image or video file (MP4, WebM, etc.)');
+      }
     };
     reader.readAsDataURL(file);
   });
+  
+  // Optional: Add a clear background function
+  window.clearBackground = function() {
+    videoBackground.style.display = 'none';
+    videoBackground.src = '';
+    body.style.backgroundImage = '';
+    localStorage.removeItem("selectedBackground");
+    localStorage.removeItem("backgroundType");
+    select.value = "";
+    upload.value = "";
+  };
 });
 </script>
+
+<style>
+/* Ensure proper layering */
+body {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Optional: Add a semi-transparent overlay for better text readability */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Style for the upload input to accept video files */
+#background-upload {
+  /* Add accept attribute in HTML: accept="image/*,video/*" */
+}
+</style>
 
 <script>
   const btn = document.getElementById("toggleBTN");
