@@ -202,6 +202,16 @@
     color: #6c6c70;
     margin-left: 4px;
     font-weight: 400;
+    background: #f0f0f5;
+    padding: 1px 6px;
+    border-radius: 8px;
+    border: 0.5px solid #e0e0e6;
+  }
+
+  .msg.own .location-badge {
+    background: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    border-color: rgba(255,255,255,0.25);
   }
 
   .msg.ai-msg {
@@ -686,22 +696,22 @@ const pollDuration = document.getElementById('pollDuration');
 const pollDurationUnit = document.getElementById('pollDurationUnit');
 
 let myID = null, username = "Anonymous", currentRoom = "public";
-// FIX: currentListener now stores the unsubscribe *function* returned by onChildAdded
 let currentUnsubscribe = null;
 let violationCount = 0, lastMessageTime = 0, isAIThinking = false;
 let joinedRooms = new Set(['public']);
 const MAX_CHARS = 300, MESSAGE_COOLDOWN = 5000;
 const activePollListeners = {};
 
-// Geo data storage
+// Geo data storage — capture city, state/region, and country
 let userGeoData = null;
 fetch('https://get.geojs.io/v1/ip/geo.json')
   .then(r => r.json())
   .then(d => {
     userGeoData = {
-      city: d.city || '?',
-      state: d.region || '?',
-      country: d.country_code || '?'
+      city:    d.city            || '',
+      state:   d.region          || '',   // full state/region name
+      country: d.country         || '',   // full country name
+      cc:      d.country_code    || ''    // 2-letter country code fallback
     };
   }).catch(() => {});
 
@@ -720,6 +730,17 @@ async function getMyID(){
     await new Promise(r=>setTimeout(r,100)); 
   } 
   return localStorage.getItem("numericUserID")||"unknown"; 
+}
+
+/**
+ * Build a location string from a geo object.
+ * Returns "City, State, Country" — omitting any blank parts.
+ * Only called when the viewer is premium.
+ */
+function buildLocationString(geo) {
+  if (!geo) return '';
+  const parts = [geo.city, geo.state, geo.country || geo.cc].filter(Boolean);
+  return parts.join(', ');
 }
 
 function refreshJoinedRoomsUI() {
@@ -747,26 +768,21 @@ function refreshJoinedRoomsUI() {
 function switchRoom(room) {
   if (!room || room === currentRoom) return;
   
-  // FIX: Call the unsubscribe function directly instead of off(currentUnsubscribe)
   if (currentUnsubscribe) {
     currentUnsubscribe();
     currentUnsubscribe = null;
   }
 
-  // Detach any active poll listeners for the old room
   Object.keys(activePollListeners).forEach(k => {
     if (typeof activePollListeners[k] === 'function') activePollListeners[k]();
     delete activePollListeners[k];
   });
   
-  // Update current room
   currentRoom = room;
   roomTitle.textContent = room === 'public' ? 'Public' : room;
   
-  // Clear messages
   messagesEl.innerHTML = '';
   
-  // Update active states
   document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
   
   if (room === 'public') {
@@ -777,7 +793,6 @@ function switchRoom(room) {
     });
   }
   
-  // Load messages for the new room
   loadMessages(room);
 }
 
@@ -805,11 +820,12 @@ function appendMessage(payload){
   const nameWithId = `${displayName} (${payload.id})`;
   const premiumBadge = isPremiumSender ? '<span class="premium-badge">Premium</span>' : '';
   
+  // --- LOCATION BADGE: premium viewers see City, State, Country ---
   let locationBadge = '';
   if (amPremium && payload.geo) {
-    const geo = payload.geo;
-    if (geo.city && geo.city !== '?' && geo.country) {
-      locationBadge = `<span class="location-badge">📍 ${escapeHtml(geo.city)}, ${escapeHtml(geo.country)}</span>`;
+    const locStr = buildLocationString(payload.geo);
+    if (locStr) {
+      locationBadge = `<span class="location-badge">📍 ${escapeHtml(locStr)}</span>`;
     }
   }
   
@@ -936,7 +952,7 @@ async function sendMessage(){
       id: myID, 
       text: txt, 
       timestamp: Date.now(),
-      geo: userGeoData
+      geo: userGeoData   // now includes city, state, country, cc
     });
     
     msgInput.value = ''; 
@@ -1031,7 +1047,6 @@ function renderPollCard(pollData, pollId) {
 
   if (!activePollListeners[pollId]) {
     const pollRef = ref(db, 'polls/' + currentRoom + '/' + pollId);
-    // FIX: store the unsubscribe function returned by onValue
     activePollListeners[pollId] = onValue(pollRef, snap => {
       const data = snap.val();
       if (data) updatePollCard(document.getElementById('poll-' + pollId), data);
@@ -1100,7 +1115,6 @@ async function castVote(pollId, optionIdx) {
 }
 
 function loadMessages(room){
-  // FIX: Call the unsubscribe function, not off()
   if (currentUnsubscribe) {
     currentUnsubscribe();
     currentUnsubscribe = null;
@@ -1111,7 +1125,6 @@ function loadMessages(room){
   const messagesRef = ref(db, "messages/" + room);
   const limitedQuery = query(messagesRef, limitToLast(100));
   
-  // FIX: onChildAdded returns an unsubscribe function — store it directly
   currentUnsubscribe = onChildAdded(limitedQuery, (snap) => { 
     const data = snap.val();
     if(data) appendMessage(data); 
