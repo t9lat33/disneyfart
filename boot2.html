@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>T9</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    overflow: hidden;
+    height: 100vh;
+    font-family: 'Courier New', monospace;
+}
+
+#root {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+}
+
+/* ALL BOOT PHASES */
+#phase-black,
+#phase-winlogo,
+#phase-code,
+#phase-white-logo,
+#phase-desktop {
+    position: absolute;
+    inset: 0;
+}
+
+/* BLACK */
+#phase-black {
+    background: #000;
+    z-index: 10;
+}
+
+/* WIN LOGO */
+#phase-winlogo {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 9;
+}
+
+.win4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 130px;
+    height: 130px;
+}
+.win4 div {
+    background: #000;
+}
+
+/* CODE */
+#phase-code {
+    background: #000;
+    opacity: 0;
+    z-index: 8;
+}
+
+#code-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #fff;
+    white-space: pre;
+}
+
+/* WHITE LOGO */
+#phase-white-logo {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 7;
+}
+
+#phase-white-logo img {
+    width: 180px;
+    filter: brightness(0);
+}
+
+/* DESKTOP */
+#phase-desktop {
+    background: #070f07;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 5;
+    color: #8fbf8f;
+    letter-spacing: 0.3em;
+}
+
+/* =========================
+   FIXED IFRAME (IMPORTANT)
+========================= */
+
+#iframe-container {
+    position: absolute;
+    inset: 0;
+    z-index: 50; /* 🔥 ABOVE EVERYTHING */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+#iframe-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#app-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: auto;
+}
+</style>
+</head>
+
+<body>
+
+<div id="root">
+
+<div id="phase-black"></div>
+
+<div id="phase-winlogo">
+<div class="win4"><div></div><div></div><div></div><div></div></div>
+</div>
+
+<div id="phase-code">
+<div id="code-text"></div>
+</div>
+
+<div id="phase-white-logo">
+<img src="newlogo.png">
+</div>
+
+<div id="phase-desktop">T9 OS</div>
+
+<!-- IFRAME (NOW CLICKABLE) -->
+<div id="iframe-container">
+<iframe id="app-iframe"></iframe>
+</div>
+
+</div>
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+/* BOOT SOUND */
+class BootSound {
+    constructor() {
+        this.ctx = null;
+    }
+
+    init() {
+        if (this.ctx) return this.ctx;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        return this.ctx;
+    }
+
+    async play() {
+        const ctx = this.init();
+        if (ctx.state === "suspended") await ctx.resume();
+
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.25);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    }
+}
+
+const bootSound = new BootSound();
+
+/* TYPE EFFECT */
+function type(el, text) {
+    let i = 0;
+    el.textContent = "";
+
+    function run() {
+        if (i < text.length) {
+            el.textContent += text[i++];
+            setTimeout(run, 12);
+        }
+    }
+
+    run();
+}
+
+/* SHOW IFRAME */
+function showIframe() {
+    const c = $("iframe-container");
+
+    c.classList.add("visible");
+    $("app-iframe").src = "testme.html";
+
+    // 🔥 ENSURE CLICKABLE
+    c.style.pointerEvents = "auto";
+}
+
+/* BOOT SEQUENCE */
+function boot() {
+
+$("phase-black").style.opacity = 1;
+$("phase-winlogo").style.opacity = 0;
+$("phase-code").style.opacity = 0;
+$("phase-white-logo").style.opacity = 0;
+$("phase-desktop").style.opacity = 0;
+
+setTimeout(() => {
+    $("phase-black").style.opacity = 0;
+    $("phase-winlogo").style.opacity = 1;
+    bootSound.play();
+}, 600);
+
+setTimeout(() => {
+    $("phase-winlogo").style.opacity = 0;
+    $("phase-code").style.opacity = 1;
+    type($("code-text"),
+`struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+
+struct group_info *groups_alloc(int gidsetsize){
+    struct group_info *group_info;
+    int nblocks;
+    int i;
+}`);
+}, 2000);
+
+setTimeout(() => {
+    $("phase-code").style.opacity = 0;
+    $("phase-white-logo").style.opacity = 1;
+}, 7000);
+
+setTimeout(() => {
+    $("phase-white-logo").style.opacity = 0;
+    showIframe();
+}, 9000);
+
+setTimeout(() => {
+    $("phase-desktop").style.opacity = 1;
+}, 11000);
+
+}
+
+boot();
+
+</script>
+
+</body>
+</html>

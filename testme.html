@@ -2567,77 +2567,293 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.insertBefore(videoBackground, document.body.firstChild);
   }
 
+  // ========== INDEXEDDB FOR LARGE VIDEO STORAGE ==========
+  const DB_NAME = 'BackgroundStorage';
+  const STORE_NAME = 'media';
+  let db = null;
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      if (db && db.name === DB_NAME) {
+        resolve(db);
+        return;
+      }
+      
+      const request = indexedDB.open(DB_NAME, 1);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        db = request.result;
+        resolve(db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const database = event.target.result;
+        if (!database.objectStoreNames.contains(STORE_NAME)) {
+          database.createObjectStore(STORE_NAME);
+        }
+      };
+    });
+  }
+
+  async function saveToIndexedDB(key, data) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(data, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function loadFromIndexedDB(key) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function deleteFromIndexedDB(key) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.delete(key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   // Apply background (supports images and videos)
-  function setBackground(src, type = 'image') {
+  async function setBackground(src, type = 'image', isBlob = false, blobData = null) {
     // Hide video and remove image background
     videoBackground.style.display = 'none';
     videoBackground.src = '';
     body.style.backgroundImage = '';
     
     if (type === 'video') {
-      videoBackground.src = src;
+      let videoUrl = src;
+      if (isBlob && blobData) {
+        // Create blob URL from stored data
+        const blob = new Blob([blobData], { type: blobData.type || 'video/mp4' });
+        videoUrl = URL.createObjectURL(blob);
+      }
+      
+      videoBackground.src = videoUrl;
       videoBackground.style.display = 'block';
-      localStorage.setItem("selectedBackground", src);
+      
+      // Store metadata in localStorage (just the type and flag, not the actual video data)
       localStorage.setItem("backgroundType", "video");
+      localStorage.setItem("hasVideoInIndexedDB", "true");
     } else if (type === 'image') {
       body.style.backgroundImage = src ? `url(${src})` : "";
       body.style.backgroundSize = "cover";
       body.style.backgroundPosition = "center";
       body.style.backgroundRepeat = "no-repeat";
       body.style.backgroundAttachment = "fixed";
-      localStorage.setItem("selectedBackground", src || "");
       localStorage.setItem("backgroundType", "image");
+      if (src) {
+        // For images, we can store the data URL in localStorage if small, or use IndexedDB
+        // But data URLs can be huge, so also use IndexedDB for large images
+        if (src.length > 500000) { // If larger than ~500KB, store in IndexedDB
+          localStorage.setItem("hasLargeImageInIndexedDB", "true");
+          // Store the raw blob data separately
+        } else {
+          localStorage.setItem("selectedBackground", src);
+          localStorage.removeItem("hasLargeImageInIndexedDB");
+        }
+      } else {
+        localStorage.removeItem("selectedBackground");
+        localStorage.removeItem("hasLargeImageInIndexedDB");
+      }
+      localStorage.removeItem("hasVideoInIndexedDB");
     }
   }
 
   // Load saved background on startup
-  const savedBg = localStorage.getItem("selectedBackground");
-  const savedType = localStorage.getItem("backgroundType") || 'image';
-  if (savedBg) {
-    setBackground(savedBg, savedType);
+  async function loadSavedBackground() {
+    const savedType = localStorage.getItem("backgroundType") || 'image';
+    const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
+    const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
+    
+    if (savedType === 'video' && hasVideo) {
+      try {
+        const videoData = await loadFromIndexedDB('savedVideo');
+        if (videoData && videoData.data) {
+          const blob = new Blob([videoData.data], { type: videoData.type || 'video/mp4' });
+          const url = URL.createObjectURL(blob);
+          setBackground(url, 'video', true, videoData.data);
+        } else {
+          console.log('No video found in IndexedDB');
+        }
+      } catch (err) {
+        console.error('Failed to load video from IndexedDB:', err);
+      }
+    } else if (savedType === 'image') {
+      const savedBg = localStorage.getItem("selectedBackground");
+      if (savedBg && savedBg.startsWith('data:image')) {
+        setBackground(savedBg, 'image');
+      } else if (hasLargeImage) {
+        try {
+          const imageData = await loadFromIndexedDB('savedImage');
+          if (imageData && imageData.data) {
+            const blob = new Blob([imageData.data], { type: imageData.type || 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            setBackground(url, 'image');
+          }
+        } catch (err) {
+          console.error('Failed to load image from IndexedDB:', err);
+        }
+      } else if (savedBg) {
+        setBackground(savedBg, 'image');
+      }
+    }
   }
 
-  // Dropdown change (preset images)
-  select.addEventListener("change", () => {
-    if (select.value) {
-      setBackground(select.value, 'image');
-    }
-  });
-
-  // Upload custom background (image or video)
-  upload.addEventListener("change", () => {
+  // Upload custom background (image or video) - SAVES NO MATTER HOW BIG
+  upload.addEventListener("change", async () => {
     const file = upload.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const fileType = file.type;
+    const fileType = file.type;
+    
+    if (fileType.startsWith('video/')) {
+      // Show loading indicator (optional)
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Saving video... (this may take a moment for large files)';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      document.body.appendChild(loadingMsg);
       
-      if (fileType.startsWith('video/')) {
-        // Handle MP4 and other video formats
-        setBackground(reader.result, 'video');
+      try {
+        // Read file as ArrayBuffer (works for ANY size)
+        const arrayBuffer = await file.arrayBuffer();
+        
+        // Store in IndexedDB
+        await saveToIndexedDB('savedVideo', {
+          data: arrayBuffer,
+          type: fileType,
+          name: file.name,
+          size: file.size
+        });
+        
+        // Clear old image storage
+        await deleteFromIndexedDB('savedImage');
+        localStorage.removeItem("selectedBackground");
+        localStorage.removeItem("hasLargeImageInIndexedDB");
+        
+        // Create blob URL and apply
+        const blob = new Blob([arrayBuffer], { type: fileType });
+        const url = URL.createObjectURL(blob);
+        await setBackground(url, 'video', true, arrayBuffer);
+        
+        // Save metadata
+        localStorage.setItem("backgroundType", "video");
+        localStorage.setItem("hasVideoInIndexedDB", "true");
         select.value = ""; // reset dropdown
-      } else if (fileType.startsWith('image/')) {
-        // Handle images
-        setBackground(reader.result, 'image');
-        select.value = ""; // reset dropdown
-      } else {
-        alert('Please select an image or video file (MP4, WebM, etc.)');
+        
+        loadingMsg.textContent = '✓ Video saved!';
+        setTimeout(() => loadingMsg.remove(), 1500);
+      } catch (err) {
+        console.error('Failed to save video:', err);
+        loadingMsg.textContent = '✗ Failed to save video (out of storage space?)';
+        loadingMsg.style.background = 'darkred';
+        setTimeout(() => loadingMsg.remove(), 3000);
+        alert('Failed to save video. Your browser may have run out of storage space. Try a smaller file.');
       }
-    };
-    reader.readAsDataURL(file);
+      
+    } else if (fileType.startsWith('image/')) {
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Saving image...';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      document.body.appendChild(loadingMsg);
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        
+        // For large images, use IndexedDB
+        if (file.size > 500000) { // > 500KB
+          await saveToIndexedDB('savedImage', {
+            data: arrayBuffer,
+            type: fileType,
+            name: file.name,
+            size: file.size
+          });
+          localStorage.setItem("hasLargeImageInIndexedDB", "true");
+          localStorage.removeItem("selectedBackground");
+          
+          const blob = new Blob([arrayBuffer], { type: fileType });
+          const url = URL.createObjectURL(blob);
+          await setBackground(url, 'image');
+        } else {
+          // Small image - use data URL
+          const reader = new FileReader();
+          const dataUrl = await new Promise((resolve) => {
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+          await setBackground(dataUrl, 'image');
+          localStorage.removeItem("hasLargeImageInIndexedDB");
+          await deleteFromIndexedDB('savedImage');
+        }
+        
+        localStorage.setItem("backgroundType", "image");
+        localStorage.removeItem("hasVideoInIndexedDB");
+        await deleteFromIndexedDB('savedVideo');
+        select.value = "";
+        
+        loadingMsg.textContent = '✓ Image saved!';
+        setTimeout(() => loadingMsg.remove(), 1500);
+      } catch (err) {
+        console.error('Failed to save image:', err);
+        loadingMsg.textContent = '✗ Failed to save image';
+        loadingMsg.style.background = 'darkred';
+        setTimeout(() => loadingMsg.remove(), 2000);
+      }
+    } else {
+      alert('Please select an image or video file (MP4, WebM, MOV, etc.)');
+    }
   });
-  
-  // Optional: Add a clear background function
-  window.clearBackground = function() {
+
+  // Dropdown change (preset images)
+  select.addEventListener("change", async () => {
+    if (select.value) {
+      await setBackground(select.value, 'image');
+      localStorage.setItem("backgroundType", "image");
+      localStorage.removeItem("hasVideoInIndexedDB");
+      localStorage.removeItem("hasLargeImageInIndexedDB");
+      localStorage.setItem("selectedBackground", select.value);
+      // Clear IndexedDB storage for custom uploads
+      await deleteFromIndexedDB('savedVideo');
+      await deleteFromIndexedDB('savedImage');
+    }
+  });
+
+  // Clear background function
+  window.clearBackground = async function() {
     videoBackground.style.display = 'none';
     videoBackground.src = '';
     body.style.backgroundImage = '';
     localStorage.removeItem("selectedBackground");
     localStorage.removeItem("backgroundType");
+    localStorage.removeItem("hasVideoInIndexedDB");
+    localStorage.removeItem("hasLargeImageInIndexedDB");
     select.value = "";
     upload.value = "";
+    
+    // Clear IndexedDB
+    await deleteFromIndexedDB('savedVideo');
+    await deleteFromIndexedDB('savedImage');
+    
+    console.log('Background cleared');
   };
+
+  // Load saved background on startup
+  loadSavedBackground();
 });
 </script>
 
