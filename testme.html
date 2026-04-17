@@ -2069,7 +2069,7 @@ document.addEventListener("click", () => {
 
         <script>
     // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav'];
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
 
     // Store each div's original colors when the page opens
     const originalColors = {};
@@ -3682,7 +3682,7 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'contextMenu'];
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
