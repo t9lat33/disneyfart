@@ -1718,14 +1718,14 @@ requestAnimationFrame(trackFPS);
 
 
 <div id="contextMenu">
-      <div class="menu-item">Change Wallpaper</div>
+      <div onclick="settings()" class="menu-item">Change Wallpaper</div>
     <div class="divider"></div>
 
-    <div class="menu-item">Games</div>
+    <div class="menu-item" id="toggleDivButton">Games</div>
 
-    <div class="menu-item">Browser</div>
+    <div class="menu-item" onclick="www()">Browser</div>
 
-    <div class="menu-item">Settings</div>
+    <div onclick="settings()" class="menu-item" >Settings</div>
 </div>
 
 <script>
@@ -1940,7 +1940,6 @@ document.addEventListener("click", () => {
 
   
 <a   onclick="openGame()"  class="round-btn">Hide url</a>
-<a   onclick="toggleNavbar()" class="round-btn">Toggle navbar</a>
 <h2 style="text-align: center;">Appearances</h2>
 
     <label class="label" for="picker">Select theme:</label>
