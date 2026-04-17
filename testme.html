@@ -97,7 +97,7 @@ color: white;
       bottom: 12px;
       right: -2%;
       transform: translateX(-50%);
-      min-width: 100px;   
+      min-width: 98px;   
       height: 45px;
          background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
@@ -1088,135 +1088,7 @@ requestAnimationFrame(updateFPS);
           
 </div>
 
-<div id="widgetDiv">
-  <button class="close-btn" onclick="document.getElementById('widgetDiv').style.display = 'none';">●</button>
 
-
-
- <span id="wIcon">⌛</span>
-  <span id="wCond">Loading</span>
-  <span id="wTemp">--°</span>
-  <span id="wCity">Detecting...</span>
-
-<style>
-/* Weather container */
-#widgetDiv #miniWeather,
-#widgetDiv {
-  box-sizing: border-box;
-}
-
-/* Icon */
-#widgetDiv #wIcon{
-  display:block;
-  font-size:35px;
-  text-align:center;
-  line-height:36px;
-  margin-top:6px;
-  height:36px; /* locks height so it never jumps */
-}
-
-/* Temperature */
-#widgetDiv #wTemp{
-  display:block;
-  text-align:center;
-  font-size:24px;
-  font-weight:bold;
-  height:26px;
-  line-height:26px;
-}
-
-/* Condition text */
-#widgetDiv #wCond{
-  display:block;
-  text-align:center;
-  font-size:13px;
-  letter-spacing:1px;
-  text-transform:uppercase;
-  opacity:.85;
-  height:14px;
-  line-height:14px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-
-/* City */
-#widgetDiv #wCity{
-  display:block;
-  text-align:center;
-  font-size:11px;
-  opacity:.7;
-  margin-top:2px;
-  height:12px;
-  line-height:12px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-</style>
-<script>
-async function loadWidgetWeather() {
-  let loc;
-
-  // --- cache location so we never spam the API ---
-  if (localStorage.weatherGeo) {
-    loc = JSON.parse(localStorage.weatherGeo);
-  } else {
-    const res = await fetch("https://ipwho.is/");
-    loc = await res.json();
-
-    if (!loc.success) throw new Error("Geo lookup failed");
-
-    localStorage.weatherGeo = JSON.stringify(loc);
-  }
-
-  const lat = loc.latitude;
-  const lon = loc.longitude;
-
-  document.getElementById("wCity").textContent = loc.city || "Unknown";
-
-  // --- Open-Meteo (no key) ---
-  const data = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
-  ).then(r => r.json());
-
-  const w = data.current_weather;
-  if (!w) throw new Error("Weather unavailable");
-
-  const code = w.weathercode;
-  const temp = Math.round(w.temperature);
-
-  const map = {
-    0: ["☀️", "Sunny"],
-    1: ["🌤️", "Mostly Sunny"],
-    2: ["⛅", "Partly Cloudy"],
-    3: ["☁️", "Cloudy"],
-    45: ["🌫️", "Foggy"],
-    51: ["🌦️", "Drizzle"],
-    61: ["🌧️", "Rainy"],
-    63: ["🌧️", "Rainy"],
-    65: ["🌧️", "Heavy Rain"],
-    71: ["❄️", "Snowy"],
-    80: ["🌧️", "Showers"],
-    95: ["⛈️", "Storm"]
-  };
-
-  const d = map[code] || ["🌡️", "Weather"];
-
-  document.getElementById("wIcon").textContent = d[0];
-  document.getElementById("wCond").textContent = d[1];
-  document.getElementById("wTemp").textContent = temp + "°C";
-}
-
-// run once
-loadWidgetWeather();
-
-</script>
-
-
-</div>
 <div id="wwwDiv">
   <button class="close-btn" onclick="document.getElementById('wwwDiv').style.display = 'none';">●</button>
     <button class="full-btn" onclick="fullscreenIframechat()">●</button>
@@ -1934,7 +1806,7 @@ requestAnimationFrame(trackFPS);
   
    <label class="label" for="background-select">Select Background:</label>
 <select id="background-select">
-  <option value="t9os6.png">Default</option>
+  <option value="tree.jpg">Default</option>
                       <option value="abstract.png">T9 Abstract</option>
                                             <option value="stars3.png">blue space</option>
                                                                         <option value="silver2.gif">Silver Surfer Live</option>
