@@ -1804,227 +1804,175 @@ requestAnimationFrame(trackFPS);
   <h1 class="seth">|| Settings ||</h1>
 
   
-  <div class="settings-row">
-  <label>Select Background</label>
-  <select id="background-select"></select>
-  <input id="bg-upload" type="file">
-</div>
+   <label class="label" for="background-select">Select Background:</label>
+<select id="background-select">
+  <option value="tree.jpg">Default</option>
+                      <option value="abstract.png">T9 Abstract</option>
+                                            <option value="stars3.png">blue space</option>
+                                                                        <option value="silver2.gif">Silver Surfer Live</option>
+                            <option value="silver.jpeg">Silver Surfer</option>
+                          <option value="naruto.png">Naruto</option>
+                  <option value="red.jpg">Red Abstract</option>
+                  <option value="halloween.png">halloween</option>
 
-<div class="settings-row">
-  <button id="hide-url">Hide URL</button>
-  <button id="toggle-navbar">Toggle Navbar</button>
-</div>
+                  <option value="purplecity2.png">T9 OS city</option>
 
-<div class="settings-row">
-  <label>Theme</label>
-  <input id="theme-color" type="color">
-  <button id="reset-theme">Reset Theme</button>
-</div>
+                <option value="toyota.jpg">Toyota GR supra</option>
 
-<div class="settings-row">
-  <label>Tab Cloak</label>
-  <select id="tab-cloak"></select>
-</div>
-<style>
-  .settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+              <option value="car.jpeg">Hennessey Venom F5 car</option>
 
-  padding: 12px 14px;
-  margin: 10px 0;
+            <option value="goku.jpg">Goku</option>
 
-  background: rgba(20, 20, 20, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+          <option value="ocean.png">Moonlit Voyage</option>
 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+          <option value="vibes.gif">Synthwave sunset</option>
 
-  color: white;
-  font-family: Arial, sans-serif;
-  gap: 10px;
-}
-</style>
-<script>
-/* =========================
-   SETTINGS CONTROLLER (MAIN)
-========================= */
-const Settings = {
-  init() {
-    this.cacheElements();
-    this.loadBackgrounds();
-    this.loadTabCloak();
-    this.bindEvents();
-  },
+        <option value="deadpool.gif">Deadpool</option>
 
-  /* -------------------------
-     CACHE ELEMENTS
-  ------------------------- */
-  cacheElements() {
-    this.bgSelect = document.getElementById("background-select");
-    this.bgUpload = document.getElementById("bg-upload");
+  <option value="city.jpg">City</option>
+  <option value="sunset.jpg">Sunset</option>
+  <option value="mountains.jpg">Mountains</option>
+  <option value="tree.jpg">Tropical trees</option>
+  <option value="space.jpg">Space</option>
+    <option value="psky.jpg">Purple sky</option>
+    <option value="abstract.jpg">Abstract</option>
+    <option value="cyberpunk.gif">Cyberpunk</option>
+    <option value="luffy.gif">Luffy Straw hat</option>
+    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
+      <option value="pbWaves.jpg">Purple Blue Abstract</option>
 
-    this.hideUrlBtn = document.getElementById("hide-url");
-    this.toggleNavBtn = document.getElementById("toggle-navbar");
+</select>
 
-    this.themeColor = document.getElementById("theme-color");
-    this.resetThemeBtn = document.getElementById("reset-theme");
+<input type="file" id="background-upload" accept="image/*,video/*">
 
-    this.tabCloak = document.getElementById("tab-cloak");
 
-    this.navbar = document.querySelector(".navbar");
-  },
+  
+<a   onclick="openGame()"  class="round-btn">Hide url</a>
+<a   onclick="toggleNavbar()" class="round-btn">Toggle navbar</a>
+<h2 style="text-align: center;">Appearances</h2>
 
-  /* -------------------------
-     BACKGROUNDS
-  ------------------------- */
-  backgrounds: [
-    "tree.jpg",
-    "space.jpg",
-    "ocean.jpg"
-  ],
+    <label class="label" for="picker">Select theme:</label>
+        <input type="color" id="picker" value="#333333">
 
-  loadBackgrounds() {
-    this.backgrounds.forEach(bg => {
-      const opt = document.createElement("option");
-      opt.value = bg;
-      opt.textContent = bg;
-      this.bgSelect.appendChild(opt);
-    });
-  },
+    <a   id="reset" class="round-btn">Reset theme</a>
 
-  setBackground(src) {
-    document.body.style.backgroundImage = `url(${src})`;
-    document.body.style.backgroundSize = "cover";
-  },
 
-  /* -------------------------
-     TAB CLOAK PRESETS
-  ------------------------- */
-  tabPresets: {
-    google: {
-      title: "Google",
-      icon: "https://www.google.com/favicon.ico"
-    },
-    drive: {
-      title: "My Drive",
-      icon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"
-    },
-    portal: {
-      title: "Portal",
-      icon: "https://cdn-icons-png.flaticon.com/512/270/270798.png"
-    }
-  },
+        <script>
+    // List of div IDs
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav'];
 
-  loadTabCloak() {
-    Object.keys(this.tabPresets).forEach(key => {
-      const opt = document.createElement("option");
-      opt.value = key;
-      opt.textContent = key;
-      this.tabCloak.appendChild(opt);
-    });
-  },
-
-  applyTabCloak(key) {
-    const preset = this.tabPresets[key];
-    if (!preset) return;
-
-    document.title = preset.title;
-
-    let icon = document.querySelector("link[rel='icon']");
-    if (!icon) {
-      icon = document.createElement("link");
-      icon.rel = "icon";
-      document.head.appendChild(icon);
-    }
-
-    icon.href = preset.icon;
-  },
-
-  /* -------------------------
-     THEME SYSTEM
-  ------------------------- */
-  setTheme(color) {
-    document.documentElement.style.setProperty("--accent", color);
-  },
-
-  resetTheme() {
-    document.documentElement.style.setProperty("--accent", "#ffffff");
-  },
-
-  /* -------------------------
-     NAVBAR CONTROL
-  ------------------------- */
-  toggleNavbar() {
-    if (!this.navbar) return;
-    this.navbar.style.display =
-      this.navbar.style.display === "none" ? "flex" : "none";
-  },
-
-  /* -------------------------
-     FULLSCREEN (FAKE "HIDE URL")
-  ------------------------- */
-  enterFullscreen() {
-    document.documentElement.requestFullscreen?.();
-  },
-
-  /* -------------------------
-     EVENTS
-  ------------------------- */
-  bindEvents() {
-
-    /* Background select */
-    this.bgSelect.addEventListener("change", () => {
-      this.setBackground(this.bgSelect.value);
+    // Store each div's original colors when the page opens
+    const originalColors = {};
+    divIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            originalColors[id] = {
+                bg: getComputedStyle(el).backgroundColor,
+                border: getComputedStyle(el).borderColor
+            };
+        }
     });
 
-    /* Upload background */
-    this.bgUpload.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    // Store original text shadows for time and battery
+    const timeEl = document.getElementById('time');
+    const batteryEl = document.getElementById('batteryPercentage');
+    const originalTextShadows = {
+        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
+        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
+    };
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        this.setBackground(event.target.result);
-      };
-      reader.readAsDataURL(file);
+    // 1. Load saved progress from LocalStorage
+    window.addEventListener('load', () => {
+        const savedColor = localStorage.getItem('userColor');
+        if (savedColor) {
+            divIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.backgroundColor = savedColor;
+                    el.style.borderColor = savedColor;
+                }
+            });
+            
+            // Apply saved color to text shadows
+            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
+            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
+            
+            document.getElementById('picker').value = savedColor;
+        }
     });
 
-    /* Hide URL */
-    this.hideUrlBtn.addEventListener("click", () => {
-      this.enterFullscreen();
+    // 2. Change color for the list of divs
+    document.getElementById('picker').addEventListener('input', function() {
+        const newColor = this.value;
+
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.backgroundColor = newColor;
+                el.style.borderColor = newColor;
+            }
+        });
+
+        // Update text shadows for time and battery
+        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
+        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
+
+        localStorage.setItem('userColor', newColor);
     });
 
-    /* Toggle navbar */
-    this.toggleNavBtn.addEventListener("click", () => {
-      this.toggleNavbar();
-    });
+    // 3. Reset to "Normal" (Each div returns to its own original color)
+    document.getElementById('reset').addEventListener('click', () => {
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && originalColors[id]) {
+                el.style.backgroundColor = originalColors[id].bg;
+                el.style.borderColor = originalColors[id].border;
+            }
+        });
 
-    /* Theme color */
-    this.themeColor.addEventListener("input", (e) => {
-      this.setTheme(e.target.value);
-    });
+        // Reset text shadows to original
+        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
+        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
 
-    /* Reset theme */
-    this.resetThemeBtn.addEventListener("click", () => {
-      this.resetTheme();
+        localStorage.removeItem('userColor');
     });
-
-    /* Tab cloak */
-    this.tabCloak.addEventListener("change", () => {
-      this.applyTabCloak(this.tabCloak.value);
-    });
-  }
-};
-
-/* =========================
-   START SYSTEM
-========================= */
-window.addEventListener("DOMContentLoaded", () => {
-  Settings.init();
-});
 </script>
+
+ <script>
+    // Load saved position on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const navbar = document.querySelector('.navbar');
+      const savedPosition = localStorage.getItem('navbarPosition');
+      
+      if (savedPosition === 'sidebar') {
+        navbar.classList.add('sidebar');
+      }
+    });
+
+    function toggleNavbar() {
+      const navbar = document.querySelector('.navbar');
+      navbar.classList.toggle('sidebar');
+      
+      // Save the current position
+      if (navbar.classList.contains('sidebar')) {
+        localStorage.setItem('navbarPosition', 'sidebar');
+      } else {
+        localStorage.setItem('navbarPosition', 'dock');
+      }
+    }
+  </script>
+
+   <label class="label" for="preset">Select Tab Cloak:</label>
+
+ <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
+    <option value="default">Default (T9 OS)</option>
+    <option value="google">Google</option>
+    <option value="classroom">Google Classroom</option>
+    <option value="vocab">Vocabulary.com</option>
+  </select>
+</div> 
+
+
 
 
         <script>
