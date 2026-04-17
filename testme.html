@@ -1804,57 +1804,48 @@ requestAnimationFrame(trackFPS);
   <h1 class="seth">|| Settings ||</h1>
 
   
-   <label class="label" for="background-select">Select Background:</label>
-<select id="background-select">
-  <option value="tree.jpg">Default</option>
-                      <option value="abstract.png">T9 Abstract</option>
-                                            <option value="stars3.png">blue space</option>
-                                                                        <option value="silver2.gif">Silver Surfer Live</option>
-                            <option value="silver.jpeg">Silver Surfer</option>
-                          <option value="naruto.png">Naruto</option>
-                  <option value="red.jpg">Red Abstract</option>
-                  <option value="halloween.png">halloween</option>
+  <div class="settings-row">
+  <label>Select Background</label>
+  <select id="background-select"></select>
+  <input id="bg-upload" type="file">
+</div>
 
-                  <option value="purplecity2.png">T9 OS city</option>
+<div class="settings-row">
+  <button id="hide-url">Hide URL</button>
+  <button id="toggle-navbar">Toggle Navbar</button>
+</div>
 
-                <option value="toyota.jpg">Toyota GR supra</option>
+<div class="settings-row">
+  <label>Theme</label>
+  <input id="theme-color" type="color">
+  <button id="reset-theme">Reset Theme</button>
+</div>
 
-              <option value="car.jpeg">Hennessey Venom F5 car</option>
+<div class="settings-row">
+  <label>Tab Cloak</label>
+  <select id="tab-cloak"></select>
+</div>
+<style>
+  .settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-            <option value="goku.jpg">Goku</option>
+  padding: 12px 14px;
+  margin: 10px 0;
 
-          <option value="ocean.png">Moonlit Voyage</option>
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
 
-          <option value="vibes.gif">Synthwave sunset</option>
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-        <option value="deadpool.gif">Deadpool</option>
-
-  <option value="city.jpg">City</option>
-  <option value="sunset.jpg">Sunset</option>
-  <option value="mountains.jpg">Mountains</option>
-  <option value="tree.jpg">Tropical trees</option>
-  <option value="space.jpg">Space</option>
-    <option value="psky.jpg">Purple sky</option>
-    <option value="abstract.jpg">Abstract</option>
-    <option value="cyberpunk.gif">Cyberpunk</option>
-    <option value="luffy.gif">Luffy Straw hat</option>
-    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
-      <option value="pbWaves.jpg">Purple Blue Abstract</option>
-
-</select>
-
-<input type="file" id="background-upload" accept="image/*,video/*">
-
-
-  
-<a   onclick="openGame()"  class="round-btn">Hide url</a>
-<a   onclick="toggleNavbar()" class="round-btn">Toggle navbar</a>
-<h2 style="text-align: center;">Appearances</h2>
-
-    <label class="label" for="picker">Select theme:</label>
-        <input type="color" id="picker" value="#333333">
-
-    <a   id="reset" class="round-btn">Reset theme</a>
+  color: white;
+  font-family: Arial, sans-serif;
+  gap: 10px;
+}
+</style>
 
 
         <script>
