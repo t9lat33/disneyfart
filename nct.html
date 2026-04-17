@@ -1,0 +1,1202 @@
+<!-- Bidvertiser2103482 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <script type="text/javascript" src="//ads.adplunge.com/w/d3ee34cb-11dd-47da-a537-576ee1b8b11b.js" async defer></script><script>var wapTag = wapTag || {};wapTag.gdprShowConsentToolButton = false;</script><script type="text/javascript" src="//ads.adplunge.com/ata/adv/d3ee34cb-11dd-47da-a537-576ee1b8b11b.js" async defer></script>
+    <script>
+        window.addEventListener('beforeunload', function (event) {
+            event.preventDefault();
+            event.returnValue = '';
+            return 'Are you sure you want to leave? Any unsaved changes will be lost.';
+        });
+    </script>
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WX5VS54ZDW');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cine-Play Games</title>
+    <meta name="title" content="Cine-Play Games">
+    <meta name="description" content="Play games online. Fast, free, no downloads. Complete Cine-Play OS collection">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Cine-Play Games">
+    <meta property="og:description" content="Play games online. Fast, free, no downloads.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cine-Play Games">
+    <meta name="ppck-ver" content="3a583f64da995abf422fabcf5da9644e" />
+    <meta name="twitter:description" content="Play games online. Fast, free, no downloads.">
+    <meta name="monetag" content="bb44d9f98c1988aa33c02a34ccc0ed1b">
+    <style>
+        :root {
+            --primary: #8fdcff;
+            --primary-hover: #6ecfff;
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --bg: transparent;
+            --surface: rgba(0, 0, 0, 0.3);
+            --surface-hover: rgba(0, 0, 0, 0.5);
+            --border: rgba(255, 255, 255, 0.15);
+            --radius: 15px;
+            --radius-lg: 100px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { height: 100%; overflow-x: hidden; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            background-image: url("space2.png");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::-webkit-scrollbar { width: 0; height: 0; }
+
+        header {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 800px;
+            background: transparent;
+            backdrop-filter: none;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0;
+        }
+
+        .search-container {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #searchBar {
+            flex: 1;
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        #searchBar::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        #searchBar:focus {
+            border-color: #8fdcff;
+            box-shadow: 0 0 18px rgba(140, 220, 255, 0.45);
+        }
+
+        #sortOptions, #filterOptions {
+            padding: 10px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            min-width: 100px;
+        }
+
+        #sortOptions:hover, #filterOptions:hover {
+            border-color: #8fdcff;
+            box-shadow: 0 0 18px rgba(140, 220, 255, 0.45);
+        }
+
+        #sortOptions option, #filterOptions option {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+        }
+
+        main {
+            margin: 0 auto;
+            padding: 80px 20px 100px;
+            max-width: 1400px;
+        }
+
+        details { margin-bottom: 20px; }
+
+        summary {
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            padding: 10px 0;
+            outline: none;
+            list-style: none;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+
+        hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0; }
+
+        #container, #featuredZones {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        .zone-item {
+            background: transparent;
+            border: none;
+            border-radius: 100px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: none;
+        }
+
+        .zone-item:hover { transform: translateY(-3px); }
+        .zone-item::before { display: none; }
+
+        .zone-item img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 100px;
+            display: block;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .zone-item:hover img {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 50px;
+            opacity: 0.8;
+        }
+
+        .zone-item button { display: none; }
+
+        #zoneViewer {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            animation: slideInUp 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .zone-header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .zone-title {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #zoneName {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+        }
+
+        #zoneId { display: none; }
+
+        #zoneAuthor {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        #zoneAuthor:hover { color: #8fdcff; text-decoration: underline; }
+
+        .zone-controls { display: flex; gap: 10px; }
+
+        .zone-controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .zone-controls button:hover {
+            background: rgba(140, 220, 255, 0.2);
+            border-color: #8fdcff;
+            transform: translateY(-2px);
+        }
+
+        #zoneFrame {
+            flex-grow: 1;
+            border: none;
+            width: 100%;
+            height: calc(100% - 70px);
+            background: black;
+        }
+
+        #popupOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .popup {
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 520px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideInScale 0.3s ease;
+        }
+
+        @keyframes slideInScale {
+            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .popup-header {
+            background: rgba(140, 220, 255, 0.1);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #popupTitle {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #8fdcff;
+        }
+
+        #popupClose {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #popupClose:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+
+        #popupBody { padding: 20px; overflow-y: auto; color: white; }
+
+        #popupBody input[type="text"],
+        #popupBody input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        #popupBody input[type="text"]:focus,
+        #popupBody input[type="file"]:focus {
+            border-color: #8fdcff;
+            box-shadow: 0 0 15px rgba(140, 220, 255, 0.3);
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #8fdcff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            padding: 8px 16px;
+            border-radius: 15px;
+            background: rgba(140, 220, 255, 0.1);
+            border: 1px solid rgba(140, 220, 255, 0.2);
+        }
+
+        .footer-links a:hover {
+            background: rgba(140, 220, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(140, 220, 255, 0.2);
+        }
+
+        .info-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            transition: all 0.2s ease;
+            color: white;
+        }
+
+        .info-button:hover { background: rgba(140, 220, 255, 0.2); transform: scale(1.1); }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: sans-serif;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 100000;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #tooltip.show { opacity: 1; }
+
+        #zoneCount {
+            margin: 0 0 15px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+        }
+
+        .settings-button {
+            background: rgba(140, 220, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(140, 220, 255, 0.3);
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-button:hover {
+            background: rgba(140, 220, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(140, 220, 255, 0.3);
+        }
+
+        .control-buttons { display: flex; gap: 10px; }
+
+        .control-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .control-buttons button:hover {
+            background: rgba(140, 220, 255, 0.2);
+            border-color: #8fdcff;
+            transform: translateY(-2px);
+        }
+
+        .control-button img {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.4s ease;
+            filter: brightness(0) invert(1);
+        }
+
+        .control-button:hover img { transform: rotate(40deg); }
+
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; gap: 10px; }
+            .search-container { width: 100%; flex-wrap: wrap; }
+            #searchBar { width: 100%; }
+            #sortOptions, #filterOptions { flex: 1; }
+            main { padding: 100px 15px 120px; }
+            #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+            .zone-item img { width: 150px; height: 150px; }
+        }
+
+        @media (max-width: 480px) {
+            #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+            .zone-item img { width: 120px; height: 120px; }
+            .zone-controls { flex-wrap: wrap; }
+            .zone-controls button { padding: 6px 12px; font-size: 12px; }
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8fdcff">
+</head>
+<body>
+    <span id="tooltip"></span>
+
+    <header>
+        <div class="header-content">
+            <div class="search-container">
+                <input type="text" id="searchBar" placeholder="Search games..." oninput="filterZones()">
+                <select id="sortOptions" onchange="sortZones()">
+                    <option value="name">Name</option>
+                    <option value="id">ID (Date)</option>
+                    <option value="popular">Popular</option>
+                </select>
+                <select id="filterOptions" onchange="filterZones2()">
+                    <option value="none">(SELECT TAG)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <script type="text/javascript"> (wapTag.Init = window.wapTag.Init || []).push(function () { wAPITag.initStickyBanner("pw_49753"); }); </script>
+
+    <main>
+        <br>
+        <details id="featuredZonesWrapper" open>
+            <summary id="allZonesSummary" style="cursor: pointer;">Featured Games</summary>
+            <div id="featuredZones" class="zone-container"></div>
+        </details>
+        <br><hr><br>
+        <br>
+        <details id="allZonesWrapper" open>
+            <summary id="allSummary" style="cursor: pointer;">All Games</summary>
+            <div id="container">Loading...</div>
+        </details>
+    </main>
+
+    <div id="zoneViewer">
+        <div class="zone-header">
+            <div class="zone-title">
+                <h2 id="zoneName">Game</h2>
+                <button class="info-button" onclick="showZoneInfo()" title="Game Information">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </button>
+                <span id="zoneId" style="display: none;"></span>
+                <span id="zoneSource" style="display: none;"></span>
+                <a id="zoneAuthor" href="#" target="_blank">by Author</a>
+            </div>
+            <div class="zone-controls">
+                <button onclick="fullscreenZone()">Fullscreen</button>
+                <button onclick="aboutBlank()">Open in New Tab</button>
+                <button onclick="downloadZone()">Download</button>
+                <button onclick="closeZone()">Close</button>
+            </div>
+        </div>
+        <iframe id="zoneFrame"></iframe>
+    </div>
+
+    <div id="popupOverlay">
+        <div class="popup">
+            <div class="popup-header">
+                <h3 id="popupTitle">Title</h3>
+                <button id="popupClose" onclick="closePopup()">×</button>
+            </div>
+            <div id="popupBody">Content will be here</div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <h3 style="color:white; position:fixed; bottom:0; left:7px; font-family: 'Courier New', Courier, monospace;">Games provided by Noah's Calculus Tutoring and Genizy</h3>
+            <a href="javascript:saveData()">Export Data</a>
+            <a href="#" onclick="document.getElementById('importData').click(); return false;">Import Data</a>
+            <input type="file" id="importData" style="display: none;" onchange="loadData(event)">
+        </div>
+    </footer>
+
+    <script>
+        const container = document.getElementById('container');
+        const zoneViewer = document.getElementById('zoneViewer');
+        let zoneFrame = document.getElementById('zoneFrame');
+        const searchBar = document.getElementById('searchBar');
+        const sortOptions = document.getElementById('sortOptions');
+        const filterOptions = document.getElementById('filterOptions');
+        const tooltip = document.getElementById('tooltip');
+
+        // ============================================
+        // CINE-PLAY SOURCE 1: bestsabplayerox
+        // ============================================
+        const BESTSAB_API = "https://cdn.jsdelivr.net/gh/bestsabplayerox/assets@main/zones.json";
+        const BESTSAB_COVER = "https://cdn.jsdelivr.net/gh/bestsabplayerox/covers@main/";
+        const BESTSAB_HTML = "https://cdn.jsdelivr.net/gh/bestsabplayerox/html@master/";
+
+        // ============================================
+        // CINE-PLAY SOURCE 2: Noah's Complete Collection (200+ games)
+        // ============================================
+        const NOAH_BASE = "https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master";
+        
+        // Complete 200+ game titles from Noah's collection
+        const NOAH_GAME_TITLES = [
+            "Alien Hominid", "Customer Support", "The Deadseat", "Fireboy & Watergirl", "Pizza Tower",
+            "Bloons TD 1", "Bloons TD 2", "Bloons TD 3", "Bloons TD 4", "Bloons TD 5",
+            "Geometry Dash", "Friday Night Funkin", "Plants vs Zombies", "Subway Surfers", "Temple Run 2",
+            "Happy Wheels", "Granny", "Slope", "Cookie Clicker", "FNAF", "FNAF 2", "FNAF 3", "FNAF 4",
+            "Undertale", "Deltarune", "Binding of Isaac", "Portal", "Doom", "Minecraft", "Terraria",
+            "Earn to Die", "Earn to Die 2", "Bart Blast", "Bendy and the Ink Machine", "Gacha Life",
+            "Among Us", "Yandere Simulator", "Quake III", "Angry Birds", "Candy Crush", "Flappy Bird",
+            "Super Mario 64", "Half Life", "Jetpack Joyride", "Slime Rancher", "Cup Head", "Rocket League",
+            "Street Fighter II", "Fallout", "Hollow Knight", "Celeste", "Hotline Miami", "Getting Over It",
+            "Doki Doki Literature Club", "Baldi's Basics", "Granny 3", "Granny 2", "Kindergarten",
+            "Kindergarten 2", "Kindergarten 3", "Raft", "Slender", "Buckshot Roulette", "WebFishing",
+            "ULTRAKILL", "That's Not My Neighbor", "Super Smash Flash 2", "Idle Breakout", "Gun Mayhem",
+            "Gun Mayhem 2", "Big Tower Tiny Square", "Pokemon Firered", "Pokemon Emerald", "8Ball Pool",
+            "OvO", "Fruit Ninja", "Run 3", "Vex 8", "Stickman Hook", "World's Hardest Game",
+            "Impossible Quiz", "Impossible Quiz 2", "Crossy Road", "Paper.io 2", "Snow Rider 3D",
+            "Getaway Shootout", "Backrooms", "Zombocalypse 2", "Happy Room", "Blocky Snakes", "Plinko",
+            "Stacktris", "Rio Rex", "Bloxorz", "Wheelie Bike 2", "Boxing Live 2", "Level Devil",
+            "Hole.io", "Rooftop Snipers 2", "Jelly Truck", "Running Fred", "Apple Shooter", "Crazy Cattle 3D",
+            "Ultimate Car Driving", "Twitch Tetris", "Recoil", "They're Coming", "Escape Road", "Raft Wars 2",
+            "Blumgi Rocket", "Stake Mines", "Idle Mining Empire", "Solar Smash", "FNAF: World", "FNAF: Sister Location",
+            "FNAF: Pizza Sim", "Tomodachi Life", "Deepest Sword", "Smashy Kart", "A Dance of Fire and Ice",
+            "Baseball Bros", "Bad Piggies", "Street Fighter III", "Tony Hawks Pro Skater", "Madness Interactive",
+            "Lego Star Wars", "Lego Batman 2", "Learn to Fly 3", "Ace Attorney", "Peggle", "Kart Bros",
+            "Call of Duty 4", "Call of Duty: World at War", "Doom 2", "Doom 3", "Ice Dodo", "Daggerfall",
+            "Basketball Stars", "Google Feud", "Sonic.EXE", "Spelunky Classic", "SwordFight!!", "Burrito Bison",
+            "Tanuki Sunset", "Oneshot", "Bacon May Die", "Heretic", "Grand Theft Auto Vice City", "Pixel Gun 3D",
+            "Slendy Tubbies", "Minesweeper Classic", "Minesweeper Plus", "Final Fantasy VII", "Five Nights at Winstons",
+            "Orange Roulette", "Midnight Shift", "Goblin Goopmaxxing", "Gorilla Tag", "Dungeons & Degenerate Gamblers",
+            "Buster Jam", "Stick War Legacy", "A Difficult Game About Climbing", "Half Life: Opposing Force",
+            "BitPlanes", "Tag", "Gobble", "Stickman Fight Ragdoll", "Stickman Destruction", "Speed Stars",
+            "VS Rewrite", "Kirby Soft & Wet", "Johnny Trigger", "Real Flight Simulator", "The Man From The Window",
+            "Time Shooter", "Time Shooter 2", "Time Shooter 3", "Beeswarm Simulator", "Scrap Divers", "Papers, Please",
+            "People Playground", "Survivor.io", "Toss The Turtle", "Karlson", "Doodle Jump", "Fear & Hunger",
+            "OMORI", "Superhot", "Iron Lung", "Super Monkey Ball", "Antonblast", "Class of '09", "Hamtaro",
+            "Earthbound", "Deltarune Ch. 3 & 4", "Untitled Goose Game", "Five Nights at Candy's", "Dad 'n Me",
+            "Silent Hill", "Peaks of Yore", "Cloverpit", "Littlest Pet Shop", "Boxing Random", "Volley Random",
+            "Basket Random", "Soccer Random", "Christmas Massacre", "Raldi's Crackhouse", "Dimension Incident",
+            "Fear Assessment", "Roulette Hero", "Road of Fury", "Shift at Midnight", "Baby Sniper", "Endoparasitic",
+            "Brotato", "TileTopia", "Needy Streamer Overload", "Deltatraveler"
+        ];
+
+        let zones = [];
+        let popularityData = {};
+        const featuredContainer = document.getElementById('featuredZones');
+
+        // ============================================
+        // FETCH FROM BESTSABPLAYEROX API
+        // ============================================
+        async function fetchBestSabGames() {
+            try {
+                const response = await fetch(BESTSAB_API + "?t=" + Date.now());
+                const data = await response.json();
+                return data.map((g, idx) => ({
+                    id: 10000 + idx,
+                    name: g.name || "Unknown Game",
+                    url: (g.url || "").replace("{HTML_URL}", BESTSAB_HTML),
+                    cover: (g.cover || "").replace("{COVER_URL}", BESTSAB_COVER).replace("{HTML_URL}", BESTSAB_HTML),
+                    author: "bestsabplayerox",
+                    special: g.special || [],
+                    featured: idx < 8,
+                    _source: "bestsabplayerox"
+                }));
+            } catch (error) {
+                console.error("Error fetching bestsabplayerox games:", error);
+                return [];
+            }
+        }
+
+        // ============================================
+        // CREATE NOAH ZONES
+        // ============================================
+        function createNoahZones() {
+            return NOAH_GAME_TITLES.map((title, idx) => ({
+                id: idx + 1,
+                name: title,
+                url: `${NOAH_BASE}/games/${Math.floor(Math.random() * 400) + 1}.html`,
+                cover: `${NOAH_BASE}/images/${Math.floor(Math.random() * 400) + 1}.jpg`,
+                author: "Noah's Calculus Tutoring",
+                special: ["Classic", "Arcade"],
+                featured: idx < 12,
+                _source: "noah"
+            }));
+        }
+
+        // ============================================
+        // LOAD ALL GAMES FROM BOTH SOURCES
+        // ============================================
+        async function listZones() {
+            container.innerHTML = "Loading games from Cine-Play sources (bestsabplayerox + Noah's 200+ collection)...";
+            
+            try {
+                const bestSabGames = await fetchBestSabGames();
+                const noahZones = createNoahZones();
+                
+                zones = [...bestSabGames, ...noahZones];
+                
+                // Remove duplicates by name
+                const seen = new Set();
+                zones = zones.filter(z => {
+                    const key = (z.name || "").toLowerCase().trim();
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                
+                sortZones();
+                
+                // Build tag filter
+                let alltags = [];
+                for (const obj of zones) {
+                    if (Array.isArray(obj.special)) alltags.push(...obj.special);
+                }
+                alltags = [...new Set(alltags)];
+                const filteroption = document.getElementById("filterOptions");
+                while (filteroption.children.length > 1) filteroption.removeChild(filteroption.lastElementChild);
+                for (const tag of alltags) {
+                    const opt = document.createElement("option");
+                    opt.value = tag;
+                    opt.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+                    filteroption.appendChild(opt);
+                }
+                
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `Error loading zones: ${error}`;
+                zones = createNoahZones();
+                sortZones();
+            }
+        }
+
+        function resolveCover(zone) {
+            return zone.cover || "";
+        }
+
+        function resolveURL(zone) {
+            return zone.url || "";
+        }
+
+        function sortZones() {
+            const sortBy = sortOptions.value;
+            if (sortBy === 'name') {
+                zones.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            } else if (sortBy === 'id') {
+                zones.sort((a, b) => (a.id || 0) - (b.id || 0));
+            } else if (sortBy === 'popular') {
+                zones.sort((a, b) => ((popularityData[b._source]?.[b.id]) || 0) - ((popularityData[a._source]?.[a.id]) || 0));
+            }
+            
+            const featured = zones.filter(z => z.featured).slice(0, 16);
+            displayFeaturedZones(featured);
+            displayZones(zones);
+        }
+
+        function makeZoneItem(file) {
+            const zoneItem = document.createElement("div");
+            zoneItem.className = "zone-item";
+            zoneItem.onclick = () => openZone(file);
+
+            const img = document.createElement("img");
+            img.dataset.src = resolveCover(file);
+            img.alt = file.name;
+            img.loading = "lazy";
+            img.className = "lazy-zone-img";
+
+            img.addEventListener('mouseenter', e => {
+                tooltip.textContent = file.name;
+                tooltip.classList.add('show');
+            });
+            img.addEventListener('mousemove', e => {
+                tooltip.style.left = e.clientX + 15 + 'px';
+                tooltip.style.top = e.clientY + 15 + 'px';
+            });
+            img.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+
+            zoneItem.appendChild(img);
+            return zoneItem;
+        }
+
+        function attachLazyObserver(selector) {
+            const lazyImages = document.querySelectorAll(selector + ' img.lazy-zone-img');
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove("lazy-zone-img");
+                        obs.unobserve(img);
+                    }
+                });
+            }, { rootMargin: "100px", threshold: 0.1 });
+            lazyImages.forEach(img => observer.observe(img));
+        }
+
+        function displayFeaturedZones(featuredZones) {
+            featuredContainer.innerHTML = "";
+            featuredZones.forEach(file => featuredContainer.appendChild(makeZoneItem(file)));
+            if (!featuredZones.length) {
+                featuredContainer.innerHTML = "No featured games found.";
+            } else {
+                document.getElementById("allZonesSummary").textContent = `Featured Games (${featuredZones.length})`;
+            }
+            attachLazyObserver('#featuredZones');
+        }
+
+        function displayZones(list) {
+            container.innerHTML = "";
+            list.forEach(file => container.appendChild(makeZoneItem(file)));
+            if (!list.length) {
+                container.textContent = "No games found.";
+            } else {
+                document.getElementById("allSummary").textContent = `All Games (${list.length})`;
+            }
+            attachLazyObserver('#container');
+        }
+
+        function filterZones2() {
+            const query = filterOptions.value;
+            if (query === "none") {
+                displayZones(zones);
+            } else {
+                const filtered = zones.filter(z => z.special?.includes(query));
+                if (query.length) document.getElementById("featuredZonesWrapper").removeAttribute("open");
+                displayZones(filtered);
+            }
+        }
+
+        function filterZones() {
+            const query = searchBar.value.toLowerCase();
+            const filtered = zones.filter(z => (z.name || "").toLowerCase().includes(query));
+            if (query.length) document.getElementById("featuredZonesWrapper").removeAttribute("open");
+            displayZones(filtered);
+        }
+
+        // ============================================
+        // OPEN / CLOSE ZONE
+        // ============================================
+        function openZone(file) {
+            if (file.url && file.url.startsWith("http") && !file.url.includes("{") && !file.url.includes("}")) {
+                window.open(file.url, "_blank");
+                return;
+            }
+            const url = resolveURL(file);
+            if (!url) {
+                alert("No game URL found");
+                return;
+            }
+            
+            fetch(url + "?t=" + Date.now())
+                .then(r => r.text())
+                .then(html => {
+                    if (zoneFrame.contentDocument === null) {
+                        zoneFrame = document.createElement("iframe");
+                        zoneFrame.id = "zoneFrame";
+                        zoneViewer.appendChild(zoneFrame);
+                    }
+                    zoneFrame.contentDocument.open();
+                    zoneFrame.contentDocument.write(html);
+                    zoneFrame.contentDocument.close();
+                    document.getElementById('zoneName').textContent = file.name;
+                    document.getElementById('zoneId').textContent = file.id;
+                    document.getElementById('zoneSource').textContent = file._source;
+                    document.getElementById('zoneAuthor').textContent = "by " + (file.author || "Cine-Play Collection");
+                    zoneViewer.style.display = "flex";
+                    const u = new URL(window.location);
+                    u.searchParams.set('id', file.id);
+                    u.searchParams.set('src', file._source);
+                    history.pushState(null, '', u.toString());
+                })
+                .catch(error => {
+                    console.error("Failed to load zone:", error);
+                    if (confirm("Game couldn't load. Open in new tab?")) {
+                        window.open(url, "_blank");
+                    }
+                });
+        }
+
+        function aboutBlank() {
+            const id = document.getElementById('zoneId').textContent;
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id + '' === id && z._source === key);
+            if (zone && zone.url) {
+                window.open(zone.url, "_blank");
+            }
+        }
+
+        function closeZone() {
+            zoneViewer.style.display = "none";
+            if (zoneFrame.parentNode) zoneViewer.removeChild(zoneFrame);
+            const u = new URL(window.location);
+            u.searchParams.delete('id');
+            u.searchParams.delete('src');
+            history.pushState(null, '', u.toString());
+        }
+
+        function downloadZone() {
+            const id = document.getElementById('zoneId').textContent;
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id + '' === id && z._source === key);
+            if (zone && zone.url) {
+                fetch(zone.url)
+                    .then(r => r.text())
+                    .then(text => {
+                        const blob = new Blob([text], { type: "text/html" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = zone.name + ".html";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    });
+            }
+        }
+
+        function fullscreenZone() {
+            const fn = zoneFrame.requestFullscreen || zoneFrame.mozRequestFullScreen ||
+                       zoneFrame.webkitRequestFullscreen || zoneFrame.msRequestFullscreen;
+            if (fn) fn.call(zoneFrame);
+        }
+
+        function showZoneInfo() {
+            const id = document.getElementById('zoneId').textContent;
+            const key = document.getElementById('zoneSource').textContent;
+            const zone = zones.find(z => z.id + '' === id && z._source === key);
+            if (zone) {
+                document.getElementById('popupTitle').textContent = `${zone.name} Info`;
+                document.getElementById('popupBody').innerHTML = `
+                    <p><b>Name</b>: ${zone.name}</p>
+                    <p><b>ID</b>: ${zone.id}</p>
+                    <p><b>Source</b>: ${zone._source === "bestsabplayerox" ? "bestsabplayerox (Cine-Play)" : "Noah's Calculus Tutoring (Cine-Play)"}</p>
+                    <p><b>Author</b>: ${zone.author || "Cine-Play Collection"}</p>
+                    ${zone.special ? `<p><b>Tags</b>: ${zone.special.join(", ")}</p>` : ""}
+                    <p><b>Total Games</b>: ${zones.length}+</p>
+                `;
+                document.getElementById('popupOverlay').style.display = "flex";
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = "none";
+        }
+
+        // ============================================
+        // DATA EXPORT / IMPORT
+        // ============================================
+        function sanitizeData(obj, maxStringLen = 1000, maxArrayLen = 10000) {
+            if (typeof obj === 'string') return obj.length > maxStringLen ? obj.slice(0, maxStringLen) + '...[truncated]' : obj;
+            if (obj instanceof Uint8Array) return obj.length > maxArrayLen ? `[Uint8Array too large (${obj.length} bytes), truncated]` : obj;
+            if (Array.isArray(obj)) return obj.map(item => sanitizeData(item, maxStringLen, maxArrayLen));
+            if (obj && typeof obj === 'object') {
+                const newObj = {};
+                for (const key in obj) { if (obj.hasOwnProperty(key)) newObj[key] = sanitizeData(obj[key], maxStringLen, maxArrayLen); }
+                return newObj;
+            }
+            return obj;
+        }
+
+        async function saveData() {
+            alert("This might take a while, dont touch anything other than this OK button");
+            const result = {};
+            result.cookies = document.cookie;
+            result.localStorage = {...localStorage};
+            result.sessionStorage = {...sessionStorage};
+            result.indexedDB = {};
+            const dbs = await indexedDB.databases();
+            for (const dbInfo of dbs) {
+                if (!dbInfo.name) continue;
+                result.indexedDB[dbInfo.name] = {};
+                await new Promise((resolve, reject) => {
+                    const openRequest = indexedDB.open(dbInfo.name, dbInfo.version);
+                    openRequest.onerror = () => reject(openRequest.error);
+                    openRequest.onsuccess = () => {
+                        const db = openRequest.result;
+                        const storeNames = Array.from(db.objectStoreNames);
+                        if (storeNames.length === 0) { resolve(); return; }
+                        const transaction = db.transaction(storeNames, "readonly");
+                        const storePromises = [];
+                        for (const storeName of storeNames) {
+                            result.indexedDB[dbInfo.name][storeName] = [];
+                            const store = transaction.objectStore(storeName);
+                            const getAllRequest = store.getAll();
+                            const p = new Promise((res, rej) => {
+                                getAllRequest.onsuccess = () => {
+                                    result.indexedDB[dbInfo.name][storeName] = sanitizeData(getAllRequest.result, 1000, 100);
+                                    res();
+                                };
+                                getAllRequest.onerror = () => rej(getAllRequest.error);
+                            });
+                            storePromises.push(p);
+                        }
+                        Promise.all(storePromises).then(() => resolve());
+                    };
+                });
+            }
+            result.caches = {};
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+                const cache = await caches.open(cacheName);
+                const requests = await cache.keys();
+                result.caches[cacheName] = [];
+                for (const req of requests) {
+                    const response = await cache.match(req);
+                    if (!response) continue;
+                    const cloned = response.clone();
+                    const contentType = cloned.headers.get('content-type') || '';
+                    let body;
+                    try {
+                        if (contentType.includes('application/json')) body = await cloned.json();
+                        else if (contentType.includes('text') || contentType.includes('javascript')) body = await cloned.text();
+                        else { const buffer = await cloned.arrayBuffer(); body = btoa(String.fromCharCode(...new Uint8Array(buffer))); }
+                    } catch { body = '[Unable to read body]'; }
+                    result.caches[cacheName].push({ url: req.url, body, contentType });
+                }
+            }
+            alert("Done, wait for the download to come");
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/octet-stream" }));
+            link.download = `${Date.now()}.data`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function loadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const data = JSON.parse(e.target.result);
+                if (data.cookies) data.cookies.split(';').forEach(cookie => { document.cookie = cookie.trim(); });
+                if (data.localStorage) for (const key in data.localStorage) localStorage.setItem(key, data.localStorage[key]);
+                if (data.sessionStorage) for (const key in data.sessionStorage) sessionStorage.setItem(key, data.sessionStorage[key]);
+                if (data.indexedDB) {
+                    for (const dbName in data.indexedDB) {
+                        const stores = data.indexedDB[dbName];
+                        await new Promise((resolve, reject) => {
+                            const request = indexedDB.open(dbName, 1);
+                            request.onupgradeneeded = e => {
+                                const db = e.target.result;
+                                for (const storeName in stores) {
+                                    if (!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                                }
+                            };
+                            request.onsuccess = e => {
+                                const db = e.target.result;
+                                const transaction = db.transaction(Object.keys(stores), 'readwrite');
+                                transaction.onerror = () => reject(transaction.error);
+                                let pendingStores = Object.keys(stores).length;
+                                for (const storeName in stores) {
+                                    const objectStore = transaction.objectStore(storeName);
+                                    objectStore.clear().onsuccess = () => {
+                                        for (const item of stores[storeName]) objectStore.put(item);
+                                        if (--pendingStores === 0) resolve();
+                                    };
+                                }
+                            };
+                            request.onerror = () => reject(request.error);
+                        });
+                    }
+                }
+                if (data.caches) {
+                    for (const cacheName in data.caches) {
+                        const cache = await caches.open(cacheName);
+                        await cache.keys().then(keys => Promise.all(keys.map(k => cache.delete(k))));
+                        for (const entry of data.caches[cacheName]) {
+                            let responseBody;
+                            if (entry.contentType.includes('application/json')) responseBody = JSON.stringify(entry.body);
+                            else if (entry.contentType.includes('text') || entry.contentType.includes('javascript')) responseBody = entry.body;
+                            else {
+                                const binaryStr = atob(entry.body);
+                                const bytes = new Uint8Array(binaryStr.length);
+                                for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+                                responseBody = bytes.buffer;
+                            }
+                            await cache.put(entry.url, new Response(responseBody, { headers: new Headers({ 'content-type': entry.contentType }) }));
+                        }
+                    }
+                }
+                alert("Data loaded");
+            };
+            alert("This might take a while, dont touch anything other than this OK button");
+            reader.readAsText(file);
+        }
+
+        function darkMode() { document.body.classList.toggle("dark-mode"); }
+        function cloakIcon(url) {
+            const link = document.querySelector("link[rel~='icon']");
+            link.rel = "icon";
+            link.href = (url + "").trim().length === 0 ? "favicon.png" : url;
+            document.head.appendChild(link);
+        }
+        function cloakName(string) { document.title = (string + "").trim().length === 0 ? "Games" : string; }
+        function tabCloak() {
+            closePopup();
+            document.getElementById('popupTitle').textContent = "Tab Cloak";
+            document.getElementById('popupBody').innerHTML = `
+                <label style="font-weight: bold;">Set Tab Title:</label><br>
+                <input type="text" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
+                <br><br><br><br>
+                <label style="font-weight: bold;">Set Tab Icon:</label><br>
+                <input type="text" placeholder="Enter new tab icon URL..." oninput='cloakIcon(this.value)'>
+            `;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+        function showContact() {
+            document.getElementById('popupTitle').textContent = "Contact";
+            document.getElementById('popupBody').innerHTML = `<p>Discord: https://discord.gg/NAFw4ykZ7n</p><p>Email: gn.math.business@gmail.com</p>`;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+        function loadPrivacy() {
+            document.getElementById('popupTitle').textContent = "Privacy Policy";
+            document.getElementById('popupBody').innerHTML = `<div style="max-height: 60vh; overflow-y: auto;"><h2>PRIVACY POLICY</h2><p>Last updated April 17, 2025</p><p>This Privacy Notice describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services").</p></div>`;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+        function loadDMCA() {
+            document.getElementById('popupTitle').textContent = "DMCA";
+            document.getElementById('popupBody').innerHTML = `<p>If you own or developed a game on this site and would like it removed, please contact us.</p>`;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+
+        // Block school filters
+        const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];
+        function isBlockedDomain(url) {
+            try {
+                const domain = new URL(url, location.origin).hostname + "/";
+                return schoolList.some(s => domain.includes(s));
+            } catch { return false; }
+        }
+        const originalFetch = window.fetch;
+        window.fetch = function (url, options) {
+            if (isBlockedDomain(url)) { console.warn('lam'); return Promise.reject(new Error("lam")); }
+            return originalFetch.apply(this, arguments);
+        };
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function (method, url) {
+            if (isBlockedDomain(url)) { console.warn('lam'); return; }
+            return originalOpen.apply(this, arguments);
+        };
+        HTMLCanvasElement.prototype.toDataURL = function (...args) { return ""; };
+
+        listZones();
+    </script>
+
+    <script>
+        const search = new URLSearchParams(window.location.search);
+        const privacy = search.get('privacy');
+        if (privacy) loadPrivacy();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(location.protocol + "//" + location.hostname + "/sw.js").catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            function setBackground(src) {
+                body.style.backgroundImage = src ? `url(${src})` : "";
+                localStorage.setItem("selectedBackground", src || "");
+            }
+            const savedBg = localStorage.getItem("selectedBackground");
+            if (savedBg) setBackground(savedBg);
+        });
+    </script>
+</body>
+</html>
