@@ -1679,10 +1679,15 @@ requestAnimationFrame(trackFPS);
 #contextMenu {
     position: absolute;
     width: 190px;
-    background: rgba(25, 25, 25, 0.636);
+     background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 10px;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(3px);
+    color:white;
     display: none;
     box-shadow: 0 12px 30px rgba(0,0,0,0.6);
     overflow: hidden;
@@ -3677,7 +3682,7 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'contextMenu'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
