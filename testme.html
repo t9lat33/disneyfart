@@ -1846,6 +1846,185 @@ requestAnimationFrame(trackFPS);
   gap: 10px;
 }
 </style>
+<script>
+/* =========================
+   SETTINGS CONTROLLER (MAIN)
+========================= */
+const Settings = {
+  init() {
+    this.cacheElements();
+    this.loadBackgrounds();
+    this.loadTabCloak();
+    this.bindEvents();
+  },
+
+  /* -------------------------
+     CACHE ELEMENTS
+  ------------------------- */
+  cacheElements() {
+    this.bgSelect = document.getElementById("background-select");
+    this.bgUpload = document.getElementById("bg-upload");
+
+    this.hideUrlBtn = document.getElementById("hide-url");
+    this.toggleNavBtn = document.getElementById("toggle-navbar");
+
+    this.themeColor = document.getElementById("theme-color");
+    this.resetThemeBtn = document.getElementById("reset-theme");
+
+    this.tabCloak = document.getElementById("tab-cloak");
+
+    this.navbar = document.querySelector(".navbar");
+  },
+
+  /* -------------------------
+     BACKGROUNDS
+  ------------------------- */
+  backgrounds: [
+    "tree.jpg",
+    "space.jpg",
+    "ocean.jpg"
+  ],
+
+  loadBackgrounds() {
+    this.backgrounds.forEach(bg => {
+      const opt = document.createElement("option");
+      opt.value = bg;
+      opt.textContent = bg;
+      this.bgSelect.appendChild(opt);
+    });
+  },
+
+  setBackground(src) {
+    document.body.style.backgroundImage = `url(${src})`;
+    document.body.style.backgroundSize = "cover";
+  },
+
+  /* -------------------------
+     TAB CLOAK PRESETS
+  ------------------------- */
+  tabPresets: {
+    google: {
+      title: "Google",
+      icon: "https://www.google.com/favicon.ico"
+    },
+    drive: {
+      title: "My Drive",
+      icon: "https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png"
+    },
+    portal: {
+      title: "Portal",
+      icon: "https://cdn-icons-png.flaticon.com/512/270/270798.png"
+    }
+  },
+
+  loadTabCloak() {
+    Object.keys(this.tabPresets).forEach(key => {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = key;
+      this.tabCloak.appendChild(opt);
+    });
+  },
+
+  applyTabCloak(key) {
+    const preset = this.tabPresets[key];
+    if (!preset) return;
+
+    document.title = preset.title;
+
+    let icon = document.querySelector("link[rel='icon']");
+    if (!icon) {
+      icon = document.createElement("link");
+      icon.rel = "icon";
+      document.head.appendChild(icon);
+    }
+
+    icon.href = preset.icon;
+  },
+
+  /* -------------------------
+     THEME SYSTEM
+  ------------------------- */
+  setTheme(color) {
+    document.documentElement.style.setProperty("--accent", color);
+  },
+
+  resetTheme() {
+    document.documentElement.style.setProperty("--accent", "#ffffff");
+  },
+
+  /* -------------------------
+     NAVBAR CONTROL
+  ------------------------- */
+  toggleNavbar() {
+    if (!this.navbar) return;
+    this.navbar.style.display =
+      this.navbar.style.display === "none" ? "flex" : "none";
+  },
+
+  /* -------------------------
+     FULLSCREEN (FAKE "HIDE URL")
+  ------------------------- */
+  enterFullscreen() {
+    document.documentElement.requestFullscreen?.();
+  },
+
+  /* -------------------------
+     EVENTS
+  ------------------------- */
+  bindEvents() {
+
+    /* Background select */
+    this.bgSelect.addEventListener("change", () => {
+      this.setBackground(this.bgSelect.value);
+    });
+
+    /* Upload background */
+    this.bgUpload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        this.setBackground(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* Hide URL */
+    this.hideUrlBtn.addEventListener("click", () => {
+      this.enterFullscreen();
+    });
+
+    /* Toggle navbar */
+    this.toggleNavBtn.addEventListener("click", () => {
+      this.toggleNavbar();
+    });
+
+    /* Theme color */
+    this.themeColor.addEventListener("input", (e) => {
+      this.setTheme(e.target.value);
+    });
+
+    /* Reset theme */
+    this.resetThemeBtn.addEventListener("click", () => {
+      this.resetTheme();
+    });
+
+    /* Tab cloak */
+    this.tabCloak.addEventListener("change", () => {
+      this.applyTabCloak(this.tabCloak.value);
+    });
+  }
+};
+
+/* =========================
+   START SYSTEM
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+  Settings.init();
+});
+</script>
 
 
         <script>
