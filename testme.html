@@ -1721,7 +1721,7 @@ requestAnimationFrame(trackFPS);
       <div onclick="settings()" class="menu-item">Change Wallpaper</div>
     <div class="divider"></div>
 
-    <div class="menu-item" id="toggleDivButton">Games</div>
+    <div class="menu-item" onclick="hidden2()">Games</div>
 
     <div class="menu-item" onclick="www()">Browser</div>
 
@@ -2501,6 +2501,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
 <script>
   function settings(){
     const div = document.getElementById('settingsDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function hidden2(){
+    const div = document.getElementById('hiddenDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
