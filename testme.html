@@ -1672,6 +1672,93 @@ requestAnimationFrame(trackFPS);
  
            
 </div>
+<style>
+
+
+/* Context Menu */
+#contextMenu {
+    position: absolute;
+    width: 190px;
+    background: rgba(25, 25, 25, 0.636);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    backdrop-filter: blur(12px);
+    display: none;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* Items */
+.menu-item {
+    padding: 11px 15px;
+    cursor: default;
+    transition: background 0.15s;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 0;
+}
+</style>
+</head>
+
+<body>
+
+
+<div id="contextMenu">
+      <div class="menu-item">Change Wallpaper</div>
+    <div class="divider"></div>
+
+    <div class="menu-item">Games</div>
+
+    <div class="menu-item">Browser</div>
+
+    <div class="menu-item">Settings</div>
+</div>
+
+<script>
+const menu = document.getElementById("contextMenu");
+
+document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+
+    menu.style.display = "block";
+
+    let x = e.pageX;
+    let y = e.pageY;
+
+    // Prevent overflow off screen
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+
+    if (x + menuWidth > window.innerWidth) {
+        x -= menuWidth;
+    }
+
+    if (y + menuHeight > window.innerHeight) {
+        y -= menuHeight;
+    }
+
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+});
+
+document.addEventListener("click", () => {
+    menu.style.display = "none";
+});
+</script>
+
+
+
+
+
 <div id="aiDiv">
   <button class="close-btn" onclick="document.getElementById('aiDiv').style.display = 'none';">●</button>
     <button class="full-btn" onclick="fullscreenIframeAI()">●</button>
