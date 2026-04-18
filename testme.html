@@ -2726,7 +2726,10 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Store metadata in localStorage (just the type and flag, not the actual video data)
       localStorage.setItem("backgroundType", "video");
-      localStorage.setItem("hasVideoInIndexedDB", "true");
+      localStorage.setItem("hasVideoInIndexedDB", isBlob ? "true" : "false");
+      if (!isBlob) {
+        localStorage.setItem("selectedBackground", src);
+      }
     } else if (type === 'image') {
       body.style.backgroundImage = src ? `url(${src})` : "";
       body.style.backgroundSize = "cover";
@@ -2735,11 +2738,8 @@ document.addEventListener("DOMContentLoaded", () => {
       body.style.backgroundAttachment = "fixed";
       localStorage.setItem("backgroundType", "image");
       if (src) {
-        // For images, we can store the data URL in localStorage if small, or use IndexedDB
-        // But data URLs can be huge, so also use IndexedDB for large images
-        if (src.length > 500000) { // If larger than ~500KB, store in IndexedDB
+        if (src.length > 500000) {
           localStorage.setItem("hasLargeImageInIndexedDB", "true");
-          // Store the raw blob data separately
         } else {
           localStorage.setItem("selectedBackground", src);
           localStorage.removeItem("hasLargeImageInIndexedDB");
@@ -2757,25 +2757,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedType = localStorage.getItem("backgroundType") || 'image';
     const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
     const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
+    const savedBg = localStorage.getItem("selectedBackground");
     
-    if (savedType === 'video' && hasVideo) {
-      try {
-        const videoData = await loadFromIndexedDB('savedVideo');
-        if (videoData && videoData.data) {
-          const blob = new Blob([videoData.data], { type: videoData.type || 'video/mp4' });
-          const url = URL.createObjectURL(blob);
-          setBackground(url, 'video', true, videoData.data);
-        } else {
-          console.log('No video found in IndexedDB');
+    if (savedType === 'video') {
+      if (hasVideo) {
+        try {
+          const videoData = await loadFromIndexedDB('savedVideo');
+          if (videoData && videoData.data) {
+            const blob = new Blob([videoData.data], { type: videoData.type || 'video/mp4' });
+            const url = URL.createObjectURL(blob);
+            setBackground(url, 'video', true, videoData.data);
+          }
+        } catch (err) {
+          console.error('Failed to load video from IndexedDB:', err);
         }
-      } catch (err) {
-        console.error('Failed to load video from IndexedDB:', err);
+      } else if (savedBg) {
+        setBackground(savedBg, 'video');
       }
     } else if (savedType === 'image') {
-      const savedBg = localStorage.getItem("selectedBackground");
-      if (savedBg && savedBg.startsWith('data:image')) {
-        setBackground(savedBg, 'image');
-      } else if (hasLargeImage) {
+      if (hasLargeImage) {
         try {
           const imageData = await loadFromIndexedDB('savedImage');
           if (imageData && imageData.data) {
@@ -2792,7 +2792,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Upload custom background (image or video) - SAVES NO MATTER HOW BIG
+  // Upload custom background (image or video)
   upload.addEventListener("change", async () => {
     const file = upload.files[0];
     if (!file) return;
@@ -2800,17 +2800,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileType = file.type;
     
     if (fileType.startsWith('video/')) {
-      // Show loading indicator (optional)
       const loadingMsg = document.createElement('div');
       loadingMsg.textContent = 'Saving video... (this may take a moment for large files)';
       loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
       document.body.appendChild(loadingMsg);
       
       try {
-        // Read file as ArrayBuffer (works for ANY size)
         const arrayBuffer = await file.arrayBuffer();
         
-        // Store in IndexedDB
         await saveToIndexedDB('savedVideo', {
           data: arrayBuffer,
           type: fileType,
@@ -2818,20 +2815,17 @@ document.addEventListener("DOMContentLoaded", () => {
           size: file.size
         });
         
-        // Clear old image storage
         await deleteFromIndexedDB('savedImage');
         localStorage.removeItem("selectedBackground");
         localStorage.removeItem("hasLargeImageInIndexedDB");
         
-        // Create blob URL and apply
         const blob = new Blob([arrayBuffer], { type: fileType });
         const url = URL.createObjectURL(blob);
         await setBackground(url, 'video', true, arrayBuffer);
         
-        // Save metadata
         localStorage.setItem("backgroundType", "video");
         localStorage.setItem("hasVideoInIndexedDB", "true");
-        select.value = ""; // reset dropdown
+        select.value = "";
         
         loadingMsg.textContent = '✓ Video saved!';
         setTimeout(() => loadingMsg.remove(), 1500);
@@ -2852,8 +2846,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const arrayBuffer = await file.arrayBuffer();
         
-        // For large images, use IndexedDB
-        if (file.size > 500000) { // > 500KB
+        if (file.size > 500000) {
           await saveToIndexedDB('savedImage', {
             data: arrayBuffer,
             type: fileType,
@@ -2867,7 +2860,6 @@ document.addEventListener("DOMContentLoaded", () => {
           const url = URL.createObjectURL(blob);
           await setBackground(url, 'image');
         } else {
-          // Small image - use data URL
           const reader = new FileReader();
           const dataUrl = await new Promise((resolve) => {
             reader.onload = () => resolve(reader.result);
@@ -2896,15 +2888,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Dropdown change (preset images)
+  // Dropdown change (supports both preset images AND videos)
   select.addEventListener("change", async () => {
-    if (select.value) {
-      await setBackground(select.value, 'image');
-      localStorage.setItem("backgroundType", "image");
-      localStorage.removeItem("hasVideoInIndexedDB");
+    const value = select.value;
+    if (value) {
+      const isVideo = value.match(/\.(mp4|webm|mov|ogg|ogv|avi|mkv)$/i);
+      const type = isVideo ? 'video' : 'image';
+      
+      await setBackground(value, type);
+      localStorage.setItem("backgroundType", type);
+      
+      if (type === 'video') {
+        localStorage.setItem("hasVideoInIndexedDB", "false");
+        localStorage.setItem("selectedBackground", value);
+      } else {
+        localStorage.setItem("selectedBackground", value);
+      }
+      
       localStorage.removeItem("hasLargeImageInIndexedDB");
-      localStorage.setItem("selectedBackground", select.value);
-      // Clear IndexedDB storage for custom uploads
+      
       await deleteFromIndexedDB('savedVideo');
       await deleteFromIndexedDB('savedImage');
     }
@@ -2922,7 +2924,6 @@ document.addEventListener("DOMContentLoaded", () => {
     select.value = "";
     upload.value = "";
     
-    // Clear IndexedDB
     await deleteFromIndexedDB('savedVideo');
     await deleteFromIndexedDB('savedImage');
     
