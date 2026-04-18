@@ -19,10 +19,6 @@
     <meta property="og:description" content="a modern web proxy browser" />
     <meta property="og:image" content="https://t9.rhw.one/card.png" />
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://t9.rhw.one/" />
-    <meta property="twitter:title" content="T9 Browser" />
-    <meta property="twitter:description" content="a modern web proxy browser" />
-    <meta property="twitter:image" content="https://t9.rhw.one/card.png" />
     <script>
       if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
         location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
@@ -32,59 +28,93 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-WDHVNCL11H');
+      gtag('js', new Date()); gtag('config', 'G-WDHVNCL11H');
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
       :root {
-        --bg: #0d0d0f;
-        --surface: #17171a;
-        --surface2: #1f1f24;
-        --border: #2a2a30;
-        --accent: #4f8fff;
-        --accent2: #7b5ea7;
-        --text: #e8e8ed;
-        --text-muted: #6e6e7a;
-        --red: #e05c5c;
-        --green: #3ecf8e;
-        --tab-w: 180px;
-        --chrome-h: 84px;
+        --bg:          #07070e;
+        --bg2:         #0d0d1c;
+        --chrome-bg:   rgba(10, 10, 20, 0.85);
+        --glass:       rgba(255,255,255,0.04);
+        --glass-hover: rgba(255,255,255,0.07);
+        --glass-active:rgba(255,255,255,0.10);
+        --border:      rgba(255,255,255,0.08);
+        --border-hi:   rgba(255,255,255,0.14);
+        --accent:      #8b8fff;
+        --accent2:     #c07ef8;
+        --accent-glow: rgba(139,143,255,0.25);
+        --accent2-glow:rgba(192,126,248,0.2);
+        --text:        #eeeef6;
+        --text-dim:    #9090b0;
+        --text-muted:  #50506a;
+        --red:         #f87171;
+        --green:       #4ade95;
+        --r-xs:  6px;
+        --r-sm:  10px;
+        --r-md:  16px;
+        --r-lg:  22px;
+        --r-xl:  28px;
+        --r-pill:999px;
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
       html, body {
         height: 100%;
         background: var(--bg);
         color: var(--text);
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Outfit', sans-serif;
         overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── ambient glow bg ── */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(ellipse 70% 55% at 15% -5%, rgba(100,90,255,0.18) 0%, transparent 65%),
+          radial-gradient(ellipse 55% 45% at 88% 105%, rgba(180,100,255,0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 30% at 50% 50%, rgba(60,60,100,0.06) 0%, transparent 70%);
       }
 
       #browser {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
         height: 100vh;
       }
 
-      /* ── CHROME ── */
+      /* ═══════════════════════════════
+         CHROME
+      ═══════════════════════════════ */
       #chrome {
         flex-shrink: 0;
-        background: var(--surface);
+        background: var(--chrome-bg);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
         border-bottom: 1px solid var(--border);
         display: flex;
         flex-direction: column;
+        position: relative;
+        z-index: 100;
       }
 
-      /* ── TAB ROW ── */
+      /* ── TAB STRIP ── */
       #tab-strip {
         display: flex;
         align-items: center;
-        height: 38px;
-        padding: 0 6px;
-        gap: 2px;
+        height: 40px;
+        padding: 6px 8px 0;
+        gap: 3px;
         overflow-x: auto;
         overflow-y: hidden;
         scrollbar-width: none;
@@ -94,173 +124,197 @@
       .tab {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 7px;
         height: 28px;
-        min-width: 100px;
-        max-width: var(--tab-w);
-        padding: 0 8px 0 10px;
-        border-radius: 6px;
+        min-width: 110px;
+        max-width: 180px;
+        padding: 0 10px 0 10px;
+        border-radius: var(--r-sm);
         background: transparent;
         border: 1px solid transparent;
         color: var(--text-muted);
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Outfit', sans-serif;
         font-size: 12px;
+        font-weight: 500;
         cursor: pointer;
         flex-shrink: 0;
-        transition: background .15s, color .15s;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
         white-space: nowrap;
         overflow: hidden;
         position: relative;
+        letter-spacing: 0.01em;
       }
-      .tab:hover { background: var(--surface2); color: var(--text); }
-      .tab.active {
-        background: var(--bg);
+      .tab:hover {
+        background: var(--glass);
+        color: var(--text-dim);
         border-color: var(--border);
+      }
+      .tab.active {
+        background: var(--glass-active);
+        border-color: var(--border-hi);
         color: var(--text);
+        box-shadow: 0 1px 12px rgba(139,143,255,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
       }
+
       .tab-fav {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
       }
-      .tab-fav img {
-        width: 16px;
-        height: 16px;
-        object-fit: contain;
-      }
-      .tab-title {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      .tab-fav img { width: 14px; height: 14px; object-fit: contain; border-radius: 3px; }
+      .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
       .tab-x {
         flex-shrink: 0;
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        line-height: 1;
+        width: 16px; height: 16px;
+        border-radius: 5px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px;
         color: var(--text-muted);
         background: transparent;
         border: none;
         cursor: pointer;
-        transition: background .1s, color .1s;
+        transition: background 0.15s, color 0.15s;
         opacity: 0;
+        padding: 0;
       }
       .tab:hover .tab-x, .tab.active .tab-x { opacity: 1; }
-      .tab-x:hover { background: var(--red); color: #fff; }
+      .tab-x:hover { background: rgba(248,113,113,0.2); color: var(--red); }
 
       #btn-newtab {
         flex-shrink: 0;
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
+        width: 28px; height: 28px;
+        border-radius: var(--r-sm);
         background: transparent;
-        border: none;
+        border: 1px solid transparent;
         color: var(--text-muted);
-        font-size: 18px;
+        font-size: 17px;
         line-height: 1;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background .15s, color .15s;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 300;
       }
-      #btn-newtab:hover { background: var(--surface2); color: var(--text); }
+      #btn-newtab:hover {
+        background: var(--glass);
+        color: var(--accent);
+        border-color: var(--border);
+      }
 
       /* ── TOOLBAR ── */
       #nav-bar {
         display: flex;
         align-items: center;
-        height: 46px;
-        padding: 0 8px;
-        gap: 4px;
+        height: 48px;
+        padding: 0 10px;
+        gap: 5px;
       }
 
       .nav-btn {
         flex-shrink: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 7px;
+        width: 32px; height: 32px;
+        border-radius: var(--r-sm);
         background: transparent;
         border: none;
         color: var(--text-muted);
-        font-size: 14px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background .12s, color .12s;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s;
+        position: relative;
       }
-      .nav-btn:hover:not(:disabled) { background: var(--surface2); color: var(--text); }
-      .nav-btn:disabled { opacity: 0.3; cursor: default; }
+      .nav-btn svg { display: block; }
+      .nav-btn:hover:not(:disabled) { background: var(--glass-hover); color: var(--text); }
+      .nav-btn:disabled { opacity: 0.25; cursor: default; }
+      .nav-btn:active:not(:disabled) { background: var(--glass-active); transform: scale(0.95); }
 
-      /* brand badge */
+      /* brand */
       #brand-badge {
-        font-family: 'DM Mono', monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-weight: 500;
         font-size: 13px;
-        color: var(--accent);
-        letter-spacing: 0.05em;
-        padding: 0 6px;
+        letter-spacing: 0.08em;
+        padding: 0 5px;
         flex-shrink: 0;
         user-select: none;
-      }
-      #brand-badge span {
-        color: var(--text-muted);
-        font-size: 11px;
-        margin-left: 2px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
-      /* proxy indicator badge */
-      #proxy-badge {
-        font-family: 'DM Mono', monospace;
+      /* proxy + search engine badges */
+      .chrome-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
         font-weight: 500;
-        font-size: 10px;
-        color: var(--accent2);
-        letter-spacing: 0.05em;
-        padding: 2px 6px;
+        letter-spacing: 0.06em;
+        padding: 4px 9px;
         flex-shrink: 0;
-        user-select: none;
         cursor: pointer;
-        transition: color .15s;
-        background: var(--surface2);
-        border-radius: 4px;
-        margin-left: 4px;
+        border-radius: var(--r-xs);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        user-select: none;
       }
-      #proxy-badge:hover { color: var(--accent); }
+      .chrome-badge:hover {
+        background: var(--glass-hover);
+        border-color: var(--border-hi);
+        color: var(--text);
+      }
+      .chrome-badge .badge-dot {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 4px var(--accent);
+        flex-shrink: 0;
+      }
+      .chrome-badge .badge-dot.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+      #badge-se .badge-dot { background: var(--accent2); box-shadow: 0 0 4px var(--accent2); }
 
       /* url bar */
       #url-bar {
         flex: 1;
         display: flex;
         align-items: center;
-        background: var(--surface2);
+        background: var(--glass);
         border: 1px solid var(--border);
-        border-radius: 7px;
-        height: 30px;
-        padding: 0 10px;
-        gap: 6px;
-        transition: border-color .15s, background .15s;
+        border-radius: var(--r-pill);
+        height: 34px;
+        padding: 0 6px 0 12px;
+        gap: 8px;
+        transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
         min-width: 0;
         cursor: text;
+        position: relative;
       }
       #url-bar:focus-within {
-        border-color: var(--accent);
-        background: var(--bg);
+        border-color: rgba(139,143,255,0.5);
+        background: rgba(255,255,255,0.06);
+        box-shadow: 0 0 0 3px var(--accent-glow), 0 2px 20px rgba(0,0,0,0.3);
       }
       #url-scheme {
         font-size: 10px;
-        color: var(--green);
+        font-family: 'JetBrains Mono', monospace;
         flex-shrink: 0;
-        font-family: 'DM Mono', monospace;
-        letter-spacing: .02em;
+        padding: 2px 6px;
+        border-radius: var(--r-xs);
+        background: rgba(74,222,149,0.1);
+        color: var(--green);
+        border: 1px solid rgba(74,222,149,0.15);
+        letter-spacing: 0.02em;
+        display: none;
+      }
+      #url-scheme.visible { display: block; }
+      #url-scheme.insecure {
+        background: rgba(248,113,113,0.1);
+        color: var(--red);
+        border-color: rgba(248,113,113,0.15);
       }
       #url-input {
         flex: 1;
@@ -268,47 +322,46 @@
         background: transparent;
         font-size: 12.5px;
         color: var(--text);
-        font-family: 'DM Mono', monospace;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
         outline: none;
+        letter-spacing: 0.01em;
+        min-width: 0;
       }
-      #url-input::placeholder { color: var(--text-muted); }
+      #url-input::placeholder { color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px; letter-spacing: 0; }
       #url-go {
-        width: 22px;
-        height: 22px;
-        border-radius: 4px;
-        border: none;
+        width: 26px; height: 26px;
+        border-radius: var(--r-pill);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        font-size: 13px;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+        padding: 0;
+      }
+      #url-go:hover { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+
+      .side-btn {
+        flex-shrink: 0;
+        width: 32px; height: 32px;
+        border-radius: var(--r-sm);
+        border: 1px solid transparent;
         background: transparent;
         color: var(--text-muted);
         font-size: 14px;
         cursor: pointer;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: color .1s;
-        padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
       }
-      #url-go:hover { color: var(--accent); }
+      .side-btn:hover { background: var(--glass-hover); color: var(--text); border-color: var(--border); }
+      .side-btn.starred { color: #f5c842; text-shadow: 0 0 8px rgba(245,200,66,0.5); }
 
-      .side-btn {
-        flex-shrink: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 7px;
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--text-muted);
-        font-size: 13px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background .12s, color .12s, border-color .12s;
-      }
-      .side-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border); }
-      .side-btn.starred { color: #f5c842; }
-
-      /* ── CONTENT AREA ── */
+      /* ═══════════════════════════════
+         CONTENT AREA
+      ═══════════════════════════════ */
       #content {
         flex: 1;
         position: relative;
@@ -318,20 +371,17 @@
 
       #proxy-frame {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0;
         border: none;
         display: none;
+        width: 100%;
+        height: 100%;
       }
 
       /* progress bar */
       #prog {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
+        top: 0; left: 0; right: 0;
         height: 2px;
         pointer-events: none;
         z-index: 200;
@@ -340,20 +390,24 @@
         height: 100%;
         width: 0;
         opacity: 0;
-        background: linear-gradient(90deg, var(--accent), var(--accent2));
-        transition: width .4s ease, opacity .3s;
+        background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+        background-size: 200% 100%;
+        border-radius: var(--r-pill);
+        transition: opacity 0.3s;
       }
       #prog-bar.loading {
         opacity: 1;
-        animation: loadpulse 1.4s ease infinite;
+        animation: progAnim 1.8s ease infinite;
       }
-      @keyframes loadpulse {
-        0%   { width: 0%; }
-        60%  { width: 80%; }
-        100% { width: 80%; }
+      @keyframes progAnim {
+        0%   { width: 0%; background-position: 0% 0%; }
+        60%  { width: 80%; background-position: 100% 0%; }
+        100% { width: 80%; background-position: 0% 0%; }
       }
 
-      /* ── NEW TAB PAGE ── */
+      /* ═══════════════════════════════
+         NEW TAB PAGE
+      ═══════════════════════════════ */
       #newtab {
         position: absolute;
         inset: 0;
@@ -361,289 +415,578 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: var(--bg);
-        gap: 20px;
+        background: transparent;
+        gap: 0;
+        padding: 20px;
+        overflow-y: auto;
+        scrollbar-width: none;
       }
+      #newtab::-webkit-scrollbar { display: none; }
 
-      #nt-clock {
-        font-family: 'DM Mono', monospace;
-        font-size: 46px;
-        color: var(--text-muted);
-        letter-spacing: .08em;
+      /* clock */
+      #nt-clock-wrap {
         text-align: center;
+        margin-bottom: 36px;
+        animation: fadeUp 0.6s ease both;
+      }
+      #nt-clock {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 60px;
+        font-weight: 400;
+        color: var(--text-dim);
+        letter-spacing: 0.06em;
         font-variant-numeric: tabular-nums;
+        line-height: 1;
       }
       #nt-date {
         font-size: 11px;
         color: var(--text-muted);
-        letter-spacing: .2em;
+        letter-spacing: 0.22em;
         text-transform: uppercase;
-        text-align: center;
-        margin-top: 6px;
-        font-family: 'DM Mono', monospace;
+        margin-top: 8px;
+        font-family: 'JetBrains Mono', monospace;
       }
 
+      /* logo */
+      #nt-logo-wrap {
+        text-align: center;
+        margin-bottom: 32px;
+        animation: fadeUp 0.6s 0.08s ease both;
+      }
       #nt-logo {
-        font-family: 'DM Mono', monospace;
-        font-size: 62px;
-        font-weight: 500;
-        letter-spacing: -0.02em;
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        font-family: 'Outfit', sans-serif;
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, #ff9ef7 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         user-select: none;
-        text-align: center;
+        line-height: 1;
       }
       #nt-tag {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-muted);
-        font-family: 'DM Mono', monospace;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.3em;
         text-transform: uppercase;
-        text-align: center;
-        margin-top: 6px;
+        margin-top: 4px;
+        font-family: 'JetBrains Mono', monospace;
       }
 
+      /* search widget */
+      #nt-search-wrap {
+        width: 520px;
+        max-width: 94vw;
+        margin-bottom: 28px;
+        animation: fadeUp 0.6s 0.14s ease both;
+        position: relative;
+      }
       #nt-sw {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: var(--surface);
+        background: var(--glass);
         border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px 14px;
-        width: 460px;
-        max-width: 90vw;
-        transition: border-color .15s;
+        border-radius: var(--r-pill);
+        height: 52px;
+        padding: 0 8px 0 6px;
+        gap: 8px;
+        transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
       }
-      #nt-sw:focus-within { border-color: var(--accent); }
+      #nt-sw:focus-within {
+        border-color: rgba(139,143,255,0.45);
+        background: rgba(255,255,255,0.06);
+        box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 32px rgba(0,0,0,0.4);
+      }
+
+      /* search engine selector button */
+      #se-toggle {
+        flex-shrink: 0;
+        width: 38px; height: 38px;
+        border-radius: var(--r-pill);
+        background: var(--glass-hover);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+        user-select: none;
+      }
+      #se-toggle:hover {
+        background: var(--glass-active);
+        border-color: var(--border-hi);
+        transform: scale(1.05);
+      }
+      #se-toggle:active { transform: scale(0.95); }
+
       #nt-s {
         flex: 1;
         border: none;
         background: transparent;
-        font-size: 13px;
+        font-size: 14px;
         color: var(--text);
-        font-family: 'DM Mono', monospace;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 400;
         outline: none;
+        letter-spacing: 0.01em;
+        min-width: 0;
       }
       #nt-s::placeholder { color: var(--text-muted); }
+
       #nt-go {
-        padding: 5px 14px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--surface2);
-        color: var(--text-muted);
-        font-size: 11px;
-        font-family: 'DM Mono', monospace;
+        flex-shrink: 0;
+        height: 38px;
+        padding: 0 18px;
+        border-radius: var(--r-pill);
+        border: none;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.06em;
         cursor: pointer;
-        letter-spacing: .06em;
-        transition: background .15s, color .15s, border-color .15s;
+        transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 2px 12px var(--accent-glow);
       }
       #nt-go:hover {
-        background: var(--accent);
-        color: #fff;
-        border-color: var(--accent);
+        opacity: 0.9;
+        transform: scale(1.03);
+        box-shadow: 0 4px 20px var(--accent-glow);
       }
+      #nt-go:active { transform: scale(0.97); }
 
-      .ns {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        max-width: 600px;
+      /* shortcuts */
+      .nt-section {
+        width: 520px;
+        max-width: 94vw;
+        animation: fadeUp 0.6s 0.2s ease both;
       }
-
       .nt-lbl {
-        font-size: 10px;
+        font-size: 9.5px;
         color: var(--text-muted);
-        letter-spacing: .18em;
+        letter-spacing: 0.22em;
         text-transform: uppercase;
-        margin-bottom: 12px;
-        font-family: 'DM Mono', monospace;
+        margin-bottom: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        padding-left: 2px;
       }
-
       #nt-sc {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 8px;
       }
       .sc {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        padding: 14px 6px 12px;
-        border-radius: 10px;
+        gap: 9px;
+        padding: 16px 8px 14px;
+        border-radius: var(--r-md);
         border: 1px solid var(--border);
-        background: var(--surface);
+        background: var(--glass);
         cursor: pointer;
-        transition: background .12s, border-color .12s, transform .12s;
+        transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+        backdrop-filter: blur(8px);
       }
       .sc:hover {
-        background: var(--surface2);
-        border-color: var(--border);
-        transform: translateY(-2px);
+        background: var(--glass-hover);
+        border-color: var(--border-hi);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       }
+      .sc:active { transform: translateY(-1px); }
       .sc-i {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: var(--surface2);
+        width: 36px; height: 36px;
+        border-radius: var(--r-sm);
+        background: var(--glass-hover);
         border: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         overflow: hidden;
+        font-size: 18px;
       }
-      .sc-i img {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-      }
+      .sc-i img { width: 20px; height: 20px; object-fit: contain; }
       .sc-n {
-        font-size: 10px;
-        color: var(--text-muted);
-        letter-spacing: .04em;
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.02em;
+        font-weight: 500;
         text-align: center;
       }
 
-      #nt-rc {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
+      /* recently closed */
+      #rc-sec { margin-top: 16px; animation: fadeUp 0.6s 0.26s ease both; }
       .rc {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 9px 12px;
-        border-radius: 8px;
+        padding: 9px 14px;
+        border-radius: var(--r-sm);
         border: 1px solid var(--border);
-        background: var(--surface);
+        background: var(--glass);
         cursor: pointer;
-        transition: background .1s, border-color .1s;
+        transition: background 0.15s, border-color 0.15s;
+        margin-bottom: 5px;
       }
-      .rc:hover {
-        background: var(--surface2);
-        border-color: var(--border);
-      }
-      .rc-fav {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-      }
-      .rc-fav img {
-        width: 16px;
-        height: 16px;
-        object-fit: contain;
-      }
+      .rc:hover { background: var(--glass-hover); border-color: var(--border-hi); }
+      .rc-fav { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+      .rc-fav img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
       .rc-url {
         flex: 1;
-        font-size: 11px;
-        color: var(--text-muted);
+        font-size: 11.5px;
+        color: var(--text-dim);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: 'DM Mono', monospace;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .rc-lbl {
+        font-size: 9.5px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.05em;
       }
 
-      /* omnibox */
+      /* ═══════════════════════════════
+         OMNIBOX
+      ═══════════════════════════════ */
       #omni {
-        position: absolute;
+        position: fixed;
         z-index: 9999;
         display: none;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
+        background: rgba(12,12,22,0.9);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-lg);
         padding: 6px;
-        min-width: 420px;
-        max-width: 560px;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, .7);
-        font-size: 12px;
-        top: 86px;
+        min-width: 440px;
+        max-width: 580px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,143,255,0.08);
+        top: 90px;
         left: 50%;
         transform: translateX(-50%);
+        animation: omniIn 0.15s ease;
       }
+      @keyframes omniIn { from { opacity:0; transform:translateX(-50%) translateY(-8px) scale(0.98); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
       .or {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 12px;
-        border-radius: 7px;
+        padding: 9px 12px;
+        border-radius: var(--r-sm);
         cursor: pointer;
-        color: var(--text-muted);
-        transition: background .1s, color .1s;
-        font-family: 'DM Sans', sans-serif;
+        color: var(--text-dim);
+        transition: background 0.1s, color 0.1s;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px;
       }
-      .or:hover, .or.sel {
-        background: var(--surface2);
-        color: var(--text);
-      }
+      .or:hover, .or.sel { background: var(--glass-hover); color: var(--text); }
+      .or-icon { width: 24px; text-align: center; flex-shrink: 0; }
+      .or-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .ob {
         font-size: 9px;
-        padding: 2px 6px;
-        border-radius: 4px;
-        background: var(--surface2);
+        padding: 2px 7px;
+        border-radius: var(--r-xs);
+        background: var(--glass-hover);
         color: var(--text-muted);
-        letter-spacing: .06em;
+        letter-spacing: 0.08em;
         flex-shrink: 0;
-        font-family: 'DM Mono', monospace;
+        font-family: 'JetBrains Mono', monospace;
+        border: 1px solid var(--border);
+        text-transform: uppercase;
       }
 
-      /* proxy selector dropdown */
-      #proxy-selector {
-        position: absolute;
+      /* ═══════════════════════════════
+         DROPDOWNS (proxy, search engine)
+      ═══════════════════════════════ */
+      .chrome-dropdown {
+        position: fixed;
         z-index: 9999;
         display: none;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
+        background: rgba(12,12,22,0.92);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-md);
         padding: 6px;
-        min-width: 160px;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, .7);
-        font-size: 12px;
-        font-family: 'DM Sans', sans-serif;
+        min-width: 180px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+        font-size: 13px;
+        font-family: 'Outfit', sans-serif;
+        animation: dropIn 0.14s ease;
       }
-      .proxy-option {
+      @keyframes dropIn { from { opacity:0; transform:translateY(-6px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+      .drop-section-label {
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 6px 12px 4px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .drop-item {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 12px;
-        border-radius: 7px;
+        padding: 9px 12px;
+        border-radius: var(--r-sm);
         cursor: pointer;
-        color: var(--text-muted);
-        transition: background .1s, color .1s;
+        color: var(--text-dim);
+        transition: background 0.1s, color 0.1s;
+        position: relative;
       }
-      .proxy-option:hover {
-        background: var(--surface2);
+      .drop-item:hover { background: var(--glass-hover); color: var(--text); }
+      .drop-item.active { color: var(--accent); }
+      .drop-item.active::after {
+        content: '';
+        position: absolute;
+        right: 12px;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+      }
+      .drop-item-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+      .drop-divider { height: 1px; background: var(--border); margin: 4px 8px; }
+
+      /* ═══════════════════════════════
+         SE DROPDOWN (new tab)
+      ═══════════════════════════════ */
+      #se-dropdown {
+        position: absolute;
+        z-index: 9999;
+        display: none;
+        background: rgba(12,12,22,0.93);
+        backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-md);
+        padding: 6px;
+        min-width: 210px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+        top: calc(100% + 8px);
+        left: 0;
+        animation: dropIn 0.14s ease;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px;
+      }
+      #se-dropdown .drop-section-label {
+        font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase;
+        padding: 6px 12px 4px; font-family: 'JetBrains Mono', monospace;
+      }
+      #se-dropdown .se-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 9px 12px; border-radius: var(--r-sm);
+        cursor: pointer; color: var(--text-dim);
+        transition: background 0.1s, color 0.1s; position: relative;
+      }
+      #se-dropdown .se-item:hover { background: var(--glass-hover); color: var(--text); }
+      #se-dropdown .se-item.active { color: var(--accent2); }
+      #se-dropdown .se-item.active::after {
+        content: ''; position: absolute; right: 12px;
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--accent2); box-shadow: 0 0 6px var(--accent2);
+      }
+      #se-dropdown .se-icon { font-size: 16px; width: 22px; text-align: center; }
+      #se-dropdown .se-name { font-weight: 500; }
+      #se-dropdown .se-url { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+      /* ═══════════════════════════════
+         ANIMATIONS
+      ═══════════════════════════════ */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ── SCROLLBAR ── */
+      ::-webkit-scrollbar { width: 5px; height: 5px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--glass-hover); border-radius: var(--r-pill); }
+
+      /* ── APP.JS GHOST (hidden) ── */
+      #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
+
+      /* ── VIDEO BACKGROUND ── */
+      #video-background {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        z-index: -2;
+        pointer-events: none;
+        display: none;
+      }
+
+      /* ── WALLPAPER PANEL ── */
+      #wallpaper-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0 0 0 0;
+      }
+      #wallpaper-overlay.open { display: flex; animation: overlayIn 0.2s ease; }
+      @keyframes overlayIn { from { opacity:0; } to { opacity:1; } }
+
+      #wallpaper-panel {
+        width: 100%;
+        max-width: 680px;
+        background: rgba(10,10,20,0.97);
+        backdrop-filter: blur(32px) saturate(1.5);
+        border: 1px solid var(--border-hi);
+        border-bottom: none;
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+        padding: 24px 24px 32px;
+        animation: panelUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+        box-shadow: 0 -24px 80px rgba(0,0,0,0.6);
+        position: relative;
+      }
+      @keyframes panelUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+      }
+
+      #wallpaper-panel .wp-handle {
+        width: 36px; height: 4px;
+        background: var(--border-hi);
+        border-radius: var(--r-pill);
+        margin: 0 auto 20px;
+      }
+      #wallpaper-panel .wp-title {
+        font-size: 16px;
+        font-weight: 600;
         color: var(--text);
+        margin-bottom: 4px;
+        letter-spacing: -0.02em;
       }
-      .proxy-option.active {
+      #wallpaper-panel .wp-subtitle {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.06em;
+        margin-bottom: 20px;
+      }
+
+      .wp-section-label {
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 10px;
+      }
+
+      #wp-presets {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .wp-swatch {
+        aspect-ratio: 16/9;
+        border-radius: var(--r-sm);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        position: relative;
+        overflow: hidden;
+      }
+      .wp-swatch:hover { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+      .wp-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(139,143,255,0.3); }
+      .wp-swatch .wp-check {
+        position: absolute; inset: 0;
+        display: none; align-items: center; justify-content: center;
+        background: rgba(139,143,255,0.3);
+        font-size: 16px;
+      }
+      .wp-swatch.active .wp-check { display: flex; }
+
+      .wp-none-swatch {
+        background: repeating-conic-gradient(var(--glass) 0% 25%, var(--glass-hover) 0% 50%) 0 0 / 12px 12px;
+        border: 2px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; color: var(--text-muted);
+      }
+      .wp-none-swatch:hover { border-color: var(--border-hi); }
+
+      .wp-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .wp-btn {
+        flex: 1;
+        height: 40px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        gap: 7px;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        letter-spacing: 0.01em;
+      }
+      .wp-btn:hover { background: var(--glass-hover); border-color: var(--border-hi); color: var(--text); }
+      .wp-btn.primary {
+        background: linear-gradient(135deg, rgba(139,143,255,0.2), rgba(192,126,248,0.15));
+        border-color: rgba(139,143,255,0.3);
         color: var(--accent);
       }
-      .proxy-option.active::before {
-        content: '✓';
-        margin-right: 4px;
-        font-size: 12px;
-      }
+      .wp-btn.primary:hover { background: linear-gradient(135deg, rgba(139,143,255,0.3), rgba(192,126,248,0.25)); }
 
-      ::-webkit-scrollbar {
-        width: 5px;
-        height: 5px;
+      /* upload progress toast */
+      #wp-toast {
+        position: fixed;
+        bottom: 24px; left: 50%; transform: translateX(-50%);
+        z-index: 20000;
+        background: rgba(12,12,22,0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-sm);
+        padding: 10px 18px;
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-dim);
+        display: none;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        animation: toastIn 0.2s ease;
+        white-space: nowrap;
       }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb {
-        background: var(--surface2);
-        border-radius: 3px;
+      @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(8px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+      #wp-toast.show { display: flex; }
+      #wp-toast .toast-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--accent); box-shadow: 0 0 6px var(--accent);
+        flex-shrink: 0; animation: pulseDot 1s ease infinite;
       }
-
-      #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
+      #wp-toast .toast-dot.success { background: var(--green); box-shadow: 0 0 6px var(--green); animation: none; }
+      #wp-toast .toast-dot.error   { background: var(--red);   box-shadow: 0 0 6px var(--red);   animation: none; }
+      @keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
     </style>
   </head>
 
-  <body class="mode-terminal">
+  <body>
+    <!-- ── VIDEO BACKGROUND ── -->
+    <video id="video-background" autoplay loop muted playsinline></video>
 
-    <!-- ── APP.JS GHOST ELEMENTS (required by app.js DOM queries) ── -->
+    <!-- ── HIDDEN BACKGROUND INPUTS (used by background script) ── -->
+    <select id="background-select" style="display:none"></select>
+    <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
+
+    <!-- ── GHOST ELEMENTS (required by app.js) ── -->
     <div id="proxy-shell" style="display:none">
       <div id="proxy-loading"></div>
       <div id="proxy-watermark">
@@ -668,29 +1011,41 @@
       </div>
     </div>
 
-    <!-- ── BROWSER UI ── -->
+    <!-- ── BROWSER ── -->
     <div id="browser">
       <div id="chrome">
+        <!-- TAB STRIP -->
         <div id="tab-strip">
-          <button id="btn-newtab" title="New tab" onclick="B.addTab()">+</button>
+          <button id="btn-newtab" title="New tab (Ctrl+T)" onclick="B.addTab()">+</button>
         </div>
+
+        <!-- TOOLBAR -->
         <div id="nav-bar">
-          <button class="nav-btn" id="btn-back" title="Back" onclick="B.back()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" onclick="B.back()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L3.5 6.5L8.5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button class="nav-btn" id="btn-fwd" title="Forward" onclick="B.fwd()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="nav-btn" id="btn-fwd" title="Forward (Alt+Right)" onclick="B.fwd()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.5 1.5L9.5 6.5L4.5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button class="nav-btn" id="btn-reload" title="Reload" onclick="B.reload()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7A4.5 4.5 0 1 0 4 3.5L2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2v3h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="nav-btn" id="btn-reload" title="Reload (Ctrl+R)" onclick="B.reload()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5A4.5 4.5 0 1 0 3.7 3L1.5 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 1v3h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="nav-btn" id="btn-home" title="Home" onclick="B.home()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5.5L7 2L12 5.5V11C12 11.5523 11.5523 12 11 12H3C2.44772 12 2 11.5523 2 11V5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 5L6.5 1.5L11.5 5V11C11.5 11.28 11.28 11.5 11 11.5H2C1.72 11.5 1.5 11.28 1.5 11V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
           </button>
 
-          <div id="brand-badge">T9<span>browser</span></div>
-          <div id="proxy-badge" onclick="B.toggleProxySelector(event)">
-            <span id="proxy-name">SCRAMJET</span> ▼
+          <div id="brand-badge">T9</div>
+
+          <div class="chrome-badge" id="badge-proxy" onclick="B.toggleProxyDropdown(event)" title="Switch proxy engine">
+            <span class="badge-dot green" id="proxy-dot"></span>
+            <span id="proxy-name">UV</span>
+            <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+
+          <div class="chrome-badge" id="badge-se" onclick="B.toggleSeDropdownChrome(event)" title="Switch search engine">
+            <span class="badge-dot"></span>
+            <span id="se-name-badge">DDG</span>
+            <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           </div>
 
           <div id="url-bar" onclick="B.focusUrl()">
@@ -700,93 +1055,157 @@
               onfocus="B.onFocus()" onblur="B.onBlur()"
               oninput="B.onInput(this.value)"
               onkeydown="B.onKey(event)" />
-            <button id="url-go" onclick="B.navigate(document.getElementById('url-input').value)">→</button>
+            <button id="url-go" onclick="B.navigate(document.getElementById('url-input').value)" title="Go">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
 
-          <button class="side-btn" id="btn-star" title="Bookmark" onclick="B.star()">☆</button>
-          <button class="side-btn" title="Menu" onclick="B.menu(event)">⋮</button>
+          <button class="side-btn" id="btn-star" title="Bookmark" onclick="B.star()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" id="star-icon"><path d="M7 1.5l1.5 3.2 3.5.5-2.5 2.5.6 3.5L7 9.5 3.9 11.2l.6-3.5L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="side-btn" title="Menu" onclick="B.menu(event)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1.1" fill="currentColor"/><circle cx="7" cy="7" r="1.1" fill="currentColor"/><circle cx="7" cy="11" r="1.1" fill="currentColor"/></svg>
+          </button>
         </div>
       </div>
 
+      <!-- CONTENT -->
       <div id="content">
         <div id="prog"><div id="prog-bar"></div></div>
 
-        <!-- THE REAL PROXY FRAME -->
         <iframe id="proxy-frame" title="T9 Proxy"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
 
+        <!-- NEW TAB PAGE -->
         <div id="newtab">
-          <div class="ns" style="text-align:center">
+          <div id="nt-clock-wrap">
+            <div id="nt-clock">00:00:00</div>
+            <div id="nt-date">Loading…</div>
           </div>
-          <div class="ns" style="text-align:center">
+
+          <div id="nt-logo-wrap">
             <div id="nt-logo">T9</div>
             <div id="nt-tag">browser</div>
           </div>
-          <div class="ns">
+
+          <div class="nt-section" id="nt-search-wrap">
             <div id="nt-sw">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <input id="nt-s" type="text" placeholder="Search or type a URL…" autocomplete="off" spellcheck="false"
+              <button id="se-toggle" title="Change search engine" onclick="B.toggleSeDropdownNT(event)">
+                <span id="se-icon-nt">🦆</span>
+              </button>
+              <input id="nt-s" type="text" placeholder="Search or type a URL…"
+                autocomplete="off" spellcheck="false"
                 onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
               <button id="nt-go" onclick="B.navigate(document.getElementById('nt-s').value)">GO →</button>
             </div>
+            <!-- Search engine dropdown anchored to new tab search bar -->
+            <div id="se-dropdown"></div>
           </div>
-          <div class="ns">
+
+          <div class="nt-section">
             <div class="nt-lbl">Quick access</div>
             <div id="nt-sc">
-              <div class="sc" onclick="B.navigate('https://google.com')">   <div class="sc-i"><img src="https://www.google.com/favicon.ico" alt="G" onerror="this.parentElement.innerHTML='🔍'"></div><div class="sc-n">Google</div></div>
-              <div class="sc" onclick="B.navigate('https://youtube.com')">  <div class="sc-i"><img src="https://www.youtube.com/favicon.ico" alt="YT" onerror="this.parentElement.innerHTML='▶️'"></div><div class="sc-n">YouTube</div></div>
-              <div class="sc" onclick="B.navigate('https://reddit.com')">   <div class="sc-i"><img src="https://www.reddit.com/favicon.ico" alt="R" onerror="this.parentElement.innerHTML='👾'"></div><div class="sc-n">Reddit</div></div>
-              <div class="sc" onclick="B.navigate('https://github.com')">   <div class="sc-i"><img src="https://github.com/favicon.ico" alt="GH" onerror="this.parentElement.innerHTML='🐙'"></div><div class="sc-n">GitHub</div></div>
-              <div class="sc" onclick="B.navigate('https://twitter.com')">  <div class="sc-i"><img src="https://twitter.com/favicon.ico" alt="X" onerror="this.parentElement.innerHTML='🐦'"></div><div class="sc-n">Twitter</div></div>
-              <div class="sc" onclick="B.navigate('https://discord.com')">  <div class="sc-i"><img src="https://discord.com/favicon.ico" alt="DC" onerror="this.parentElement.innerHTML='💬'"></div><div class="sc-n">Discord</div></div>
-              <div class="sc" onclick="B.navigate('https://twitch.tv')">    <div class="sc-i"><img src="https://www.twitch.tv/favicon.ico" alt="TV" onerror="this.parentElement.innerHTML='📡'"></div><div class="sc-n">Twitch</div></div>
-              <div class="sc" onclick="B.navigate('https://wikipedia.org')"><div class="sc-i"><img src="https://www.wikipedia.org/favicon.ico" alt="W" onerror="this.parentElement.innerHTML='📖'"></div><div class="sc-n">Wikipedia</div></div>
+              <div class="sc" onclick="B.navigate('https://google.com')">
+                <div class="sc-i"><img src="https://www.google.com/favicon.ico" alt="G" onerror="this.parentElement.textContent='🔍'"></div>
+                <div class="sc-n">Google</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://youtube.com')">
+                <div class="sc-i"><img src="https://www.youtube.com/favicon.ico" alt="YT" onerror="this.parentElement.textContent='▶️'"></div>
+                <div class="sc-n">YouTube</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://reddit.com')">
+                <div class="sc-i"><img src="https://www.reddit.com/favicon.ico" alt="R" onerror="this.parentElement.textContent='👾'"></div>
+                <div class="sc-n">Reddit</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://github.com')">
+                <div class="sc-i"><img src="https://github.com/favicon.ico" alt="GH" onerror="this.parentElement.textContent='🐙'"></div>
+                <div class="sc-n">GitHub</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://twitter.com')">
+                <div class="sc-i"><img src="https://twitter.com/favicon.ico" alt="X" onerror="this.parentElement.textContent='🐦'"></div>
+                <div class="sc-n">X / Twitter</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://discord.com')">
+                <div class="sc-i"><img src="https://discord.com/favicon.ico" alt="DC" onerror="this.parentElement.textContent='💬'"></div>
+                <div class="sc-n">Discord</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://twitch.tv')">
+                <div class="sc-i"><img src="https://www.twitch.tv/favicon.ico" alt="TV" onerror="this.parentElement.textContent='📡'"></div>
+                <div class="sc-n">Twitch</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://wikipedia.org')">
+                <div class="sc-i"><img src="https://www.wikipedia.org/favicon.ico" alt="W" onerror="this.parentElement.textContent='📖'"></div>
+                <div class="sc-n">Wikipedia</div>
+              </div>
             </div>
           </div>
-          <div class="ns" id="rc-sec" style="display:none">
-            <div class="nt-lbl">Recently closed</div>
+
+          <div class="nt-section" id="rc-sec" style="display:none">
+            <div class="nt-lbl" style="margin-top:20px">Recently closed</div>
             <div id="nt-rc"></div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- GLOBAL OVERLAYS -->
     <div id="omni"></div>
-    <div id="proxy-selector"></div>
+    <div class="chrome-dropdown" id="proxy-dropdown"></div>
+    <div class="chrome-dropdown" id="se-dropdown-chrome"></div>
 
     <script>
-     
+      /* ── SEARCH ENGINES ── */
+      const SEARCH_ENGINES = {
+        duckduckgo:  { name: 'DuckDuckGo',  short: 'DDG',  icon: '🦆', url: 'https://duckduckgo.com/?q=' },
+        google:      { name: 'Google',       short: 'GGL',  icon: '🔍', url: 'https://www.google.com/search?q=' },
+        bing:        { name: 'Bing',          short: 'BNG',  icon: '🔷', url: 'https://www.bing.com/search?q=' },
+        brave:       { name: 'Brave Search',  short: 'BRV',  icon: '🦁', url: 'https://search.brave.com/search?q=' },
+        startpage:   { name: 'Startpage',     short: 'SPG',  icon: '🔒', url: 'https://www.startpage.com/sp/search?query=' },
+        ecosia:      { name: 'Ecosia',        short: 'ECO',  icon: '🌱', url: 'https://www.ecosia.org/search?q=' },
+      };
 
+      /* ── BROWSER CORE ── */
       const B = (() => {
         let tabs   = [mkTab()];
         let cur    = 0;
         let recent = [];
         let omniIdx = -1;
         let _progTimer;
-        let currentProxy = 'scramjet';
 
-        // UV transport setup
+        // ── Proxy ──────────────────────────────
+        let currentProxy = 'ultraviolet';  // DEFAULT: Ultraviolet
+
+        // ── Search Engine ──────────────────────
+        let currentSearch = localStorage.getItem('t9_search') || 'duckduckgo';
+
+        // ── UV setup ──────────────────────────
         let uvConnection = null;
         const wispUrl = "wss://wisp.rhw.one/";
 
         function initUV() {
-          if (typeof BareMux !== 'undefined') {
+          if (typeof BareMux !== 'undefined' && !uvConnection) {
             uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
             uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
           }
         }
 
+        /* ── UTILS ── */
         function mkTab(url, title) {
-          return { url: url||'', title: title||'New tab', fav: null, hist: url?[url]:[], hidx: url?0:-1 };
+          return { url: url || '', title: title || 'New tab', fav: null, hist: url ? [url] : [], hidx: url ? 0 : -1 };
         }
         function ct() { return tabs[cur]; }
-
-        // Get favicon URL for a domain
         function getFaviconUrl(url) {
-          try {
-            const domain = new URL(url).hostname;
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-          } catch { return null; }
+          try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
+          catch { return null; }
+        }
+        function resolveUrl(raw) {
+          raw = (raw || '').trim();
+          if (!raw) return null;
+          if (/^https?:\/\//i.test(raw)) return raw;
+          if (/^[a-z][a-z0-9+\-.]*:\/\//i.test(raw)) return raw;
+          if (/^localhost(:\d+)?(\/|$)/.test(raw)) return 'http://' + raw;
+          if (raw.includes('.') && !raw.includes(' ') && raw.indexOf(' ') === -1) return 'https://' + raw;
+          return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
         }
 
         /* ── CLOCK ── */
@@ -794,8 +1213,8 @@
           const n = new Date();
           const cl = document.getElementById('nt-clock');
           const dl = document.getElementById('nt-date');
-          if (cl) cl.textContent = n.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
-          if (dl) dl.textContent = n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+          if (cl) cl.textContent = n.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (dl) dl.textContent = n.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         }
         setInterval(tick, 1000); tick();
 
@@ -807,18 +1226,16 @@
           tabs.forEach((t, i) => {
             const d = document.createElement('div');
             d.className = 'tab' + (i === cur ? ' active' : '');
-            
-            const favHtml = t.fav 
-              ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">` 
-              : `<span style="font-size:12px">🌐</span>`;
-            
+            const favHtml = t.fav
+              ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">`
+              : `<span style="font-size:11px">🌐</span>`;
             d.innerHTML = `<span class="tab-fav">${favHtml}</span><span class="tab-title">${esc(t.title)}</span><button class="tab-x">✕</button>`;
             d.onclick = () => { if (cur !== i) { cur = i; sync(); } };
             d.querySelector('.tab-x').onclick = e => { e.stopPropagation(); closeTab(i); };
             strip.insertBefore(d, add);
           });
-          document.getElementById('btn-back').disabled  = ct().hidx <= 0;
-          document.getElementById('btn-fwd').disabled   = ct().hidx >= ct().hist.length - 1;
+          document.getElementById('btn-back').disabled = ct().hidx <= 0;
+          document.getElementById('btn-fwd').disabled  = ct().hidx >= ct().hist.length - 1;
         }
 
         function sync() {
@@ -831,18 +1248,18 @@
         }
 
         function addTab(url, title) {
-          tabs.push(mkTab(url, title)); 
-          cur = tabs.length - 1; 
+          tabs.push(mkTab(url, title));
+          cur = tabs.length - 1;
           sync();
           if (!url) setTimeout(() => document.getElementById('nt-s').focus(), 50);
         }
 
         function closeTab(i) {
           const t = tabs[i];
-          if (t.url) { 
-            recent.unshift({ url: t.url, title: t.title, fav: t.fav }); 
-            if (recent.length > 6) recent.pop(); 
-            renderRecent(); 
+          if (t.url) {
+            recent.unshift({ url: t.url, title: t.title, fav: t.fav });
+            if (recent.length > 6) recent.pop();
+            renderRecent();
           }
           if (tabs.length === 1) { tabs = [mkTab()]; cur = 0; sync(); return; }
           tabs.splice(i, 1);
@@ -856,41 +1273,31 @@
           if (!recent.length) { sec.style.display = 'none'; return; }
           sec.style.display = '';
           list.innerHTML = recent.map(r => {
-            const favHtml = r.fav 
-              ? `<img src="${esc(r.fav)}" alt="" onerror="this.style.display='none'">` 
-              : `<span style="font-size:12px">🌐</span>`;
+            const favHtml = r.fav
+              ? `<img src="${esc(r.fav)}" alt="" onerror="this.style.display='none'">`
+              : `<span style="font-size:13px">🌐</span>`;
             return `<div class="rc" onclick="B.navigate('${esc(r.url)}')">
-               <span class="rc-fav">${favHtml}</span>
-               <span class="rc-url">${esc(r.url)}</span>
-               <span style="font-size:10px;color:var(--text-muted);flex-shrink:0">recently</span>
-             </div>`;
+              <span class="rc-fav">${favHtml}</span>
+              <span class="rc-url">${esc(r.url)}</span>
+              <span class="rc-lbl">closed</span>
+            </div>`;
           }).join('');
         }
 
         /* ── NAVIGATE ── */
         function navigate(raw, pushHist = true) {
-          const url = (typeof normalizeUrl === 'function')
-            ? normalizeUrl(raw)
-            : fallback(raw);
+          const url = resolveUrl(raw);
           if (!url) return;
-
           const t = ct();
           if (pushHist) {
             t.hist = t.hist.slice(0, t.hidx + 1);
             t.hist.push(url);
             t.hidx = t.hist.length - 1;
           }
-          t.url = url;
+          t.url   = url;
           t.title = url;
-          
-          // Set favicon
-          t.fav = getFaviconUrl(url);
-          
-          try { 
-            const u = new URL(url); 
-            t.title = u.hostname; 
-          } catch {}
-
+          t.fav   = getFaviconUrl(url);
+          try { t.title = new URL(url).hostname; } catch {}
           document.getElementById('url-input').value = url;
           setScheme(url);
           renderTabs();
@@ -904,7 +1311,6 @@
           const frame = document.getElementById('proxy-frame');
 
           if (currentProxy === 'scramjet') {
-            // Original Scramjet path
             if (typeof openInFrame === 'function') {
               openInFrame(url);
               if (updateHash && typeof setHashFromUrl === 'function') setHashFromUrl(url);
@@ -918,63 +1324,55 @@
               }, 100);
             }
           } else {
-            // Ultraviolet path
+            // Ultraviolet
             try {
               if (!uvConnection) initUV();
-              if (uvConnection && !(await uvConnection.getTransport())) {
-                await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+              if (uvConnection) {
+                const transport = await uvConnection.getTransport().catch(() => null);
+                if (!transport) await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
               }
               const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
               frame.src = encoded;
             } catch (e) {
-              console.warn('UV navigation error, falling back to scramjet:', e);
+              console.warn('UV load error, trying scramjet:', e);
               if (typeof openInFrame === 'function') openInFrame(url);
             }
           }
-
           frame.onload = () => { stopProg(); tryUpdateTitle(); };
         }
 
         function tryUpdateTitle() {
           try {
             const title = document.getElementById('proxy-frame').contentDocument?.title;
-            if (title) { 
-              ct().title = title; 
-              renderTabs(); 
-            }
+            if (title) { ct().title = title; renderTabs(); }
           } catch {}
         }
 
-        function fallback(raw) {
-          raw = (raw || '').trim(); if (!raw) return null;
-          if (/^https?:\/\//i.test(raw)) return raw;
-          if (raw.includes('.') && !raw.includes(' ')) return 'https://' + raw;
-          return 'https://www.google.com/search?q=' + encodeURIComponent(raw);
-        }
-
         function back() {
-          const t = ct(); 
-          if (t.hidx > 0) { 
-            t.hidx--; 
+          const t = ct();
+          if (t.hidx > 0) {
+            t.hidx--;
             const url = t.hist[t.hidx];
-            t.url = url;
-            t.fav = getFaviconUrl(url);
-            doLoad(url, false); 
+            t.url = url; t.fav = getFaviconUrl(url);
+            document.getElementById('url-input').value = url;
+            setScheme(url);
+            renderTabs();
+            doLoad(url, false);
           }
         }
         function fwd() {
-          const t = ct(); 
-          if (t.hidx < t.hist.length-1) { 
-            t.hidx++; 
+          const t = ct();
+          if (t.hidx < t.hist.length - 1) {
+            t.hidx++;
             const url = t.hist[t.hidx];
-            t.url = url;
-            t.fav = getFaviconUrl(url);
-            doLoad(url, false); 
+            t.url = url; t.fav = getFaviconUrl(url);
+            document.getElementById('url-input').value = url;
+            setScheme(url);
+            renderTabs();
+            doLoad(url, false);
           }
         }
-        function reload() {
-          if (ct().url) { startProg(); doLoad(ct().url, false); }
-        }
+        function reload() { if (ct().url) { startProg(); doLoad(ct().url, false); } }
         function home() {
           if (typeof goHome === 'function') goHome();
           ct().url = ''; ct().title = 'New tab'; ct().fav = null;
@@ -985,37 +1383,38 @@
           setTimeout(() => document.getElementById('nt-s').focus(), 50);
         }
 
-        /* ── FRAME / NEWTAB SWITCH ── */
+        /* ── FRAME / NEWTAB ── */
         function showFrame() {
           document.getElementById('proxy-frame').style.display = 'block';
           document.getElementById('newtab').style.display      = 'none';
-          document.body.classList.remove('mode-terminal');
-          document.body.classList.add('mode-proxy');
         }
         function showNew() {
           document.getElementById('proxy-frame').style.display = 'none';
           document.getElementById('newtab').style.display      = 'flex';
-          document.body.classList.remove('mode-proxy');
-          document.body.classList.add('mode-terminal');
         }
 
         /* ── URL BAR ── */
         function focusUrl() { document.getElementById('url-input').select(); }
         function setScheme(url) {
           const el = document.getElementById('url-scheme');
-          if (!url) { el.textContent = ''; return; }
+          if (!url) { el.textContent = ''; el.classList.remove('visible','insecure'); return; }
           try {
             const u = new URL(url);
-            el.textContent = u.protocol + '//';
-            el.style.color = u.protocol === 'https:' ? 'var(--green)' : 'var(--red)';
-          } catch { el.textContent = ''; }
+            if (u.protocol === 'https:') {
+              el.textContent = 'https';
+              el.className = 'visible';
+            } else {
+              el.textContent = u.protocol.replace(':','');
+              el.className = 'visible insecure';
+            }
+          } catch { el.textContent = ''; el.classList.remove('visible','insecure'); }
         }
         function onFocus() { setTimeout(() => document.getElementById('url-input').select(), 0); }
         function onBlur()  { hideOmni(); }
         function onInput(val) { setScheme(val); buildOmni(val); }
         function onKey(e) {
-          const rows = document.querySelectorAll('.or');
-          if (e.key === 'ArrowDown')  { e.preventDefault(); omniIdx = Math.min(omniIdx+1, rows.length-1); hilite(); }
+          const rows = document.querySelectorAll('#omni .or');
+          if (e.key === 'ArrowDown')      { e.preventDefault(); omniIdx = Math.min(omniIdx+1, rows.length-1); hilite(); }
           else if (e.key === 'ArrowUp')   { e.preventDefault(); omniIdx = Math.max(omniIdx-1, 0); hilite(); }
           else if (e.key === 'Enter') {
             if (omniIdx >= 0 && rows[omniIdx]) rows[omniIdx].click();
@@ -1026,24 +1425,26 @@
 
         /* ── OMNIBOX ── */
         const QUICK = [
-          {icon:'🔍',q:'google.com'},{icon:'▶️',q:'youtube.com'},{icon:'👾',q:'reddit.com'},
-          {icon:'🐙',q:'github.com'},{icon:'🐦',q:'twitter.com'},{icon:'💬',q:'discord.com'},
-          {icon:'📡',q:'twitch.tv'}, {icon:'📖',q:'wikipedia.org'},
+          { icon:'🔍', q:'google.com' }, { icon:'▶️', q:'youtube.com' }, { icon:'👾', q:'reddit.com' },
+          { icon:'🐙', q:'github.com' }, { icon:'🐦', q:'twitter.com' }, { icon:'💬', q:'discord.com' },
+          { icon:'📡', q:'twitch.tv' },  { icon:'📖', q:'wikipedia.org' },
         ];
         function buildOmni(val) {
           const d = document.getElementById('omni');
           if (!val) { hideOmni(); return; }
           omniIdx = -1;
-          const isUrl = /^https?:\/\/|\./.test(val);
+          const isUrl = /^https?:\/\/|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(val);
+          const se = SEARCH_ENGINES[currentSearch];
           let html = isUrl
-            ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span>🔗</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(val)}</span><span class="ob">go</span></div>`
-            : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span>🔍</span><span style="flex:1">${esc(val)}</span><span class="ob">search</span></div>`;
-          QUICK.filter(q => q.q.includes(val.toLowerCase())).forEach(q => {
-            html += `<div class="or" onclick="B.navigate('https://${esc(q.q)}')"><span>${q.icon}</span><span style="flex:1">${esc(q.q)}</span><span class="ob">site</span></div>`;
+            ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span class="or-icon">🔗</span><span class="or-text">${esc(val)}</span><span class="ob">navigate</span></div>`
+            : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span class="or-icon">${se.icon}</span><span class="or-text">${esc(val)}</span><span class="ob">search ${se.short}</span></div>`;
+          QUICK.filter(q => q.q.includes(val.toLowerCase())).slice(0,4).forEach(q => {
+            html += `<div class="or" onclick="B.navigate('https://${esc(q.q)}')"><span class="or-icon">${q.icon}</span><span class="or-text">${esc(q.q)}</span><span class="ob">site</span></div>`;
           });
-          d.innerHTML = html; d.style.display = 'block';
+          d.innerHTML = html;
+          d.style.display = 'block';
         }
-        function hilite() { document.querySelectorAll('.or').forEach((el,i) => el.classList.toggle('sel', i === omniIdx)); }
+        function hilite() { document.querySelectorAll('#omni .or').forEach((el, i) => el.classList.toggle('sel', i === omniIdx)); }
         function hideOmni() { setTimeout(() => { document.getElementById('omni').style.display = 'none'; }, 150); }
 
         /* ── PROGRESS ── */
@@ -1060,59 +1461,93 @@
           b.classList.remove('loading');
           b.style.transition = 'width .2s ease';
           b.style.width = '100%';
-          _progTimer = setTimeout(() => {
-            b.style.opacity = '0';
-            b.style.width = '0';
-          }, 300);
+          _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
         }
 
-        /* ── PROXY SELECTOR ── */
-        function toggleProxySelector(e) {
+        /* ── PROXY DROPDOWN ── */
+        function toggleProxyDropdown(e) {
           e.stopPropagation();
-          const sel = document.getElementById('proxy-selector');
-          if (sel.style.display === 'block') {
-            sel.style.display = 'none';
-            return;
-          }
-          const badge = document.getElementById('proxy-badge');
-          const rect = badge.getBoundingClientRect();
-          sel.style.display = 'block';
-          sel.style.top = (rect.bottom + 4) + 'px';
-          sel.style.left = rect.left + 'px';
-
-          sel.innerHTML = `
-            <div class="proxy-option ${currentProxy === 'scramjet' ? 'active' : ''}" onclick="B.setProxy('scramjet')">
-              <span>⚡ Scramjet</span>
+          const d = document.getElementById('proxy-dropdown');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          const rect = document.getElementById('badge-proxy').getBoundingClientRect();
+          d.style.top  = (rect.bottom + 6) + 'px';
+          d.style.left = rect.left + 'px';
+          d.innerHTML = `
+            <div class="drop-section-label">Proxy Engine</div>
+            <div class="drop-item ${currentProxy==='ultraviolet'?'active':''}" onclick="B.setProxy('ultraviolet')">
+              <span class="drop-item-icon">☀️</span><span>Ultraviolet</span>
             </div>
-            <div class="proxy-option ${currentProxy === 'ultraviolet' ? 'active' : ''}" onclick="B.setProxy('ultraviolet')">
-              <span>☀️ Ultraviolet</span>
+            <div class="drop-item ${currentProxy==='scramjet'?'active':''}" onclick="B.setProxy('scramjet')">
+              <span class="drop-item-icon">⚡</span><span>Scramjet</span>
             </div>
           `;
-
-          setTimeout(() => {
-            document.addEventListener('click', () => sel.style.display = 'none', { once: true });
-          }, 0);
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
         }
 
-        function setProxy(proxy) {
-          currentProxy = proxy;
-          document.getElementById('proxy-name').textContent = proxy === 'scramjet' ? 'SCRAMJET' : 'ULTRAVIOLET';
-          document.getElementById('proxy-selector').style.display = 'none';
+        function setProxy(p) {
+          currentProxy = p;
+          document.getElementById('proxy-name').textContent = p === 'scramjet' ? 'SJ' : 'UV';
+          document.getElementById('proxy-dropdown').style.display = 'none';
+          if (p === 'ultraviolet') initUV();
+          if (ct().url) doLoad(ct().url, false);
+        }
 
-          if (proxy === 'ultraviolet') {
-            initUV();
-          }
+        /* ── SEARCH ENGINE ── */
+        function updateSeUI() {
+          const se = SEARCH_ENGINES[currentSearch];
+          document.getElementById('se-icon-nt').textContent    = se.icon;
+          document.getElementById('se-name-badge').textContent = se.short;
+          localStorage.setItem('t9_search', currentSearch);
+        }
 
-          if (ct().url) {
-            doLoad(ct().url, false);
-          }
+        function setSearchEngine(key) {
+          currentSearch = key;
+          updateSeUI();
+          document.getElementById('se-dropdown').style.display = 'none';
+          document.getElementById('se-dropdown-chrome').style.display = 'none';
+        }
+
+        function buildSeDropdownHtml() {
+          return Object.entries(SEARCH_ENGINES).map(([key, se]) =>
+            `<div class="se-item ${currentSearch===key?'active':''}" onclick="B.setSearchEngine('${key}')">
+              <span class="se-icon">${se.icon}</span>
+              <div><div class="se-name">${se.name}</div></div>
+            </div>`
+          ).join('');
+        }
+
+        function toggleSeDropdownNT(e) {
+          e.stopPropagation();
+          const d = document.getElementById('se-dropdown');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+        }
+
+        function toggleSeDropdownChrome(e) {
+          e.stopPropagation();
+          const d = document.getElementById('se-dropdown-chrome');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          const rect = document.getElementById('badge-se').getBoundingClientRect();
+          d.style.top  = (rect.bottom + 6) + 'px';
+          d.style.left = rect.left + 'px';
+          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
         }
 
         /* ── STAR ── */
         function star() {
           const btn = document.getElementById('btn-star');
           btn.classList.toggle('starred');
-          btn.textContent = btn.classList.contains('starred') ? '★' : '☆';
+          const icon = document.getElementById('star-icon');
+          if (btn.classList.contains('starred')) {
+            icon.querySelector('path').setAttribute('fill', 'currentColor');
+          } else {
+            icon.querySelector('path').setAttribute('fill', 'none');
+          }
         }
 
         /* ── MENU ── */
@@ -1120,28 +1555,37 @@
           const old = document.getElementById('_smenu');
           if (old) { old.remove(); return; }
           const items = [
-            ['New tab',        () => addTab()],
-            ['Reload',         () => reload()],
-            ['Home',           () => home()],
-            ['Dev tools',      () => { if (typeof handleDev === 'function') handleDev(); }],
-            ['Toggle adblock', () => {
-              if (typeof adblockEnabled !== 'undefined' && typeof setAdblockEnabled === 'function') {
-                setAdblockEnabled(!adblockEnabled);
-              }
-            }],
+            ['New tab',        'Ctrl+T', () => addTab()],
+            ['Reload',         'Ctrl+R', () => reload()],
+            ['Home',           null,     () => home()],
+            ['Wallpaper',      null,     () => openWallpaper()],
+            ['Dev tools',      null,     () => { if (typeof handleDev === 'function') handleDev(); }],
+            ['Toggle adblock', null,     () => { if (typeof setAdblockEnabled === 'function') setAdblockEnabled(!adblockEnabled); }],
           ];
           const m = document.createElement('div');
           m.id = '_smenu';
           const nb = document.getElementById('nav-bar').getBoundingClientRect();
-          m.style.cssText = `position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);
-            border-radius:10px;padding:6px;min-width:156px;font-size:12px;font-family:'DM Sans',sans-serif;
-            box-shadow:0 16px 48px rgba(0,0,0,.7);right:10px;top:${nb.bottom+4}px`;
-          items.forEach(([lbl, fn]) => {
+          m.style.cssText = `position:fixed;z-index:9999;
+            background:rgba(12,12,22,0.93);
+            backdrop-filter:blur(24px) saturate(1.4);
+            -webkit-backdrop-filter:blur(24px) saturate(1.4);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:16px;padding:6px;min-width:190px;
+            font-size:13px;font-family:'Outfit',sans-serif;
+            box-shadow:0 20px 60px rgba(0,0,0,.7);
+            right:10px;top:${nb.bottom+6}px;
+            animation:dropIn 0.14s ease;`;
+          const styleEl = document.createElement('style');
+          styleEl.textContent = `@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}`;
+          m.appendChild(styleEl);
+          items.forEach(([lbl, kbd, fn]) => {
             const r = document.createElement('div');
-            r.textContent = lbl;
-            r.style.cssText = 'padding:7px 12px;border-radius:6px;cursor:pointer;color:var(--text-muted)';
-            r.onmouseenter = () => { r.style.background='var(--surface2)'; r.style.color='var(--text)'; };
-            r.onmouseleave = () => { r.style.background=''; r.style.color='var(--text-muted)'; };
+            r.style.cssText = `display:flex;align-items:center;justify-content:space-between;
+              padding:9px 12px;border-radius:8px;cursor:pointer;
+              color:rgba(150,150,180,1);transition:background .1s,color .1s;gap:20px;`;
+            r.innerHTML = `<span>${lbl}</span>${kbd ? `<span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(100,100,130,1);letter-spacing:.05em">${kbd}</span>` : ''}`;
+            r.onmouseenter = () => { r.style.background = 'rgba(255,255,255,0.07)'; r.style.color = '#eeeef6'; };
+            r.onmouseleave = () => { r.style.background = ''; r.style.color = 'rgba(150,150,180,1)'; };
             r.onclick = () => { fn(); m.remove(); };
             m.appendChild(r);
           });
@@ -1157,11 +1601,11 @@
             if (e.key === 'w') { e.preventDefault(); closeTab(cur); }
             if (e.key === 'l') { e.preventDefault(); focusUrl(); }
             if (e.key === 'r') { e.preventDefault(); reload(); }
-            if (e.key === 'Tab') { e.preventDefault(); cur = (cur+1) % tabs.length; sync(); }
+            if (e.key === 'Tab') { e.preventDefault(); cur = (cur + 1) % tabs.length; sync(); }
           }
         });
 
-        /* ── SYNC FROM APP.JS HASH CHANGES ── */
+        /* ── HASH / APP.JS COMPAT ── */
         window.addEventListener('hashchange', () => {
           if (currentProxy !== 'scramjet') return;
           const token = window.location.hash.replace(/^#/, '');
@@ -1170,13 +1614,10 @@
             if (typeof decodeTarget === 'function') {
               const url = decodeTarget(token);
               if (url && url !== ct().url) {
-                ct().url = url; 
-                ct().fav = getFaviconUrl(url);
+                ct().url = url; ct().fav = getFaviconUrl(url);
                 try { ct().title = new URL(url).hostname; } catch {}
                 document.getElementById('url-input').value = url;
-                setScheme(url);
-                renderTabs();
-                showFrame();
+                setScheme(url); renderTabs(); showFrame();
               }
             }
           } catch {}
@@ -1184,30 +1625,317 @@
 
         window._browserSyncUrl = function(url) {
           if (!url || url === ct().url) return;
-          ct().url = url; 
-          ct().fav = getFaviconUrl(url);
+          ct().url = url; ct().fav = getFaviconUrl(url);
           try { ct().title = new URL(url).hostname; } catch {}
           document.getElementById('url-input').value = url;
-          setScheme(url);
-          renderTabs();
+          setScheme(url); renderTabs();
         };
 
         /* ── INIT ── */
         renderTabs();
         showNew();
         initUV();
+        updateSeUI();
 
         return {
           addTab, navigate, back, fwd, reload, home,
           focusUrl, onFocus, onBlur, onInput, onKey,
-          star, menu, setProxy, toggleProxySelector
+          star, menu,
+          setProxy, toggleProxyDropdown,
+          setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome,
         };
       })();
 
-      function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function esc(s) {
+        return String(s)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
     </script>
 
+    <!-- ── WALLPAPER PANEL ── -->
+    <div id="wallpaper-overlay" onclick="if(event.target===this)closeWallpaper()">
+      <div id="wallpaper-panel">
+        <div class="wp-handle"></div>
+        <div class="wp-title">Wallpaper</div>
+        <div class="wp-subtitle">CHOOSE A BACKGROUND</div>
+
+        <div class="wp-section-label">Presets</div>
+        <div id="wp-presets">
+          <div class="wp-swatch wp-none-swatch" onclick="WP.clearBg()" title="None">
+            <span>✕</span>
+            <div class="wp-check">✓</div>
+          </div>
+          <!-- gradient swatches injected by JS -->
+        </div>
+
+        <div class="wp-section-label" style="margin-top:4px">Custom</div>
+        <div class="wp-actions">
+          <button class="wp-btn primary" onclick="document.getElementById('background-upload').click()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 4.5L7 1l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Upload image or video
+          </button>
+          <button class="wp-btn" onclick="WP.clearBg()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="wp-toast"><span class="toast-dot" id="toast-dot"></span><span id="toast-msg">Saving…</span></div>
+
     <script src="./app.js" defer></script>
+
+    <script>
+      /* ══════════════════════════════════════════
+         WALLPAPER PANEL + BACKGROUND ENGINE
+      ══════════════════════════════════════════ */
+
+      /* Preset gradient definitions */
+      const WP_PRESETS = [
+        { id:'aurora',   label:'Aurora',    bg:'linear-gradient(135deg,#0d0d2b 0%,#1a0533 35%,#002244 65%,#001133 100%)' },
+        { id:'midnight', label:'Midnight',  bg:'linear-gradient(160deg,#04040e 0%,#0a0a20 40%,#0d0520 70%,#040410 100%)' },
+        { id:'ember',    label:'Ember',     bg:'linear-gradient(135deg,#1a0a00 0%,#2d1000 40%,#1a0808 70%,#100010 100%)' },
+        { id:'ocean',    label:'Ocean',     bg:'linear-gradient(160deg,#000d1a 0%,#001533 45%,#002244 75%,#001122 100%)' },
+        { id:'forest',   label:'Forest',    bg:'linear-gradient(145deg,#020d06 0%,#041a0c 40%,#031208 70%,#010a04 100%)' },
+        { id:'violet',   label:'Violet',    bg:'linear-gradient(140deg,#0e0520 0%,#1a0a33 40%,#0d0820 70%,#08041a 100%)' },
+        { id:'steel',    label:'Steel',     bg:'linear-gradient(135deg,#0a0c10 0%,#131820 40%,#0c1018 70%,#080c12 100%)' },
+        { id:'dusk',     label:'Dusk',      bg:'linear-gradient(155deg,#1a0a18 0%,#0d1020 40%,#0a1a18 70%,#0d0a1a 100%)' },
+        { id:'crimson',  label:'Crimson',   bg:'linear-gradient(145deg,#1a0208 0%,#250410 40%,#1a0010 70%,#0d0010 100%)' },
+        { id:'slate',    label:'Slate',     bg:'linear-gradient(150deg,#080a10 0%,#0d1018 40%,#0a0d14 70%,#060810 100%)' },
+      ];
+
+      /* Build preset swatches */
+      (function buildSwatches() {
+        const grid = document.getElementById('wp-presets');
+        // Keep the "none" swatch (first child) and append the rest
+        WP_PRESETS.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'wp-swatch';
+          el.id = 'swatch-' + p.id;
+          el.title = p.label;
+          el.style.background = p.bg;
+          el.innerHTML = `<div class="wp-check">✓</div>`;
+          el.onclick = () => WP.applyPreset(p.id, p.bg);
+          grid.appendChild(el);
+        });
+      })();
+
+      /* Active swatch state */
+      let _activeSwatch = null;
+      function setActiveSwatch(id) {
+        document.querySelectorAll('.wp-swatch').forEach(s => s.classList.remove('active'));
+        _activeSwatch = id;
+        if (id === 'none') {
+          document.querySelector('.wp-none-swatch')?.classList.add('active');
+        } else if (id) {
+          document.getElementById('swatch-' + id)?.classList.add('active');
+        }
+      }
+
+      /* Toast helper */
+      let _toastTimer;
+      function showToast(msg, state = 'loading') {
+        clearTimeout(_toastTimer);
+        const t  = document.getElementById('wp-toast');
+        const d  = document.getElementById('toast-dot');
+        const m  = document.getElementById('toast-msg');
+        m.textContent = msg;
+        d.className = 'toast-dot' + (state !== 'loading' ? ' ' + state : '');
+        t.classList.add('show');
+        if (state !== 'loading') {
+          _toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+        }
+      }
+      function hideToast() {
+        clearTimeout(_toastTimer);
+        document.getElementById('wp-toast').classList.remove('show');
+      }
+
+      /* Open / close */
+      function openWallpaper() {
+        document.getElementById('wallpaper-overlay').classList.add('open');
+      }
+      function closeWallpaper() {
+        document.getElementById('wallpaper-overlay').classList.remove('open');
+      }
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWallpaper(); });
+
+      /* ─── BACKGROUND ENGINE ─── */
+      const WP = (() => {
+
+        /* ── IndexedDB ── */
+        const DB_NAME = 'BackgroundStorage', STORE = 'media';
+        let _db = null;
+
+        function openDB() {
+          return new Promise((res, rej) => {
+            if (_db) return res(_db);
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onerror  = () => rej(req.error);
+            req.onsuccess = () => { _db = req.result; res(_db); };
+            req.onupgradeneeded = e => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+            };
+          });
+        }
+        async function dbSet(key, val)  { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).put(val,key).onsuccess=r; t.onerror=j; }); }
+        async function dbGet(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readonly'); const req=t.objectStore(STORE).get(key); req.onsuccess=()=>r(req.result); req.onerror=j; }); }
+        async function dbDel(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).delete(key).onsuccess=r; t.onerror=j; }); }
+
+        /* ── Apply ── */
+        function applyImageUrl(url) {
+          const vb = document.getElementById('video-background');
+          vb.style.display = 'none'; vb.src = '';
+          document.body.style.backgroundImage    = `url(${url})`;
+          document.body.style.backgroundSize     = 'cover';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundRepeat   = 'no-repeat';
+          document.body.style.backgroundAttachment = 'fixed';
+        }
+        function applyGradient(css) {
+          const vb = document.getElementById('video-background');
+          vb.style.display = 'none'; vb.src = '';
+          document.body.style.backgroundImage    = css;
+          document.body.style.backgroundSize     = 'cover';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundRepeat   = 'no-repeat';
+          document.body.style.backgroundAttachment = 'fixed';
+        }
+        function applyVideoUrl(url) {
+          document.body.style.backgroundImage = '';
+          const vb = document.getElementById('video-background');
+          vb.src = url; vb.style.display = 'block';
+        }
+        function clearAll() {
+          document.body.style.backgroundImage = '';
+          const vb = document.getElementById('video-background');
+          vb.src = ''; vb.style.display = 'none';
+        }
+
+        /* ── Presets ── */
+        function applyPreset(id, gradientCss) {
+          applyGradient(gradientCss);
+          localStorage.setItem('bg_type', 'preset');
+          localStorage.setItem('bg_preset_id', id);
+          localStorage.setItem('bg_preset_css', gradientCss);
+          localStorage.removeItem('bg_data_url');
+          dbDel('savedVideo').catch(()=>{});
+          dbDel('savedImage').catch(()=>{});
+          setActiveSwatch(id);
+        }
+
+        /* ── Clear ── */
+        async function clearBg() {
+          clearAll();
+          localStorage.removeItem('bg_type');
+          localStorage.removeItem('bg_preset_id');
+          localStorage.removeItem('bg_preset_css');
+          localStorage.removeItem('bg_data_url');
+          await dbDel('savedVideo').catch(()=>{});
+          await dbDel('savedImage').catch(()=>{});
+          setActiveSwatch('none');
+        }
+
+        /* ── Upload handler ── */
+        document.getElementById('background-upload').addEventListener('change', async () => {
+          const file = document.getElementById('background-upload').files[0];
+          if (!file) return;
+
+          if (file.type.startsWith('video/')) {
+            showToast('Saving video…');
+            try {
+              const buf = await file.arrayBuffer();
+              await dbSet('savedVideo', { data: buf, type: file.type });
+              await dbDel('savedImage').catch(()=>{});
+              localStorage.setItem('bg_type', 'video');
+              localStorage.removeItem('bg_data_url');
+              localStorage.removeItem('bg_preset_id');
+              const url = URL.createObjectURL(new Blob([buf], { type: file.type }));
+              applyVideoUrl(url);
+              setActiveSwatch('custom');
+              showToast('Video saved!', 'success');
+              closeWallpaper();
+            } catch(err) {
+              showToast('Failed — out of storage?', 'error');
+              console.error(err);
+            }
+
+          } else if (file.type.startsWith('image/')) {
+            showToast('Saving image…');
+            try {
+              const buf = await file.arrayBuffer();
+              if (file.size > 500000) {
+                await dbSet('savedImage', { data: buf, type: file.type });
+                localStorage.setItem('bg_type', 'image-idb');
+                localStorage.removeItem('bg_data_url');
+              } else {
+                const dataUrl = await new Promise(r => {
+                  const fr = new FileReader(); fr.onload = () => r(fr.result);
+                  fr.readAsDataURL(file);
+                });
+                localStorage.setItem('bg_type', 'image-data');
+                localStorage.setItem('bg_data_url', dataUrl);
+              }
+              await dbDel('savedVideo').catch(()=>{});
+              localStorage.removeItem('bg_preset_id');
+              const url = URL.createObjectURL(new Blob([buf], { type: file.type }));
+              applyImageUrl(url);
+              setActiveSwatch('custom');
+              showToast('Image saved!', 'success');
+              closeWallpaper();
+            } catch(err) {
+              showToast('Failed to save image', 'error');
+              console.error(err);
+            }
+          }
+          // reset input so same file can be re-selected
+          document.getElementById('background-upload').value = '';
+        });
+
+        /* ── Load on startup ── */
+        async function load() {
+          const type = localStorage.getItem('bg_type');
+          if (!type) return;
+
+          if (type === 'preset') {
+            const id  = localStorage.getItem('bg_preset_id');
+            const css = localStorage.getItem('bg_preset_css');
+            if (css) { applyGradient(css); setActiveSwatch(id); }
+
+          } else if (type === 'video') {
+            try {
+              const v = await dbGet('savedVideo');
+              if (v?.data) {
+                const url = URL.createObjectURL(new Blob([v.data], { type: v.type }));
+                applyVideoUrl(url);
+                setActiveSwatch('custom');
+              }
+            } catch(e) { console.error('bg load error:', e); }
+
+          } else if (type === 'image-idb') {
+            try {
+              const img = await dbGet('savedImage');
+              if (img?.data) {
+                const url = URL.createObjectURL(new Blob([img.data], { type: img.type }));
+                applyImageUrl(url);
+                setActiveSwatch('custom');
+              }
+            } catch(e) { console.error('bg load error:', e); }
+
+          } else if (type === 'image-data') {
+            const dataUrl = localStorage.getItem('bg_data_url');
+            if (dataUrl) { applyImageUrl(dataUrl); setActiveSwatch('custom'); }
+          }
+        }
+
+        load();
+        return { applyPreset, clearBg };
+      })();
+    </script>
 
     <script>
       window.addEventListener('load', () => {
@@ -1218,7 +1946,6 @@
             if (typeof window._browserSyncUrl === 'function') window._browserSyncUrl(val);
           };
         }
-
         const hash = window.location.hash.replace(/^#/, '');
         if (hash && typeof decodeTarget === 'function') {
           try {
@@ -1232,42 +1959,5 @@
         }
       });
     </script>
-    <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("background-select");
-  const upload = document.getElementById("background-upload");
-  const body = document.body;
-
-  // Apply background
-  function setBackground(src) {
-    body.style.backgroundImage = src ? `url(${src})` : "";
-    localStorage.setItem("selectedBackground", src || "");
-  }
-
-  // Load saved background
-  const savedBg = localStorage.getItem("selectedBackground");
-  if (savedBg) setBackground(savedBg);
-
-  // Dropdown change
-  select.addEventListener("change", () => {
-    if (select.value) {
-      setBackground(select.value);
-    }
-  });
-
-  // Upload custom background
-  upload.addEventListener("change", () => {
-    const file = upload.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setBackground(reader.result); // base64 image
-      select.value = ""; // reset dropdown
-    };
-    reader.readAsDataURL(file);
-  });
-});
-</script>
   </body>
 </html>
