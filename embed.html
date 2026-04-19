@@ -1,11 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeForce NOW</title>
-    
-    <!-- Required scripts from T9 Browser -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./ghost.js"></script>
     <script src="/uv/uv.bundle.js"></script>
     <script src="/uv/uv.config.js"></script>
@@ -13,310 +10,1887 @@
     <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
-    
+    <title>T9 Browser</title>
+    <meta name="title" content="T9 Browser" />
+    <meta name="description" content="a modern web proxy browser" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://t9.rhw.one/" />
+    <meta property="og:title" content="T9 Browser" />
+    <meta property="og:description" content="a modern web proxy browser" />
+    <meta property="og:image" content="https://t9.rhw.one/card.png" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <script>
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+      }
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WDHVNCL11H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-WDHVNCL11H');
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html, body {
-            height: 100%;
-            background: #07070e;
-            overflow: hidden;
-        }
-        
-        #content {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            background: #000;
-        }
-        
-        #proxy-frame {
-            position: absolute;
-            inset: 0;
-            border: none;
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        
-        #prog {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            pointer-events: none;
-            z-index: 200;
-        }
-        
-        #prog-bar {
-            height: 100%;
-            width: 0;
-            opacity: 0;
-            background: linear-gradient(90deg, #8b8fff, #c07ef8, #8b8fff);
-            background-size: 200% 100%;
-            border-radius: 999px;
-            transition: opacity 0.3s;
-        }
-        
-        #prog-bar.loading {
-            opacity: 1;
-            animation: progAnim 1.8s ease infinite;
-        }
-        
-        @keyframes progAnim {
-            0%   { width: 0%; background-position: 0% 0%; }
-            60%  { width: 80%; background-position: 100% 0%; }
-            100% { width: 80%; background-position: 0% 0%; }
-        }
-        
-        #controls {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            z-index: 300;
-            display: flex;
-            gap: 8px;
-            opacity: 0.2;
-            transition: opacity 0.2s;
-        }
-        
-        #controls:hover {
-            opacity: 1;
-        }
-        
-        .ctrl-btn {
-            padding: 6px 12px;
-            background: rgba(10, 10, 20, 0.85);
-            backdrop-filter: blur(8px);
-            color: #9090b0;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.15s;
-        }
-        
-        .ctrl-btn:hover {
-            background: rgba(139, 143, 255, 0.15);
-            color: #eeeef6;
-            border-color: rgba(139, 143, 255, 0.3);
-        }
-        
-        #status {
-            position: fixed;
-            bottom: 16px;
-            left: 16px;
-            z-index: 300;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(10, 10, 20, 0.7);
-            padding: 4px 10px;
-            border-radius: 16px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            pointer-events: none;
-        }
+      :root {
+        --bg:          #07070e;
+        --bg2:         #0d0d1c;
+        --chrome-bg:   rgba(10, 10, 20, 0.85);
+        --glass:       rgba(255,255,255,0.04);
+        --glass-hover: rgba(255,255,255,0.07);
+        --glass-active:rgba(255,255,255,0.10);
+        --border:      rgba(255,255,255,0.08);
+        --border-hi:   rgba(255,255,255,0.14);
+        --accent:      #8b8fff;
+        --accent2:     #c07ef8;
+        --accent-glow: rgba(139,143,255,0.25);
+        --accent2-glow:rgba(192,126,248,0.2);
+        --text:        #eeeef6;
+        --text-dim:    #9090b0;
+        --text-muted:  #50506a;
+        --red:         #f87171;
+        --green:       #4ade95;
+        --r-xs:  6px;
+        --r-sm:  10px;
+        --r-md:  16px;
+        --r-lg:  22px;
+        --r-xl:  28px;
+        --r-pill:999px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Outfit', sans-serif;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(ellipse 70% 55% at 15% -5%, rgba(100,90,255,0.18) 0%, transparent 65%),
+          radial-gradient(ellipse 55% 45% at 88% 105%, rgba(180,100,255,0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 30% at 50% 50%, rgba(60,60,100,0.06) 0%, transparent 70%);
+      }
+
+      #browser {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      #chrome {
+        flex-shrink: 0;
+        background: var(--chrome-bg);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 100;
+      }
+
+      #tab-strip {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        padding: 6px 8px 0;
+        gap: 3px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+      }
+      #tab-strip::-webkit-scrollbar { display: none; }
+
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 28px;
+        min-width: 110px;
+        max-width: 180px;
+        padding: 0 10px 0 10px;
+        border-radius: var(--r-sm);
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-muted);
+        font-family: 'Outfit', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+        letter-spacing: 0.01em;
+      }
+      .tab:hover {
+        background: var(--glass);
+        color: var(--text-dim);
+        border-color: var(--border);
+      }
+      .tab.active {
+        background: var(--glass-active);
+        border-color: var(--border-hi);
+        color: var(--text);
+        box-shadow: 0 1px 12px rgba(139,143,255,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
+      }
+
+      .tab-fav {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .tab-fav img { width: 14px; height: 14px; object-fit: contain; border-radius: 3px; }
+      .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+      .tab-x {
+        flex-shrink: 0;
+        width: 16px; height: 16px;
+        border-radius: 5px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        opacity: 0;
+        padding: 0;
+      }
+      .tab:hover .tab-x, .tab.active .tab-x { opacity: 1; }
+      .tab-x:hover { background: rgba(248,113,113,0.2); color: var(--red); }
+
+      #btn-newtab {
+        flex-shrink: 0;
+        width: 28px; height: 28px;
+        border-radius: var(--r-sm);
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-muted);
+        font-size: 17px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 300;
+      }
+      #btn-newtab:hover {
+        background: var(--glass);
+        color: var(--accent);
+        border-color: var(--border);
+      }
+
+      #nav-bar {
+        display: flex;
+        align-items: center;
+        height: 48px;
+        padding: 0 10px;
+        gap: 5px;
+      }
+
+      .nav-btn {
+        flex-shrink: 0;
+        width: 32px; height: 32px;
+        border-radius: var(--r-sm);
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s;
+        position: relative;
+      }
+      .nav-btn svg { display: block; }
+      .nav-btn:hover:not(:disabled) { background: var(--glass-hover); color: var(--text); }
+      .nav-btn:disabled { opacity: 0.25; cursor: default; }
+      .nav-btn:active:not(:disabled) { background: var(--glass-active); transform: scale(0.95); }
+
+      #brand-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 500;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        padding: 0 5px;
+        flex-shrink: 0;
+        user-select: none;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .chrome-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        padding: 4px 9px;
+        flex-shrink: 0;
+        cursor: pointer;
+        border-radius: var(--r-xs);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        user-select: none;
+      }
+      .chrome-badge:hover {
+        background: var(--glass-hover);
+        border-color: var(--border-hi);
+        color: var(--text);
+      }
+      .chrome-badge .badge-dot {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 4px var(--accent);
+        flex-shrink: 0;
+      }
+      .chrome-badge .badge-dot.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+      #badge-se .badge-dot { background: var(--accent2); box-shadow: 0 0 4px var(--accent2); }
+
+      #url-bar {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--r-pill);
+        height: 34px;
+        padding: 0 6px 0 12px;
+        gap: 8px;
+        transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        min-width: 0;
+        cursor: text;
+        position: relative;
+      }
+      #url-bar:focus-within {
+        border-color: rgba(139,143,255,0.5);
+        background: rgba(255,255,255,0.06);
+        box-shadow: 0 0 0 3px var(--accent-glow), 0 2px 20px rgba(0,0,0,0.3);
+      }
+      #url-scheme {
+        font-size: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        flex-shrink: 0;
+        padding: 2px 6px;
+        border-radius: var(--r-xs);
+        background: rgba(74,222,149,0.1);
+        color: var(--green);
+        border: 1px solid rgba(74,222,149,0.15);
+        letter-spacing: 0.02em;
+        display: none;
+      }
+      #url-scheme.visible { display: block; }
+      #url-scheme.insecure {
+        background: rgba(248,113,113,0.1);
+        color: var(--red);
+        border-color: rgba(248,113,113,0.15);
+      }
+      #url-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 12.5px;
+        color: var(--text);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
+        outline: none;
+        letter-spacing: 0.01em;
+        min-width: 0;
+      }
+      #url-input::placeholder { color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px; letter-spacing: 0; }
+      #url-go {
+        width: 26px; height: 26px;
+        border-radius: var(--r-pill);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        font-size: 13px;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+        padding: 0;
+      }
+      #url-go:hover { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+
+      .side-btn {
+        flex-shrink: 0;
+        width: 32px; height: 32px;
+        border-radius: var(--r-sm);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 14px;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .side-btn:hover { background: var(--glass-hover); color: var(--text); border-color: var(--border); }
+      .side-btn.starred { color: #f5c842; text-shadow: 0 0 8px rgba(245,200,66,0.5); }
+
+      #content {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      #proxy-frame {
+        position: absolute;
+        inset: 0;
+        border: none;
+        display: none;
+        width: 100%;
+        height: 100%;
+      }
+
+      #prog {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        pointer-events: none;
+        z-index: 200;
+      }
+      #prog-bar {
+        height: 100%;
+        width: 0;
+        opacity: 0;
+        background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+        background-size: 200% 100%;
+        border-radius: var(--r-pill);
+        transition: opacity 0.3s;
+      }
+      #prog-bar.loading {
+        opacity: 1;
+        animation: progAnim 1.8s ease infinite;
+      }
+      @keyframes progAnim {
+        0%   { width: 0%; background-position: 0% 0%; }
+        60%  { width: 80%; background-position: 100% 0%; }
+        100% { width: 80%; background-position: 0% 0%; }
+      }
+
+      #newtab {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        gap: 0;
+        padding: 20px;
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+      #newtab::-webkit-scrollbar { display: none; }
+
+      #nt-clock-wrap {
+        text-align: center;
+        margin-bottom: 36px;
+        animation: fadeUp 0.6s ease both;
+      }
+      #nt-clock {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 60px;
+        font-weight: 400;
+        color: var(--text-dim);
+        letter-spacing: 0.06em;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+      }
+      #nt-date {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        margin-top: 8px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      #nt-logo-wrap {
+        text-align: center;
+        margin-bottom: 32px;
+        animation: fadeUp 0.6s 0.08s ease both;
+      }
+      #nt-logo {
+        font-family: 'Outfit', sans-serif;
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, #ff9ef7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        user-select: none;
+        line-height: 1;
+      }
+      #nt-tag {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        margin-top: 4px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      #nt-search-wrap {
+        width: 520px;
+        max-width: 94vw;
+        margin-bottom: 28px;
+        animation: fadeUp 0.6s 0.14s ease both;
+        position: relative;
+      }
+      #nt-sw {
+        display: flex;
+        align-items: center;
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: var(--r-pill);
+        height: 52px;
+        padding: 0 8px 0 6px;
+        gap: 8px;
+        transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      }
+      #nt-sw:focus-within {
+        border-color: rgba(139,143,255,0.45);
+        background: rgba(255,255,255,0.06);
+        box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 32px rgba(0,0,0,0.4);
+      }
+
+      #se-toggle {
+        flex-shrink: 0;
+        width: 38px; height: 38px;
+        border-radius: var(--r-pill);
+        background: var(--glass-hover);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+        user-select: none;
+      }
+      #se-toggle:hover {
+        background: var(--glass-active);
+        border-color: var(--border-hi);
+        transform: scale(1.05);
+      }
+      #se-toggle:active { transform: scale(0.95); }
+
+      #nt-s {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: var(--text);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 400;
+        outline: none;
+        letter-spacing: 0.01em;
+        min-width: 0;
+      }
+      #nt-s::placeholder { color: var(--text-muted); }
+
+      #nt-go {
+        flex-shrink: 0;
+        height: 38px;
+        padding: 0 18px;
+        border-radius: var(--r-pill);
+        border: none;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 2px 12px var(--accent-glow);
+      }
+      #nt-go:hover {
+        opacity: 0.9;
+        transform: scale(1.03);
+        box-shadow: 0 4px 20px var(--accent-glow);
+      }
+      #nt-go:active { transform: scale(0.97); }
+
+      .nt-section {
+        width: 520px;
+        max-width: 94vw;
+        animation: fadeUp 0.6s 0.2s ease both;
+      }
+      .nt-lbl {
+        font-size: 9.5px;
+        color: var(--text-muted);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        padding-left: 2px;
+      }
+      #nt-sc {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .sc {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 9px;
+        padding: 16px 8px 14px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        cursor: pointer;
+        transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+        backdrop-filter: blur(8px);
+      }
+      .sc:hover {
+        background: var(--glass-hover);
+        border-color: var(--border-hi);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      }
+      .sc:active { transform: translateY(-1px); }
+      .sc-i {
+        width: 36px; height: 36px;
+        border-radius: var(--r-sm);
+        background: var(--glass-hover);
+        border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+        font-size: 18px;
+      }
+      .sc-i img { width: 20px; height: 20px; object-fit: contain; }
+      .sc-n {
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.02em;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      #rc-sec { margin-top: 16px; animation: fadeUp 0.6s 0.26s ease both; }
+      .rc {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        margin-bottom: 5px;
+      }
+      .rc:hover { background: var(--glass-hover); border-color: var(--border-hi); }
+      .rc-fav { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+      .rc-fav img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
+      .rc-url {
+        flex: 1;
+        font-size: 11.5px;
+        color: var(--text-dim);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .rc-lbl {
+        font-size: 9.5px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.05em;
+      }
+
+      #omni {
+        position: fixed;
+        z-index: 9999;
+        display: none;
+        background: rgba(12,12,22,0.9);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-lg);
+        padding: 6px;
+        min-width: 440px;
+        max-width: 580px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,143,255,0.08);
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: omniIn 0.15s ease;
+      }
+      @keyframes omniIn { from { opacity:0; transform:translateX(-50%) translateY(-8px) scale(0.98); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+      .or {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        color: var(--text-dim);
+        transition: background 0.1s, color 0.1s;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px;
+      }
+      .or:hover, .or.sel { background: var(--glass-hover); color: var(--text); }
+      .or-icon { width: 24px; text-align: center; flex-shrink: 0; }
+      .or-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ob {
+        font-size: 9px;
+        padding: 2px 7px;
+        border-radius: var(--r-xs);
+        background: var(--glass-hover);
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
+        border: 1px solid var(--border);
+        text-transform: uppercase;
+      }
+
+      .chrome-dropdown {
+        position: fixed;
+        z-index: 9999;
+        display: none;
+        background: rgba(12,12,22,0.92);
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-md);
+        padding: 6px;
+        min-width: 180px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+        font-size: 13px;
+        font-family: 'Outfit', sans-serif;
+        animation: dropIn 0.14s ease;
+      }
+      @keyframes dropIn { from { opacity:0; transform:translateY(-6px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+      .drop-section-label {
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 6px 12px 4px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .drop-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        color: var(--text-dim);
+        transition: background 0.1s, color 0.1s;
+        position: relative;
+      }
+      .drop-item:hover { background: var(--glass-hover); color: var(--text); }
+      .drop-item.active { color: var(--accent); }
+      .drop-item.active::after {
+        content: '';
+        position: absolute;
+        right: 12px;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+      }
+      .drop-item-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+      .drop-divider { height: 1px; background: var(--border); margin: 4px 8px; }
+
+      #se-dropdown {
+        position: absolute;
+        z-index: 9999;
+        display: none;
+        background: rgba(12,12,22,0.93);
+        backdrop-filter: blur(24px) saturate(1.4);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-md);
+        padding: 6px;
+        min-width: 210px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+        top: calc(100% + 8px);
+        left: 0;
+        animation: dropIn 0.14s ease;
+        font-family: 'Outfit', sans-serif;
+        font-size: 13px;
+      }
+      #se-dropdown .drop-section-label {
+        font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase;
+        padding: 6px 12px 4px; font-family: 'JetBrains Mono', monospace;
+      }
+      #se-dropdown .se-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 9px 12px; border-radius: var(--r-sm);
+        cursor: pointer; color: var(--text-dim);
+        transition: background 0.1s, color 0.1s; position: relative;
+      }
+      #se-dropdown .se-item:hover { background: var(--glass-hover); color: var(--text); }
+      #se-dropdown .se-item.active { color: var(--accent2); }
+      #se-dropdown .se-item.active::after {
+        content: ''; position: absolute; right: 12px;
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--accent2); box-shadow: 0 0 6px var(--accent2);
+      }
+      #se-dropdown .se-icon { font-size: 16px; width: 22px; text-align: center; }
+      #se-dropdown .se-name { font-weight: 500; }
+      #se-dropdown .se-url { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      ::-webkit-scrollbar { width: 5px; height: 5px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--glass-hover); border-radius: var(--r-pill); }
+
+      #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
+
+      #video-background {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        z-index: -2;
+        pointer-events: none;
+        display: none;
+      }
+
+      #wallpaper-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0 0 0 0;
+      }
+      #wallpaper-overlay.open { display: flex; animation: overlayIn 0.2s ease; }
+      @keyframes overlayIn { from { opacity:0; } to { opacity:1; } }
+
+      #wallpaper-panel {
+        width: 100%;
+        max-width: 680px;
+        background: rgba(10,10,20,0.97);
+        backdrop-filter: blur(32px) saturate(1.5);
+        border: 1px solid var(--border-hi);
+        border-bottom: none;
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+        padding: 24px 24px 32px;
+        animation: panelUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+        box-shadow: 0 -24px 80px rgba(0,0,0,0.6);
+        position: relative;
+      }
+      @keyframes panelUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+      }
+
+      #wallpaper-panel .wp-handle {
+        width: 36px; height: 4px;
+        background: var(--border-hi);
+        border-radius: var(--r-pill);
+        margin: 0 auto 20px;
+      }
+      #wallpaper-panel .wp-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 4px;
+        letter-spacing: -0.02em;
+      }
+      #wallpaper-panel .wp-subtitle {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: 0.06em;
+        margin-bottom: 20px;
+      }
+
+      .wp-section-label {
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 10px;
+      }
+
+      #wp-presets {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .wp-swatch {
+        aspect-ratio: 16/9;
+        border-radius: var(--r-sm);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        position: relative;
+        overflow: hidden;
+      }
+      .wp-swatch:hover { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+      .wp-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(139,143,255,0.3); }
+      .wp-swatch .wp-check {
+        position: absolute; inset: 0;
+        display: none; align-items: center; justify-content: center;
+        background: rgba(139,143,255,0.3);
+        font-size: 16px;
+      }
+      .wp-swatch.active .wp-check { display: flex; }
+
+      .wp-none-swatch {
+        background: repeating-conic-gradient(var(--glass) 0% 25%, var(--glass-hover) 0% 50%) 0 0 / 12px 12px;
+        border: 2px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; color: var(--text-muted);
+      }
+      .wp-none-swatch:hover { border-color: var(--border-hi); }
+
+      .wp-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .wp-btn {
+        flex: 1;
+        height: 40px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text-dim);
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        gap: 7px;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        letter-spacing: 0.01em;
+      }
+      .wp-btn:hover { background: var(--glass-hover); border-color: var(--border-hi); color: var(--text); }
+      .wp-btn.primary {
+        background: linear-gradient(135deg, rgba(139,143,255,0.2), rgba(192,126,248,0.15));
+        border-color: rgba(139,143,255,0.3);
+        color: var(--accent);
+      }
+      .wp-btn.primary:hover { background: linear-gradient(135deg, rgba(139,143,255,0.3), rgba(192,126,248,0.25)); }
+
+      #wp-toast {
+        position: fixed;
+        bottom: 24px; left: 50%; transform: translateX(-50%);
+        z-index: 20000;
+        background: rgba(12,12,22,0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-hi);
+        border-radius: var(--r-sm);
+        padding: 10px 18px;
+        font-size: 12.5px;
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-dim);
+        display: none;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        animation: toastIn 0.2s ease;
+        white-space: nowrap;
+      }
+      @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(8px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+      #wp-toast.show { display: flex; }
+      #wp-toast .toast-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--accent); box-shadow: 0 0 6px var(--accent);
+        flex-shrink: 0; animation: pulseDot 1s ease infinite;
+      }
+      #wp-toast .toast-dot.success { background: var(--green); box-shadow: 0 0 6px var(--green); animation: none; }
+      #wp-toast .toast-dot.error   { background: var(--red);   box-shadow: 0 0 6px var(--red);   animation: none; }
+      @keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
     </style>
-</head>
-<body>
-    <div id="content">
-        <div id="prog">
-            <div id="prog-bar"></div>
-        </div>
-        
-        <iframe id="proxy-frame" title="GeForce NOW"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals allow-downloads allow-orientation-lock"></iframe>
+  </head>
+
+  <body>
+    <video id="video-background" autoplay loop muted playsinline></video>
+
+    <select id="background-select" style="display:none"></select>
+    <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
+
+    <div id="proxy-shell" style="display:none">
+      <div id="proxy-loading"></div>
+      <div id="proxy-watermark">
+        <pre class="watermark-logo" id="watermark-logo"></pre>
+        <div class="watermark-hint"></div>
+      </div>
     </div>
-    
-    <div id="status">GeForce NOW • Scramjet</div>
-    
-    <div id="controls">
-        <button class="ctrl-btn" onclick="GFN.reload()">⟲</button>
-        <button class="ctrl-btn" onclick="GFN.fullscreen()">⛶</button>
+    <div id="terminal-shell" style="display:none">
+      <div id="term">
+        <div id="term-output">
+          <div id="term-status">
+            <span class="term-status-label">url:</span>
+            <span id="term-location"></span>
+          </div>
+          <form id="term-input-row">
+            <span id="term-prefix">root@t9:~$&nbsp;</span>
+            <input id="term-input" autocomplete="off" spellcheck="false" />
+            <span id="term-cursor" aria-hidden="true"></span>
+            <span id="term-cursor-measure" aria-hidden="true"></span>
+          </form>
+        </div>
+      </div>
     </div>
 
+    <div id="browser">
+      <div id="chrome">
+        <div id="tab-strip">
+          <button id="btn-newtab" title="New tab (Ctrl+T)" onclick="B.addTab()">+</button>
+        </div>
+
+        <div id="nav-bar">
+          <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" onclick="B.back()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L3.5 6.5L8.5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="nav-btn" id="btn-fwd" title="Forward (Alt+Right)" onclick="B.fwd()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.5 1.5L9.5 6.5L4.5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="nav-btn" id="btn-reload" title="Reload (Ctrl+R)" onclick="B.reload()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5A4.5 4.5 0 1 0 3.7 3L1.5 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 1v3h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="nav-btn" id="btn-home" title="Home" onclick="B.home()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 5L6.5 1.5L11.5 5V11C11.5 11.28 11.28 11.5 11 11.5H2C1.72 11.5 1.5 11.28 1.5 11V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </button>
+
+          <div id="brand-badge">T9</div>
+
+          <div class="chrome-badge" id="badge-proxy" onclick="B.toggleProxyDropdown(event)" title="Switch proxy engine">
+            <span class="badge-dot green" id="proxy-dot"></span>
+            <span id="proxy-name">SJ</span>
+            <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+
+          <div class="chrome-badge" id="badge-se" onclick="B.toggleSeDropdownChrome(event)" title="Switch search engine">
+            <span class="badge-dot"></span>
+            <span id="se-name-badge">DDG</span>
+            <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+
+          <div id="url-bar" onclick="B.focusUrl()">
+            <span id="url-scheme"></span>
+            <input id="url-input" type="text" placeholder="Search or enter a URL…"
+              autocomplete="off" spellcheck="false"
+              onfocus="B.onFocus()" onblur="B.onBlur()"
+              oninput="B.onInput(this.value)"
+              onkeydown="B.onKey(event)" />
+            <button id="url-go" onclick="B.navigate(document.getElementById('url-input').value)" title="Go">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <button class="side-btn" id="btn-star" title="Bookmark" onclick="B.star()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" id="star-icon"><path d="M7 1.5l1.5 3.2 3.5.5-2.5 2.5.6 3.5L7 9.5 3.9 11.2l.6-3.5L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="side-btn" title="Menu" onclick="B.menu(event)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1.1" fill="currentColor"/><circle cx="7" cy="7" r="1.1" fill="currentColor"/><circle cx="7" cy="11" r="1.1" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="content">
+        <div id="prog"><div id="prog-bar"></div></div>
+
+        <iframe id="proxy-frame" title="T9 Proxy"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
+
+        <div id="newtab">
+          <div id="nt-clock-wrap">
+            <div id="nt-clock">00:00:00</div>
+            <div id="nt-date">Loading…</div>
+          </div>
+
+          <div id="nt-logo-wrap">
+            <div id="nt-logo">T9</div>
+            <div id="nt-tag">browser</div>
+          </div>
+
+          <div class="nt-section" id="nt-search-wrap">
+            <div id="nt-sw">
+              <button id="se-toggle" title="Change search engine" onclick="B.toggleSeDropdownNT(event)">
+                <span id="se-icon-nt">🦆</span>
+              </button>
+              <input id="nt-s" type="text" placeholder="Search or type a URL…"
+                autocomplete="off" spellcheck="false"
+                onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
+              <button id="nt-go" onclick="B.navigate(document.getElementById('nt-s').value)">GO →</button>
+            </div>
+            <div id="se-dropdown"></div>
+          </div>
+
+          <div class="nt-section">
+            <div class="nt-lbl">Quick access</div>
+            <div id="nt-sc">
+              <div class="sc" onclick="B.navigate('https://google.com')">
+                <div class="sc-i"><img src="https://www.google.com/favicon.ico" alt="G" onerror="this.parentElement.textContent='🔍'"></div>
+                <div class="sc-n">Google</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://youtube.com')">
+                <div class="sc-i"><img src="https://www.youtube.com/favicon.ico" alt="YT" onerror="this.parentElement.textContent='▶️'"></div>
+                <div class="sc-n">YouTube</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://reddit.com')">
+                <div class="sc-i"><img src="https://www.reddit.com/favicon.ico" alt="R" onerror="this.parentElement.textContent='👾'"></div>
+                <div class="sc-n">Reddit</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://github.com')">
+                <div class="sc-i"><img src="https://github.com/favicon.ico" alt="GH" onerror="this.parentElement.textContent='🐙'"></div>
+                <div class="sc-n">GitHub</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://twitter.com')">
+                <div class="sc-i"><img src="https://twitter.com/favicon.ico" alt="X" onerror="this.parentElement.textContent='🐦'"></div>
+                <div class="sc-n">X / Twitter</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://discord.com')">
+                <div class="sc-i"><img src="https://discord.com/favicon.ico" alt="DC" onerror="this.parentElement.textContent='💬'"></div>
+                <div class="sc-n">Discord</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://twitch.tv')">
+                <div class="sc-i"><img src="https://www.twitch.tv/favicon.ico" alt="TV" onerror="this.parentElement.textContent='📡'"></div>
+                <div class="sc-n">Twitch</div>
+              </div>
+              <div class="sc" onclick="B.navigate('https://wikipedia.org')">
+                <div class="sc-i"><img src="https://www.wikipedia.org/favicon.ico" alt="W" onerror="this.parentElement.textContent='📖'"></div>
+                <div class="sc-n">Wikipedia</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nt-section" id="rc-sec" style="display:none">
+            <div class="nt-lbl" style="margin-top:20px">Recently closed</div>
+            <div id="nt-rc"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="omni"></div>
+    <div class="chrome-dropdown" id="proxy-dropdown"></div>
+    <div class="chrome-dropdown" id="se-dropdown-chrome"></div>
+
     <script>
-        // Direct embed of T9 Browser's Scramjet loading logic
-        const GFN = (() => {
-            const TARGET_URL = 'https://play.geforcenow.com/mall/#/layout/games';
-            const frame = document.getElementById('proxy-frame');
-            const progBar = document.getElementById('prog-bar');
-            const status = document.getElementById('status');
-            
-            let progTimer = null;
-            let currentUrl = TARGET_URL;
-            
-            // Progress bar (exactly from T9)
-            function startProg() {
-                clearTimeout(progTimer);
-                progBar.style.transition = 'none';
-                progBar.style.width = '0';
-                progBar.style.opacity = '1';
-                progBar.classList.add('loading');
+      const SEARCH_ENGINES = {
+        duckduckgo:  { name: 'DuckDuckGo',  short: 'DDG',  icon: '🦆', url: 'https://duckduckgo.com/?q=' },
+        google:      { name: 'Google',       short: 'GGL',  icon: '🔍', url: 'https://www.google.com/search?q=' },
+        bing:        { name: 'Bing',          short: 'BNG',  icon: '🔷', url: 'https://www.bing.com/search?q=' },
+        brave:       { name: 'Brave Search',  short: 'BRV',  icon: '🦁', url: 'https://search.brave.com/search?q=' },
+        startpage:   { name: 'Startpage',     short: 'SPG',  icon: '🔒', url: 'https://www.startpage.com/sp/search?query=' },
+        ecosia:      { name: 'Ecosia',        short: 'ECO',  icon: '🌱', url: 'https://www.ecosia.org/search?q=' },
+      };
+
+      const B = (() => {
+        let tabs   = [mkTab()];
+        let cur    = 0;
+        let recent = [];
+        let omniIdx = -1;
+        let _progTimer;
+
+        let currentProxy = 'scramjet';
+        let currentSearch = localStorage.getItem('t9_search') || 'duckduckgo';
+
+        // ── FIXED: promise-based UV init ──────────────────────────────
+        const wispUrl = "wss://wisp.rhw.one/";
+        let uvConnection = null;
+        let uvInitPromise = null;
+
+        function initUV() {
+          if (uvInitPromise) return uvInitPromise;
+          uvInitPromise = (async () => {
+            try {
+              // Wait for BareMux to be available (script may still be loading)
+              if (typeof BareMux === 'undefined') {
+                await new Promise((resolve, reject) => {
+                  let attempts = 0;
+                  const check = setInterval(() => {
+                    if (typeof BareMux !== 'undefined') { clearInterval(check); resolve(); }
+                    if (++attempts > 50) { clearInterval(check); reject(new Error('BareMux not loaded after 5s')); }
+                  }, 100);
+                });
+              }
+              uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+              await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+            } catch (e) {
+              console.error('UV init failed:', e);
+              uvInitPromise = null; // allow retry on next navigate
+              throw e;
             }
-            
-            function stopProg() {
-                progBar.classList.remove('loading');
-                progBar.style.transition = 'width .2s ease';
-                progBar.style.width = '100%';
-                progTimer = setTimeout(() => {
-                    progBar.style.opacity = '0';
-                    progBar.style.width = '0';
-                }, 350);
-            }
-            
-            // Update status with URL
-            function updateStatus(url) {
-                try {
-                    const host = new URL(url).hostname;
-                    status.textContent = `GeForce NOW • ${host}`;
-                } catch {
-                    status.textContent = 'GeForce NOW • Scramjet';
-                }
-            }
-            
-            // Load with Scramjet - EXACT T9 Browser pattern
-            function doLoad(url) {
-                startProg();
-                currentUrl = url;
-                updateStatus(url);
-                
-                // T9 Browser's exact Scramjet loading logic
+          })();
+          return uvInitPromise;
+        }
+
+        function mkTab(url, title) {
+          return { url: url || '', title: title || 'New tab', fav: null, hist: url ? [url] : [], hidx: url ? 0 : -1 };
+        }
+        function ct() { return tabs[cur]; }
+        function getFaviconUrl(url) {
+          try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
+          catch { return null; }
+        }
+        function resolveUrl(raw) {
+          raw = (raw || '').trim();
+          if (!raw) return null;
+          if (/^https?:\/\//i.test(raw)) return raw;
+          if (/^[a-z][a-z0-9+\-.]*:\/\//i.test(raw)) return raw;
+          if (/^localhost(:\d+)?(\/|$)/.test(raw)) return 'http://' + raw;
+          if (raw.includes('.') && !raw.includes(' ') && raw.indexOf(' ') === -1) return 'https://' + raw;
+          return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
+        }
+
+        function tick() {
+          const n = new Date();
+          const cl = document.getElementById('nt-clock');
+          const dl = document.getElementById('nt-date');
+          if (cl) cl.textContent = n.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (dl) dl.textContent = n.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        }
+        setInterval(tick, 1000); tick();
+
+        function renderTabs() {
+          const strip = document.getElementById('tab-strip');
+          const add   = document.getElementById('btn-newtab');
+          strip.querySelectorAll('.tab').forEach(el => el.remove());
+          tabs.forEach((t, i) => {
+            const d = document.createElement('div');
+            d.className = 'tab' + (i === cur ? ' active' : '');
+            const favHtml = t.fav
+              ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">`
+              : `<span style="font-size:11px">🌐</span>`;
+            d.innerHTML = `<span class="tab-fav">${favHtml}</span><span class="tab-title">${esc(t.title)}</span><button class="tab-x">✕</button>`;
+            d.onclick = () => { if (cur !== i) { cur = i; sync(); } };
+            d.querySelector('.tab-x').onclick = e => { e.stopPropagation(); closeTab(i); };
+            strip.insertBefore(d, add);
+          });
+          document.getElementById('btn-back').disabled = ct().hidx <= 0;
+          document.getElementById('btn-fwd').disabled  = ct().hidx >= ct().hist.length - 1;
+        }
+
+        function sync() {
+          const t = ct();
+          document.getElementById('url-input').value = t.url;
+          setScheme(t.url);
+          renderTabs();
+          if (t.url) { showFrame(); doLoad(t.url, false); }
+          else       { showNew(); }
+        }
+
+        function addTab(url, title) {
+          tabs.push(mkTab(url, title));
+          cur = tabs.length - 1;
+          sync();
+          if (!url) setTimeout(() => document.getElementById('nt-s').focus(), 50);
+        }
+
+        function closeTab(i) {
+          const t = tabs[i];
+          if (t.url) {
+            recent.unshift({ url: t.url, title: t.title, fav: t.fav });
+            if (recent.length > 6) recent.pop();
+            renderRecent();
+          }
+          if (tabs.length === 1) { tabs = [mkTab()]; cur = 0; sync(); return; }
+          tabs.splice(i, 1);
+          if (cur >= tabs.length) cur = tabs.length - 1;
+          sync();
+        }
+
+        function renderRecent() {
+          const sec  = document.getElementById('rc-sec');
+          const list = document.getElementById('nt-rc');
+          if (!recent.length) { sec.style.display = 'none'; return; }
+          sec.style.display = '';
+          list.innerHTML = recent.map(r => {
+            const favHtml = r.fav
+              ? `<img src="${esc(r.fav)}" alt="" onerror="this.style.display='none'">`
+              : `<span style="font-size:13px">🌐</span>`;
+            return `<div class="rc" onclick="B.navigate('${esc(r.url)}')">
+              <span class="rc-fav">${favHtml}</span>
+              <span class="rc-url">${esc(r.url)}</span>
+              <span class="rc-lbl">closed</span>
+            </div>`;
+          }).join('');
+        }
+
+        function navigate(raw, pushHist = true) {
+          const url = resolveUrl(raw);
+          if (!url) return;
+          const t = ct();
+          if (pushHist) {
+            t.hist = t.hist.slice(0, t.hidx + 1);
+            t.hist.push(url);
+            t.hidx = t.hist.length - 1;
+          }
+          t.url   = url;
+          t.title = url;
+          t.fav   = getFaviconUrl(url);
+          try { t.title = new URL(url).hostname; } catch {}
+          document.getElementById('url-input').value = url;
+          setScheme(url);
+          renderTabs();
+          showFrame();
+          doLoad(url, pushHist);
+          hideOmni();
+        }
+
+        // ── FIXED: properly awaits UV init before loading ──────────────
+        async function doLoad(url, updateHash) {
+          startProg();
+          const frame = document.getElementById('proxy-frame');
+
+          if (currentProxy === 'scramjet') {
+            if (typeof openInFrame === 'function') {
+              openInFrame(url);
+              if (updateHash && typeof setHashFromUrl === 'function') setHashFromUrl(url);
+            } else {
+              const iv = setInterval(() => {
                 if (typeof openInFrame === 'function') {
-                    openInFrame(url);
-                    if (typeof setHashFromUrl === 'function') {
-                        setHashFromUrl(url);
-                    }
-                } else {
-                    const iv = setInterval(() => {
-                        if (typeof openInFrame === 'function') {
-                            clearInterval(iv);
-                            openInFrame(url);
-                            if (typeof setHashFromUrl === 'function') {
-                                setHashFromUrl(url);
-                            }
-                        }
-                    }, 100);
+                  clearInterval(iv);
+                  openInFrame(url);
+                  if (updateHash && typeof setHashFromUrl === 'function') setHashFromUrl(url);
                 }
-                
-                frame.onload = () => {
-                    stopProg();
-                    tryUpdateTitle();
-                };
-                
-                frame.onerror = () => {
-                    stopProg();
-                    status.textContent = 'GeForce NOW • Error';
-                };
-                
-                // Safety timeout
-                setTimeout(() => {
-                    if (progBar.classList.contains('loading')) {
-                        stopProg();
-                    }
-                }, 15000);
+              }, 100);
             }
-            
-            // Try to get title from frame (from T9)
-            function tryUpdateTitle() {
-                try {
-                    const title = frame.contentDocument?.title;
-                    if (title && title.includes('GeForce')) {
-                        status.textContent = `GeForce NOW • Playing`;
-                    }
-                } catch {}
+          } else {
+            try {
+              await initUV(); // await the full transport setup before touching the frame
+              const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+              frame.onload = null; // detach stale handler before setting new src
+              frame.src = encoded;
+            } catch (e) {
+              console.warn('UV load error, falling back to scramjet:', e);
+              if (typeof openInFrame === 'function') openInFrame(url);
+              else { stopProg(); return; }
             }
-            
-            // Hash change handler (from T9)
-            window.addEventListener('hashchange', () => {
-                const token = window.location.hash.replace(/^#/, '');
-                if (!token) return;
-                
-                try {
-                    if (typeof decodeTarget === 'function') {
-                        const url = decodeTarget(token);
-                        if (url && url !== currentUrl) {
-                            currentUrl = url;
-                            updateStatus(url);
-                        }
-                    }
-                } catch {}
-            });
-            
-            // Sync URL from external calls (from T9's _browserSyncUrl)
-            window._browserSyncUrl = function(url) {
-                if (url && url !== currentUrl) {
-                    currentUrl = url;
-                    updateStatus(url);
-                }
-            };
-            
-            // Fullscreen toggle
-            function toggleFullscreen() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                } else {
-                    document.exitFullscreen();
-                }
+          }
+
+          frame.onload = null;
+          frame.onload = () => { stopProg(); tryUpdateTitle(); };
+        }
+
+        function tryUpdateTitle() {
+          try {
+            const title = document.getElementById('proxy-frame').contentDocument?.title;
+            if (title) { ct().title = title; renderTabs(); }
+          } catch {}
+        }
+
+        function back() {
+          const t = ct();
+          if (t.hidx > 0) {
+            t.hidx--;
+            const url = t.hist[t.hidx];
+            t.url = url; t.fav = getFaviconUrl(url);
+            document.getElementById('url-input').value = url;
+            setScheme(url);
+            renderTabs();
+            doLoad(url, false);
+          }
+        }
+        function fwd() {
+          const t = ct();
+          if (t.hidx < t.hist.length - 1) {
+            t.hidx++;
+            const url = t.hist[t.hidx];
+            t.url = url; t.fav = getFaviconUrl(url);
+            document.getElementById('url-input').value = url;
+            setScheme(url);
+            renderTabs();
+            doLoad(url, false);
+          }
+        }
+        function reload() { if (ct().url) { startProg(); doLoad(ct().url, false); } }
+        function home() {
+          if (typeof goHome === 'function') goHome();
+          ct().url = ''; ct().title = 'New tab'; ct().fav = null;
+          document.getElementById('url-input').value = '';
+          setScheme('');
+          renderTabs();
+          showNew();
+          setTimeout(() => document.getElementById('nt-s').focus(), 50);
+        }
+
+        function showFrame() {
+          document.getElementById('proxy-frame').style.display = 'block';
+          document.getElementById('newtab').style.display      = 'none';
+        }
+        function showNew() {
+          document.getElementById('proxy-frame').style.display = 'none';
+          document.getElementById('newtab').style.display      = 'flex';
+        }
+
+        function focusUrl() { document.getElementById('url-input').select(); }
+        function setScheme(url) {
+          const el = document.getElementById('url-scheme');
+          if (!url) { el.textContent = ''; el.classList.remove('visible','insecure'); return; }
+          try {
+            const u = new URL(url);
+            if (u.protocol === 'https:') {
+              el.textContent = 'https';
+              el.className = 'visible';
+            } else {
+              el.textContent = u.protocol.replace(':','');
+              el.className = 'visible insecure';
             }
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                // F5 or Ctrl+R
-                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                    e.preventDefault();
-                    doLoad(currentUrl);
-                }
-                // F11
-                if (e.key === 'F11') {
-                    e.preventDefault();
-                    toggleFullscreen();
-                }
-            });
-            
-            // Override setLocationLabel (from T9)
-            window.addEventListener('load', () => {
-                const orig = window.setLocationLabel;
-                if (typeof orig === 'function') {
-                    window.setLocationLabel = function(val) {
-                        orig(val);
-                        if (typeof window._browserSyncUrl === 'function') {
-                            window._browserSyncUrl(val);
-                        }
-                    };
-                }
-                
-                // Check for existing hash
-                const hash = window.location.hash.replace(/^#/, '');
-                if (hash && typeof decodeTarget === 'function') {
-                    try {
-                        const url = decodeTarget(hash);
-                        if (url) {
-                            currentUrl = url;
-                            updateStatus(url);
-                            frame.style.display = 'block';
-                        }
-                    } catch {}
-                }
-            });
-            
-            // Start loading
-            doLoad(TARGET_URL);
-            
-            // Public API
-            return {
-                reload: () => doLoad(currentUrl),
-                fullscreen: toggleFullscreen,
-                getUrl: () => currentUrl
-            };
-        })();
+          } catch { el.textContent = ''; el.classList.remove('visible','insecure'); }
+        }
+        function onFocus() { setTimeout(() => document.getElementById('url-input').select(), 0); }
+        function onBlur()  { hideOmni(); }
+        function onInput(val) { setScheme(val); buildOmni(val); }
+        function onKey(e) {
+          const rows = document.querySelectorAll('#omni .or');
+          if (e.key === 'ArrowDown')      { e.preventDefault(); omniIdx = Math.min(omniIdx+1, rows.length-1); hilite(); }
+          else if (e.key === 'ArrowUp')   { e.preventDefault(); omniIdx = Math.max(omniIdx-1, 0); hilite(); }
+          else if (e.key === 'Enter') {
+            if (omniIdx >= 0 && rows[omniIdx]) rows[omniIdx].click();
+            else navigate(e.target.value);
+            hideOmni();
+          } else if (e.key === 'Escape') { hideOmni(); e.target.blur(); }
+        }
+
+        const QUICK = [
+          { icon:'🔍', q:'google.com' }, { icon:'▶️', q:'youtube.com' }, { icon:'👾', q:'reddit.com' },
+          { icon:'🐙', q:'github.com' }, { icon:'🐦', q:'twitter.com' }, { icon:'💬', q:'discord.com' },
+          { icon:'📡', q:'twitch.tv' },  { icon:'📖', q:'wikipedia.org' },
+        ];
+        function buildOmni(val) {
+          const d = document.getElementById('omni');
+          if (!val) { hideOmni(); return; }
+          omniIdx = -1;
+          const isUrl = /^https?:\/\/|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(val);
+          const se = SEARCH_ENGINES[currentSearch];
+          let html = isUrl
+            ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span class="or-icon">🔗</span><span class="or-text">${esc(val)}</span><span class="ob">navigate</span></div>`
+            : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span class="or-icon">${se.icon}</span><span class="or-text">${esc(val)}</span><span class="ob">search ${se.short}</span></div>`;
+          QUICK.filter(q => q.q.includes(val.toLowerCase())).slice(0,4).forEach(q => {
+            html += `<div class="or" onclick="B.navigate('https://${esc(q.q)}')"><span class="or-icon">${q.icon}</span><span class="or-text">${esc(q.q)}</span><span class="ob">site</span></div>`;
+          });
+          d.innerHTML = html;
+          d.style.display = 'block';
+        }
+        function hilite() { document.querySelectorAll('#omni .or').forEach((el, i) => el.classList.toggle('sel', i === omniIdx)); }
+        function hideOmni() { setTimeout(() => { document.getElementById('omni').style.display = 'none'; }, 150); }
+
+        function startProg() {
+          const b = document.getElementById('prog-bar');
+          clearTimeout(_progTimer);
+          b.style.transition = 'none';
+          b.style.width = '0';
+          b.style.opacity = '1';
+          b.classList.add('loading');
+        }
+        function stopProg() {
+          const b = document.getElementById('prog-bar');
+          b.classList.remove('loading');
+          b.style.transition = 'width .2s ease';
+          b.style.width = '100%';
+          _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
+        }
+
+        function toggleProxyDropdown(e) {
+          e.stopPropagation();
+          const d = document.getElementById('proxy-dropdown');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          const rect = document.getElementById('badge-proxy').getBoundingClientRect();
+          d.style.top  = (rect.bottom + 6) + 'px';
+          d.style.left = rect.left + 'px';
+          d.innerHTML = `
+            <div class="drop-section-label">Proxy Engine</div>
+            <div class="drop-item ${currentProxy==='ultraviolet'?'active':''}" onclick="B.setProxy('ultraviolet')">
+              <span class="drop-item-icon">☀️</span><span>Ultraviolet</span>
+            </div>
+            <div class="drop-item ${currentProxy==='scramjet'?'active':''}" onclick="B.setProxy('scramjet')">
+              <span class="drop-item-icon">⚡</span><span>Scramjet</span>
+            </div>
+          `;
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+        }
+
+        // ── FIXED: reset init promise when switching back to UV ────────
+        function setProxy(p) {
+          currentProxy = p;
+          document.getElementById('proxy-name').textContent = p === 'scramjet' ? 'SJ' : 'UV';
+          document.getElementById('proxy-dropdown').style.display = 'none';
+          if (p === 'ultraviolet') {
+            uvInitPromise = null; // force fresh connection
+            uvConnection = null;
+          }
+          if (ct().url) doLoad(ct().url, false);
+        }
+
+        function updateSeUI() {
+          const se = SEARCH_ENGINES[currentSearch];
+          document.getElementById('se-icon-nt').textContent    = se.icon;
+          document.getElementById('se-name-badge').textContent = se.short;
+          localStorage.setItem('t9_search', currentSearch);
+        }
+
+        function setSearchEngine(key) {
+          currentSearch = key;
+          updateSeUI();
+          document.getElementById('se-dropdown').style.display = 'none';
+          document.getElementById('se-dropdown-chrome').style.display = 'none';
+        }
+
+        function buildSeDropdownHtml() {
+          return Object.entries(SEARCH_ENGINES).map(([key, se]) =>
+            `<div class="se-item ${currentSearch===key?'active':''}" onclick="B.setSearchEngine('${key}')">
+              <span class="se-icon">${se.icon}</span>
+              <div><div class="se-name">${se.name}</div></div>
+            </div>`
+          ).join('');
+        }
+
+        function toggleSeDropdownNT(e) {
+          e.stopPropagation();
+          const d = document.getElementById('se-dropdown');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+        }
+
+        function toggleSeDropdownChrome(e) {
+          e.stopPropagation();
+          const d = document.getElementById('se-dropdown-chrome');
+          if (d.style.display === 'block') { d.style.display = 'none'; return; }
+          const rect = document.getElementById('badge-se').getBoundingClientRect();
+          d.style.top  = (rect.bottom + 6) + 'px';
+          d.style.left = rect.left + 'px';
+          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.style.display = 'block';
+          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+        }
+
+        function star() {
+          const btn = document.getElementById('btn-star');
+          btn.classList.toggle('starred');
+          const icon = document.getElementById('star-icon');
+          if (btn.classList.contains('starred')) {
+            icon.querySelector('path').setAttribute('fill', 'currentColor');
+          } else {
+            icon.querySelector('path').setAttribute('fill', 'none');
+          }
+        }
+
+        function menu(e) {
+          const old = document.getElementById('_smenu');
+          if (old) { old.remove(); return; }
+          const items = [
+            ['New tab',        'Ctrl+T', () => addTab()],
+            ['Reload',         'Ctrl+R', () => reload()],
+            ['Home',           null,     () => home()],
+            ['Wallpaper',      null,     () => openWallpaper()],
+            ['Dev tools',      null,     () => { if (typeof handleDev === 'function') handleDev(); }],
+            ['Toggle adblock', null,     () => { if (typeof setAdblockEnabled === 'function') setAdblockEnabled(!adblockEnabled); }],
+          ];
+          const m = document.createElement('div');
+          m.id = '_smenu';
+          const nb = document.getElementById('nav-bar').getBoundingClientRect();
+          m.style.cssText = `position:fixed;z-index:9999;
+            background:rgba(12,12,22,0.93);
+            backdrop-filter:blur(24px) saturate(1.4);
+            -webkit-backdrop-filter:blur(24px) saturate(1.4);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:16px;padding:6px;min-width:190px;
+            font-size:13px;font-family:'Outfit',sans-serif;
+            box-shadow:0 20px 60px rgba(0,0,0,.7);
+            right:10px;top:${nb.bottom+6}px;
+            animation:dropIn 0.14s ease;`;
+          const styleEl = document.createElement('style');
+          styleEl.textContent = `@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}`;
+          m.appendChild(styleEl);
+          items.forEach(([lbl, kbd, fn]) => {
+            const r = document.createElement('div');
+            r.style.cssText = `display:flex;align-items:center;justify-content:space-between;
+              padding:9px 12px;border-radius:8px;cursor:pointer;
+              color:rgba(150,150,180,1);transition:background .1s,color .1s;gap:20px;`;
+            r.innerHTML = `<span>${lbl}</span>${kbd ? `<span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(100,100,130,1);letter-spacing:.05em">${kbd}</span>` : ''}`;
+            r.onmouseenter = () => { r.style.background = 'rgba(255,255,255,0.07)'; r.style.color = '#eeeef6'; };
+            r.onmouseleave = () => { r.style.background = ''; r.style.color = 'rgba(150,150,180,1)'; };
+            r.onclick = () => { fn(); m.remove(); };
+            m.appendChild(r);
+          });
+          document.body.appendChild(m);
+          setTimeout(() => document.addEventListener('click', () => m.remove(), { once: true }), 0);
+          e.stopPropagation();
+        }
+
+        document.addEventListener('keydown', e => {
+          if (e.ctrlKey || e.metaKey) {
+            if (e.key === 't') { e.preventDefault(); addTab(); }
+            if (e.key === 'w') { e.preventDefault(); closeTab(cur); }
+            if (e.key === 'l') { e.preventDefault(); focusUrl(); }
+            if (e.key === 'r') { e.preventDefault(); reload(); }
+            if (e.key === 'Tab') { e.preventDefault(); cur = (cur + 1) % tabs.length; sync(); }
+          }
+        });
+
+        window.addEventListener('hashchange', () => {
+          if (currentProxy !== 'scramjet') return;
+          const token = window.location.hash.replace(/^#/, '');
+          if (!token) return;
+          try {
+            if (typeof decodeTarget === 'function') {
+              const url = decodeTarget(token);
+              if (url && url !== ct().url) {
+                ct().url = url; ct().fav = getFaviconUrl(url);
+                try { ct().title = new URL(url).hostname; } catch {}
+                document.getElementById('url-input').value = url;
+                setScheme(url); renderTabs(); showFrame();
+              }
+            }
+          } catch {}
+        });
+
+        window._browserSyncUrl = function(url) {
+          if (!url || url === ct().url) return;
+          ct().url = url; ct().fav = getFaviconUrl(url);
+          try { ct().title = new URL(url).hostname; } catch {}
+          document.getElementById('url-input').value = url;
+          setScheme(url); renderTabs();
+        };
+
+        renderTabs();
+        showNew();
+        initUV(); // kick off init early so it's ready before first navigate
+        updateSeUI();
+        setTimeout(() => B.navigate('https://play.geforcenow.com/mall/#/layout/games'), 300);
+
+        return {
+          addTab, navigate, back, fwd, reload, home,
+          focusUrl, onFocus, onBlur, onInput, onKey,
+          star, menu,
+          setProxy, toggleProxyDropdown,
+          setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome,
+        };
+      })();
+
+      function esc(s) {
+        return String(s)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
     </script>
-</body>
-</html>
+
+    <div id="wallpaper-overlay" onclick="if(event.target===this)closeWallpaper()">
+      <div id="wallpaper-panel">
+        <div class="wp-handle"></div>
+        <div class="wp-title">Wallpaper</div>
+        <div class="wp-subtitle">CHOOSE A BACKGROUND</div>
+
+        <div class="wp-section-label">Presets</div>
+        <div id="wp-presets">
+          <div class="wp-swatch wp-none-swatch" onclick="WP.clearBg()" title="None">
+            <span>✕</span>
+            <div class="wp-check">✓</div>
+          </div>
+        </div>
+
+        <div class="wp-section-label" style="margin-top:4px">Custom</div>
+        <div class="wp-actions">
+          <button class="wp-btn primary" onclick="document.getElementById('background-upload').click()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 4.5L7 1l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 10v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Upload image or video
+          </button>
+          <button class="wp-btn" onclick="WP.clearBg()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="wp-toast"><span class="toast-dot" id="toast-dot"></span><span id="toast-msg">Saving…</span></div>
+
+    <script src="./app.js" defer></script>
+
+    <script>
+      const WP_PRESETS = [
+        { id:'aurora',   label:'Aurora',    bg:'linear-gradient(135deg,#0d0d2b 0%,#1a0533 35%,#002244 65%,#001133 100%)' },
+        { id:'midnight', label:'Midnight',  bg:'linear-gradient(160deg,#04040e 0%,#0a0a20 40%,#0d0520 70%,#040410 100%)' },
+        { id:'ember',    label:'Ember',     bg:'linear-gradient(135deg,#1a0a00 0%,#2d1000 40%,#1a0808 70%,#100010 100%)' },
+        { id:'ocean',    label:'Ocean',     bg:'linear-gradient(160deg,#000d1a 0%,#001533 45%,#002244 75%,#001122 100%)' },
+        { id:'forest',   label:'Forest',    bg:'linear-gradient(145deg,#020d06 0%,#041a0c 40%,#031208 70%,#010a04 100%)' },
+        { id:'violet',   label:'Violet',    bg:'linear-gradient(140deg,#0e0520 0%,#1a0a33 40%,#0d0820 70%,#08041a 100%)' },
+        { id:'steel',    label:'Steel',     bg:'linear-gradient(135deg,#0a0c10 0%,#131820 40%,#0c1018 70%,#080c12 100%)' },
+        { id:'dusk',     label:'Dusk',      bg:'linear-gradient(155deg,#1a0a18 0%,#0d1020 40%,#0a1a18 70%,#0d0a1a 100%)' },
+        { id:'crimson',  label:'Crimson',   bg:'linear-gradient(145deg,#1a0208 0%,#250410 40%,#1a0010 70%,#0d0010 100%)' },
+        { id:'slate',    label:'Slate',     bg:'linear-gradient(150deg,#080a10 0%,#0d1018 40%,#0a0d14 70%,#060810 100%)' },
+      ];
+
+      (function buildSwatches() {
+        const grid = document.getElementById('wp-presets');
+        WP_PRESETS.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'wp-swatch';
+          el.id = 'swatch-' + p.id;
+          el.title = p.label;
+          el.style.background = p.bg;
+          el.innerHTML = `<div class="wp-check">✓</div>`;
+          el.onclick = () => WP.applyPreset(p.id, p.bg);
+          grid.appendChild(el);
+        });
+      })();
+
+      let _activeSwatch = null;
+      function setActiveSwatch(id) {
+        document.querySelectorAll('.wp-swatch').forEach(s => s.classList.remove('active'));
+        _activeSwatch = id;
+        if (id === 'none') {
+          document.querySelector('.wp-none-swatch')?.classList.add('active');
+        } else if (id) {
+          document.getElementById('swatch-' + id)?.classList.add('active');
+        }
+      }
+
+      let _toastTimer;
+      function showToast(msg, state = 'loading') {
+        clearTimeout(_toastTimer);
+        const t  = document.getElementById('wp-toast');
+        const d  = document.getElementById('toast-dot');
+        const m  = document.getElementById('toast-msg');
+        m.textContent = msg;
+        d.className = 'toast-dot' + (state !== 'loading' ? ' ' + state : '');
+        t.classList.add('show');
+        if (state !== 'loading') {
+          _toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+        }
+      }
+      function hideToast() {
+        clearTimeout(_toastTimer);
+        document.getElementById('wp-toast').classList.remove('show');
+      }
+
+      function openWallpaper() {
+        document.getElementById('wallpaper-overlay').classList.add('open');
+      }
+      function closeWallpaper() {
+        document.getElementById('wallpaper-overlay').classList.remove('open');
+      }
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWallpaper(); });
+
+      const WP = (() => {
+        const DB_NAME = 'BackgroundStorage', STORE = 'media';
+        let _db = null;
+
+        function openDB() {
+          return new Promise((res, rej) => {
+            if (_db) return res(_db);
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onerror  = () => rej(req.error);
+            req.onsuccess = () => { _db = req.result; res(_db); };
+            req.onupgradeneeded = e => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+            };
+          });
+        }
+        async function dbSet(key, val)  { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).put(val,key).onsuccess=r; t.onerror=j; }); }
+        async function dbGet(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readonly'); const req=t.objectStore(STORE).get(key); req.onsuccess=()=>r(req.result); req.onerror=j; }); }
+        async function dbDel(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).delete(key).onsuccess=r; t.onerror=j; }); }
+
+        function applyImageUrl(url) {
+          const vb = document.getElementById('video-background');
+          vb.style.display = 'none'; vb.src = '';
+          document.body.style.backgroundImage    = `url(${url})`;
+          document.body.style.backgroundSize     = 'cover';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundRepeat   = 'no-repeat';
+          document.body.style.backgroundAttachment = 'fixed';
+        }
+        function applyGradient(css) {
+          const vb = document.getElementById('video-background');
+          vb.style.display = 'none'; vb.src = '';
+          document.body.style.backgroundImage    = css;
+          document.body.style.backgroundSize     = 'cover';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundRepeat   = 'no-repeat';
+          document.body.style.backgroundAttachment = 'fixed';
+        }
+        function applyVideoUrl(url) {
+          document.body.style.backgroundImage = '';
+          const vb = document.getElementById('video-background');
+          vb.src = url; vb.style.display = 'block';
+        }
+        function clearAll() {
+          document.body.style.backgroundImage = '';
+          const vb = document.getElementById('video-background');
+          vb.src = ''; vb.style.display = 'none';
+        }
+
+        function applyPreset(id, gradientCss) {
+          applyGradient(gradientCss);
+          localStorage.setItem('bg_type', 'preset');
+          localStorage.setItem('bg_preset_id', id);
+          localStorage.setItem('bg_preset_css', gradientCss);
+          localStorage.removeItem('bg_data_url');
+          dbDel('savedVideo').catch(()=>{});
+          dbDel('savedImage').catch(()=>{});
+          setActiveSwatch(id);
+        }
+
+        async function clearBg() {
+          clearAll();
+          localStorage.removeItem('bg_type');
+          localStorage.removeItem('bg_preset_id');
+          localStorage.removeItem('bg_preset_css');
+          localStorage.removeItem('bg_data_url');
+          await dbDel('savedVideo').catch(()=>{});
+          await dbDel('savedImage').catch(()=>{});
+          setActiveSwatch('none');
+        }
+
+        document.getElementById('background-upload').addEventListener('change', async () => {
+          const file = document.getElementById('background-upload').files[0];
+          if (!file) return;
+
+          if (file.type.startsWith('video/')) {
+            showToast('Saving video…');
+            try {
+              const buf = await file.arrayBuffer();
+              await dbSet('savedVideo', { data: buf, type: file.type });
+              await dbDel('savedImage').catch(()=>{});
+              localStorage.setItem('bg_type', 'video');
+              localStorage.removeItem('bg_data_url');
+              localStorage.removeItem('bg_preset_id');
+              const url = URL.createObjectURL(new Blob([buf], { type: file.type }));
+              applyVideoUrl(url);
+              setActiveSwatch('custom');
+              showToast('Video saved!', 'success');
+              closeWallpaper();
+            } catch(err) {
+              showToast('Failed — out of storage?', 'error');
+              console.error(err);
+            }
+
+          } else if (file.type.startsWith('image/')) {
+            showToast('Saving image…');
+            try {
+              const buf = await file.arrayBuffer();
+              if (file.size > 500000) {
+                await dbSet('savedImage', { data: buf, type: file.type });
+                localStorage.setItem('bg_type', 'image-idb');
+                localStorage.removeItem('bg_data_url');
+              } else {
+                const dataUrl = await new Promise(r => {
+                  const fr = new FileReader(); fr.onload = () => r(fr.result);
+                  fr.readAsDataURL(file);
+                });
+                localStorage.setItem('bg_type', 'image-data');
+                localStorage.setItem('bg_data_url', dataUrl);
+              }
+              await dbDel('savedVideo').catch(()=>{});
+              localStorage.removeItem('bg_preset_id');
+              const url = URL.createObjectURL(new Blob([buf], { type: file.type }));
+              applyImageUrl(url);
+              setActiveSwatch('custom');
+              showToast('Image saved!', 'success');
+              closeWallpaper();
+            } catch(err) {
+              showToast('Failed to save image', 'error');
+              console.error(err);
+            }
+          }
+          document.getElementById('background-upload').value = '';
+        });
+
+        async function load() {
+          const type = localStorage.getItem('bg_type');
+          if (!type) return;
+
+          if (type === 'preset') {
+            const id  = localStorage.getItem('bg_preset_id');
+            const css = localStorage.getItem('bg_preset_css');
+            if (css) { applyGradient(css); setActiveSwatch(id); }
+
+          } else if (type === 'video') {
+            try {
+              const v = await dbGet('savedVideo');
+              if (v?.data) {
+                const url = URL.createObjectURL(new Blob([v.data], { type: v.type }));
+                applyVideoUrl(url);
+                setActiveSwatch('custom');
+              }
+            } catch(e) { console.error('bg load error:', e); }
+
+          } else if (type === 'image-idb') {
+            try {
+              const img = await dbGet('savedImage');
+              if (img?.data) {
+                const url = URL.createObjectURL(new Blob([img.data], { type: img.type }));
+                applyImageUrl(url);
+                setActiveSwatch('custom');
+              }
+            } catch(e) { console.error('bg load error:', e); }
+
+          } else if (type === 'image-data') {
+            const dataUrl = localStorage.getItem('bg_data_url');
+            if (dataUrl) { applyImageUrl(dataUrl); setActiveSwatch('custom'); }
+          }
+        }
+
+        load();
+        return { applyPreset, clearBg };
+      })();
+    </script>
+
+    <script>
+      window.addEventListener('load', () => {
+        const orig = window.setLocationLabel;
+        if (typeof orig === 'function') {
+          window.setLocationLabel = function(val) {
+            orig(val);
+            if (typeof window._browserSyncUrl === 'function') window._browserSyncUrl(val);
+          };
+        }
+        const hash = window.location.hash.replace(/^#/, '');
+        if (hash && typeof decodeTarget === 'function') {
+          try {
+            const url = decodeTarget(hash);
+            if (url) {
+              window._browserSyncUrl(url);
+              document.getElementById('proxy-frame').style.display = 'block';
+              document.getElementById('newtab').style.display      = 'none';
+            }
+          } catch {}
+        }
+      });
+    </script>
+  </body>
+</html> 
