@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poki Games - Embed</title>
+    
+    <!-- Required proxy scripts -->
+    <script src="./ghost.js"></script>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv/uv.config.js"></script>
+    <script src="./index.config.js"></script>
+    <script src="./surf/baremux/index.js"></script>
+    <script src="./surf/scram/scramjet.all.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #embed-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: #000;
+        }
+        
+        #game-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            z-index: 10;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 24px;
+            border-radius: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #loading.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #proxy-selector {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+        
+        #proxy-selector:hover {
+            opacity: 1;
+        }
+        
+        .proxy-btn {
+            padding: 8px 16px;
+            background: rgba(30,30,40,0.9);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+        
+        .proxy-btn:hover {
+            background: rgba(60,60,80,0.9);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        .proxy-btn.active {
+            background: #4a9eff;
+            border-color: #4a9eff;
+        }
+        
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 12px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="embed-container">
+        <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-orientation-lock"></iframe>
+    </div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <span id="loading-text">Loading Poki...</span>
+    </div>
+    
+    <div id="status">Ready • Poki Games</div>
+    
+    <div id="proxy-selector">
+        <button class="proxy-btn active" data-proxy="ultraviolet">Ultraviolet</button>
+        <button class="proxy-btn" data-proxy="scramjet">Scramjet</button>
+        <button class="proxy-btn" onclick="location.reload()">↻ Reload</button>
+    </div>
+
+    <script>
+        (function() {
+            // Configuration
+            const TARGET_URL = 'https://poki.com/';
+            const WISP_URL = 'wss://wisp.rhw.one/';
+            
+            // State
+            let currentProxy = 'ultraviolet';
+            let uvConnection = null;
+            let uvInitPromise = null;
+            let isLoading = false;
+            
+            // DOM elements
+            const frame = document.getElementById('game-frame');
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loading-text');
+            const status = document.getElementById('status');
+            
+            // Helper functions
+            function showLoading(text = 'Loading...') {
+                loadingText.textContent = text;
+                loading.classList.add('active');
+                isLoading = true;
+            }
+            
+            function hideLoading() {
+                loading.classList.remove('active');
+                isLoading = false;
+            }
+            
+            function updateStatus(text) {
+                status.textContent = text;
+            }
+            
+            // Initialize Ultraviolet
+            async function initUV() {
+                if (uvInitPromise) return uvInitPromise;
+                
+                uvInitPromise = (async () => {
+                    try {
+                        updateStatus('Initializing Ultraviolet...');
+                        
+                        // Wait for BareMux
+                        if (typeof BareMux === 'undefined') {
+                            await new Promise((resolve, reject) => {
+                                let attempts = 0;
+                                const check = setInterval(() => {
+                                    if (typeof BareMux !== 'undefined') {
+                                        clearInterval(check);
+                                        resolve();
+                                    }
+                                    if (++attempts > 50) {
+                                        clearInterval(check);
+                                        reject(new Error('BareMux not loaded'));
+                                    }
+                                }, 100);
+                            });
+                        }
+                        
+                        uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+                        await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: WISP_URL }]);
+                        
+                        updateStatus('Ultraviolet ready • Poki Games');
+                        return true;
+                    } catch (e) {
+                        console.error('UV init failed:', e);
+                        updateStatus('Ultraviolet init failed');
+                        uvInitPromise = null;
+                        throw e;
+                    }
+                })();
+                
+                return uvInitPromise;
+            }
+            
+            // Load with Ultraviolet
+            async function loadWithUV(url) {
+                try {
+                    await initUV();
+                    const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+                    frame.src = encoded;
+                    
+                    frame.onload = () => {
+                        hideLoading();
+                        updateStatus('Ultraviolet • Poki Games');
+                    };
+                    
+                    frame.onerror = () => {
+                        hideLoading();
+                        updateStatus('Error loading page');
+                    };
+                    
+                } catch (e) {
+                    console.error('UV load error:', e);
+                    updateStatus('UV failed, trying Scramjet...');
+                    loadWithScramjet(url);
+                }
+            }
+            
+            // Load with Scramjet
+            function loadWithScramjet(url) {
+                updateStatus('Scramjet • Loading...');
+                
+                // Check if Scramjet functions are available
+                if (typeof openInFrame === 'function') {
+                    try {
+                        openInFrame(url);
+                        
+                        // Update hash for navigation
+                        if (typeof setHashFromUrl === 'function') {
+                            setHashFromUrl(url);
+                        }
+                        
+                        frame.onload = () => {
+                            hideLoading();
+                            updateStatus('Scramjet • Poki Games');
+                        };
+                    } catch (e) {
+                        console.error('Scramjet error:', e);
+                        updateStatus('Scramjet error');
+                        hideLoading();
+                    }
+                } else {
+                    // Wait for Scramjet to load
+                    updateStatus('Waiting for Scramjet...');
+                    const checkInterval = setInterval(() => {
+                        if (typeof openInFrame === 'function') {
+                            clearInterval(checkInterval);
+                            openInFrame(url);
+                            if (typeof setHashFromUrl === 'function') {
+                                setHashFromUrl(url);
+                            }
+                            frame.onload = () => {
+                                hideLoading();
+                                updateStatus('Scramjet • Poki Games');
+                            };
+                        }
+                    }, 100);
+                    
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        if (isLoading) {
+                            hideLoading();
+                            updateStatus('Scramjet timeout');
+                        }
+                    }, 5000);
+                }
+            }
+            
+            // Main load function
+            async function loadPoki() {
+                showLoading('Loading Poki.com...');
+                
+                if (currentProxy === 'ultraviolet') {
+                    await loadWithUV(TARGET_URL);
+                } else {
+                    loadWithScramjet(TARGET_URL);
+                }
+                
+                // Hide loading after 10 seconds max
+                setTimeout(() => {
+                    if (isLoading) {
+                        hideLoading();
+                        updateStatus('Load timeout • Try reload');
+                    }
+                }, 10000);
+            }
+            
+            // Switch proxy
+            function switchProxy(proxy) {
+                currentProxy = proxy;
+                
+                // Update UI
+                document.querySelectorAll('.proxy-btn[data-proxy]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.proxy === proxy);
+                });
+                
+                // Reload with new proxy
+                loadPoki();
+            }
+            
+            // Handle hash changes for Scramjet
+            window.addEventListener('hashchange', () => {
+                if (currentProxy !== 'scramjet') return;
+                
+                const token = window.location.hash.replace(/^#/, '');
+                if (!token) return;
+                
+                try {
+                    if (typeof decodeTarget === 'function') {
+                        const url = decodeTarget(token);
+                        if (url && url.includes('poki.com')) {
+                            updateStatus('Scramjet • Poki Games');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Hash decode error:', e);
+                }
+            });
+            
+            // Setup proxy selector buttons
+            document.querySelectorAll('.proxy-btn[data-proxy]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchProxy(btn.dataset.proxy);
+                });
+            });
+            
+            // Handle keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // F5 or Ctrl+R to reload
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    e.preventDefault();
+                    loadPoki();
+                }
+                
+                // Escape to stop loading
+                if (e.key === 'Escape') {
+                    hideLoading();
+                }
+            });
+            
+            // Start loading
+            loadPoki();
+            
+            // Expose for debugging
+            window.pokiEmbed = {
+                reload: loadPoki,
+                switchProxy,
+                getStatus: () => currentProxy
+            };
+            
+        })();
+    </script>
+</body>
+</html>
