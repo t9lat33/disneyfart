@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script>
+      // Force SW + cache reset on every visit
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(reg => reg.unregister());
+        });
+        if (window.caches) {
+          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+        }
+      }
+    </script>
+
     <script src="./ghost.js"></script>
     <script src="/uv/uv.bundle.js"></script>
     <script src="/uv/uv.config.js"></script>
@@ -1893,4 +1906,4 @@
       });
     </script>
   </body>
-</html> 
+</html>
