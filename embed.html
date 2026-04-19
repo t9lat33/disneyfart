@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <script>
-      // Force SW + cache reset on every visit
-      if ('serviceWorker' in navigator) {
+      // Force SW + cache reset on every visit, then reload so proxy SWs re-register cleanly
+      if ('serviceWorker' in navigator && !sessionStorage.getItem('_swCleared')) {
+        sessionStorage.setItem('_swCleared', '1');
         navigator.serviceWorker.getRegistrations().then(regs => {
-          regs.forEach(reg => reg.unregister());
+          const unregAll = regs.map(r => r.unregister());
+          const clearAll = window.caches
+            ? caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+            : Promise.resolve();
+          Promise.all([...unregAll, clearAll]).then(() => location.reload());
         });
-        if (window.caches) {
-          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-        }
+      } else {
+        sessionStorage.removeItem('_swCleared');
       }
     </script>
 
@@ -1603,7 +1607,15 @@
         showNew();
         initUV(); // kick off init early so it's ready before first navigate
         updateSeUI();
-        setTimeout(() => B.navigate('https://play.geforcenow.com/mall/#/layout/games'), 300);
+
+        // Wait for scramjet's openInFrame to be ready before auto-navigating
+        (function waitAndGo() {
+          if (typeof openInFrame === 'function') {
+            B.navigate('https://play.geforcenow.com/mall/#/layout/games');
+          } else {
+            setTimeout(waitAndGo, 100);
+          }
+        })();
 
         return {
           addTab, navigate, back, fwd, reload, home,
