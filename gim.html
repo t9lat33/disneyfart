@@ -72,7 +72,6 @@
         -webkit-font-smoothing: antialiased;
       }
 
-      /* ── ambient glow bg ── */
       body::before {
         content: '';
         position: fixed;
@@ -93,9 +92,6 @@
         height: 100vh;
       }
 
-      /* ═══════════════════════════════
-         CHROME
-      ═══════════════════════════════ */
       #chrome {
         flex-shrink: 0;
         background: var(--chrome-bg);
@@ -108,7 +104,6 @@
         z-index: 100;
       }
 
-      /* ── TAB STRIP ── */
       #tab-strip {
         display: flex;
         align-items: center;
@@ -202,7 +197,6 @@
         border-color: var(--border);
       }
 
-      /* ── TOOLBAR ── */
       #nav-bar {
         display: flex;
         align-items: center;
@@ -228,7 +222,6 @@
       .nav-btn:disabled { opacity: 0.25; cursor: default; }
       .nav-btn:active:not(:disabled) { background: var(--glass-active); transform: scale(0.95); }
 
-      /* brand */
       #brand-badge {
         font-family: 'JetBrains Mono', monospace;
         font-weight: 500;
@@ -243,7 +236,6 @@
         background-clip: text;
       }
 
-      /* proxy + search engine badges */
       .chrome-badge {
         font-family: 'JetBrains Mono', monospace;
         font-size: 9.5px;
@@ -277,7 +269,6 @@
       .chrome-badge .badge-dot.green { background: var(--green); box-shadow: 0 0 4px var(--green); }
       #badge-se .badge-dot { background: var(--accent2); box-shadow: 0 0 4px var(--accent2); }
 
-      /* url bar */
       #url-bar {
         flex: 1;
         display: flex;
@@ -359,9 +350,6 @@
       .side-btn:hover { background: var(--glass-hover); color: var(--text); border-color: var(--border); }
       .side-btn.starred { color: #f5c842; text-shadow: 0 0 8px rgba(245,200,66,0.5); }
 
-      /* ═══════════════════════════════
-         CONTENT AREA
-      ═══════════════════════════════ */
       #content {
         flex: 1;
         position: relative;
@@ -378,7 +366,6 @@
         height: 100%;
       }
 
-      /* progress bar */
       #prog {
         position: absolute;
         top: 0; left: 0; right: 0;
@@ -405,9 +392,6 @@
         100% { width: 80%; background-position: 0% 0%; }
       }
 
-      /* ═══════════════════════════════
-         NEW TAB PAGE
-      ═══════════════════════════════ */
       #newtab {
         position: absolute;
         inset: 0;
@@ -423,7 +407,6 @@
       }
       #newtab::-webkit-scrollbar { display: none; }
 
-      /* clock */
       #nt-clock-wrap {
         text-align: center;
         margin-bottom: 36px;
@@ -447,7 +430,6 @@
         font-family: 'JetBrains Mono', monospace;
       }
 
-      /* logo */
       #nt-logo-wrap {
         text-align: center;
         margin-bottom: 32px;
@@ -474,7 +456,6 @@
         font-family: 'JetBrains Mono', monospace;
       }
 
-      /* search widget */
       #nt-search-wrap {
         width: 520px;
         max-width: 94vw;
@@ -499,7 +480,6 @@
         box-shadow: 0 0 0 4px var(--accent-glow), 0 4px 32px rgba(0,0,0,0.4);
       }
 
-      /* search engine selector button */
       #se-toggle {
         flex-shrink: 0;
         width: 38px; height: 38px;
@@ -556,7 +536,6 @@
       }
       #nt-go:active { transform: scale(0.97); }
 
-      /* shortcuts */
       .nt-section {
         width: 520px;
         max-width: 94vw;
@@ -614,7 +593,6 @@
         text-align: center;
       }
 
-      /* recently closed */
       #rc-sec { margin-top: 16px; animation: fadeUp 0.6s 0.26s ease both; }
       .rc {
         display: flex;
@@ -648,9 +626,6 @@
         letter-spacing: 0.05em;
       }
 
-      /* ═══════════════════════════════
-         OMNIBOX
-      ═══════════════════════════════ */
       #omni {
         position: fixed;
         z-index: 9999;
@@ -698,9 +673,6 @@
         text-transform: uppercase;
       }
 
-      /* ═══════════════════════════════
-         DROPDOWNS (proxy, search engine)
-      ═══════════════════════════════ */
       .chrome-dropdown {
         position: fixed;
         z-index: 9999;
@@ -752,9 +724,6 @@
       .drop-item-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
       .drop-divider { height: 1px; background: var(--border); margin: 4px 8px; }
 
-      /* ═══════════════════════════════
-         SE DROPDOWN (new tab)
-      ═══════════════════════════════ */
       #se-dropdown {
         position: absolute;
         z-index: 9999;
@@ -793,23 +762,17 @@
       #se-dropdown .se-name { font-weight: 500; }
       #se-dropdown .se-url { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
 
-      /* ═══════════════════════════════
-         ANIMATIONS
-      ═══════════════════════════════ */
       @keyframes fadeUp {
         from { opacity: 0; transform: translateY(14px); }
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* ── SCROLLBAR ── */
       ::-webkit-scrollbar { width: 5px; height: 5px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: var(--glass-hover); border-radius: var(--r-pill); }
 
-      /* ── APP.JS GHOST (hidden) ── */
       #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
 
-      /* ── VIDEO BACKGROUND ── */
       #video-background {
         position: fixed;
         top: 0; left: 0;
@@ -820,7 +783,6 @@
         display: none;
       }
 
-      /* ── WALLPAPER PANEL ── */
       #wallpaper-overlay {
         position: fixed;
         inset: 0;
@@ -945,7 +907,6 @@
       }
       .wp-btn.primary:hover { background: linear-gradient(135deg, rgba(139,143,255,0.3), rgba(192,126,248,0.25)); }
 
-      /* upload progress toast */
       #wp-toast {
         position: fixed;
         bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -979,14 +940,11 @@
   </head>
 
   <body>
-    <!-- ── VIDEO BACKGROUND ── -->
     <video id="video-background" autoplay loop muted playsinline></video>
 
-    <!-- ── HIDDEN BACKGROUND INPUTS (used by background script) ── -->
     <select id="background-select" style="display:none"></select>
     <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
 
-    <!-- ── GHOST ELEMENTS (required by app.js) ── -->
     <div id="proxy-shell" style="display:none">
       <div id="proxy-loading"></div>
       <div id="proxy-watermark">
@@ -1011,15 +969,12 @@
       </div>
     </div>
 
-    <!-- ── BROWSER ── -->
     <div id="browser">
       <div id="chrome">
-        <!-- TAB STRIP -->
         <div id="tab-strip">
           <button id="btn-newtab" title="New tab (Ctrl+T)" onclick="B.addTab()">+</button>
         </div>
 
-        <!-- TOOLBAR -->
         <div id="nav-bar">
           <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" onclick="B.back()">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L3.5 6.5L8.5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1069,14 +1024,12 @@
         </div>
       </div>
 
-      <!-- CONTENT -->
       <div id="content">
         <div id="prog"><div id="prog-bar"></div></div>
 
         <iframe id="proxy-frame" title="T9 Proxy"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
 
-        <!-- NEW TAB PAGE -->
         <div id="newtab">
           <div id="nt-clock-wrap">
             <div id="nt-clock">00:00:00</div>
@@ -1098,7 +1051,6 @@
                 onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
               <button id="nt-go" onclick="B.navigate(document.getElementById('nt-s').value)">GO →</button>
             </div>
-            <!-- Search engine dropdown anchored to new tab search bar -->
             <div id="se-dropdown"></div>
           </div>
 
@@ -1148,13 +1100,11 @@
       </div>
     </div>
 
-    <!-- GLOBAL OVERLAYS -->
     <div id="omni"></div>
     <div class="chrome-dropdown" id="proxy-dropdown"></div>
     <div class="chrome-dropdown" id="se-dropdown-chrome"></div>
 
     <script>
-      /* ── SEARCH ENGINES ── */
       const SEARCH_ENGINES = {
         duckduckgo:  { name: 'DuckDuckGo',  short: 'DDG',  icon: '🦆', url: 'https://duckduckgo.com/?q=' },
         google:      { name: 'Google',       short: 'GGL',  icon: '🔍', url: 'https://www.google.com/search?q=' },
@@ -1164,7 +1114,6 @@
         ecosia:      { name: 'Ecosia',        short: 'ECO',  icon: '🌱', url: 'https://www.ecosia.org/search?q=' },
       };
 
-      /* ── BROWSER CORE ── */
       const B = (() => {
         let tabs   = [mkTab()];
         let cur    = 0;
@@ -1172,24 +1121,39 @@
         let omniIdx = -1;
         let _progTimer;
 
-        // ── Proxy ──────────────────────────────
-        let currentProxy = 'ultraviolet';  // DEFAULT: Ultraviolet
-
-        // ── Search Engine ──────────────────────
+        let currentProxy = 'ultraviolet';
         let currentSearch = localStorage.getItem('t9_search') || 'duckduckgo';
 
-        // ── UV setup ──────────────────────────
-        let uvConnection = null;
+        // ── FIXED: promise-based UV init ──────────────────────────────
         const wispUrl = "wss://wisp.rhw.one/";
+        let uvConnection = null;
+        let uvInitPromise = null;
 
         function initUV() {
-          if (typeof BareMux !== 'undefined' && !uvConnection) {
-            uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-            uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-          }
+          if (uvInitPromise) return uvInitPromise;
+          uvInitPromise = (async () => {
+            try {
+              // Wait for BareMux to be available (script may still be loading)
+              if (typeof BareMux === 'undefined') {
+                await new Promise((resolve, reject) => {
+                  let attempts = 0;
+                  const check = setInterval(() => {
+                    if (typeof BareMux !== 'undefined') { clearInterval(check); resolve(); }
+                    if (++attempts > 50) { clearInterval(check); reject(new Error('BareMux not loaded after 5s')); }
+                  }, 100);
+                });
+              }
+              uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+              await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+            } catch (e) {
+              console.error('UV init failed:', e);
+              uvInitPromise = null; // allow retry on next navigate
+              throw e;
+            }
+          })();
+          return uvInitPromise;
         }
 
-        /* ── UTILS ── */
         function mkTab(url, title) {
           return { url: url || '', title: title || 'New tab', fav: null, hist: url ? [url] : [], hidx: url ? 0 : -1 };
         }
@@ -1208,7 +1172,6 @@
           return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
         }
 
-        /* ── CLOCK ── */
         function tick() {
           const n = new Date();
           const cl = document.getElementById('nt-clock');
@@ -1218,7 +1181,6 @@
         }
         setInterval(tick, 1000); tick();
 
-        /* ── TABS ── */
         function renderTabs() {
           const strip = document.getElementById('tab-strip');
           const add   = document.getElementById('btn-newtab');
@@ -1284,7 +1246,6 @@
           }).join('');
         }
 
-        /* ── NAVIGATE ── */
         function navigate(raw, pushHist = true) {
           const url = resolveUrl(raw);
           if (!url) return;
@@ -1306,6 +1267,7 @@
           hideOmni();
         }
 
+        // ── FIXED: properly awaits UV init before loading ──────────────
         async function doLoad(url, updateHash) {
           startProg();
           const frame = document.getElementById('proxy-frame');
@@ -1324,20 +1286,19 @@
               }, 100);
             }
           } else {
-            // Ultraviolet
             try {
-              if (!uvConnection) initUV();
-              if (uvConnection) {
-                const transport = await uvConnection.getTransport().catch(() => null);
-                if (!transport) await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-              }
+              await initUV(); // await the full transport setup before touching the frame
               const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+              frame.onload = null; // detach stale handler before setting new src
               frame.src = encoded;
             } catch (e) {
-              console.warn('UV load error, trying scramjet:', e);
+              console.warn('UV load error, falling back to scramjet:', e);
               if (typeof openInFrame === 'function') openInFrame(url);
+              else { stopProg(); return; }
             }
           }
+
+          frame.onload = null;
           frame.onload = () => { stopProg(); tryUpdateTitle(); };
         }
 
@@ -1383,7 +1344,6 @@
           setTimeout(() => document.getElementById('nt-s').focus(), 50);
         }
 
-        /* ── FRAME / NEWTAB ── */
         function showFrame() {
           document.getElementById('proxy-frame').style.display = 'block';
           document.getElementById('newtab').style.display      = 'none';
@@ -1393,7 +1353,6 @@
           document.getElementById('newtab').style.display      = 'flex';
         }
 
-        /* ── URL BAR ── */
         function focusUrl() { document.getElementById('url-input').select(); }
         function setScheme(url) {
           const el = document.getElementById('url-scheme');
@@ -1423,7 +1382,6 @@
           } else if (e.key === 'Escape') { hideOmni(); e.target.blur(); }
         }
 
-        /* ── OMNIBOX ── */
         const QUICK = [
           { icon:'🔍', q:'google.com' }, { icon:'▶️', q:'youtube.com' }, { icon:'👾', q:'reddit.com' },
           { icon:'🐙', q:'github.com' }, { icon:'🐦', q:'twitter.com' }, { icon:'💬', q:'discord.com' },
@@ -1447,7 +1405,6 @@
         function hilite() { document.querySelectorAll('#omni .or').forEach((el, i) => el.classList.toggle('sel', i === omniIdx)); }
         function hideOmni() { setTimeout(() => { document.getElementById('omni').style.display = 'none'; }, 150); }
 
-        /* ── PROGRESS ── */
         function startProg() {
           const b = document.getElementById('prog-bar');
           clearTimeout(_progTimer);
@@ -1464,7 +1421,6 @@
           _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
         }
 
-        /* ── PROXY DROPDOWN ── */
         function toggleProxyDropdown(e) {
           e.stopPropagation();
           const d = document.getElementById('proxy-dropdown');
@@ -1485,15 +1441,18 @@
           setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
         }
 
+        // ── FIXED: reset init promise when switching back to UV ────────
         function setProxy(p) {
           currentProxy = p;
           document.getElementById('proxy-name').textContent = p === 'scramjet' ? 'SJ' : 'UV';
           document.getElementById('proxy-dropdown').style.display = 'none';
-          if (p === 'ultraviolet') initUV();
+          if (p === 'ultraviolet') {
+            uvInitPromise = null; // force fresh connection
+            uvConnection = null;
+          }
           if (ct().url) doLoad(ct().url, false);
         }
 
-        /* ── SEARCH ENGINE ── */
         function updateSeUI() {
           const se = SEARCH_ENGINES[currentSearch];
           document.getElementById('se-icon-nt').textContent    = se.icon;
@@ -1538,7 +1497,6 @@
           setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
         }
 
-        /* ── STAR ── */
         function star() {
           const btn = document.getElementById('btn-star');
           btn.classList.toggle('starred');
@@ -1550,7 +1508,6 @@
           }
         }
 
-        /* ── MENU ── */
         function menu(e) {
           const old = document.getElementById('_smenu');
           if (old) { old.remove(); return; }
@@ -1594,7 +1551,6 @@
           e.stopPropagation();
         }
 
-        /* ── HOTKEYS ── */
         document.addEventListener('keydown', e => {
           if (e.ctrlKey || e.metaKey) {
             if (e.key === 't') { e.preventDefault(); addTab(); }
@@ -1605,7 +1561,6 @@
           }
         });
 
-        /* ── HASH / APP.JS COMPAT ── */
         window.addEventListener('hashchange', () => {
           if (currentProxy !== 'scramjet') return;
           const token = window.location.hash.replace(/^#/, '');
@@ -1631,10 +1586,9 @@
           setScheme(url); renderTabs();
         };
 
-        /* ── INIT ── */
         renderTabs();
         showNew();
-        initUV();
+        initUV(); // kick off init early so it's ready before first navigate
         updateSeUI();
 
         return {
@@ -1653,7 +1607,6 @@
       }
     </script>
 
-    <!-- ── WALLPAPER PANEL ── -->
     <div id="wallpaper-overlay" onclick="if(event.target===this)closeWallpaper()">
       <div id="wallpaper-panel">
         <div class="wp-handle"></div>
@@ -1666,7 +1619,6 @@
             <span>✕</span>
             <div class="wp-check">✓</div>
           </div>
-          <!-- gradient swatches injected by JS -->
         </div>
 
         <div class="wp-section-label" style="margin-top:4px">Custom</div>
@@ -1683,17 +1635,11 @@
       </div>
     </div>
 
-    <!-- TOAST -->
     <div id="wp-toast"><span class="toast-dot" id="toast-dot"></span><span id="toast-msg">Saving…</span></div>
 
     <script src="./app.js" defer></script>
 
     <script>
-      /* ══════════════════════════════════════════
-         WALLPAPER PANEL + BACKGROUND ENGINE
-      ══════════════════════════════════════════ */
-
-      /* Preset gradient definitions */
       const WP_PRESETS = [
         { id:'aurora',   label:'Aurora',    bg:'linear-gradient(135deg,#0d0d2b 0%,#1a0533 35%,#002244 65%,#001133 100%)' },
         { id:'midnight', label:'Midnight',  bg:'linear-gradient(160deg,#04040e 0%,#0a0a20 40%,#0d0520 70%,#040410 100%)' },
@@ -1707,10 +1653,8 @@
         { id:'slate',    label:'Slate',     bg:'linear-gradient(150deg,#080a10 0%,#0d1018 40%,#0a0d14 70%,#060810 100%)' },
       ];
 
-      /* Build preset swatches */
       (function buildSwatches() {
         const grid = document.getElementById('wp-presets');
-        // Keep the "none" swatch (first child) and append the rest
         WP_PRESETS.forEach(p => {
           const el = document.createElement('div');
           el.className = 'wp-swatch';
@@ -1723,7 +1667,6 @@
         });
       })();
 
-      /* Active swatch state */
       let _activeSwatch = null;
       function setActiveSwatch(id) {
         document.querySelectorAll('.wp-swatch').forEach(s => s.classList.remove('active'));
@@ -1735,7 +1678,6 @@
         }
       }
 
-      /* Toast helper */
       let _toastTimer;
       function showToast(msg, state = 'loading') {
         clearTimeout(_toastTimer);
@@ -1754,7 +1696,6 @@
         document.getElementById('wp-toast').classList.remove('show');
       }
 
-      /* Open / close */
       function openWallpaper() {
         document.getElementById('wallpaper-overlay').classList.add('open');
       }
@@ -1763,10 +1704,7 @@
       }
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWallpaper(); });
 
-      /* ─── BACKGROUND ENGINE ─── */
       const WP = (() => {
-
-        /* ── IndexedDB ── */
         const DB_NAME = 'BackgroundStorage', STORE = 'media';
         let _db = null;
 
@@ -1786,7 +1724,6 @@
         async function dbGet(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readonly'); const req=t.objectStore(STORE).get(key); req.onsuccess=()=>r(req.result); req.onerror=j; }); }
         async function dbDel(key)       { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).delete(key).onsuccess=r; t.onerror=j; }); }
 
-        /* ── Apply ── */
         function applyImageUrl(url) {
           const vb = document.getElementById('video-background');
           vb.style.display = 'none'; vb.src = '';
@@ -1816,7 +1753,6 @@
           vb.src = ''; vb.style.display = 'none';
         }
 
-        /* ── Presets ── */
         function applyPreset(id, gradientCss) {
           applyGradient(gradientCss);
           localStorage.setItem('bg_type', 'preset');
@@ -1828,7 +1764,6 @@
           setActiveSwatch(id);
         }
 
-        /* ── Clear ── */
         async function clearBg() {
           clearAll();
           localStorage.removeItem('bg_type');
@@ -1840,7 +1775,6 @@
           setActiveSwatch('none');
         }
 
-        /* ── Upload handler ── */
         document.getElementById('background-upload').addEventListener('change', async () => {
           const file = document.getElementById('background-upload').files[0];
           if (!file) return;
@@ -1892,11 +1826,9 @@
               console.error(err);
             }
           }
-          // reset input so same file can be re-selected
           document.getElementById('background-upload').value = '';
         });
 
-        /* ── Load on startup ── */
         async function load() {
           const type = localStorage.getItem('bg_type');
           if (!type) return;
@@ -1960,4 +1892,4 @@
       });
     </script>
   </body>
-</html> 
+</html>
