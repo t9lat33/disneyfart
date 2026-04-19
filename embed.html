@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poki Games - Embed</title>
+    <title>GeForce NOW - Scramjet</title>
     
-    <!-- Required proxy scripts -->
+    <!-- Required proxy scripts in correct order -->
     <script src="./ghost.js"></script>
-    <script src="/uv/uv.bundle.js"></script>
-    <script src="/uv/uv.config.js"></script>
-    <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
+    <script src="./index.config.js"></script>
     
     <style>
         * {
@@ -22,16 +20,9 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
+            background: #000;
             height: 100vh;
             overflow: hidden;
-        }
-        
-        #embed-container {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            background: #000;
         }
         
         #game-frame {
@@ -39,342 +30,410 @@
             height: 100%;
             border: none;
             display: block;
+            background: #000;
         }
         
-        #loading {
+        #loading-overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 14px;
-            z-index: 10;
-            background: rgba(0,0,0,0.8);
-            padding: 12px 24px;
-            border-radius: 20px;
-            display: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
         }
         
-        #loading.active {
-            display: flex;
+        #loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: white;
         }
         
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(76, 175, 80, 0.3);
+            border-top-color: #76ff03;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        #proxy-selector {
+        .loading-text {
+            font-size: 16px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        
+        .gfnow-logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #76ff03, #00e5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        
+        #controls {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 20;
+            z-index: 9999;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             opacity: 0.3;
             transition: opacity 0.3s;
         }
         
-        #proxy-selector:hover {
+        #controls:hover {
             opacity: 1;
         }
         
-        .proxy-btn {
-            padding: 8px 16px;
-            background: rgba(30,30,40,0.9);
+        .ctrl-btn {
+            padding: 8px 12px;
+            background: rgba(20,20,30,0.9);
             color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
+            border: 1px solid rgba(118, 255, 3, 0.3);
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             backdrop-filter: blur(10px);
             transition: all 0.2s;
         }
         
-        .proxy-btn:hover {
-            background: rgba(60,60,80,0.9);
-            border-color: rgba(255,255,255,0.4);
-        }
-        
-        .proxy-btn.active {
-            background: #4a9eff;
-            border-color: #4a9eff;
+        .ctrl-btn:hover {
+            background: rgba(118, 255, 3, 0.2);
+            border-color: #76ff03;
         }
         
         #status {
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 20;
-            color: rgba(255,255,255,0.6);
-            font-size: 12px;
-            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            background: rgba(0,0,0,0.6);
             padding: 6px 12px;
-            border-radius: 16px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
-            pointer-events: none;
+            border-left: 3px solid #76ff03;
+        }
+        
+        #debug-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            color: #0f0;
+            font-size: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            display: none;
+            max-width: 300px;
+            max-height: 200px;
+            overflow: auto;
         }
     </style>
 </head>
 <body>
-    <div id="embed-container">
-        <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-orientation-lock"></iframe>
+    <iframe id="game-frame" allow="camera; microphone; fullscreen; autoplay; payment; clipboard-read; clipboard-write; gamepad; accelerometer; gyroscope"></iframe>
+    
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="gfnow-logo">GeForce NOW</div>
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-message">Initializing Scramjet...</div>
+        </div>
     </div>
     
-    <div id="loading">
-        <div class="spinner"></div>
-        <span id="loading-text">Loading Poki...</span>
-    </div>
+    <div id="status">Scramjet • Ready</div>
     
-    <div id="status">Ready • Poki Games</div>
+    <div id="debug-info"></div>
     
-    <div id="proxy-selector">
-        <button class="proxy-btn active" data-proxy="ultraviolet">Ultraviolet</button>
-        <button class="proxy-btn" data-proxy="scramjet">Scramjet</button>
-        <button class="proxy-btn" onclick="location.reload()">↻ Reload</button>
+    <div id="controls">
+        <button class="ctrl-btn" onclick="reloadGFN()">⟲ Reload</button>
+        <button class="ctrl-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <button class="ctrl-btn" onclick="toggleDebug()">🐛 Debug</button>
     </div>
 
     <script>
         (function() {
             // Configuration
-            const TARGET_URL = 'https://play.geforcenow.com/mall/#/layout/games';
-            const WISP_URL = 'wss://wisp.rhw.one/';
+            const GFN_URL = 'https://play.geforcenow.com/mall/#/layout/games';
+            let scramjetReady = false;
+            let frame = document.getElementById('game-frame');
+            let loadingOverlay = document.getElementById('loading-overlay');
+            let loadingMessage = document.getElementById('loading-message');
+            let status = document.getElementById('status');
+            let debugInfo = document.getElementById('debug-info');
             
-            // State
-            let currentProxy = 'scramjet';
-            let uvConnection = null;
-            let uvInitPromise = null;
-            let isLoading = false;
-            
-            // DOM elements
-            const frame = document.getElementById('game-frame');
-            const loading = document.getElementById('loading');
-            const loadingText = document.getElementById('loading-text');
-            const status = document.getElementById('status');
-            
-            // Helper functions
-            function showLoading(text = 'Loading...') {
-                loadingText.textContent = text;
-                loading.classList.add('active');
-                isLoading = true;
-            }
-            
-            function hideLoading() {
-                loading.classList.remove('active');
-                isLoading = false;
-            }
-            
-            function updateStatus(text) {
-                status.textContent = text;
-            }
-            
-            // Initialize Ultraviolet
-            async function initUV() {
-                if (uvInitPromise) return uvInitPromise;
+            // Debug logging
+            function debug(msg, isError = false) {
+                console.log('[GFN]', msg);
+                const line = document.createElement('div');
+                line.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+                line.style.color = isError ? '#f44' : '#0f0';
+                debugInfo.appendChild(line);
+                debugInfo.scrollTop = debugInfo.scrollHeight;
                 
-                uvInitPromise = (async () => {
-                    try {
-                        updateStatus('Initializing Ultraviolet...');
-                        
-                        // Wait for BareMux
-                        if (typeof BareMux === 'undefined') {
-                            await new Promise((resolve, reject) => {
-                                let attempts = 0;
-                                const check = setInterval(() => {
-                                    if (typeof BareMux !== 'undefined') {
-                                        clearInterval(check);
-                                        resolve();
-                                    }
-                                    if (++attempts > 50) {
-                                        clearInterval(check);
-                                        reject(new Error('BareMux not loaded'));
-                                    }
-                                }, 100);
-                            });
-                        }
-                        
-                        uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-                        await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: WISP_URL }]);
-                        
-                        updateStatus('Ultraviolet ready • Poki Games');
-                        return true;
-                    } catch (e) {
-                        console.error('UV init failed:', e);
-                        updateStatus('Ultraviolet init failed');
-                        uvInitPromise = null;
-                        throw e;
-                    }
-                })();
-                
-                return uvInitPromise;
-            }
-            
-            // Load with Ultraviolet
-            async function loadWithUV(url) {
-                try {
-                    await initUV();
-                    const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-                    frame.src = encoded;
-                    
-                    frame.onload = () => {
-                        hideLoading();
-                        updateStatus('Ultraviolet • Poki Games');
-                    };
-                    
-                    frame.onerror = () => {
-                        hideLoading();
-                        updateStatus('Error loading page');
-                    };
-                    
-                } catch (e) {
-                    console.error('UV load error:', e);
-                    updateStatus('UV failed, trying Scramjet...');
-                    loadWithScramjet(url);
+                // Keep only last 20 messages
+                while (debugInfo.children.length > 20) {
+                    debugInfo.removeChild(debugInfo.firstChild);
                 }
             }
             
-            // Load with Scramjet
-            function loadWithScramjet(url) {
-                updateStatus('Scramjet • Loading...');
-                
-                // Check if Scramjet functions are available
-                if (typeof openInFrame === 'function') {
-                    try {
-                        openInFrame(url);
+            // Update loading message
+            function setLoadingMessage(msg) {
+                loadingMessage.textContent = msg;
+                debug(msg);
+                status.textContent = 'Scramjet • ' + msg;
+            }
+            
+            // Hide loading overlay
+            function hideLoading() {
+                loadingOverlay.classList.add('hidden');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }
+            
+            // Show loading overlay
+            function showLoading() {
+                loadingOverlay.style.display = 'flex';
+                loadingOverlay.classList.remove('hidden');
+            }
+            
+            // Initialize Scramjet
+            async function initScramjet() {
+                return new Promise((resolve, reject) => {
+                    setLoadingMessage('Checking Scramjet availability...');
+                    
+                    // Check if already loaded
+                    if (typeof scramjet !== 'undefined') {
+                        debug('Scramjet object found');
+                        scramjetReady = true;
+                        resolve(true);
+                        return;
+                    }
+                    
+                    // Check for openInFrame function
+                    if (typeof openInFrame === 'function') {
+                        debug('openInFrame function found');
+                        scramjetReady = true;
+                        resolve(true);
+                        return;
+                    }
+                    
+                    // Wait for Scramjet to load
+                    setLoadingMessage('Waiting for Scramjet to load...');
+                    let attempts = 0;
+                    const maxAttempts = 100; // 10 seconds
+                    
+                    const checkInterval = setInterval(() => {
+                        attempts++;
                         
-                        // Update hash for navigation
-                        if (typeof setHashFromUrl === 'function') {
-                            setHashFromUrl(url);
+                        // Check multiple ways Scramjet might be available
+                        const hasScramjet = typeof scramjet !== 'undefined';
+                        const hasOpenInFrame = typeof openInFrame === 'function';
+                        const hasScramjetInit = typeof window.scramjetInit === 'function';
+                        
+                        debug(`Attempt ${attempts}: scramjet=${hasScramjet}, openInFrame=${hasOpenInFrame}, scramjetInit=${hasScramjetInit}`);
+                        
+                        if (hasScramjet || hasOpenInFrame) {
+                            clearInterval(checkInterval);
+                            scramjetReady = true;
+                            setLoadingMessage('Scramjet ready');
+                            debug('Scramjet initialized successfully');
+                            resolve(true);
                         }
                         
-                        frame.onload = () => {
-                            hideLoading();
-                            updateStatus('Scramjet • Poki Games');
-                        };
-                    } catch (e) {
-                        console.error('Scramjet error:', e);
-                        updateStatus('Scramjet error');
-                        hideLoading();
-                    }
-                } else {
-                    // Wait for Scramjet to load
-                    updateStatus('Waiting for Scramjet...');
-                    const checkInterval = setInterval(() => {
-                        if (typeof openInFrame === 'function') {
+                        if (attempts >= maxAttempts) {
                             clearInterval(checkInterval);
-                            openInFrame(url);
-                            if (typeof setHashFromUrl === 'function') {
-                                setHashFromUrl(url);
-                            }
-                            frame.onload = () => {
-                                hideLoading();
-                                updateStatus('Scramjet • Poki Games');
-                            };
+                            debug('Scramjet initialization timeout', true);
+                            reject(new Error('Scramjet not available after timeout'));
                         }
                     }, 100);
-                    
-                    // Timeout after 5 seconds
-                    setTimeout(() => {
-                        clearInterval(checkInterval);
-                        if (isLoading) {
-                            hideLoading();
-                            updateStatus('Scramjet timeout');
-                        }
-                    }, 5000);
-                }
-            }
-            
-            // Main load function
-            async function loadPoki() {
-                showLoading('Loading Poki.com...');
-                
-                if (currentProxy === 'ultraviolet') {
-                    await loadWithUV(TARGET_URL);
-                } else {
-                    loadWithScramjet(TARGET_URL);
-                }
-                
-                // Hide loading after 10 seconds max
-                setTimeout(() => {
-                    if (isLoading) {
-                        hideLoading();
-                        updateStatus('Load timeout • Try reload');
-                    }
-                }, 10000);
-            }
-            
-            // Switch proxy
-            function switchProxy(proxy) {
-                currentProxy = proxy;
-                
-                // Update UI
-                document.querySelectorAll('.proxy-btn[data-proxy]').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.proxy === proxy);
                 });
-                
-                // Reload with new proxy
-                loadPoki();
             }
             
-            // Handle hash changes for Scramjet
-            window.addEventListener('hashchange', () => {
-                if (currentProxy !== 'scramjet') return;
-                
-                const token = window.location.hash.replace(/^#/, '');
-                if (!token) return;
-                
+            // Load GeForce NOW with Scramjet
+            async function loadGeForceNow() {
                 try {
-                    if (typeof decodeTarget === 'function') {
-                        const url = decodeTarget(token);
-                        if (url && url.includes('poki.com')) {
-                            updateStatus('Scramjet • Poki Games');
+                    showLoading();
+                    setLoadingMessage('Initializing Scramjet...');
+                    
+                    // Wait for Scramjet
+                    await initScramjet();
+                    
+                    setLoadingMessage('Loading GeForce NOW...');
+                    debug('Attempting to load: ' + GFN_URL);
+                    
+                    // Method 1: Use openInFrame if available
+                    if (typeof openInFrame === 'function') {
+                        debug('Using openInFrame method');
+                        openInFrame(GFN_URL);
+                        
+                        // Set hash for navigation
+                        if (typeof setHashFromUrl === 'function') {
+                            setHashFromUrl(GFN_URL);
+                            debug('Hash set successfully');
+                        }
+                        
+                        setLoadingMessage('GeForce NOW loading...');
+                        
+                        // Monitor frame loading
+                        frame.onload = () => {
+                            debug('Frame loaded');
+                            hideLoading();
+                            status.textContent = 'Scramjet • GeForce NOW';
+                        };
+                        
+                        frame.onerror = (e) => {
+                            debug('Frame error: ' + e, true);
+                            setLoadingMessage('Error loading GeForce NOW');
+                        };
+                        
+                    // Method 2: Try scramjet.createWindow
+                    } else if (typeof scramjet !== 'undefined' && scramjet.createWindow) {
+                        debug('Using scramjet.createWindow method');
+                        const win = scramjet.createWindow(GFN_URL);
+                        if (win && win.src) {
+                            frame.src = win.src;
+                            setLoadingMessage('GeForce NOW loading via createWindow...');
+                        } else {
+                            throw new Error('createWindow failed');
+                        }
+                        
+                    // Method 3: Try direct scramjet navigation
+                    } else if (typeof scramjet !== 'undefined' && scramjet.navigate) {
+                        debug('Using scramjet.navigate method');
+                        scramjet.navigate(GFN_URL);
+                        setLoadingMessage('GeForce NOW loading via navigate...');
+                        
+                    // Method 4: Fallback - try to construct URL manually
+                    } else {
+                        debug('No standard method found, attempting fallback...', true);
+                        
+                        // Try to use the hash-based navigation
+                        if (typeof encodeTarget === 'function') {
+                            const hash = encodeTarget(GFN_URL);
+                            window.location.hash = hash;
+                            debug('Set hash navigation: ' + hash);
+                            setLoadingMessage('Loading via hash navigation...');
+                        } else {
+                            throw new Error('No Scramjet navigation method available');
                         }
                     }
-                } catch (e) {
-                    console.error('Hash decode error:', e);
+                    
+                    // Set a timeout to hide loading if frame doesn't trigger onload
+                    setTimeout(() => {
+                        if (loadingOverlay.style.display !== 'none') {
+                            debug('Load timeout - hiding overlay anyway');
+                            hideLoading();
+                            status.textContent = 'Scramjet • GeForce NOW (timeout)';
+                        }
+                    }, 15000);
+                    
+                } catch (error) {
+                    debug('Failed to load GeForce NOW: ' + error.message, true);
+                    setLoadingMessage('Failed: ' + error.message);
+                    status.textContent = 'Scramjet • Error';
+                    
+                    setTimeout(() => {
+                        hideLoading();
+                    }, 3000);
+                }
+            }
+            
+            // Handle hash changes for navigation
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash.replace(/^#/, '');
+                if (hash) {
+                    debug('Hash changed: ' + hash.substring(0, 50) + '...');
+                    
+                    try {
+                        if (typeof decodeTarget === 'function') {
+                            const url = decodeTarget(hash);
+                            if (url) {
+                                debug('Decoded URL: ' + url);
+                                status.textContent = 'Scramjet • ' + new URL(url).hostname;
+                            }
+                        }
+                    } catch (e) {
+                        debug('Hash decode error: ' + e.message);
+                    }
                 }
             });
             
-            // Setup proxy selector buttons
-            document.querySelectorAll('.proxy-btn[data-proxy]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchProxy(btn.dataset.proxy);
-                });
+            // Listen for messages from the frame
+            window.addEventListener('message', (event) => {
+                debug('Message from frame: ' + JSON.stringify(event.data).substring(0, 100));
             });
             
-            // Handle keyboard shortcuts
+            // Global functions
+            window.reloadGFN = function() {
+                debug('Manual reload triggered');
+                loadGeForceNow();
+            };
+            
+            window.toggleFullscreen = function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    debug('Entered fullscreen');
+                } else {
+                    document.exitFullscreen();
+                    debug('Exited fullscreen');
+                }
+            };
+            
+            window.toggleDebug = function() {
+                if (debugInfo.style.display === 'none') {
+                    debugInfo.style.display = 'block';
+                } else {
+                    debugInfo.style.display = 'none';
+                }
+            };
+            
+            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
-                // F5 or Ctrl+R to reload
+                // F5 or Ctrl+R
                 if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
                     e.preventDefault();
-                    loadPoki();
+                    reloadGFN();
                 }
                 
-                // Escape to stop loading
-                if (e.key === 'Escape') {
-                    hideLoading();
+                // F11 for fullscreen
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+                
+                // Ctrl+Shift+D for debug
+                if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                    e.preventDefault();
+                    toggleDebug();
                 }
             });
             
             // Start loading
-            loadPoki();
-            
-            // Expose for debugging
-            window.pokiEmbed = {
-                reload: loadPoki,
-                switchProxy,
-                getStatus: () => currentProxy
-            };
+            debug('GeForce NOW Scramjet loader initialized');
+            debug('Target URL: ' + GFN_URL);
+            loadGeForceNow();
             
         })();
     </script>
