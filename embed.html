@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeForce NOW - Scramjet</title>
+    <title>GeForce NOW</title>
     
-    <!-- Same scripts as T9 Browser -->
+    <!-- Required scripts from T9 Browser -->
     <script src="./ghost.js"></script>
     <script src="/uv/uv.bundle.js"></script>
     <script src="/uv/uv.config.js"></script>
@@ -21,11 +21,17 @@
             box-sizing: border-box;
         }
         
-        body {
-            font-family: 'Outfit', sans-serif;
+        html, body {
+            height: 100%;
             background: #07070e;
-            height: 100vh;
             overflow: hidden;
+        }
+        
+        #content {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: #000;
         }
         
         #proxy-frame {
@@ -34,10 +40,11 @@
             border: none;
             width: 100%;
             height: 100%;
+            display: block;
         }
         
-        #loading {
-            position: fixed;
+        #prog {
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
@@ -46,7 +53,7 @@
             z-index: 200;
         }
         
-        #loading-bar {
+        #prog-bar {
             height: 100%;
             width: 0;
             opacity: 0;
@@ -56,41 +63,25 @@
             transition: opacity 0.3s;
         }
         
-        #loading-bar.active {
+        #prog-bar.loading {
             opacity: 1;
-            animation: loadingAnim 1.8s ease infinite;
+            animation: progAnim 1.8s ease infinite;
         }
         
-        @keyframes loadingAnim {
+        @keyframes progAnim {
             0%   { width: 0%; background-position: 0% 0%; }
             60%  { width: 80%; background-position: 100% 0%; }
             100% { width: 80%; background-position: 0% 0%; }
         }
         
-        #status {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            z-index: 100;
-            color: rgba(255,255,255,0.4);
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(10,10,20,0.7);
-            padding: 6px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.08);
-            pointer-events: none;
-        }
-        
         #controls {
             position: fixed;
             bottom: 16px;
-            left: 16px;
-            z-index: 100;
+            right: 16px;
+            z-index: 300;
             display: flex;
             gap: 8px;
-            opacity: 0.3;
+            opacity: 0.2;
             transition: opacity 0.2s;
         }
         
@@ -100,184 +91,232 @@
         
         .ctrl-btn {
             padding: 6px 12px;
-            background: rgba(10,10,20,0.8);
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(8px);
             color: #9090b0;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             cursor: pointer;
             font-size: 11px;
             font-family: 'JetBrains Mono', monospace;
-            backdrop-filter: blur(8px);
             transition: all 0.15s;
         }
         
         .ctrl-btn:hover {
-            background: rgba(139,143,255,0.15);
+            background: rgba(139, 143, 255, 0.15);
             color: #eeeef6;
-            border-color: rgba(139,143,255,0.3);
+            border-color: rgba(139, 143, 255, 0.3);
+        }
+        
+        #status {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            z-index: 300;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(10, 10, 20, 0.7);
+            padding: 4px 10px;
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <iframe id="proxy-frame" title="GeForce NOW"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
-    
-    <div id="loading">
-        <div id="loading-bar"></div>
+    <div id="content">
+        <div id="prog">
+            <div id="prog-bar"></div>
+        </div>
+        
+        <iframe id="proxy-frame" title="GeForce NOW"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals allow-downloads allow-orientation-lock"></iframe>
     </div>
     
-    <div id="status">Scramjet • GeForce NOW</div>
+    <div id="status">GeForce NOW • Scramjet</div>
     
     <div id="controls">
-        <button class="ctrl-btn" onclick="reloadPage()">⟲ Reload</button>
-        <button class="ctrl-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <button class="ctrl-btn" onclick="GFN.reload()">⟲</button>
+        <button class="ctrl-btn" onclick="GFN.fullscreen()">⛶</button>
     </div>
 
     <script>
-        // Configuration
-        const TARGET_URL = 'https://play.geforcenow.com/mall/#/layout/games';
-        let loadingTimer = null;
-        
-        const frame = document.getElementById('proxy-frame');
-        const loadingBar = document.getElementById('loading-bar');
-        const status = document.getElementById('status');
-        
-        // Progress bar functions (same as T9)
-        function startProgress() {
-            clearTimeout(loadingTimer);
-            loadingBar.style.transition = 'none';
-            loadingBar.style.width = '0';
-            loadingBar.style.opacity = '1';
-            loadingBar.classList.add('active');
-        }
-        
-        function stopProgress() {
-            loadingBar.classList.remove('active');
-            loadingBar.style.transition = 'width .2s ease';
-            loadingBar.style.width = '100%';
-            loadingTimer = setTimeout(() => {
-                loadingBar.style.opacity = '0';
-                loadingBar.style.width = '0';
-            }, 350);
-        }
-        
-        // Load with Scramjet - EXACT SAME PATTERN AS T9 BROWSER
-        function loadWithScramjet(url) {
-            startProgress();
-            status.textContent = 'Scramjet • Loading...';
+        // Direct embed of T9 Browser's Scramjet loading logic
+        const GFN = (() => {
+            const TARGET_URL = 'https://play.geforcenow.com/mall/#/layout/games';
+            const frame = document.getElementById('proxy-frame');
+            const progBar = document.getElementById('prog-bar');
+            const status = document.getElementById('status');
             
-            // This is the exact pattern from your T9 Browser
-            if (typeof openInFrame === 'function') {
-                openInFrame(url);
-                if (typeof setHashFromUrl === 'function') {
-                    setHashFromUrl(url);
+            let progTimer = null;
+            let currentUrl = TARGET_URL;
+            
+            // Progress bar (exactly from T9)
+            function startProg() {
+                clearTimeout(progTimer);
+                progBar.style.transition = 'none';
+                progBar.style.width = '0';
+                progBar.style.opacity = '1';
+                progBar.classList.add('loading');
+            }
+            
+            function stopProg() {
+                progBar.classList.remove('loading');
+                progBar.style.transition = 'width .2s ease';
+                progBar.style.width = '100%';
+                progTimer = setTimeout(() => {
+                    progBar.style.opacity = '0';
+                    progBar.style.width = '0';
+                }, 350);
+            }
+            
+            // Update status with URL
+            function updateStatus(url) {
+                try {
+                    const host = new URL(url).hostname;
+                    status.textContent = `GeForce NOW • ${host}`;
+                } catch {
+                    status.textContent = 'GeForce NOW • Scramjet';
                 }
-            } else {
-                const iv = setInterval(() => {
-                    if (typeof openInFrame === 'function') {
-                        clearInterval(iv);
-                        openInFrame(url);
-                        if (typeof setHashFromUrl === 'function') {
-                            setHashFromUrl(url);
+            }
+            
+            // Load with Scramjet - EXACT T9 Browser pattern
+            function doLoad(url) {
+                startProg();
+                currentUrl = url;
+                updateStatus(url);
+                
+                // T9 Browser's exact Scramjet loading logic
+                if (typeof openInFrame === 'function') {
+                    openInFrame(url);
+                    if (typeof setHashFromUrl === 'function') {
+                        setHashFromUrl(url);
+                    }
+                } else {
+                    const iv = setInterval(() => {
+                        if (typeof openInFrame === 'function') {
+                            clearInterval(iv);
+                            openInFrame(url);
+                            if (typeof setHashFromUrl === 'function') {
+                                setHashFromUrl(url);
+                            }
+                        }
+                    }, 100);
+                }
+                
+                frame.onload = () => {
+                    stopProg();
+                    tryUpdateTitle();
+                };
+                
+                frame.onerror = () => {
+                    stopProg();
+                    status.textContent = 'GeForce NOW • Error';
+                };
+                
+                // Safety timeout
+                setTimeout(() => {
+                    if (progBar.classList.contains('loading')) {
+                        stopProg();
+                    }
+                }, 15000);
+            }
+            
+            // Try to get title from frame (from T9)
+            function tryUpdateTitle() {
+                try {
+                    const title = frame.contentDocument?.title;
+                    if (title && title.includes('GeForce')) {
+                        status.textContent = `GeForce NOW • Playing`;
+                    }
+                } catch {}
+            }
+            
+            // Hash change handler (from T9)
+            window.addEventListener('hashchange', () => {
+                const token = window.location.hash.replace(/^#/, '');
+                if (!token) return;
+                
+                try {
+                    if (typeof decodeTarget === 'function') {
+                        const url = decodeTarget(token);
+                        if (url && url !== currentUrl) {
+                            currentUrl = url;
+                            updateStatus(url);
                         }
                     }
-                }, 100);
-            }
+                } catch {}
+            });
             
-            frame.onload = () => {
-                stopProgress();
-                status.textContent = 'Scramjet • GeForce NOW';
+            // Sync URL from external calls (from T9's _browserSyncUrl)
+            window._browserSyncUrl = function(url) {
+                if (url && url !== currentUrl) {
+                    currentUrl = url;
+                    updateStatus(url);
+                }
             };
             
-            frame.onerror = () => {
-                stopProgress();
-                status.textContent = 'Scramjet • Error';
+            // Fullscreen toggle
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // F5 or Ctrl+R
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    e.preventDefault();
+                    doLoad(currentUrl);
+                }
+                // F11
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            });
+            
+            // Override setLocationLabel (from T9)
+            window.addEventListener('load', () => {
+                const orig = window.setLocationLabel;
+                if (typeof orig === 'function') {
+                    window.setLocationLabel = function(val) {
+                        orig(val);
+                        if (typeof window._browserSyncUrl === 'function') {
+                            window._browserSyncUrl(val);
+                        }
+                    };
+                }
+                
+                // Check for existing hash
+                const hash = window.location.hash.replace(/^#/, '');
+                if (hash && typeof decodeTarget === 'function') {
+                    try {
+                        const url = decodeTarget(hash);
+                        if (url) {
+                            currentUrl = url;
+                            updateStatus(url);
+                            frame.style.display = 'block';
+                        }
+                    } catch {}
+                }
+            });
+            
+            // Start loading
+            doLoad(TARGET_URL);
+            
+            // Public API
+            return {
+                reload: () => doLoad(currentUrl),
+                fullscreen: toggleFullscreen,
+                getUrl: () => currentUrl
             };
-            
-            // Safety timeout
-            setTimeout(() => {
-                if (loadingBar.classList.contains('active')) {
-                    stopProgress();
-                    status.textContent = 'Scramjet • GeForce NOW';
-                }
-            }, 10000);
-        }
-        
-        // Handle hash changes for navigation (same as T9)
-        window.addEventListener('hashchange', () => {
-            const token = window.location.hash.replace(/^#/, '');
-            if (!token) return;
-            
-            try {
-                if (typeof decodeTarget === 'function') {
-                    const url = decodeTarget(token);
-                    if (url) {
-                        status.textContent = 'Scramjet • ' + new URL(url).hostname;
-                    }
-                }
-            } catch (e) {
-                console.error('Hash decode error:', e);
-            }
-        });
-        
-        // Sync URL from frame (same as T9's _browserSyncUrl)
-        window._browserSyncUrl = function(url) {
-            if (url) {
-                status.textContent = 'Scramjet • ' + new URL(url).hostname;
-            }
-        };
-        
-        // Global functions
-        window.reloadPage = function() {
-            loadWithScramjet(TARGET_URL);
-        };
-        
-        window.toggleFullscreen = function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        };
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                e.preventDefault();
-                reloadPage();
-            }
-            if (e.key === 'F11') {
-                e.preventDefault();
-                toggleFullscreen();
-            }
-        });
-        
-        // Override setLocationLabel if it exists (same pattern as T9)
-        window.addEventListener('load', () => {
-            const orig = window.setLocationLabel;
-            if (typeof orig === 'function') {
-                window.setLocationLabel = function(val) {
-                    orig(val);
-                    if (typeof window._browserSyncUrl === 'function') {
-                        window._browserSyncUrl(val);
-                    }
-                };
-            }
-            
-            // Check for hash on load
-            const hash = window.location.hash.replace(/^#/, '');
-            if (hash && typeof decodeTarget === 'function') {
-                try {
-                    const url = decodeTarget(hash);
-                    if (url) {
-                        window._browserSyncUrl(url);
-                    }
-                } catch (e) {}
-            }
-        });
-        
-        // Start loading
-        loadWithScramjet(TARGET_URL);
+        })();
     </script>
 </body>
 </html>
