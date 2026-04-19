@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeForce NOW - Scramjet</title>
     
-    <!-- Required proxy scripts in correct order -->
+    <!-- Same scripts as T9 Browser -->
     <script src="./ghost.js"></script>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv/uv.config.js"></script>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="./index.config.js"></script>
     <script src="./surf/baremux/index.js"></script>
     <script src="./surf/scram/scramjet.all.js"></script>
-    <script src="./index.config.js"></script>
     
     <style>
         * {
@@ -19,82 +22,76 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
+            font-family: 'Outfit', sans-serif;
+            background: #07070e;
             height: 100vh;
             overflow: hidden;
         }
         
-        #game-frame {
+        #proxy-frame {
+            position: absolute;
+            inset: 0;
+            border: none;
             width: 100%;
             height: 100%;
-            border: none;
-            display: block;
-            background: #000;
         }
         
-        #loading-overlay {
+        #loading {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity 0.5s;
-        }
-        
-        #loading-overlay.hidden {
-            opacity: 0;
+            right: 0;
+            height: 2px;
             pointer-events: none;
+            z-index: 200;
         }
         
-        .loading-content {
-            text-align: center;
-            color: white;
+        #loading-bar {
+            height: 100%;
+            width: 0;
+            opacity: 0;
+            background: linear-gradient(90deg, #8b8fff, #c07ef8, #8b8fff);
+            background-size: 200% 100%;
+            border-radius: 999px;
+            transition: opacity 0.3s;
         }
         
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(76, 175, 80, 0.3);
-            border-top-color: #76ff03;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        #loading-bar.active {
+            opacity: 1;
+            animation: loadingAnim 1.8s ease infinite;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes loadingAnim {
+            0%   { width: 0%; background-position: 0% 0%; }
+            60%  { width: 80%; background-position: 100% 0%; }
+            100% { width: 80%; background-position: 0% 0%; }
         }
         
-        .loading-text {
-            font-size: 16px;
-            color: #aaa;
-            margin-top: 20px;
-        }
-        
-        .gfnow-logo {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #76ff03, #00e5ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
+        #status {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 100;
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(10,10,20,0.7);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            pointer-events: none;
         }
         
         #controls {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
+            bottom: 16px;
+            left: 16px;
+            z-index: 100;
             display: flex;
             gap: 8px;
             opacity: 0.3;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
         }
         
         #controls:hover {
@@ -102,340 +99,185 @@
         }
         
         .ctrl-btn {
-            padding: 8px 12px;
-            background: rgba(20,20,30,0.9);
-            color: white;
-            border: 1px solid rgba(118, 255, 3, 0.3);
-            border-radius: 6px;
+            padding: 6px 12px;
+            background: rgba(10,10,20,0.8);
+            color: #9090b0;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 12px;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: blur(8px);
+            transition: all 0.15s;
         }
         
         .ctrl-btn:hover {
-            background: rgba(118, 255, 3, 0.2);
-            border-color: #76ff03;
-        }
-        
-        #status {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9999;
-            color: rgba(255,255,255,0.5);
-            font-size: 11px;
-            background: rgba(0,0,0,0.6);
-            padding: 6px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border-left: 3px solid #76ff03;
-        }
-        
-        #debug-info {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 9999;
-            color: #0f0;
-            font-size: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            display: none;
-            max-width: 300px;
-            max-height: 200px;
-            overflow: auto;
+            background: rgba(139,143,255,0.15);
+            color: #eeeef6;
+            border-color: rgba(139,143,255,0.3);
         }
     </style>
 </head>
 <body>
-    <iframe id="game-frame" allow="camera; microphone; fullscreen; autoplay; payment; clipboard-read; clipboard-write; gamepad; accelerometer; gyroscope"></iframe>
+    <iframe id="proxy-frame" title="GeForce NOW"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
     
-    <div id="loading-overlay">
-        <div class="loading-content">
-            <div class="gfnow-logo">GeForce NOW</div>
-            <div class="spinner"></div>
-            <div class="loading-text" id="loading-message">Initializing Scramjet...</div>
-        </div>
+    <div id="loading">
+        <div id="loading-bar"></div>
     </div>
     
-    <div id="status">Scramjet • Ready</div>
-    
-    <div id="debug-info"></div>
+    <div id="status">Scramjet • GeForce NOW</div>
     
     <div id="controls">
-        <button class="ctrl-btn" onclick="reloadGFN()">⟲ Reload</button>
+        <button class="ctrl-btn" onclick="reloadPage()">⟲ Reload</button>
         <button class="ctrl-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-        <button class="ctrl-btn" onclick="toggleDebug()">🐛 Debug</button>
     </div>
 
     <script>
-        (function() {
-            // Configuration
-            const GFN_URL = 'https://play.geforcenow.com/mall/#/layout/games';
-            let scramjetReady = false;
-            let frame = document.getElementById('game-frame');
-            let loadingOverlay = document.getElementById('loading-overlay');
-            let loadingMessage = document.getElementById('loading-message');
-            let status = document.getElementById('status');
-            let debugInfo = document.getElementById('debug-info');
+        // Configuration
+        const TARGET_URL = 'https://play.geforcenow.com/mall/#/layout/games';
+        let loadingTimer = null;
+        
+        const frame = document.getElementById('proxy-frame');
+        const loadingBar = document.getElementById('loading-bar');
+        const status = document.getElementById('status');
+        
+        // Progress bar functions (same as T9)
+        function startProgress() {
+            clearTimeout(loadingTimer);
+            loadingBar.style.transition = 'none';
+            loadingBar.style.width = '0';
+            loadingBar.style.opacity = '1';
+            loadingBar.classList.add('active');
+        }
+        
+        function stopProgress() {
+            loadingBar.classList.remove('active');
+            loadingBar.style.transition = 'width .2s ease';
+            loadingBar.style.width = '100%';
+            loadingTimer = setTimeout(() => {
+                loadingBar.style.opacity = '0';
+                loadingBar.style.width = '0';
+            }, 350);
+        }
+        
+        // Load with Scramjet - EXACT SAME PATTERN AS T9 BROWSER
+        function loadWithScramjet(url) {
+            startProgress();
+            status.textContent = 'Scramjet • Loading...';
             
-            // Debug logging
-            function debug(msg, isError = false) {
-                console.log('[GFN]', msg);
-                const line = document.createElement('div');
-                line.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
-                line.style.color = isError ? '#f44' : '#0f0';
-                debugInfo.appendChild(line);
-                debugInfo.scrollTop = debugInfo.scrollHeight;
-                
-                // Keep only last 20 messages
-                while (debugInfo.children.length > 20) {
-                    debugInfo.removeChild(debugInfo.firstChild);
+            // This is the exact pattern from your T9 Browser
+            if (typeof openInFrame === 'function') {
+                openInFrame(url);
+                if (typeof setHashFromUrl === 'function') {
+                    setHashFromUrl(url);
                 }
-            }
-            
-            // Update loading message
-            function setLoadingMessage(msg) {
-                loadingMessage.textContent = msg;
-                debug(msg);
-                status.textContent = 'Scramjet • ' + msg;
-            }
-            
-            // Hide loading overlay
-            function hideLoading() {
-                loadingOverlay.classList.add('hidden');
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 500);
-            }
-            
-            // Show loading overlay
-            function showLoading() {
-                loadingOverlay.style.display = 'flex';
-                loadingOverlay.classList.remove('hidden');
-            }
-            
-            // Initialize Scramjet
-            async function initScramjet() {
-                return new Promise((resolve, reject) => {
-                    setLoadingMessage('Checking Scramjet availability...');
-                    
-                    // Check if already loaded
-                    if (typeof scramjet !== 'undefined') {
-                        debug('Scramjet object found');
-                        scramjetReady = true;
-                        resolve(true);
-                        return;
-                    }
-                    
-                    // Check for openInFrame function
+            } else {
+                const iv = setInterval(() => {
                     if (typeof openInFrame === 'function') {
-                        debug('openInFrame function found');
-                        scramjetReady = true;
-                        resolve(true);
-                        return;
-                    }
-                    
-                    // Wait for Scramjet to load
-                    setLoadingMessage('Waiting for Scramjet to load...');
-                    let attempts = 0;
-                    const maxAttempts = 100; // 10 seconds
-                    
-                    const checkInterval = setInterval(() => {
-                        attempts++;
-                        
-                        // Check multiple ways Scramjet might be available
-                        const hasScramjet = typeof scramjet !== 'undefined';
-                        const hasOpenInFrame = typeof openInFrame === 'function';
-                        const hasScramjetInit = typeof window.scramjetInit === 'function';
-                        
-                        debug(`Attempt ${attempts}: scramjet=${hasScramjet}, openInFrame=${hasOpenInFrame}, scramjetInit=${hasScramjetInit}`);
-                        
-                        if (hasScramjet || hasOpenInFrame) {
-                            clearInterval(checkInterval);
-                            scramjetReady = true;
-                            setLoadingMessage('Scramjet ready');
-                            debug('Scramjet initialized successfully');
-                            resolve(true);
-                        }
-                        
-                        if (attempts >= maxAttempts) {
-                            clearInterval(checkInterval);
-                            debug('Scramjet initialization timeout', true);
-                            reject(new Error('Scramjet not available after timeout'));
-                        }
-                    }, 100);
-                });
-            }
-            
-            // Load GeForce NOW with Scramjet
-            async function loadGeForceNow() {
-                try {
-                    showLoading();
-                    setLoadingMessage('Initializing Scramjet...');
-                    
-                    // Wait for Scramjet
-                    await initScramjet();
-                    
-                    setLoadingMessage('Loading GeForce NOW...');
-                    debug('Attempting to load: ' + GFN_URL);
-                    
-                    // Method 1: Use openInFrame if available
-                    if (typeof openInFrame === 'function') {
-                        debug('Using openInFrame method');
-                        openInFrame(GFN_URL);
-                        
-                        // Set hash for navigation
+                        clearInterval(iv);
+                        openInFrame(url);
                         if (typeof setHashFromUrl === 'function') {
-                            setHashFromUrl(GFN_URL);
-                            debug('Hash set successfully');
-                        }
-                        
-                        setLoadingMessage('GeForce NOW loading...');
-                        
-                        // Monitor frame loading
-                        frame.onload = () => {
-                            debug('Frame loaded');
-                            hideLoading();
-                            status.textContent = 'Scramjet • GeForce NOW';
-                        };
-                        
-                        frame.onerror = (e) => {
-                            debug('Frame error: ' + e, true);
-                            setLoadingMessage('Error loading GeForce NOW');
-                        };
-                        
-                    // Method 2: Try scramjet.createWindow
-                    } else if (typeof scramjet !== 'undefined' && scramjet.createWindow) {
-                        debug('Using scramjet.createWindow method');
-                        const win = scramjet.createWindow(GFN_URL);
-                        if (win && win.src) {
-                            frame.src = win.src;
-                            setLoadingMessage('GeForce NOW loading via createWindow...');
-                        } else {
-                            throw new Error('createWindow failed');
-                        }
-                        
-                    // Method 3: Try direct scramjet navigation
-                    } else if (typeof scramjet !== 'undefined' && scramjet.navigate) {
-                        debug('Using scramjet.navigate method');
-                        scramjet.navigate(GFN_URL);
-                        setLoadingMessage('GeForce NOW loading via navigate...');
-                        
-                    // Method 4: Fallback - try to construct URL manually
-                    } else {
-                        debug('No standard method found, attempting fallback...', true);
-                        
-                        // Try to use the hash-based navigation
-                        if (typeof encodeTarget === 'function') {
-                            const hash = encodeTarget(GFN_URL);
-                            window.location.hash = hash;
-                            debug('Set hash navigation: ' + hash);
-                            setLoadingMessage('Loading via hash navigation...');
-                        } else {
-                            throw new Error('No Scramjet navigation method available');
+                            setHashFromUrl(url);
                         }
                     }
-                    
-                    // Set a timeout to hide loading if frame doesn't trigger onload
-                    setTimeout(() => {
-                        if (loadingOverlay.style.display !== 'none') {
-                            debug('Load timeout - hiding overlay anyway');
-                            hideLoading();
-                            status.textContent = 'Scramjet • GeForce NOW (timeout)';
-                        }
-                    }, 15000);
-                    
-                } catch (error) {
-                    debug('Failed to load GeForce NOW: ' + error.message, true);
-                    setLoadingMessage('Failed: ' + error.message);
-                    status.textContent = 'Scramjet • Error';
-                    
-                    setTimeout(() => {
-                        hideLoading();
-                    }, 3000);
-                }
+                }, 100);
             }
             
-            // Handle hash changes for navigation
-            window.addEventListener('hashchange', () => {
-                const hash = window.location.hash.replace(/^#/, '');
-                if (hash) {
-                    debug('Hash changed: ' + hash.substring(0, 50) + '...');
-                    
-                    try {
-                        if (typeof decodeTarget === 'function') {
-                            const url = decodeTarget(hash);
-                            if (url) {
-                                debug('Decoded URL: ' + url);
-                                status.textContent = 'Scramjet • ' + new URL(url).hostname;
-                            }
-                        }
-                    } catch (e) {
-                        debug('Hash decode error: ' + e.message);
+            frame.onload = () => {
+                stopProgress();
+                status.textContent = 'Scramjet • GeForce NOW';
+            };
+            
+            frame.onerror = () => {
+                stopProgress();
+                status.textContent = 'Scramjet • Error';
+            };
+            
+            // Safety timeout
+            setTimeout(() => {
+                if (loadingBar.classList.contains('active')) {
+                    stopProgress();
+                    status.textContent = 'Scramjet • GeForce NOW';
+                }
+            }, 10000);
+        }
+        
+        // Handle hash changes for navigation (same as T9)
+        window.addEventListener('hashchange', () => {
+            const token = window.location.hash.replace(/^#/, '');
+            if (!token) return;
+            
+            try {
+                if (typeof decodeTarget === 'function') {
+                    const url = decodeTarget(token);
+                    if (url) {
+                        status.textContent = 'Scramjet • ' + new URL(url).hostname;
                     }
                 }
-            });
+            } catch (e) {
+                console.error('Hash decode error:', e);
+            }
+        });
+        
+        // Sync URL from frame (same as T9's _browserSyncUrl)
+        window._browserSyncUrl = function(url) {
+            if (url) {
+                status.textContent = 'Scramjet • ' + new URL(url).hostname;
+            }
+        };
+        
+        // Global functions
+        window.reloadPage = function() {
+            loadWithScramjet(TARGET_URL);
+        };
+        
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        };
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+                reloadPage();
+            }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+        });
+        
+        // Override setLocationLabel if it exists (same pattern as T9)
+        window.addEventListener('load', () => {
+            const orig = window.setLocationLabel;
+            if (typeof orig === 'function') {
+                window.setLocationLabel = function(val) {
+                    orig(val);
+                    if (typeof window._browserSyncUrl === 'function') {
+                        window._browserSyncUrl(val);
+                    }
+                };
+            }
             
-            // Listen for messages from the frame
-            window.addEventListener('message', (event) => {
-                debug('Message from frame: ' + JSON.stringify(event.data).substring(0, 100));
-            });
-            
-            // Global functions
-            window.reloadGFN = function() {
-                debug('Manual reload triggered');
-                loadGeForceNow();
-            };
-            
-            window.toggleFullscreen = function() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                    debug('Entered fullscreen');
-                } else {
-                    document.exitFullscreen();
-                    debug('Exited fullscreen');
-                }
-            };
-            
-            window.toggleDebug = function() {
-                if (debugInfo.style.display === 'none') {
-                    debugInfo.style.display = 'block';
-                } else {
-                    debugInfo.style.display = 'none';
-                }
-            };
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                // F5 or Ctrl+R
-                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                    e.preventDefault();
-                    reloadGFN();
-                }
-                
-                // F11 for fullscreen
-                if (e.key === 'F11') {
-                    e.preventDefault();
-                    toggleFullscreen();
-                }
-                
-                // Ctrl+Shift+D for debug
-                if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                    e.preventDefault();
-                    toggleDebug();
-                }
-            });
-            
-            // Start loading
-            debug('GeForce NOW Scramjet loader initialized');
-            debug('Target URL: ' + GFN_URL);
-            loadGeForceNow();
-            
-        })();
+            // Check for hash on load
+            const hash = window.location.hash.replace(/^#/, '');
+            if (hash && typeof decodeTarget === 'function') {
+                try {
+                    const url = decodeTarget(hash);
+                    if (url) {
+                        window._browserSyncUrl(url);
+                    }
+                } catch (e) {}
+            }
+        });
+        
+        // Start loading
+        loadWithScramjet(TARGET_URL);
     </script>
 </body>
 </html>
