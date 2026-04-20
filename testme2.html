@@ -371,6 +371,28 @@ color: white;
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
   }
+    #cloudDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+  }
 @keyframes osOpenReal {
   0% {
     opacity: 0;
@@ -1615,6 +1637,53 @@ requestAnimationFrame(trackFPS);
  
            
 </div>
+<div id="cloudDiv">
+  <button class="close-btn" onclick="document.getElementById('cloudDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeCL()">●</button>
+
+
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >GeForce NOW</h3>
+ 
+
+
+
+<iframe id="frameCL" src="cloud.html"></iframe>
+  <style>
+    #frameCL{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeCL() {
+      let iframe = document.getElementById("frameCL");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
 
 <div id="musicDiv">
   <button class="close-btn" onclick="document.getElementById('musicDiv').style.display = 'none';">●</button>
@@ -2493,7 +2562,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
   }
 </script>
 
-
+<script>
+  function cloud(){
+    const div = document.getElementById('cloudDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 <script>
   function settings(){
     const div = document.getElementById('settingsDiv');

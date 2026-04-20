@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    body {
+      margin: 0;
+      background-color: #1a1a2e ;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 100px;
+    }
+
+    img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 15px;
+    }
+    img:hover{
+            transform: translateY(-3px);
+
+
+    }
+    
+    h1 {
+      font-family: sans-serif;
+      color: white;
+    }
+
+    .images {
+      display: flex;
+      gap: 20px;
+    }
+
+    #tooltip {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: sans-serif;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10000;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    #tooltip.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <span id="tooltip"></span>  
+
+  <div class="container">
+    <h1>continue to GeForce NOW</h1>
+    <div class="images">
+      <a href="embed.html">
+        <img src="geforce.png" alt="Geforce NOW">
+      </a>
+  
+    </div>
+  </div>
+
+  <script>
+    const tooltip = document.getElementById('tooltip');
+    const images = document.querySelectorAll('img');
+
+    images.forEach(img => {
+      img.addEventListener('mouseenter', function () {
+        const name = this.getAttribute('alt');
+        if (name) {
+          tooltip.textContent = name;
+          tooltip.classList.add('show');
+        }
+      });
+
+      img.addEventListener('mousemove', function (e) {
+        tooltip.style.left = e.pageX + 15 + 'px';
+        tooltip.style.top = e.pageY + 15 + 'px';
+      });
+
+      img.addEventListener('mouseleave', function () {
+        tooltip.classList.remove('show');
+      });
+    });
+  </script>
+
+</body>
+</html>
