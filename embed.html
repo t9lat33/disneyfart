@@ -1608,13 +1608,24 @@
         initUV(); // kick off init early so it's ready before first navigate
         updateSeUI();
 
-        // Wait for scramjet's openInFrame to be ready before auto-navigating
+        // Wait for openInFrame AND its internal config to be fully ready
         (function waitAndGo() {
-          if (typeof openInFrame === 'function') {
-            B.navigate('https://play.geforcenow.com/mall/#/layout/games');
-          } else {
+          if (typeof openInFrame !== 'function') {
             setTimeout(waitAndGo, 100);
+            return;
           }
+          // Hook unhandledrejection to detect config-not-ready errors and retry
+          const onErr = (e) => {
+            if (e.reason && e.reason.message && e.reason.message.includes('encodeUrl')) {
+              e.preventDefault();
+              window.removeEventListener('unhandledrejection', onErr);
+              setTimeout(waitAndGo, 200);
+            }
+          };
+          window.addEventListener('unhandledrejection', onErr);
+          B.navigate('https://play.geforcenow.com/mall/#/layout/games');
+          // Auto-remove listener after success window
+          setTimeout(() => window.removeEventListener('unhandledrejection', onErr), 2000);
         })();
 
         return {
