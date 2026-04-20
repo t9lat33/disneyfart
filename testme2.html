@@ -1,0 +1,3738 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="max-age=31536000, public">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
+
+
+<title>Learnify</title>
+
+</head>
+<body>
+  
+
+    
+
+
+  
+
+<style>
+
+@import url('https://fonts.googleapis.com/css?family=Luckiest+Guy');
+
+  body {
+  background-repeat: no-repeat;
+  background-size: cover;   /* make sure images cover the whole screen */
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  text-decoration: none;
+  }
+  a{
+    outline:none;
+  }
+  a:focus{
+    outline:none;
+  }
+
+.clock {
+  color: white;
+  font-size: 45px;
+  position: fixed;
+  top: 130px;
+  text-align: center;
+  text-shadow: 0 0 10px #202020;
+  font-family: 'Orbitron', sans-serif;
+}
+
+
+  .battery {
+    
+color: white;
+  font-size: 25px;
+  position: fixed;
+  top: 165px;
+  text-align: center;
+  text-shadow: 0 0 10px #202020;
+  font-family: 'Orbitron', sans-serif;
+
+
+  }
+   .musicplayer {
+      position: fixed;
+      bottom: 12px;
+      left: 21%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+  .fpscounter {
+      position: fixed;
+      bottom: 12px;
+      right: -2%;
+      transform: translateX(-50%);
+      min-width: 98px;   
+      height: 45px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+        .fpscounter:hover {
+      height: 64px;
+      border-radius: 40px;
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .fpscounter::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .fpscounter:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+    .musicNav {
+      position: fixed;
+      bottom: 12px;
+      left: 23%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+        .musicNav:hover {
+      height: 64px;
+      border-radius: 40px;
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .musicNav::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .musicNav:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+
+.navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border: 1px solid rgba(34, 34, 34, 0.25);
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+
+    .navbar:hover {
+      height: 64px;
+      border-radius: 40px;
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .navbar::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+
+    .navbar img {
+      width: 30px;
+      height: 30px;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .navbar img:hover {
+      transform: scale(1.25) translateY(-3px);
+    }
+    .navbar img:active{
+        transform: scale(0.97);
+    }
+
+      .navbar.sidebar {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: 64px;
+      height: auto;
+      flex-direction: column;
+      gap: 14px;
+      padding: 12px 0;
+      border-radius: 18px;
+      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
+    }
+
+    .navbar.sidebar:hover {
+      width: 72px;
+      height: auto;
+      border-radius: 24px;
+    }
+
+    .navbar.sidebar img:hover {
+      transform: scale(1.25) translateX(3px);
+    }
+.navbar.sidebar img:active{
+        transform: scale(0.97);
+    }
+    .navbar.sidebar::after {
+      inset: 0;
+      box-shadow: 0 0 0 0 rgba(55, 55, 55, 0.5);
+      transition: box-shadow 0.3s;
+      background: none;
+    }
+
+    .navbar.sidebar:hover::after {
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+      background: none;
+    }
+
+
+
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: rgb(255, 0, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+} 
+
+
+ .full-btn {
+    background: none;
+    border: none;
+    color: rgb(26, 255, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+    top:-0.5;
+} 
+  img {
+    width: 28px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  img:hover {
+    box-shadow: none;
+    border-radius: 15px;
+        transform: translateY(-3px);
+
+  }
+
+  .line {
+    width: 2px;
+    height: 50px;
+    background-color: white;
+    right: 150px;
+    position: fixed;
+  }
+
+  .line2 {
+    width: 2px;
+    height: 50px;
+    background-color: white;
+    right: 280px;
+    position: fixed;
+  }
+
+  #hiddenDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+  }
+@keyframes osOpenReal {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(40px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+    #aiDiv {
+ display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+   #terminalDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+    background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+  border: 1px solid rgba(0, 0, 0, 0.5);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+   #movieDiv {
+  display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+  #musicDiv {
+   display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #roDiv {
+display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #t9Div {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+border: 1px solid rgb(34, 34, 34);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:30px; 
+    width:25%;
+    height: 40%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      top:155px;
+      animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+
+  }
+  #settingsDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+     background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+  border: 1px solid rgba(0, 0, 0, 0.5);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+
+  }
+  #appsDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0,0,0,0.4);   
+backdrop-filter: blur(7px);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+    #updateDiv {
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #widgetDiv {
+    margin-top: 20px;
+    padding: 10px;
+backdrop-filter: blur(2px);   
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );  border: 1px solid rgba(0, 0, 0, 0.5);   
+   color: white;
+   right:50px;
+   top:50px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:150px;
+    height: 150px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+  #collabDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,1rgba(0, 0, 0, 0.5)
+        rgba(10,10,10,0.65)
+      );
+       border: 1px solid rgba(0,180,255,.5); 
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+    #soundDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+   #hacksDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+     #calcDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:25%;
+    height: 60%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+   #emulatorDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+  #searchDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+    #adminDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:85%;
+    height: 73%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+
+  /* Logo Styles */
+  #logo {
+    display:none;
+    inset: 0;
+    margin:auto;
+      position:fixed;
+    position: fixed;
+    font-size: 200px;
+    font-family: 'Luckiest Guy', cursive;
+    width:400px;
+      animation: popIn 0.5s ease-out forwards;
+
+   
+  color: white;
+
+  }
+  .Lbtn{
+    padding:10px 20px; 
+    background-color:black;
+    border-radius: 15px;
+    color:white;
+    text-decoration: none;
+
+    
+  }
+   .btn {
+    width: 150px;
+    height: 150px;
+    border-radius: 200px ; /* Add !important to ensure it overrides other styles */
+    gap: 150px;
+    transition: transform 0.3s ease-in-out;
+    font-family: sans-serif;
+      transition: all 0.3s ease;   /* smooth hover */
+    font-size: 15px;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: none;
+    border-radius: 50px !important; /* Ensure hover state also has the same border-radius */
+
+}
+     .gtext{
+          text-align:center;
+          font-family: sans-serif;
+background:none;  
+border-radius: 20px;           
+          color:#ffffff;
+                  
+     }
+   
+  .ui-top {
+    background-color: #ffffff; /* Different color for the top section */
+    padding: 15px 20px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+ @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 80%;
+        transform: scale(1);
+      }
+    }
+     @keyframes popIn2 {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 100%;
+        transform: scale(1);
+      }
+    }
+
+    
+  
+#searchBar{
+  text-align:center;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);  
+  color: white;
+  border-radius: 15px;
+  position: absolute;
+  left:43%;
+  padding: 10px 20px;
+  border-style: solid;
+  border-width: 2px;
+  border-color:rgb(255, 255, 255);
+
+}
+
+
+  
+  /* Reduce shadow complexity */
+  .navbar, #settingsDiv, #appsDiv {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="navbar" class="navbar">
+  
+  <a id="toggleDivButton">
+    <img src="classwork2.png">
+  </a>
+  
+  <a onclick="www()">
+    <img src="saturn.png">
+  </a>
+   <a onclick="ai()">
+    <img src="chatgpt.png">
+  </a>
+  <a onclick="movie()">
+    <img src="netflix2.png">
+  </a>
+   <a onclick="music()">
+    <img src="spotify.png">
+  </a>
+ 
+
+
+    <a onclick="Chat()">
+    <img src="message.png">
+  </a>
+  
+
+
+</div>
+
+<div id="musicNav" class="musicNav">
+  <img id="t9-thumb" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:none;flex-shrink:0;">
+  <div style="display:flex;flex-direction:column;justify-content:center;overflow:hidden;max-width:140px;">
+    <span id="t9-title" style="color:#fff;font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Nothing playing</span>
+    <span id="t9-artist" style="color:rgba(255,255,255,0.45);font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;"></span>
+  </div>
+  <div id="t9-bars" style="display:flex;align-items:flex-end;gap:2px;height:18px;flex-shrink:0;"></div>
+</div>
+
+<script>
+  const barsEl = document.getElementById('t9-bars');
+  const bars = Array.from({length: 4}, () => {
+    const b = document.createElement('div');
+    b.style.cssText = 'width:3px;background:#1db954;border-radius:2px;height:3px;transition:height 0.12s ease;';
+    barsEl.appendChild(b);
+    return b;
+  });
+
+  let playing = false, animFrame;
+
+  function animateBars() {
+    if (!playing) return;
+    bars.forEach(b => b.style.height = (Math.floor(Math.random() * 14) + 3) + 'px');
+    animFrame = setTimeout(animateBars, 110);
+  }
+
+  function setPlaying(state) {
+    playing = state;
+    clearTimeout(animFrame);
+    state ? animateBars() : bars.forEach(b => b.style.height = '3px');
+  }
+
+  const bc = new BroadcastChannel('t9_music_channel');
+  bc.onmessage = ({ data }) => {
+    if (data.type === 'track') {
+      document.getElementById('t9-title').textContent = data.title;
+      document.getElementById('t9-artist').textContent = data.artist;
+      const thumb = document.getElementById('t9-thumb');
+      thumb.src = data.artwork;
+      thumb.style.display = 'block';
+      setPlaying(true);
+    } else if (data.type === 'playstate') {
+      setPlaying(data.playing);
+    }
+  };
+</script>
+
+<div id="fpsDiv"  class="fpscounter">
+  
+ <h2 style="color:white;   font-family: 'Orbitron', sans-serif; text-align: center; font-size:20px;" id="fpsCounter">FPS:</h2>
+
+<script>
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+
+function updateFPS(now) {
+    frameCount++;
+
+    if (now - lastTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastTime = now;
+
+        document.getElementById("fpsCounter").textContent = "FPS: " + fps;
+    }
+
+    requestAnimationFrame(updateFPS);
+}
+
+requestAnimationFrame(updateFPS);
+</script>
+
+</div>
+
+<!-- Hidden Div -->
+
+
+<div id="collabDiv">
+  <button class="close-btn" onclick="document.getElementById('collabDiv').style.display = 'none';">●</button>
+  <h1 class="gtext"> Partners </h1>
+  <p color="white" style="text-align: center;"></p>
+
+           <a href="https://forms.gle/D95nf65yRoxeMtP3A" target="_blank">
+     <img class="btn" src="partner.png">
+          </a>
+
+     <a href="https://ratgames.vercel.app/" target="_blank">
+     <img class="btn" src="rat.gif">
+          </a>
+          
+           <a href="https://1anime.app" target="_blank">
+     <img class="btn" src="anime-partner.png">
+          </a>
+        
+           <a href="https://ducky-ea0.pages.dev" target="_blank">
+     <img class="btn" src="duckmath.png">
+          </a>
+
+            <a href="https://demonzero.space" target="_blank">
+     <img class="btn" src="demon.png">
+          </a>
+
+             <a href="https://classroomspot.b-cdn.net" target="_blank">
+     <img class="btn" src="cs.png">
+          </a>
+
+          <a href="https://sites.google.com/view/thesolarsystem67/home" target="_blank">
+     <img class="btn" src="jupiter.gif">
+
+         <a href="https://ixi-os.rs-p.workers.dev/" target="_blank">
+     <img class="btn" src="rsos.png">
+          </a>
+     
+     
+        
+       
+
+          
+</div>
+
+<div id="updateDiv">
+  <button class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
+  <h1 style="text-align: center">Updates</h1>
+<h1 style="text-align: center;">Version 3.5</h1>
+        <h3 style="text-align: center; color:white;">New update: New revamp update</h3>
+                <h3 style="text-align: center; color:white;">New links: t9math.pages.dev</h3>
+                  <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io
+"  target="_blank">make Vercel links</a>
+  <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://app.netlify.com/start/deploy?repository=https%3A%2F%2Fgithub.com%2Ft9lat22%2Ft9lat22.github.io"  target="_blank">make Netlify links</a>
+    <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://forms.gle/BSTZQSijox8Dm2nL8"  target="_blank">Give feedback</a>
+
+
+
+
+
+
+
+
+
+        <h3 style="text-align: center; color:white;">If you would like to help out T9 OS please donate to our Ko-Fi. Thank you!</h3>
+
+
+
+
+
+  <a style="background-color: white; padding:10px 20px; color:black; border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://ko-fi.com/t9oss"  target="_blank">Donate!</a>
+
+    <a style="background-color: 	#7289da; padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://dsc.gg/t9os"  target="_blank">Join server!</a>
+        <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="ad.html"  target="_blank">support T9 OS for free</a>
+
+
+    
+
+<h3 style="text-align: center;" id="random-text">Fun fact:</h3>
+
+
+  <script>
+        const texts = [
+            'Fun fact: none rn'
+
+
+        ];
+        document.getElementById("random-text").textContent = texts[Math.floor(Math.random() * texts.length)];
+    </script>
+
+
+        
+       
+
+          
+</div>
+
+
+<div id="wwwDiv">
+  <button class="close-btn" onclick="document.getElementById('wwwDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif " >Browser</h3>
+ 
+
+
+
+<iframe id="framesearch" src="gim.html"></iframe>
+  <style>
+    #framesearch{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframesearch() {
+      let iframe = document.getElementById("framesearch");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="ChatDiv">
+  <button class="close-btn" onclick="document.getElementById('ChatDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Chat</h3>
+ 
+
+
+
+<iframe id="framechat" src="chat5.html"></iframe>
+  <style>
+    #framechat{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframechat() {
+      let iframe = document.getElementById("framechat");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="terminalDiv">
+  <button class="close-btn" onclick="document.getElementById('terminalDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeter()">●</button>
+
+    <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame3').src = 'terminal.html';">←</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Terminal</h3>
+
+
+
+ 
+<iframe class="frame3" src="terminal.html"></iframe>
+  <style>
+    .frame3{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+    }
+   
+  </style>
+     <script>
+    function fullscreenIframeter() {
+      let iframe = document.getElementById("frame3");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+<div id="movieDiv">
+  <button class="close-btn" onclick="document.getElementById('movieDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframe3()">●</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Movies</h3>
+
+
+
+ 
+<iframe id="mframe" class="mframe" src="movie2.html"></iframe>
+  <style>
+    .mframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframe3() {
+      let iframe = document.getElementById("mframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+
+
+
+<script>
+  function www(){
+    const div = document.getElementById('wwwDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function Chat(){
+    const div = document.getElementById('ChatDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function t9(){
+    const div = document.getElementById('t9Div');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+
+<script>
+  function terminal(){
+    const div = document.getElementById('terminalDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<div id="t9Div">
+  <button class="close-btn2" onclick="document.getElementById('t9Div').style.display = 'none';">●</button>
+      <h4 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >T9's Secret corner</h4>
+
+
+  &nbsp;&nbsp;&nbsp;&nbsp; 
+  
+ <h1 style="text-align: center;">welcome to my secret corner</h1>
+ <h2 style="text-align: center;">btw how did u find my secret corner?</h2>
+<h3 style="text-align: center;" id="count">0 people online</h2>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, onDisconnect, set }
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "chat2-a86b2.firebaseapp.com",
+  databaseURL: "https://chat2-a86b2-default-rtdb.firebaseio.com",
+  projectId: "chat2-a86b2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const connectionsRef = ref(db, "connections");
+const connectedRef = ref(db, ".info/connected");
+
+onValue(connectedRef, (snap) => {
+  if (snap.val()) {
+    const myConnection = push(connectionsRef);
+    set(myConnection, true);
+    onDisconnect(myConnection).remove();
+  }
+});
+
+onValue(connectionsRef, (snapshot) => {
+  const data = snapshot.val();
+  const count = data ? Object.keys(data).length : 0;
+  document.getElementById("count").innerText =
+    count + " people online";
+});
+</script>
+
+
+<img style="width:75px; height:50px;" src="cat.gif">
+<img style="width:100px; height:75px;" src="please.png">
+
+
+
+
+</script>
+</script>
+  <style>
+    .btn-container {
+      display: flex;
+      gap: 10px; /* space between buttons */
+      position: absolute;
+      top: 30px;
+      left: 30px;
+    }
+
+    .t9btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      font-family: sans-serif;
+      font-size: 15px;
+      border: #ffffff 0.2px solid;
+      display: inline-block;
+      cursor: pointer;
+    }
+  </style>
+  </a>
+<style>
+  .warn{
+    top:0;
+    font-family: sans-serif;
+    position: absolute;
+    right:0;
+  }
+   .close-btn2 {
+    background: none;
+    border: none;
+    color: rgb(255, 0, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+    top:0;
+} 
+
+  </style>
+
+  <p class="warn"></p>
+
+
+           
+        
+       
+
+          
+</div>
+
+
+
+
+
+<style>
+  .tnav {
+    top:0;
+    height:25px;
+    opacity:65%; 
+background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+  border: 1px solid rgba(0, 0, 0, 0.5); 
+    position:fixed;
+    left:0;
+    width:100%;
+    border-radius: 0px 0px 15px 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    
+  }
+  .timg{
+    width:21px;
+    transform: translateY(-3px);
+    gap:70px;
+
+  }
+  .timg:hover{
+    transform: translateY(-4x);
+
+
+  }
+
+  
+ 
+</style>
+
+</div>
+
+
+<button onclick="t9()" style="position: fixed; bottom:0; right:0; padding:10px 20px; opacity: 0;"></button>
+   
+             
+</div>
+<div id="hiddenDiv">
+<button class="close-btn" onclick="document.getElementById('hiddenDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframe()">●</button>
+
+  <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame2').src = 'select.html';">←</button>
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Games </h3>
+<h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
+
+ 
+
+
+
+<iframe id="frame2" src="select.html"></iframe>
+  <style>
+    #frame2{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 12px 12px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+      background-image:url("space2.png");
+    }
+    .back {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+        transform: translateY(2px);
+        top:-2px;
+
+}
+     #ChatDiv {
+display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+      #wwwDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  
+
+  }
+  </style>
+
+  <script>
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+
+function trackFPS() {
+  frameCount++;
+  const now = performance.now();
+  const delta = now - lastTime;
+  if (delta >= 1000) { 
+    fps = Math.round((frameCount * 1000) / delta);
+    document.getElementById('fpsCounter').innerText = 'FPS: ' + fps;
+    frameCount = 0;
+    lastTime = now;
+  }
+  requestAnimationFrame(trackFPS);
+}
+
+requestAnimationFrame(trackFPS);
+</script>
+
+  <script>
+    function fullscreenIframe() {
+      let iframe = document.getElementById("frame2");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+ 
+
+</div>
+<div id="roDiv">
+  <button class="close-btn" onclick="document.getElementById('roDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeRo()">●</button>
+
+
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >GTA: Vice City</h3>
+ 
+
+
+
+<iframe id="frameRo" src="play.html"></iframe>
+  <style>
+    #frameRo{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeRo() {
+      let iframe = document.getElementById("frameRo");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="musicDiv">
+  <button class="close-btn" onclick="document.getElementById('musicDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeMusic()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Music</h3>
+ 
+<iframe id="frameMusic" src="music4.html"></iframe>
+
+
+
+
+
+
+
+
+  <style>
+    #frameMusic{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeMusic() {
+      let iframe = document.getElementById("frameMusic");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+<style>
+
+
+/* Context Menu */
+#contextMenu {
+    position: absolute;
+    width: 190px;
+     background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    backdrop-filter: blur(3px);
+    color:white;
+    display: none;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* Items */
+.menu-item {
+    padding: 11px 15px;
+    cursor: default;
+    transition: background 0.15s;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 0;
+}
+</style>
+</head>
+
+<body>
+
+
+<div id="contextMenu">
+      <div onclick="settings()" class="menu-item">Change Wallpaper</div>
+            <div onclick="openGame()" class="menu-item">about:blank cloak</div>
+
+    <div class="divider"></div>
+
+    <div class="menu-item" onclick="hidden2()">Games</div>
+
+    <div class="menu-item" onclick="www()">Browser</div>
+
+    <div onclick="settings()" class="menu-item" >Settings</div>
+</div>
+
+<script>
+const menu = document.getElementById("contextMenu");
+
+document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+
+    menu.style.display = "block";
+
+    let x = e.pageX;
+    let y = e.pageY;
+
+    // Prevent overflow off screen
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+
+    if (x + menuWidth > window.innerWidth) {
+        x -= menuWidth;
+    }
+
+    if (y + menuHeight > window.innerHeight) {
+        y -= menuHeight;
+    }
+
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+});
+
+document.addEventListener("click", () => {
+    menu.style.display = "none";
+});
+</script>
+
+
+
+
+
+<div id="aiDiv">
+  <button class="close-btn" onclick="document.getElementById('aiDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeAI()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >AI</h3>
+<h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
+ 
+
+
+
+<iframe id="frame5" src="test100.html"></iframe>
+  <style>
+    #frame5{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+    .back {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+        transform: translateY(2px);
+        top:-2px;
+
+}
+
+  </style>
+
+  
+ 
+  <script>
+    function fullscreenIframeAI() {
+      let iframe = document.getElementById("frame5");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           <style>
+    #hiddenDiv iframe {
+      pointer-events: none;
+    }
+
+    #hiddenDiv.dragging iframe,
+    #hiddenDiv.resizing iframe {
+      pointer-events: none;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      cursor: move;
+      z-index: 5;
+    }
+
+    .resizer {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      right: 0;
+      bottom: 0;
+      cursor: nwse-resize;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.1);
+    }
+</style>
+</div>
+
+<div id="tnav" class="tnav">
+
+   
+
+  <a href="https://discord.gg/tknXENDkzY">
+    <img class="timg" src="discord.png">
+  </a>  
+
+  <a onclick="settings()">
+    <img class="timg" src="settings22.png">
+  </a>
+
+  <a href='/'>
+    <img class="timg" src="home.png">
+  </a>
+
+  <a id="fullscreen-button">
+    <img class="timg" src="fullscreen.png">
+  </a>
+
+
+
+
+ 
+ <h2 class="battery" id="batteryPercentage"></h2>
+  <div class="clock" id="time"></div>
+
+
+
+</div>
+ 
+<style>
+  .timeBattery{
+    background-color:black;
+    opacity: 50%;
+  }
+</style>
+
+
+
+<div id="settingsDiv">
+  <button class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+
+  <h1 class="seth">Settings</h1>
+
+  
+   <label class="label" for="background-select">Select Background:</label>
+<select id="background-select">
+  <option value="minecraftCozy2.mp4">Default</option>
+                      <option value="abstract.png">T9 Abstract</option>
+                                            <option value="stars3.png">blue space</option>
+                                                                        <option value="silver2.gif">Silver Surfer Live</option>
+                            <option value="silver.jpeg">Silver Surfer</option>
+                          <option value="naruto.png">Naruto</option>
+                  <option value="red.jpg">Red Abstract</option>
+                  <option value="halloween.png">halloween</option>
+
+                  <option value="purplecity2.png">T9 OS city</option>
+
+                <option value="toyota.jpg">Toyota GR supra</option>
+
+              <option value="car.jpeg">Hennessey Venom F5 car</option>
+
+            <option value="goku.jpg">Goku</option>
+
+          <option value="ocean.png">Moonlit Voyage</option>
+
+          <option value="vibes.gif">Synthwave sunset</option>
+
+        <option value="deadpool.gif">Deadpool</option>
+
+  <option value="city.jpg">City</option>
+  <option value="sunset.jpg">Sunset</option>
+  <option value="mountains.jpg">Mountains</option>
+  <option value="tree.jpg">Tropical trees</option>
+  <option value="space.jpg">Space</option>
+    <option value="psky.jpg">Purple sky</option>
+    <option value="abstract.jpg">Abstract</option>
+    <option value="cyberpunk.gif">Cyberpunk</option>
+    <option value="luffy.gif">Luffy Straw hat</option>
+    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
+      <option value="pbWaves.jpg">Purple Blue Abstract</option>
+
+</select>
+
+<input type="file" id="background-upload" accept="image/*,video/*">
+
+
+  
+<h2 style="text-align: center;">Appearances</h2>
+
+    <label class="label" for="picker">Select theme:</label>
+        <input type="color" id="picker" value="#333333">
+
+    <a   id="reset" class="round-btn">Reset theme</a>
+
+
+        <script>
+    // List of div IDs
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
+
+    // Store each div's original colors when the page opens
+    const originalColors = {};
+    divIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            originalColors[id] = {
+                bg: getComputedStyle(el).backgroundColor,
+                border: getComputedStyle(el).borderColor
+            };
+        }
+    });
+
+    // Store original text shadows for time and battery
+    const timeEl = document.getElementById('time');
+    const batteryEl = document.getElementById('batteryPercentage');
+    const originalTextShadows = {
+        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
+        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
+    };
+
+    // 1. Load saved progress from LocalStorage
+    window.addEventListener('load', () => {
+        const savedColor = localStorage.getItem('userColor');
+        if (savedColor) {
+            divIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.backgroundColor = savedColor;
+                    el.style.borderColor = savedColor;
+                }
+            });
+            
+            // Apply saved color to text shadows
+            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
+            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
+            
+            document.getElementById('picker').value = savedColor;
+        }
+    });
+
+    // 2. Change color for the list of divs
+    document.getElementById('picker').addEventListener('input', function() {
+        const newColor = this.value;
+
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.backgroundColor = newColor;
+                el.style.borderColor = newColor;
+            }
+        });
+
+        // Update text shadows for time and battery
+        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
+        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
+
+        localStorage.setItem('userColor', newColor);
+    });
+
+    // 3. Reset to "Normal" (Each div returns to its own original color)
+    document.getElementById('reset').addEventListener('click', () => {
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && originalColors[id]) {
+                el.style.backgroundColor = originalColors[id].bg;
+                el.style.borderColor = originalColors[id].border;
+            }
+        });
+
+        // Reset text shadows to original
+        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
+        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
+
+        localStorage.removeItem('userColor');
+    });
+</script>
+
+ <script>
+    // Load saved position on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const navbar = document.querySelector('.navbar');
+      const savedPosition = localStorage.getItem('navbarPosition');
+      
+      if (savedPosition === 'sidebar') {
+        navbar.classList.add('sidebar');
+      }
+    });
+
+    function toggleNavbar() {
+      const navbar = document.querySelector('.navbar');
+      navbar.classList.toggle('sidebar');
+      
+      // Save the current position
+      if (navbar.classList.contains('sidebar')) {
+        localStorage.setItem('navbarPosition', 'sidebar');
+      } else {
+        localStorage.setItem('navbarPosition', 'dock');
+      }
+    }
+  </script>
+
+   <label class="label" for="preset">Select Tab Cloak:</label>
+
+ <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
+    <option value="default">Default (T9 OS)</option>
+    <option value="google">Google</option>
+    <option value="classroom">Google Classroom</option>
+    <option value="vocab">Vocabulary.com</option>
+  </select>
+</div> 
+
+
+
+
+        <script>
+    // List of div IDs
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
+
+    // Store each div's original colors when the page opens
+    const originalColors = {};
+    divIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            originalColors[id] = {
+                bg: getComputedStyle(el).backgroundColor,
+                border: getComputedStyle(el).borderColor
+            };
+        }
+    });
+
+    // Store original text shadows for time and battery
+    const timeEl = document.getElementById('time');
+    const batteryEl = document.getElementById('batteryPercentage');
+    const originalTextShadows = {
+        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
+        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
+    };
+
+    // 1. Load saved progress from LocalStorage
+    window.addEventListener('load', () => {
+        const savedColor = localStorage.getItem('userColor');
+        if (savedColor) {
+            divIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.backgroundColor = savedColor;
+                    el.style.borderColor = savedColor;
+                }
+            });
+            
+            // Apply saved color to text shadows
+            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
+            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
+            
+            document.getElementById('picker').value = savedColor;
+        }
+    });
+
+    // 2. Change color for the list of divs
+    document.getElementById('picker').addEventListener('input', function() {
+        const newColor = this.value;
+
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.backgroundColor = newColor;
+                el.style.borderColor = newColor;
+            }
+        });
+
+        // Update text shadows for time and battery
+        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
+        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
+
+        localStorage.setItem('userColor', newColor);
+    });
+
+    // 3. Reset to "Normal" (Each div returns to its own original color)
+    document.getElementById('reset').addEventListener('click', () => {
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && originalColors[id]) {
+                el.style.backgroundColor = originalColors[id].bg;
+                el.style.borderColor = originalColors[id].border;
+            }
+        });
+
+        // Reset text shadows to original
+        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
+        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
+
+        localStorage.removeItem('userColor');
+    });
+</script>
+
+ <script>
+    // Load saved position on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const navbar = document.querySelector('.navbar');
+      const savedPosition = localStorage.getItem('navbarPosition');
+      
+      if (savedPosition === 'sidebar') {
+        navbar.classList.add('sidebar');
+      }
+    });
+
+    function toggleNavbar() {
+      const navbar = document.querySelector('.navbar');
+      navbar.classList.toggle('sidebar');
+      
+      // Save the current position
+      if (navbar.classList.contains('sidebar')) {
+        localStorage.setItem('navbarPosition', 'sidebar');
+      } else {
+        localStorage.setItem('navbarPosition', 'dock');
+      }
+    }
+  </script>
+
+  
+</div>
+<style>
+   .round-btn {
+    border-radius: 12px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size:medium;
+   }
+   .seth{
+    text-align: center;
+    font-family: sans-serif;
+   }
+  
+</style>
+
+<style>
+
+
+
+
+
+.icon { 
+  position: absolute; width: 80px; text-align: center; cursor: default;}
+
+.icon img {
+   width: 48px;
+    height: 48px;
+   pointer-events: none;
+   border-radius: 15px;
+  }
+
+.icon span {
+   display: block; font-size: 12px; margin-top: 6px; line-height: 1.2; color:white; word-break: break-word; pointer-events: none; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+ text-shadow: 
+    -0.5px -0.5px 0 black,
+     0.5px -0.5px 0 black,
+    -0.5px  0.5px 0 black,
+     0.5px  0.5px 0 black;
+}
+.icon.selected { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}.icon:hover { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}
+
+
+
+</style> </div> <div 
+onclick="window.open('https://dsc.gg/t9network', '_blank')" class="icon" style="left:100px; top:120px;"> <img src="discord2.png"> <span>dsc.gg/t9network</span> </div>
+
+<div onclick="settings()" class="icon" style="left:100px; top:220px;"> 
+  <img src="geforce.png" alt="settings"> 
+  <span>GeForce NOW</span> </div> 
+
+  <div onclick="ro()" class="icon" style="left:100px; top:320px;"> 
+    <img src="gtavc.png"> 
+    <span>GTA: Vice City</span> </div> 
+
+
+
+<script>
+  const icons = document.querySelectorAll('.icon');
+const gridSize = 100;
+const offsetX = 5;  // Matches your HTML left: 5px
+const offsetY = 20; // Matches your HTML top: 120px/220px grid logic
+
+let draggingIcon = null;
+let mouseOffset = { x: 0, y: 0 };
+let mouseStart = { x: 0, y: 0 };
+let isDragging = false;
+const dragThreshold = 5;
+
+// Precision snapping functions
+const snapX = (v) => Math.round((v - offsetX) / gridSize) * gridSize + offsetX;
+const snapY = (v) => Math.round((v - offsetY) / gridSize) * gridSize + offsetY;
+
+// Check for collisions using snapped coordinates
+function isOccupied(x, y, ignore) {
+  return Array.from(icons).some(ic => 
+    ic !== ignore && 
+    parseInt(ic.style.left) === x && 
+    parseInt(ic.style.top) === y
+  );
+}
+
+icons.forEach(icon => {
+  icon.addEventListener('mousedown', (e) => {
+    draggingIcon = icon;
+    mouseStart = { x: e.clientX, y: e.clientY };
+    const rect = icon.getBoundingClientRect();
+    mouseOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    icon.style.zIndex = 1000;
+  });
+
+  // Captures and blocks the click if the mouse moved (dragging)
+  icon.addEventListener('click', (e) => {
+    if (isDragging) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  }, true); 
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!draggingIcon) return;
+
+  const dx = e.clientX - mouseStart.x;
+  const dy = e.clientY - mouseStart.y;
+
+  if (!isDragging && Math.hypot(dx, dy) > dragThreshold) {
+    isDragging = true;
+  }
+
+  if (!isDragging) return;
+
+  // Real-time movement logic
+  let x = Math.min(Math.max(e.clientX - mouseOffset.x, 0), window.innerWidth - draggingIcon.offsetWidth);
+  let y = Math.min(Math.max(e.clientY - mouseOffset.y, 0), window.innerHeight - draggingIcon.offsetHeight);
+
+  draggingIcon.style.left = x + 'px';
+  draggingIcon.style.top = y + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  if (!draggingIcon) return;
+
+  if (isDragging) {
+    const targetX = snapX(draggingIcon.offsetLeft);
+    const targetY = snapY(draggingIcon.offsetTop);
+
+    if (isOccupied(targetX, targetY, draggingIcon)) {
+      // Snap back to original grid spot if blocked
+      draggingIcon.style.left = snapX(mouseStart.x - mouseOffset.x) + 'px';
+      draggingIcon.style.top = snapY(mouseStart.y - mouseOffset.y) + 'px';
+    } else {
+      // Lock into new grid spot
+      draggingIcon.style.left = targetX + 'px';
+      draggingIcon.style.top = targetY + 'px';
+    }
+
+    // Delay resetting the flag so 'click' event doesn't trigger 's()'
+    setTimeout(() => { isDragging = false; }, 50);
+  }
+
+  draggingIcon.style.zIndex = '';
+  draggingIcon = null;
+});
+
+document.addEventListener('selectstart', e => e.preventDefault());
+  </script>
+
+
+
+
+
+<script>
+  const presetSelect = document.getElementById("preset");
+
+  window.addEventListener("DOMContentLoaded", () => {
+    presetSelect.value = localStorage.getItem("cloak_preset") || "default";
+  });
+
+  presetSelect.addEventListener("change", () => {
+    localStorage.setItem("cloak_preset", presetSelect.value);
+    console.log("✅ Preset saved:", presetSelect.value);
+  });
+</script>
+
+<script>
+  // If no background is saved yet, set default
+  if (!localStorage.getItem("bg")) {
+    localStorage.setItem("bg", "url('t9os6.png') no-repeat center center fixed");
+  }
+
+  // Always apply the saved background
+  document.body.style.background = localStorage.getItem("bg");
+  document.body.style.backgroundSize = "cover"; // makes sure image fits screen
+</script>
+
+<script>
+  function updateTime() {
+  var date = new Date();
+  var options = { hour: 'numeric', minute: 'numeric',  hour12: true };
+  var formattedTime = date.toLocaleTimeString('en-US', options);
+  document.getElementById("time").innerHTML = formattedTime;
+  }
+  
+  setInterval(updateTime, 1000); 
+
+  // Battery Status
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(function(battery) {
+      updateBatteryStatus(battery);
+      battery.addEventListener('levelchange', function() {
+        updateBatteryStatus(battery);
+      });
+    });
+  } else {
+    document.getElementById('batteryPercentage').innerHTML = 'Battery API not supported.';
+  }
+
+  function updateBatteryStatus(battery) {
+    var percentage = Math.floor(battery.level * 100);
+    document.getElementById('batteryPercentage').innerHTML = percentage + '%';
+  }
+
+  // Toggle Div Visibility
+  const button = document.getElementById('toggleDivButton');
+  const hiddenDiv = document.getElementById('hiddenDiv');
+
+  button.addEventListener('click', () => {
+    if (hiddenDiv.style.display === 'none' || hiddenDiv.style.display === '') {
+      hiddenDiv.style.display = 'block';
+    } else {
+      hiddenDiv.style.display = 'none';
+    }
+  });
+</script>
+<script>
+  function updateTime() {
+    const date = new Date();
+    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+    const formattedTime = date.toLocaleTimeString('en-US', options);
+
+    const hour = date.getHours();
+    let emoji = "⏰";
+
+    if (hour >= 5 && hour < 12) {
+      emoji = "🌅"; 
+    } else if (hour >= 12 && hour < 17) {
+      emoji = "🌞"; 
+    } else if (hour >= 17 && hour < 21) {
+      emoji = "🌇"; 
+    } else {
+      emoji = "🌙"; 
+    }
+
+    document.getElementById("wtime").innerHTML = `${formattedTime} ${emoji}`;
+  }
+
+  setInterval(updateTime, 1000);
+  updateTime(); 
+</script>
+
+
+<script>
+  function admin(){
+    const div = document.getElementById('adminDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, onValue, push, onDisconnect, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  // 🔥 Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+    authDomain: "chat-99dfe.firebaseapp.com",
+    databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+    projectId: "chat-99dfe",
+    storageBucket: "chat-99dfe.firebasestorage.app",
+    messagingSenderId: "17277094525",
+    appId: "1:17277094525:web:989d19d04fdde769de7f14",
+    measurementId: "G-NEXJFPJPCP"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Reference for connections
+  const connectionsRef = ref(db, "connections");
+
+  // Human detection
+  let isHuman = false;
+  window.addEventListener("mousemove", () => { isHuman = true; }, { once: true });
+  window.addEventListener("touchstart", () => { isHuman = true; }, { once: true });
+
+  // Create a new unique connection for THIS user if human
+  let myConnection;
+  function connectIfHuman() {
+    if (!isHuman) return; // skip bots
+    myConnection = push(connectionsRef);
+    set(myConnection, true);
+    onDisconnect(myConnection).remove();
+  }
+
+  // Wait a short time for human interaction
+  setTimeout(connectIfHuman, 3000); // 3 seconds delay
+
+  // Update live user count
+  onValue(connectionsRef, (snapshot) => {
+    document.getElementById("count").innerText = snapshot.numChildren();
+  });
+</script>
+
+
+<script>
+  function emulator(){
+    const div = document.getElementById('emulatorDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+<script>
+  function sound(){
+    const div = document.getElementById('soundDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function ai(){
+    const div = document.getElementById('aiDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function hacks(){
+    const div = document.getElementById('hacksDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+<script>
+  function settings(){
+    const div = document.getElementById('settingsDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function hidden2(){
+    const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function music(){
+    const div = document.getElementById('musicDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function movie(){
+    const div = document.getElementById('movieDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function leader(){
+    const div = document.getElementById('leaderboardDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function apps(){
+    const div = document.getElementById('appsDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function collab(){
+    const div = document.getElementById('collabDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function calc(){
+    const div = document.getElementById('calcDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function s(){
+    const div = document.getElementById('searchDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function ro(){
+    const div = document.getElementById('roDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+<script>
+  const fullscreenButton = document.getElementById('fullscreen-button');
+
+  fullscreenButton.addEventListener('click', toggleFullscreen);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+</script>
+
+<script>
+  function openGame() {
+    var win = window.open ()
+    var url = "index.html"
+    var iframe = win.document.createElement('iframe')
+    iframe.style.width = "100%"
+    iframe.style.height = "100%"
+    iframe.style.border = "none"
+    iframe.src = url
+    win.document.body.appendChild(iframe)
+  }
+  </script>
+
+<script>
+  document.getElementById('searchBar').addEventListener('input', function () {
+    const searchTerm = this.value.toLowerCase();
+    const images = document.querySelectorAll('#imageContainer img');
+
+    images.forEach(image => {
+      const altText = image.getAttribute('alt') || '';
+      if (altText.toLowerCase().includes(searchTerm)) {
+        image.style.display = 'inline-block';
+      } else {
+        image.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+<style>
+  /* Style for the select dropdown */
+#background-select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9; /* Fallback color */
+    font-size: 16px;
+    width: 200px;
+    font-family: Poppins;
+    background-repeat: no-repeat;
+}
+
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("background-select");
+  const upload = document.getElementById("background-upload");
+  const body = document.body;
+  
+  // Create or get video element for backgrounds
+  let videoBackground = document.getElementById("video-background");
+  if (!videoBackground) {
+    videoBackground = document.createElement("video");
+    videoBackground.id = "video-background";
+    videoBackground.autoplay = true;
+    videoBackground.loop = true;
+    videoBackground.muted = true;
+    videoBackground.playsInline = true;
+    videoBackground.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      pointer-events: none;
+    `;
+    document.body.insertBefore(videoBackground, document.body.firstChild);
+  }
+
+  // ========== INDEXEDDB FOR LARGE VIDEO STORAGE ==========
+  const DB_NAME = 'BackgroundStorage';
+  const STORE_NAME = 'media';
+  let db = null;
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      if (db && db.name === DB_NAME) {
+        resolve(db);
+        return;
+      }
+      
+      const request = indexedDB.open(DB_NAME, 1);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        db = request.result;
+        resolve(db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const database = event.target.result;
+        if (!database.objectStoreNames.contains(STORE_NAME)) {
+          database.createObjectStore(STORE_NAME);
+        }
+      };
+    });
+  }
+
+  async function saveToIndexedDB(key, data) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(data, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function loadFromIndexedDB(key) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function deleteFromIndexedDB(key) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.delete(key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Apply background (supports images and videos)
+  async function setBackground(src, type = 'image', isBlob = false, blobData = null) {
+    // Hide video and remove image background
+    videoBackground.style.display = 'none';
+    videoBackground.src = '';
+    body.style.backgroundImage = '';
+    
+    if (type === 'video') {
+      let videoUrl = src;
+      if (isBlob && blobData) {
+        // Create blob URL from stored data
+        const blob = new Blob([blobData], { type: blobData.type || 'video/mp4' });
+        videoUrl = URL.createObjectURL(blob);
+      }
+      
+      videoBackground.src = videoUrl;
+      videoBackground.style.display = 'block';
+      
+      // Store metadata in localStorage (just the type and flag, not the actual video data)
+      localStorage.setItem("backgroundType", "video");
+      localStorage.setItem("hasVideoInIndexedDB", isBlob ? "true" : "false");
+      if (!isBlob) {
+        localStorage.setItem("selectedBackground", src);
+      }
+    } else if (type === 'image') {
+      body.style.backgroundImage = src ? `url(${src})` : "";
+      body.style.backgroundSize = "cover";
+      body.style.backgroundPosition = "center";
+      body.style.backgroundRepeat = "no-repeat";
+      body.style.backgroundAttachment = "fixed";
+      localStorage.setItem("backgroundType", "image");
+      if (src) {
+        if (src.length > 500000) {
+          localStorage.setItem("hasLargeImageInIndexedDB", "true");
+        } else {
+          localStorage.setItem("selectedBackground", src);
+          localStorage.removeItem("hasLargeImageInIndexedDB");
+        }
+      } else {
+        localStorage.removeItem("selectedBackground");
+        localStorage.removeItem("hasLargeImageInIndexedDB");
+      }
+      localStorage.removeItem("hasVideoInIndexedDB");
+    }
+  }
+
+  // Load saved background on startup
+  async function loadSavedBackground() {
+    const savedType = localStorage.getItem("backgroundType") || 'image';
+    const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
+    const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
+    const savedBg = localStorage.getItem("selectedBackground");
+    
+    if (savedType === 'video') {
+      if (hasVideo) {
+        try {
+          const videoData = await loadFromIndexedDB('savedVideo');
+          if (videoData && videoData.data) {
+            const blob = new Blob([videoData.data], { type: videoData.type || 'video/mp4' });
+            const url = URL.createObjectURL(blob);
+            setBackground(url, 'video', true, videoData.data);
+          }
+        } catch (err) {
+          console.error('Failed to load video from IndexedDB:', err);
+        }
+      } else if (savedBg) {
+        setBackground(savedBg, 'video');
+      }
+    } else if (savedType === 'image') {
+      if (hasLargeImage) {
+        try {
+          const imageData = await loadFromIndexedDB('savedImage');
+          if (imageData && imageData.data) {
+            const blob = new Blob([imageData.data], { type: imageData.type || 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            setBackground(url, 'image');
+          }
+        } catch (err) {
+          console.error('Failed to load image from IndexedDB:', err);
+        }
+      } else if (savedBg) {
+        setBackground(savedBg, 'image');
+      }
+    }
+  }
+
+  // Upload custom background (image or video)
+  upload.addEventListener("change", async () => {
+    const file = upload.files[0];
+    if (!file) return;
+
+    const fileType = file.type;
+    
+    if (fileType.startsWith('video/')) {
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Saving video... (this may take a moment for large files)';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      document.body.appendChild(loadingMsg);
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        
+        await saveToIndexedDB('savedVideo', {
+          data: arrayBuffer,
+          type: fileType,
+          name: file.name,
+          size: file.size
+        });
+        
+        await deleteFromIndexedDB('savedImage');
+        localStorage.removeItem("selectedBackground");
+        localStorage.removeItem("hasLargeImageInIndexedDB");
+        
+        const blob = new Blob([arrayBuffer], { type: fileType });
+        const url = URL.createObjectURL(blob);
+        await setBackground(url, 'video', true, arrayBuffer);
+        
+        localStorage.setItem("backgroundType", "video");
+        localStorage.setItem("hasVideoInIndexedDB", "true");
+        select.value = "";
+        
+        loadingMsg.textContent = '✓ Video saved!';
+        setTimeout(() => loadingMsg.remove(), 1500);
+      } catch (err) {
+        console.error('Failed to save video:', err);
+        loadingMsg.textContent = '✗ Failed to save video (out of storage space?)';
+        loadingMsg.style.background = 'darkred';
+        setTimeout(() => loadingMsg.remove(), 3000);
+        alert('Failed to save video. Your browser may have run out of storage space. Try a smaller file.');
+      }
+      
+    } else if (fileType.startsWith('image/')) {
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Saving image...';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      document.body.appendChild(loadingMsg);
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        
+        if (file.size > 500000) {
+          await saveToIndexedDB('savedImage', {
+            data: arrayBuffer,
+            type: fileType,
+            name: file.name,
+            size: file.size
+          });
+          localStorage.setItem("hasLargeImageInIndexedDB", "true");
+          localStorage.removeItem("selectedBackground");
+          
+          const blob = new Blob([arrayBuffer], { type: fileType });
+          const url = URL.createObjectURL(blob);
+          await setBackground(url, 'image');
+        } else {
+          const reader = new FileReader();
+          const dataUrl = await new Promise((resolve) => {
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+          await setBackground(dataUrl, 'image');
+          localStorage.removeItem("hasLargeImageInIndexedDB");
+          await deleteFromIndexedDB('savedImage');
+        }
+        
+        localStorage.setItem("backgroundType", "image");
+        localStorage.removeItem("hasVideoInIndexedDB");
+        await deleteFromIndexedDB('savedVideo');
+        select.value = "";
+        
+        loadingMsg.textContent = '✓ Image saved!';
+        setTimeout(() => loadingMsg.remove(), 1500);
+      } catch (err) {
+        console.error('Failed to save image:', err);
+        loadingMsg.textContent = '✗ Failed to save image';
+        loadingMsg.style.background = 'darkred';
+        setTimeout(() => loadingMsg.remove(), 2000);
+      }
+    } else {
+      alert('Please select an image or video file (MP4, WebM, MOV, etc.)');
+    }
+  });
+
+  // Dropdown change (supports both preset images AND videos)
+  select.addEventListener("change", async () => {
+    const value = select.value;
+    if (value) {
+      const isVideo = value.match(/\.(mp4|webm|mov|ogg|ogv|avi|mkv)$/i);
+      const type = isVideo ? 'video' : 'image';
+      
+      await setBackground(value, type);
+      localStorage.setItem("backgroundType", type);
+      
+      if (type === 'video') {
+        localStorage.setItem("hasVideoInIndexedDB", "false");
+        localStorage.setItem("selectedBackground", value);
+      } else {
+        localStorage.setItem("selectedBackground", value);
+      }
+      
+      localStorage.removeItem("hasLargeImageInIndexedDB");
+      
+      await deleteFromIndexedDB('savedVideo');
+      await deleteFromIndexedDB('savedImage');
+    }
+  });
+
+  // Clear background function
+  window.clearBackground = async function() {
+    videoBackground.style.display = 'none';
+    videoBackground.src = '';
+    body.style.backgroundImage = '';
+    localStorage.removeItem("selectedBackground");
+    localStorage.removeItem("backgroundType");
+    localStorage.removeItem("hasVideoInIndexedDB");
+    localStorage.removeItem("hasLargeImageInIndexedDB");
+    select.value = "";
+    upload.value = "";
+    
+    await deleteFromIndexedDB('savedVideo');
+    await deleteFromIndexedDB('savedImage');
+    
+    console.log('Background cleared');
+  };
+
+  // Load saved background on startup
+  loadSavedBackground();
+});
+</script>
+
+<style>
+/* Ensure proper layering */
+body {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Optional: Add a semi-transparent overlay for better text readability */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Style for the upload input to accept video files */
+#background-upload {
+  /* Add accept attribute in HTML: accept="image/*,video/*" */
+}
+</style>
+
+<script>
+  const btn = document.getElementById("toggleBTN");
+  const img = document.getElementById("logo");
+
+  btn.addEventListener("click", () => {
+    if (img.style.display === "block") {
+      img.style.display = "none"; 
+    } else {
+      img.style.display = "block";  
+    }
+  });
+</script>
+
+
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // 🔥 Your Firebase config (same as Page A)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+      authDomain: "chat-99dfe.firebaseapp.com",
+      databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+      projectId: "chat-99dfe",
+      storageBucket: "chat-99dfe.firebasestorage.app",
+      messagingSenderId: "17277094525",
+      appId: "1:17277094525:web:989d19d04fdde769de7f14",
+      measurementId: "G-NEXJFPJPCP"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const imgBox = document.getElementById("imgBox");
+
+    // Listen to changes in globalImage in real-time
+    const imageRef = ref(db, "globalImage");
+    onValue(imageRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.url) {
+        imgBox.innerHTML = `<img src="${data.url}">`;
+      } else {
+        imgBox.innerHTML = "";
+      }
+    });
+  </script>
+  <style>
+      #imgBox img {
+      max-width: 600px;
+      border-radius: 10px;
+      margin-top: 30px;
+      width:200px;
+      color:yellow;
+      font-family: sans-serif;
+      font-size:50px;
+    }
+  </style>
+
+</body>
+
+<script>
+
+  if (!localStorage.getItem("bg")) {
+    localStorage.setItem("bg", "url('t9os6.png') no-repeat center center fixed");
+  }
+
+ 
+  document.body.style.background = localStorage.getItem("bg");
+  document.body.style.backgroundSize = "cover"; 
+</script>
+<div id="notifications"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, onChildAdded, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  // 🔥 Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+    authDomain: "chat-99dfe.firebaseapp.com",
+    databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+    projectId: "chat-99dfe",
+    storageBucket: "chat-99dfe.firebasestorage.app",
+    messagingSenderId: "17277094525",
+    appId: "1:17277094525:web:989d19d04fdde769de7f14",
+    measurementId: "G-NEXJFPJPCP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "globalMessages");
+
+  const container = document.getElementById("notifications");
+
+  // Function to show a toast
+  function showNotification(text) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = text;
+    container.appendChild(toast);
+
+    // Remove after 5 seconds
+    setTimeout(() => {
+      toast.style.transition = "opacity 0.5s ease";
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 500);
+    }, 5000);
+  }
+
+  // ✅ Record current timestamp when user loads the page
+  const pageLoadTime = Date.now();
+
+  // Listen for new messages only AFTER page load
+  onChildAdded(messagesRef, (snapshot) => {
+    const msg = snapshot.val();
+    if (!msg.timestamp || msg.timestamp >= pageLoadTime) {
+      showNotification(msg.text);
+    }
+  });
+</script>
+
+<style>
+  #notifications {
+    position: fixed;
+    top: 29.5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast {
+    background-color:#1b1b1bbd;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease-out;
+    font-size: 16px;
+    opacity: 0.95;
+    max-width: 80%;
+    text-align: center;
+    opacity:85%;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">Version 3.25</p>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 100px; opacity: 0.6;" id="myId">ID: <span id="idValue"></span></p>
+
+
+<!-- Include Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // ========== CONFIG ==========
+  const OWNER_IDS = ["6528690208", "4084803237", "0635354315", "8862060932", "9937301888", "5069664537", "1362852477"]; // add both owner IDs here
+  const ID_KEY = "numericUserID";
+  // ============================
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD74Fi2RKsvv1sXTAEIiTYrRKCv22MRhh8",
+    authDomain: "t9oschat.firebaseapp.com",
+    databaseURL: "https://t9oschat-default-rtdb.firebaseio.com",
+    projectId: "t9oschat",
+    storageBucket: "t9oschat.firebasestorage.app",
+    messagingSenderId: "930534704832",
+    appId: "1:930534704832:web:c154890c3b5f36736f8f25",
+    measurementId: "G-STPKYT658F"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Generate numeric ID (~10 digits)
+  function generateNumericID() {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return random + timestamp;
+  }
+
+  // Protect critical functions
+  (function() {
+    'use strict';
+    
+    const originalSetItem = Storage.prototype.setItem;
+    const originalRemoveItem = Storage.prototype.removeItem;
+    const originalClear = Storage.prototype.clear;
+    
+    let isLocked = false;
+    let myID = null;
+
+    function lockScreen() {
+      if (isLocked) return;
+      isLocked = true;
+      document.body.innerHTML = "";
+      document.body.style.cssText = "background: red; color: white; display: flex; justify-content: center; align-items: center; font-size: 40px; overflow: hidden; margin: 0; height: 100vh;";
+      document.body.innerText = "BANNED";
+
+      const preventAll = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
+      ['keydown','keyup','keypress','mousedown','mouseup','click','touchstart','touchend','contextmenu','beforeunload'].forEach(event => {
+        document.addEventListener(event, preventAll, true);
+        window.addEventListener(event, preventAll, true);
+      });
+
+      Storage.prototype.setItem = function() {};
+      Storage.prototype.removeItem = function() {};
+      Storage.prototype.clear = function() {};
+      
+      Object.freeze(localStorage);
+      Object.freeze(sessionStorage);
+      
+      window.onbeforeunload = () => true;
+      history.pushState(null, null, location.href);
+      window.onpopstate = () => history.go(1);
+      
+      window.db = null;
+      window.firebase = null;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      myID = originalSetItem.call(localStorage, ID_KEY, localStorage.getItem(ID_KEY) || generateNumericID()) || localStorage.getItem(ID_KEY);
+      if (!myID) {
+        myID = generateNumericID();
+        originalSetItem.call(localStorage, ID_KEY, myID);
+      }
+
+      const idSpan = document.getElementById("idValue");
+      if (idSpan) idSpan.textContent = myID;
+
+      const checkInterval = setInterval(() => {
+        const currentID = localStorage.getItem(ID_KEY);
+        if (currentID !== myID) originalSetItem.call(localStorage, ID_KEY, myID);
+        if (isLocked) lockScreen();
+      }, 100);
+
+      const bannedRef = db.ref("bannedIDs");
+      bannedRef.on("value", (snapshot) => {
+        const bannedIDs = snapshot.val() || [];
+        if (bannedIDs.includes(myID)) lockScreen();
+      });
+
+      // Owner shortcut: press "," to ban/unban
+      document.addEventListener("keydown", async (e) => {
+        if (!OWNER_IDS.includes(myID)) return; // check against both owners
+        if (e.key === ",") {
+          const action = prompt("Type 'ban' to ban or 'unban' to unban:");
+          if (!action) return;
+          const targetID = prompt("Enter the ID to " + action + ":");
+          if (!targetID) return;
+
+          const snapshot = await bannedRef.get();
+          let bannedIDs = snapshot.val() || [];
+
+          if (action.toLowerCase() === "ban") {
+            if (!bannedIDs.includes(targetID)) {
+              bannedIDs.push(targetID);
+              await bannedRef.set(bannedIDs);
+              alert("User banned: " + targetID);
+            } else {
+              alert("User is already banned.");
+            }
+          } else if (action.toLowerCase() === "unban") {
+            bannedIDs = bannedIDs.filter(id => id !== targetID);
+            await bannedRef.set(bannedIDs);
+            alert("User unbanned: " + targetID);
+          } else {
+            alert("Invalid action.");
+          }
+        }
+      });
+    });
+  })();
+</script>
+
+<!-- Test-->
+
+
+
+
+
+
+
+<!--test2-->
+
+  <script>
+const HEADER_HEIGHT = 30; // was 40
+
+const wins = [
+document.getElementById("hiddenDiv"),
+document.getElementById("ChatDiv"),
+document.getElementById("musicDiv"),
+document.getElementById("searchDiv"),
+document.getElementById("updateDiv"),
+document.getElementById("aiDiv"),
+document.getElementById("terminalDiv"),
+document.getElementById("emulatorDiv"),
+document.getElementById("movieDiv"),
+document.getElementById("roDiv"),
+document.getElementById("settingsDiv"),
+document.getElementById("calcDiv"),
+document.getElementById("wwwDiv"),
+
+
+
+
+
+];
+
+wins.forEach(win => {
+if (!win) return;
+
+// ───────── Drag handle ─────────
+let dragHandle = win.querySelector(".drag-handle");
+if (!dragHandle) {
+dragHandle = document.createElement("div");
+dragHandle.className = "drag-handle";
+Object.assign(dragHandle.style,{
+position:"absolute",top:"0",left:"50px",right:"0",
+height: HEADER_HEIGHT + "px",
+cursor:"move",zIndex:"5",pointerEvents:"none"
+});
+win.appendChild(dragHandle);
+}
+
+// ───────── Resizer ─────────
+let resizer = win.querySelector(".resizer");
+if (!resizer) {
+resizer = document.createElement("div");
+resizer.className = "resizer";
+Object.assign(resizer.style,{
+position:"absolute",width:"30px",height:"30px",
+right:"0",bottom:"0",cursor:"nwse-resize",zIndex:"10",
+background:"rgba(255,255,255,0.1)"
+});
+win.appendChild(resizer);
+}
+
+// ───────── Ensure iframe container respects header ─────────
+win.querySelectorAll("iframe").forEach(iframe => {
+if (!iframe.style.marginTop) {
+iframe.style.marginTop = HEADER_HEIGHT + "px";
+iframe.style.height = "calc(100% - " + HEADER_HEIGHT + "px)";
+iframe.style.display = "block";
+}
+});
+
+let isDragging=false,isResizing=false,offsetX=0,offsetY=0,
+startX=0,startY=0,startWidth=0,startHeight=0,hasBeenPositioned=false;
+
+// 🔒 SAFE iframe control
+function disableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.dataset._pe=i.style.pointerEvents;
+i.style.pointerEvents="none";
+});
+}
+function enableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.style.pointerEvents=i.dataset._pe||"auto";
+delete i.dataset._pe;
+});
+}
+
+// ───────── DRAG ─────────
+win.addEventListener("mousedown",e=>{
+if(e.target.closest("button,a,input,select,textarea")) return;
+const r=win.getBoundingClientRect();
+if(e.clientY-r.top>HEADER_HEIGHT||isResizing) return;
+
+if(!hasBeenPositioned){
+win.style.transform="none";
+win.style.margin="0";
+win.style.inset="auto";
+win.style.left=r.left+"px";
+win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+
+isDragging=true;
+offsetX=e.clientX-r.left;
+offsetY=e.clientY-r.top;
+disableIframeTemp();
+dragHandle.style.pointerEvents="auto";
+e.preventDefault();
+});
+
+// ───────── RESIZE ─────────
+resizer.addEventListener("mousedown",e=>{
+const r=win.getBoundingClientRect();
+if(!hasBeenPositioned){
+win.style.transform="none";win.style.margin="0";win.style.inset="auto";
+win.style.left=r.left+"px";win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+isResizing=true;disableIframeTemp();
+startX=e.clientX;startY=e.clientY;
+startWidth=r.width;startHeight=r.height;
+win.style.width=startWidth+"px";win.style.height=startHeight+"px";
+e.preventDefault();e.stopPropagation();
+});
+
+// ───────── MOVE ─────────
+document.addEventListener("mousemove",e=>{
+if(isDragging){
+let x=e.clientX-offsetX;
+let y=e.clientY-offsetY;
+win.style.left=x+"px";
+win.style.top=y+"px";
+if(win.id==="hiddenDiv") win.style.willChange="transform";
+}
+if(isResizing){
+const dx=e.clientX-startX;
+const dy=e.clientY-startY;
+win.style.width=Math.max(300,startWidth+dx)+"px";
+win.style.height=Math.max(90,startHeight+dy)+"px";
+}
+});
+
+// ───────── FORCE UNFREEZE ─────────
+function stopAll(){
+enableIframeTemp();
+dragHandle.style.pointerEvents="none";
+isDragging=false;isResizing=false;
+win.style.willChange="auto";
+}
+document.addEventListener("mouseup",stopAll);
+document.addEventListener("mouseleave",stopAll);
+window.addEventListener("blur",stopAll);
+});
+</script>
+<script>
+ /**
+ * T9 OS Performance Optimizer - Smart Edition
+ * Optimizes performance WITHOUT affecting visuals or animations
+ * Focuses on reducing unnecessary work behind the scenes
+ */
+
+(function() {
+  'use strict';
+  
+  console.log('🚀 Smart Performance Optimizer loading...');
+
+  // ============================================
+  // 1. OPTIMIZE FIREBASE WITHOUT BREAKING IT
+  // ============================================
+  
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    const originalOnValue = firebase.database.Reference.prototype.on;
+    firebase.database.Reference.prototype.on = function(eventType, callback, cancelCallbackOrContext, context) {
+      let throttledCallback = callback;
+      
+      if (eventType === 'value' && !this.toString().includes('bannedIDs') && !this.toString().includes('globalMessages')) {
+        let pending = false;
+        
+        throttledCallback = function(...args) {
+          if (!pending) {
+            pending = true;
+            setTimeout(() => {
+              callback.apply(this, args);
+              pending = false;
+            }, 1000);
+          }
+        };
+      }
+      
+      return originalOnValue.call(this, eventType, throttledCallback, cancelCallbackOrContext, context);
+    };
+  }
+
+  // ============================================
+  // 2. DEBOUNCE LOCALSTORAGE WRITES
+  // ============================================
+  
+  const localStorageQueue = new Map();
+  let saveTimeout = null;
+  
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    if (key.includes('icon') || key.includes('theme') || key.includes('background')) {
+      localStorageQueue.set(key, value);
+      
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        localStorageQueue.forEach((val, k) => {
+          originalSetItem(k, val);
+        });
+        localStorageQueue.clear();
+      }, 300);
+    } else {
+      originalSetItem(key, value);
+    }
+  };
+
+  // ============================================
+  // 3. OPTIMIZE IFRAMES
+  // ============================================
+  
+  function optimizeIframes() {
+    document.querySelectorAll('iframe').forEach(iframe => {
+      const parent = iframe.closest('[id$="Div"]');
+      if (!parent) return;
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          try {
+            iframe.contentWindow?.postMessage(
+              { type: entry.isIntersecting ? 'resume' : 'pause' }, '*'
+            );
+          } catch(e) {}
+        });
+      }, { threshold: 0.01 });
+      
+      observer.observe(parent);
+    });
+  }
+  
+  optimizeIframes();
+  setInterval(optimizeIframes, 5000);
+
+  // ============================================
+  // 4. BATCH DOM UPDATES
+  // ============================================
+  
+  window.batchDOMUpdate = function(read, write) {
+    requestAnimationFrame(() => {
+      const data = read ? read() : null;
+      requestAnimationFrame(() => write && write(data));
+    });
+  };
+
+  // ============================================
+  // 5. DRAG PERFORMANCE
+  // ============================================
+  
+  let activeDrags = new Set();
+  
+  document.addEventListener('mousedown', e => {
+    const d = e.target.closest('.icon, [id$="Div"]');
+    if (d && !activeDrags.has(d)) {
+      activeDrags.add(d);
+      d.style.willChange = 'transform,left,top';
+    }
+  }, true);
+  
+  document.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      activeDrags.forEach(el => el.style.willChange = 'auto');
+      activeDrags.clear();
+    }, 100);
+  }, true);
+
+  // ============================================
+  // 6. CLOCK/BATTERY CONTAINMENT
+  // ============================================
+  
+  document.getElementById('time')?.style.setProperty('contain','layout style paint');
+  document.getElementById('batteryPercentage')?.style.setProperty('contain','layout style paint');
+
+  // ============================================
+  // 7. PASSIVE EVENTS
+  // ============================================
+  
+  const passiveEvents = ['scroll','touchstart','touchmove','wheel'];
+  const origAdd = EventTarget.prototype.addEventListener;
+  
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (passiveEvents.includes(type)) {
+      options = typeof options === 'object' ? {...options, passive:true} : {passive:true};
+    }
+    return origAdd.call(this,type,listener,options);
+  };
+
+  // ============================================
+  // 8. NOTIFICATION OPTIMIZATION
+  // ============================================
+  
+  if (window.showNotification) {
+    const queue=[];
+    window.originalShowNotification=window.showNotification;
+    window.showNotification=function(text){
+      if(queue.includes(text))return;
+      queue.push(text);
+      if(queue.length>3)queue.shift();
+      requestAnimationFrame(()=>window.originalShowNotification(text));
+    };
+  }
+
+  // ============================================
+  // 9. LAZY LOAD IMAGES
+  // ============================================
+  
+  const lazy=()=>document.querySelectorAll('img:not([loading])')
+    .forEach(i=>i.loading='lazy');
+  lazy();
+  new MutationObserver(lazy).observe(document.body,{childList:true,subtree:true});
+
+  // ============================================
+  // 10. TAB VISIBILITY
+  // ============================================
+  
+  document.addEventListener('visibilitychange',()=>{
+    document.querySelectorAll('iframe').forEach(f=>{
+      try{
+        f.contentWindow?.postMessage(
+          {type:document.hidden?'pause':'resume'},'*'
+        );
+      }catch(e){}
+    });
+  });
+
+  // ============================================
+  // 11. CHROMEBOOK MODE
+  // ============================================
+  
+  const isChromebook=/CrOS/.test(navigator.userAgent);
+  const isLowMemory=navigator.deviceMemory&&navigator.deviceMemory<4;
+  
+  if(isChromebook||isLowMemory){
+    const style=document.createElement('style');
+    style.textContent=`
+      @media (prefers-reduced-motion: reduce){
+        *,*::before,*::after{
+          animation-duration:.01ms!important;
+          animation-iteration-count:1!important;
+          transition-duration:.01ms!important;
+        }
+      }
+      /* FIX: navbar removed from GPU transform */
+      .icon,[id$="Div"]{
+        transform:translateZ(0);
+        backface-visibility:hidden;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ============================================
+  // 12. FPS COUNTER
+  // ============================================
+  
+  const fps=document.getElementById('fpsCounter');
+  if(fps&&window.trackFPS){
+    let last=0;
+    const orig=window.trackFPS;
+    window.trackFPS=function(){
+      const now=performance.now();
+      if(now-last>500){orig();last=now;}
+    };
+  }
+
+  // ============================================
+  // 13. MEMORY OBSERVER
+  // ============================================
+  
+  new MutationObserver(()=>{}).observe(document.body,{childList:true,subtree:true});
+
+  // ============================================
+  // 14. GPU ACCELERATION (NAVBAR EXCLUDED)
+  // ============================================
+  
+ 
+
+  // ============================================
+  // NAVBAR HARD FIX
+  // ============================================
+  
+  const navFix=document.createElement('style');
+  navFix.textContent=`
+   .navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(255,255,255,0.08),
+        rgba(0,0,0,0.65)
+      );
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+  `;
+  document.head.appendChild(navFix);
+
+  console.log('✅ Smart Performance Optimizer loaded successfully!');
+})();
+
+</script>
+<!-- Matomo -->
+<script>
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
+
+toggleFns.forEach(id => {
+  const div = document.getElementById(id);
+  if(!div) return;
+  const animName = getComputedStyle(div).animationName;
+  div.addEventListener('show', () => {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
+  });
+});
+
+function openDiv(id) {
+  const div = document.getElementById(id);
+  if(!div) return;
+  if(div.style.display === 'block'){
+    div.style.display = 'none';
+  } else {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
+    div.style.display = 'block';
+  }
+}
+
+function movie(){ openDiv('movieDiv'); }
+function music(){ openDiv('musicDiv'); }
+function ai(){ openDiv('aiDiv'); }
+function www(){ openDiv('wwwDiv'); }
+function Chat(){ openDiv('ChatDiv'); }
+function terminal(){ openDiv('terminalDiv'); }
+function ro(){ openDiv('roDiv'); }
+function settings(){ openDiv('settingsDiv'); }
+function calc(){ openDiv('calcDiv'); }
+function s(){ openDiv('searchDiv'); }
+function hacks(){ openDiv('hacksDiv'); }
+function emulator(){ openDiv('emulatorDiv'); }
+function collab(){ openDiv('collabDiv'); }
+function sound(){ openDiv('soundDiv'); }
+function admin(){ openDiv('adminDiv'); }
+</script>
+
+  <!--testing part-->
+
+
+
+</body>
+
+</html>
+
+
