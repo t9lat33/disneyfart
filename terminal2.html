@@ -1,666 +1,514 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>T9 OS</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #1e2127;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #abb2bf;
+    overflow: hidden;
+  }
+  #terminal {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 8px 16px;
+    cursor: text;
+  }
+  #output::-webkit-scrollbar { width: 5px; }
+  #output::-webkit-scrollbar-track { background: #1e2127; }
+  #output::-webkit-scrollbar-thumb { background: #3e4451; border-radius: 3px; }
+  .line { white-space: pre-wrap; word-break: break-all; }
+  .input-row { display: flex; align-items: baseline; flex-wrap: wrap; margin-bottom: 2px; }
+  .prompt-user  { color: #98c379; }
+  .prompt-at    { color: #abb2bf; }
+  .prompt-host  { color: #61afef; }
+  .prompt-colon { color: #abb2bf; }
+  .prompt-path  { color: #c678dd; }
+  .prompt-sym   { color: #abb2bf; }
+  .cmd-text     { color: #e5c07b; }
+  #input-line   { display: flex; align-items: baseline; padding: 0 16px 12px 16px; }
+  #fake-input   { color: #e5c07b; white-space: pre; }
+  #cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    background: #528bff;
+    vertical-align: text-bottom;
+    animation: blink 1.1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  #real-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+  /* ansi colors */
+  .c-dir  { color: #61afef; font-weight: bold; }
+  .c-file { color: #abb2bf; }
+  .c-err  { color: #e06c75; }
+  .c-ok   { color: #98c379; }
+  .c-warn { color: #e5c07b; }
+  .c-dim  { color: #5c6370; }
+  .c-bold { color: #e5c07b; font-weight: bold; }
+  .c-cyan { color: #56b6c2; }
+  .c-mag  { color: #c678dd; }
+  .c-hi   { color: #e06c75; font-weight: bold; }
+</style>
+</head>
+<body>
+<div id="terminal">
+  <div id="output"></div>
+  <div id="input-line">
+    <span id="prompt-el"></span>
+    <span id="fake-input"></span><span id="cursor"></span>
+  </div>
+  <input id="real-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus/>
+</div>
 
-// ============================================================
-//  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗
-// ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝
-// ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗
-// ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║
-// ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║
-//  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝
-//
-// ADD NEW COMMANDS HERE — see the COMMANDS object below.
-// Each command is a function: (args, state, setState) => string | string[]
-// Return a string (single line) or array of strings (multiple lines).
-// ============================================================
+<script>
+// ================================================================
+//  T9 OS — Single File Terminal
+//  To add a command: add an entry to the COMMANDS object below.
+//  Format: commandName: { desc, usage, run(args) => string|string[] }
+// ================================================================
 
-// ─── FILESYSTEM ──────────────────────────────────────────────
-// Simple in-memory filesystem. Each key is an absolute path.
-// Directories are objects with type:"dir", files have type:"file" + content.
-const buildFS = () => ({
-  "/": { type: "dir" },
-  "/home": { type: "dir" },
-  "/home/user": { type: "dir" },
-  "/home/user/documents": { type: "dir" },
-  "/home/user/projects": { type: "dir" },
-  "/home/user/readme.txt": {
-    type: "file",
-    content: "Welcome to T9 OS!\nType 'help' to see all commands.\nEnjoy hacking around :)",
-  },
-  "/home/user/hello.js": {
-    type: "file",
-    content: 'console.log("Hello from T9 OS!");',
-  },
-  "/etc": { type: "dir" },
-  "/etc/hostname": { type: "file", content: "t9os" },
-  "/tmp": { type: "dir" },
-});
+// ── FILESYSTEM ──────────────────────────────────────────────────
+let FS = {
+  "/":                        { type: "dir" },
+  "/home":                    { type: "dir" },
+  "/home/user":               { type: "dir" },
+  "/home/user/documents":     { type: "dir" },
+  "/home/user/projects":      { type: "dir" },
+  "/home/user/readme.txt":    { type: "file", content: "Welcome to T9 OS!\nType 'help' to see all commands.\nEnjoy hacking around :)" },
+  "/home/user/hello.js":      { type: "file", content: 'console.log("Hello from T9 OS!");' },
+  "/etc":                     { type: "dir" },
+  "/etc/hostname":            { type: "file", content: "t9os" },
+  "/tmp":                     { type: "dir" },
+};
 
-// ─── HELPER UTILITIES ────────────────────────────────────────
-const resolvePath = (cwd, input) => {
+// ── STATE ───────────────────────────────────────────────────────
+let CWD       = "/home/user";
+let ENV       = { USER: "user", HOME: "/home/user", SHELL: "/bin/bash", TERM: "xterm-256color" };
+let HIST      = [];
+let ALIASES   = { ll: "ls -la", la: "ls -a" };
+let START     = Date.now();
+let histIdx   = -1;
+let inputBuf  = "";
+
+// ── HELPERS ─────────────────────────────────────────────────────
+function resolvePath(cwd, input) {
   if (!input || input === "~") return "/home/user";
   if (input.startsWith("~/")) input = "/home/user/" + input.slice(2);
-  if (input.startsWith("/")) {
-    const parts = input.split("/").filter(Boolean);
-    const resolved = [];
-    for (const p of parts) {
-      if (p === "..") resolved.pop();
-      else if (p !== ".") resolved.push(p);
-    }
-    return "/" + resolved.join("/");
-  }
-  const base = cwd === "/" ? "" : cwd;
-  const combined = base + "/" + input;
-  const parts = combined.split("/").filter(Boolean);
-  const resolved = [];
-  for (const p of parts) {
-    if (p === "..") resolved.pop();
-    else if (p !== ".") resolved.push(p);
-  }
-  return "/" + resolved.join("/");
-};
+  if (!input.startsWith("/")) input = (cwd === "/" ? "" : cwd) + "/" + input;
+  const parts = input.split("/").filter(Boolean);
+  const out = [];
+  for (const p of parts) { if (p === "..") out.pop(); else if (p !== ".") out.push(p); }
+  return "/" + out.join("/");
+}
 
-const getNodeChildren = (fs, dirPath) => {
+function children(dirPath) {
   const prefix = dirPath === "/" ? "/" : dirPath + "/";
-  return Object.keys(fs).filter((k) => {
-    if (k === dirPath) return false;
-    if (!k.startsWith(prefix)) return false;
-    const rest = k.slice(prefix.length);
-    return !rest.includes("/");
-  });
+  return Object.keys(FS).filter(k => k !== dirPath && k.startsWith(prefix) && !k.slice(prefix.length).includes("/"));
+}
+
+// ── COLOR HELPERS ────────────────────────────────────────────────
+const cc = {
+  dir:  s => `<span class="c-dir">${s}</span>`,
+  file: s => `<span class="c-file">${s}</span>`,
+  err:  s => `<span class="c-err">${s}</span>`,
+  ok:   s => `<span class="c-ok">${s}</span>`,
+  warn: s => `<span class="c-warn">${s}</span>`,
+  dim:  s => `<span class="c-dim">${s}</span>`,
+  bold: s => `<span class="c-bold">${s}</span>`,
+  cyan: s => `<span class="c-cyan">${s}</span>`,
+  mag:  s => `<span class="c-mag">${s}</span>`,
+  hi:   s => `<span class="c-hi">${s}</span>`,
 };
 
-const ansi = {
-  dir: (s) => `<span style="color:#61afef;font-weight:bold">${s}</span>`,
-  file: (s) => `<span style="color:#abb2bf">${s}</span>`,
-  exec: (s) => `<span style="color:#98c379;font-weight:bold">${s}</span>`,
-  err: (s) => `<span style="color:#e06c75">${s}</span>`,
-  ok: (s) => `<span style="color:#98c379">${s}</span>`,
-  warn: (s) => `<span style="color:#e5c07b">${s}</span>`,
-  dim: (s) => `<span style="color:#5c6370">${s}</span>`,
-  bold: (s) => `<span style="font-weight:bold;color:#e5c07b">${s}</span>`,
-  cyan: (s) => `<span style="color:#56b6c2">${s}</span>`,
-  magenta: (s) => `<span style="color:#c678dd">${s}</span>`,
-};
-
-// ─── COMMAND REGISTRY ─────────────────────────────────────────
-// ┌─────────────────────────────────────────────────────────────┐
-// │  TO ADD A COMMAND:                                          │
-// │  1. Add an entry to COMMANDS below.                         │
-// │  2. The key is what the user types.                         │
-// │  3. The value is an object:                                 │
-// │     { desc: "short description", run: (args, s, ss) => {}  │
-// │  4. args = string[], s = state snapshot, ss = setState fn   │
-// │  5. Return a string or string[] to print.                   │
-// │  6. Use ansi.xxx() for colored output.                      │
-// └─────────────────────────────────────────────────────────────┘
-
+// ================================================================
+//  COMMANDS — add new ones here!
+//  run(args) can return: string, string[], or null
+// ================================================================
 const COMMANDS = {
-  // ── NAVIGATION ────────────────────────────────────────────
+
+  // ── NAVIGATION ────────────────────────────────────────────────
   pwd: {
-    desc: "Print working directory",
-    usage: "pwd",
-    run: (_, s) => s.cwd,
+    desc: "Print working directory", usage: "pwd",
+    run: () => CWD
   },
 
   cd: {
-    desc: "Change directory",
-    usage: "cd [path]",
-    run: ([target], s, ss) => {
-      const dest = resolvePath(s.cwd, target || "~");
-      if (!s.fs[dest]) return ansi.err(`cd: ${dest}: No such file or directory`);
-      if (s.fs[dest].type !== "dir") return ansi.err(`cd: ${dest}: Not a directory`);
-      ss((prev) => ({ ...prev, cwd: dest }));
-      return "";
-    },
+    desc: "Change directory", usage: "cd [path]",
+    run: ([t]) => {
+      const dest = resolvePath(CWD, t || "~");
+      if (!FS[dest])              return cc.err(`cd: ${dest}: No such file or directory`);
+      if (FS[dest].type !== "dir") return cc.err(`cd: ${dest}: Not a directory`);
+      CWD = dest; return null;
+    }
   },
 
   ls: {
-    desc: "List directory contents",
-    usage: "ls [-la] [path]",
-    run: (args, s) => {
-      const flags = args.filter((a) => a.startsWith("-")).join("");
-      const pathArg = args.find((a) => !a.startsWith("-"));
-      const target = pathArg ? resolvePath(s.cwd, pathArg) : s.cwd;
-      if (!s.fs[target]) return ansi.err(`ls: ${target}: No such file or directory`);
-      if (s.fs[target].type !== "dir") return ansi.err(`ls: ${target}: Not a directory`);
-      const children = getNodeChildren(s.fs, target);
-      if (!children.length) return ansi.dim("(empty)");
-      const showAll = flags.includes("a");
-      const showLong = flags.includes("l");
-      const names = children.map((c) => {
-        const name = c.split("/").pop();
-        const node = s.fs[c];
-        if (showLong) {
-          const type = node.type === "dir" ? "d" : "-";
-          const perms = node.type === "dir" ? "rwxr-xr-x" : "rw-r--r--";
+    desc: "List directory contents", usage: "ls [-la] [path]",
+    run: (args) => {
+      const flags  = args.filter(a => a.startsWith("-")).join("");
+      const target = resolvePath(CWD, args.find(a => !a.startsWith("-")) || "");
+      if (!FS[target])              return cc.err(`ls: cannot access '${target}': No such file or directory`);
+      if (FS[target].type !== "dir") return cc.err(`ls: ${target}: Not a directory`);
+      const kids = children(target);
+      if (!kids.length) return cc.dim("(empty)");
+      if (flags.includes("l")) {
+        return kids.map(k => {
+          const name = k.split("/").pop();
+          const node = FS[k];
+          const t    = node.type === "dir" ? "d" : "-";
+          const perm = node.type === "dir" ? "rwxr-xr-x" : "rw-r--r--";
           const size = node.type === "file" ? String(node.content.length).padStart(6) : "     -";
-          const label = node.type === "dir" ? ansi.dir(name) : ansi.file(name);
-          return `${type}${perms}  1 user user ${size} Apr 21 00:00 ${label}`;
-        }
-        return node.type === "dir" ? ansi.dir(name + "/") : ansi.file(name);
-      });
-      if (showLong) return names;
-      // grid layout
-      return [names.join("  ")];
-    },
+          const lbl  = node.type === "dir" ? cc.dir(name) : cc.file(name);
+          return `${t}${perm}  1 user user ${size} Apr 21 00:00 ${lbl}`;
+        });
+      }
+      return [kids.map(k => { const name = k.split("/").pop(); return FS[k].type === "dir" ? cc.dir(name+"/") : cc.file(name); }).join("  ")];
+    }
   },
 
-  // ── FILE OPERATIONS ───────────────────────────────────────
+  // ── FILE OPERATIONS ───────────────────────────────────────────
   cat: {
-    desc: "Print file contents",
-    usage: "cat <file>",
-    run: ([file], s) => {
-      if (!file) return ansi.err("cat: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`cat: ${file}: No such file or directory`);
-      if (s.fs[p].type === "dir") return ansi.err(`cat: ${file}: Is a directory`);
-      return s.fs[p].content.split("\n");
-    },
+    desc: "Print file contents", usage: "cat <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("cat: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p])               return cc.err(`cat: ${f}: No such file or directory`);
+      if (FS[p].type === "dir") return cc.err(`cat: ${f}: Is a directory`);
+      return FS[p].content.split("\n");
+    }
   },
 
   echo: {
-    desc: "Print text",
-    usage: "echo <text>",
-    run: (args) => args.join(" "),
+    desc: "Print text", usage: "echo <text>",
+    run: args => args.join(" ")
   },
 
   touch: {
-    desc: "Create empty file",
-    usage: "touch <file>",
-    run: ([file], s, ss) => {
-      if (!file) return ansi.err("touch: missing operand");
-      const p = resolvePath(s.cwd, file);
-      ss((prev) => ({ ...prev, fs: { ...prev.fs, [p]: { type: "file", content: "" } } }));
-      return ansi.ok(`Created ${file}`);
-    },
+    desc: "Create empty file", usage: "touch <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("touch: missing operand");
+      FS[resolvePath(CWD, f)] = { type: "file", content: "" };
+      return cc.ok(`Created ${f}`);
+    }
   },
 
   mkdir: {
-    desc: "Create directory",
-    usage: "mkdir <dir>",
-    run: ([dir], s, ss) => {
-      if (!dir) return ansi.err("mkdir: missing operand");
-      const p = resolvePath(s.cwd, dir);
-      if (s.fs[p]) return ansi.err(`mkdir: ${dir}: File exists`);
-      ss((prev) => ({ ...prev, fs: { ...prev.fs, [p]: { type: "dir" } } }));
-      return ansi.ok(`Directory created: ${dir}`);
-    },
+    desc: "Create directory", usage: "mkdir <dir>",
+    run: ([d]) => {
+      if (!d) return cc.err("mkdir: missing operand");
+      const p = resolvePath(CWD, d);
+      if (FS[p]) return cc.err(`mkdir: ${d}: File exists`);
+      FS[p] = { type: "dir" };
+      return cc.ok(`Directory created: ${d}`);
+    }
   },
 
   rm: {
-    desc: "Remove file",
-    usage: "rm <file>",
-    run: ([file], s, ss) => {
-      if (!file) return ansi.err("rm: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`rm: ${file}: No such file or directory`);
-      if (s.fs[p].type === "dir") return ansi.err(`rm: ${file}: Is a directory (use rmdir)`);
-      ss((prev) => {
-        const newFs = { ...prev.fs };
-        delete newFs[p];
-        return { ...prev, fs: newFs };
-      });
-      return ansi.ok(`Removed ${file}`);
-    },
+    desc: "Remove file", usage: "rm <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("rm: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p])               return cc.err(`rm: ${f}: No such file or directory`);
+      if (FS[p].type === "dir") return cc.err(`rm: ${f}: Is a directory (use rmdir)`);
+      delete FS[p]; return cc.ok(`Removed ${f}`);
+    }
   },
 
   rmdir: {
-    desc: "Remove empty directory",
-    usage: "rmdir <dir>",
-    run: ([dir], s, ss) => {
-      if (!dir) return ansi.err("rmdir: missing operand");
-      const p = resolvePath(s.cwd, dir);
-      if (!s.fs[p]) return ansi.err(`rmdir: ${dir}: No such file or directory`);
-      if (s.fs[p].type !== "dir") return ansi.err(`rmdir: ${dir}: Not a directory`);
-      const children = getNodeChildren(s.fs, p);
-      if (children.length) return ansi.err(`rmdir: ${dir}: Directory not empty`);
-      ss((prev) => {
-        const newFs = { ...prev.fs };
-        delete newFs[p];
-        return { ...prev, fs: newFs };
-      });
-      return ansi.ok(`Removed directory: ${dir}`);
-    },
+    desc: "Remove empty directory", usage: "rmdir <dir>",
+    run: ([d]) => {
+      if (!d) return cc.err("rmdir: missing operand");
+      const p = resolvePath(CWD, d);
+      if (!FS[p])               return cc.err(`rmdir: ${d}: No such file or directory`);
+      if (FS[p].type !== "dir") return cc.err(`rmdir: ${d}: Not a directory`);
+      if (children(p).length)   return cc.err(`rmdir: ${d}: Directory not empty`);
+      delete FS[p]; return cc.ok(`Removed directory: ${d}`);
+    }
   },
 
   cp: {
-    desc: "Copy file",
-    usage: "cp <src> <dest>",
-    run: ([src, dest], s, ss) => {
-      if (!src || !dest) return ansi.err("cp: missing operand");
-      const sp = resolvePath(s.cwd, src);
-      const dp = resolvePath(s.cwd, dest);
-      if (!s.fs[sp]) return ansi.err(`cp: ${src}: No such file or directory`);
-      if (s.fs[sp].type === "dir") return ansi.err("cp: omitting directory");
-      ss((prev) => ({ ...prev, fs: { ...prev.fs, [dp]: { ...prev.fs[sp] } } }));
-      return ansi.ok(`Copied ${src} → ${dest}`);
-    },
+    desc: "Copy file", usage: "cp <src> <dest>",
+    run: ([src, dest]) => {
+      if (!src || !dest) return cc.err("cp: missing operand");
+      const sp = resolvePath(CWD, src), dp = resolvePath(CWD, dest);
+      if (!FS[sp])               return cc.err(`cp: ${src}: No such file or directory`);
+      if (FS[sp].type === "dir") return cc.err("cp: omitting directory");
+      FS[dp] = { ...FS[sp] };
+      return cc.ok(`Copied ${src} → ${dest}`);
+    }
   },
 
   mv: {
-    desc: "Move/rename file",
-    usage: "mv <src> <dest>",
-    run: ([src, dest], s, ss) => {
-      if (!src || !dest) return ansi.err("mv: missing operand");
-      const sp = resolvePath(s.cwd, src);
-      const dp = resolvePath(s.cwd, dest);
-      if (!s.fs[sp]) return ansi.err(`mv: ${src}: No such file or directory`);
-      ss((prev) => {
-        const newFs = { ...prev.fs, [dp]: prev.fs[sp] };
-        delete newFs[sp];
-        return { ...prev, fs: newFs };
-      });
-      return ansi.ok(`Moved ${src} → ${dest}`);
-    },
+    desc: "Move / rename file", usage: "mv <src> <dest>",
+    run: ([src, dest]) => {
+      if (!src || !dest) return cc.err("mv: missing operand");
+      const sp = resolvePath(CWD, src), dp = resolvePath(CWD, dest);
+      if (!FS[sp]) return cc.err(`mv: ${src}: No such file or directory`);
+      FS[dp] = FS[sp]; delete FS[sp];
+      return cc.ok(`Moved ${src} → ${dest}`);
+    }
   },
 
   write: {
-    desc: "Write text to a file (overwrites)",
-    usage: "write <file> <content...>",
-    run: ([file, ...rest], s, ss) => {
-      if (!file) return ansi.err("write: missing operand");
-      const p = resolvePath(s.cwd, file);
-      ss((prev) => ({ ...prev, fs: { ...prev.fs, [p]: { type: "file", content: rest.join(" ") } } }));
-      return ansi.ok(`Written to ${file}`);
-    },
+    desc: "Write text to a file (overwrites)", usage: "write <file> <content...>",
+    run: ([f, ...rest]) => {
+      if (!f) return cc.err("write: missing operand");
+      FS[resolvePath(CWD, f)] = { type: "file", content: rest.join(" ") };
+      return cc.ok(`Written to ${f}`);
+    }
   },
 
   append: {
-    desc: "Append text to a file",
-    usage: "append <file> <content...>",
-    run: ([file, ...rest], s, ss) => {
-      if (!file) return ansi.err("append: missing operand");
-      const p = resolvePath(s.cwd, file);
-      const existing = s.fs[p]?.type === "file" ? s.fs[p].content : "";
-      ss((prev) => ({
-        ...prev,
-        fs: { ...prev.fs, [p]: { type: "file", content: existing + "\n" + rest.join(" ") } },
-      }));
-      return ansi.ok(`Appended to ${file}`);
-    },
+    desc: "Append text to a file", usage: "append <file> <content...>",
+    run: ([f, ...rest]) => {
+      if (!f) return cc.err("append: missing operand");
+      const p = resolvePath(CWD, f);
+      const existing = FS[p]?.type === "file" ? FS[p].content : "";
+      FS[p] = { type: "file", content: existing + "\n" + rest.join(" ") };
+      return cc.ok(`Appended to ${f}`);
+    }
   },
 
   head: {
-    desc: "Print first N lines of a file",
-    usage: "head [-n <num>] <file>",
-    run: (args, s) => {
-      const nIdx = args.indexOf("-n");
-      const n = nIdx !== -1 ? parseInt(args[nIdx + 1]) || 10 : 10;
-      const file = args.find((a) => !a.startsWith("-") && a !== String(n));
-      if (!file) return ansi.err("head: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`head: ${file}: No such file or directory`);
-      return s.fs[p].content.split("\n").slice(0, n);
-    },
+    desc: "Print first N lines of file", usage: "head [-n <num>] <file>",
+    run: (args) => {
+      const ni = args.indexOf("-n"), n = ni !== -1 ? parseInt(args[ni+1])||10 : 10;
+      const f  = args.find(a => !a.startsWith("-") && a !== String(n));
+      if (!f) return cc.err("head: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`head: ${f}: No such file`);
+      return FS[p].content.split("\n").slice(0, n);
+    }
   },
 
   tail: {
-    desc: "Print last N lines of a file",
-    usage: "tail [-n <num>] <file>",
-    run: (args, s) => {
-      const nIdx = args.indexOf("-n");
-      const n = nIdx !== -1 ? parseInt(args[nIdx + 1]) || 10 : 10;
-      const file = args.find((a) => !a.startsWith("-") && a !== String(n));
-      if (!file) return ansi.err("tail: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`tail: ${file}: No such file or directory`);
-      return s.fs[p].content.split("\n").slice(-n);
-    },
+    desc: "Print last N lines of file", usage: "tail [-n <num>] <file>",
+    run: (args) => {
+      const ni = args.indexOf("-n"), n = ni !== -1 ? parseInt(args[ni+1])||10 : 10;
+      const f  = args.find(a => !a.startsWith("-") && a !== String(n));
+      if (!f) return cc.err("tail: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`tail: ${f}: No such file`);
+      return FS[p].content.split("\n").slice(-n);
+    }
   },
 
   wc: {
-    desc: "Count lines/words/chars in file",
-    usage: "wc <file>",
-    run: ([file], s) => {
-      if (!file) return ansi.err("wc: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`wc: ${file}: No such file or directory`);
-      const content = s.fs[p].content;
-      const lines = content.split("\n").length;
-      const words = content.split(/\s+/).filter(Boolean).length;
-      const chars = content.length;
-      return `  ${lines} ${words} ${chars} ${file}`;
-    },
+    desc: "Count lines / words / chars", usage: "wc <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("wc: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`wc: ${f}: No such file`);
+      const txt = FS[p].content;
+      return `  ${txt.split("\n").length} ${txt.split(/\s+/).filter(Boolean).length} ${txt.length} ${f}`;
+    }
   },
 
   grep: {
-    desc: "Search for pattern in file",
-    usage: "grep <pattern> <file>",
-    run: ([pattern, file], s) => {
-      if (!pattern || !file) return ansi.err("grep: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`grep: ${file}: No such file or directory`);
-      const lines = s.fs[p].content.split("\n");
-      const matched = lines.filter((l) => l.includes(pattern));
-      if (!matched.length) return ansi.dim("(no match)");
-      return matched.map((l) =>
-        l.replace(new RegExp(pattern, "g"), `<span style="color:#e06c75;font-weight:bold">${pattern}</span>`)
-      );
-    },
+    desc: "Search for pattern in file", usage: "grep <pattern> <file>",
+    run: ([pat, f]) => {
+      if (!pat || !f) return cc.err("grep: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`grep: ${f}: No such file`);
+      const matched = FS[p].content.split("\n").filter(l => l.includes(pat));
+      if (!matched.length) return cc.dim("(no match)");
+      return matched.map(l => l.replace(new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"), m => cc.hi(m)));
+    }
   },
 
   find: {
-    desc: "Find files matching name",
-    usage: "find <path> -name <pattern>",
-    run: (args, s) => {
-      const nameIdx = args.indexOf("-name");
-      const pattern = nameIdx !== -1 ? args[nameIdx + 1] : null;
-      const startPath = args[0] && !args[0].startsWith("-") ? resolvePath(s.cwd, args[0]) : s.cwd;
-      const regex = pattern ? new RegExp(pattern.replace("*", ".*")) : /.*/;
-      return Object.keys(s.fs)
-        .filter((k) => k.startsWith(startPath) && regex.test(k.split("/").pop()))
-        .map((k) => ansi.ok(k));
-    },
+    desc: "Find files matching name", usage: "find [path] -name <pattern>",
+    run: (args) => {
+      const ni  = args.indexOf("-name"), pat = ni !== -1 ? args[ni+1] : null;
+      const start = args[0] && !args[0].startsWith("-") ? resolvePath(CWD, args[0]) : CWD;
+      const re  = pat ? new RegExp(pat.replace(/\*/g,".*")) : /.*/;
+      return Object.keys(FS).filter(k => k.startsWith(start) && re.test(k.split("/").pop())).map(k => cc.ok(k));
+    }
   },
 
-  // ── JAVASCRIPT ────────────────────────────────────────────
+  // ── JAVASCRIPT ────────────────────────────────────────────────
   js: {
-    desc: "Execute a JavaScript expression or statement",
-    usage: "js <code...>",
+    desc: "Execute a JavaScript expression or statement", usage: "js <code...>",
     run: (args) => {
       const code = args.join(" ");
+      const logs = [];
+      const fakeConsole = {
+        log:   (...a) => logs.push(a.map(String).join(" ")),
+        warn:  (...a) => logs.push(cc.warn("⚠ " + a.map(String).join(" "))),
+        error: (...a) => logs.push(cc.err("✖ " + a.map(String).join(" "))),
+        info:  (...a) => logs.push(cc.cyan("ℹ " + a.map(String).join(" "))),
+      };
       try {
-        const logs = [];
-        const fakeConsole = {
-          log: (...a) => logs.push(a.map(String).join(" ")),
-          warn: (...a) => logs.push(ansi.warn("⚠ " + a.map(String).join(" "))),
-          error: (...a) => logs.push(ansi.err("✖ " + a.map(String).join(" "))),
-          info: (...a) => logs.push(ansi.cyan("ℹ " + a.map(String).join(" "))),
-        };
-        // eslint-disable-next-line no-new-func
         const result = new Function("console", `return (${code})`)(fakeConsole);
         if (logs.length) return logs;
-        if (result !== undefined) return [ansi.ok("← ") + String(result)];
-        return ansi.dim("(undefined)");
-      } catch {
-        // Try as statements
+        if (result !== undefined) return [cc.ok("← ") + String(result)];
+        return cc.dim("(undefined)");
+      } catch (_) {
         try {
-          const logs = [];
-          const fakeConsole = {
-            log: (...a) => logs.push(a.map(String).join(" ")),
-            warn: (...a) => logs.push(ansi.warn("⚠ " + a.map(String).join(" "))),
-            error: (...a) => logs.push(ansi.err("✖ " + a.map(String).join(" "))),
-            info: (...a) => logs.push(ansi.cyan("ℹ " + a.map(String).join(" "))),
-          };
-          // eslint-disable-next-line no-new-func
           new Function("console", code)(fakeConsole);
-          if (logs.length) return logs;
-          return ansi.dim("(done)");
-        } catch (e2) {
-          return ansi.err("SyntaxError: " + e2.message);
-        }
+          return logs.length ? logs : cc.dim("(done)");
+        } catch (e) { return cc.err("SyntaxError: " + e.message); }
       }
-    },
+    }
   },
 
   node: {
-    desc: "Run a .js file",
-    usage: "node <file.js>",
-    run: ([file], s) => {
-      if (!file) return ansi.err("node: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`node: ${file}: No such file`);
-      const code = s.fs[p].content;
-      try {
-        const logs = [];
-        const fakeConsole = {
-          log: (...a) => logs.push(a.map(String).join(" ")),
-          warn: (...a) => logs.push(ansi.warn("⚠ " + a.map(String).join(" "))),
-          error: (...a) => logs.push(ansi.err("✖ " + a.map(String).join(" "))),
-          info: (...a) => logs.push(ansi.cyan("ℹ " + a.map(String).join(" "))),
-        };
-        // eslint-disable-next-line no-new-func
-        new Function("console", code)(fakeConsole);
-        return logs.length ? logs : ansi.dim("(no output)");
-      } catch (e) {
-        return ansi.err(e.message);
-      }
-    },
+    desc: "Run a .js file", usage: "node <file.js>",
+    run: ([f]) => {
+      if (!f) return cc.err("node: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`node: ${f}: No such file`);
+      const logs = [];
+      const fakeConsole = {
+        log:   (...a) => logs.push(a.map(String).join(" ")),
+        warn:  (...a) => logs.push(cc.warn("⚠ " + a.map(String).join(" "))),
+        error: (...a) => logs.push(cc.err("✖ " + a.map(String).join(" "))),
+      };
+      try { new Function("console", FS[p].content)(fakeConsole); return logs.length ? logs : cc.dim("(no output)"); }
+      catch (e) { return cc.err(e.message); }
+    }
   },
 
   eval: {
-    desc: "Alias for js — evaluate JS",
-    usage: "eval <code...>",
-    run: (args, s, ss) => COMMANDS.js.run(args, s, ss),
+    desc: "Alias for js", usage: "eval <code...>",
+    run: (args) => COMMANDS.js.run(args)
   },
 
-  // ── SYSTEM INFO ───────────────────────────────────────────
-  whoami: {
-    desc: "Print current user",
-    usage: "whoami",
-    run: () => ansi.ok("user"),
-  },
-
-  hostname: {
-    desc: "Print hostname",
-    usage: "hostname",
-    run: (_, s) => s.fs["/etc/hostname"]?.content || "webterm",
-  },
+  // ── SYSTEM ────────────────────────────────────────────────────
+  whoami:   { desc: "Print current user",     usage: "whoami",    run: () => cc.ok("user") },
+  hostname: { desc: "Print hostname",          usage: "hostname",  run: () => FS["/etc/hostname"]?.content || "t9os" },
 
   uname: {
-    desc: "Print system info",
-    usage: "uname [-a]",
-    run: (args) => {
-      const full = args.includes("-a");
-      return full
-        ? "T9 OS 1.0.0 React #1 SMP Tue Apr 21 2026 x86_64 GNU/JavaScript"
-        : "T9 OS";
-    },
+    desc: "Print system info", usage: "uname [-a]",
+    run: (args) => args.includes("-a") ? "T9 OS 1.0.0 Vanilla #1 SMP Tue Apr 21 2026 x86_64 GNU/JavaScript" : "T9 OS"
   },
 
   uptime: {
-    desc: "Show session uptime",
-    usage: "uptime",
-    run: (_, s) => {
-      const secs = Math.floor((Date.now() - s.startTime) / 1000);
-      const m = Math.floor(secs / 60);
-      const sec = secs % 60;
-      return `up ${m}m ${sec}s, 1 user, load average: 0.00, 0.00, 0.00`;
-    },
+    desc: "Show session uptime", usage: "uptime",
+    run: () => { const s = Math.floor((Date.now()-START)/1000); return `up ${Math.floor(s/60)}m ${s%60}s, 1 user, load average: 0.00, 0.00, 0.00`; }
   },
 
-  date: {
-    desc: "Print current date/time",
-    usage: "date",
-    run: () => new Date().toString(),
-  },
+  date: { desc: "Print current date/time", usage: "date", run: () => new Date().toString() },
 
-  env: {
-    desc: "Print environment variables",
-    usage: "env",
-    run: (_, s) =>
-      Object.entries(s.env).map(([k, v]) => `${ansi.cyan(k)}=${ansi.ok(v)}`),
+  env: { desc: "Print environment variables", usage: "env",
+    run: () => Object.entries(ENV).map(([k,v]) => `${cc.cyan(k)}=${cc.ok(v)}`)
   },
 
   export: {
-    desc: "Set an environment variable",
-    usage: "export KEY=value",
-    run: ([pair], _, ss) => {
-      if (!pair || !pair.includes("=")) return ansi.err("export: invalid syntax. Use: export KEY=value");
-      const [key, ...rest] = pair.split("=");
-      const value = rest.join("=");
-      ss((prev) => ({ ...prev, env: { ...prev.env, [key]: value } }));
-      return ansi.ok(`Exported ${key}`);
-    },
+    desc: "Set an environment variable", usage: "export KEY=value",
+    run: ([pair]) => {
+      if (!pair || !pair.includes("=")) return cc.err("export: invalid syntax. Use: export KEY=value");
+      const [k, ...rest] = pair.split("=");
+      ENV[k] = rest.join("=");
+      return cc.ok(`Exported ${k}`);
+    }
   },
 
-  // ── TERMINAL CONTROL ──────────────────────────────────────
+  // ── TERMINAL ──────────────────────────────────────────────────
   clear: {
-    desc: "Clear the terminal",
-    usage: "clear",
-    run: (_, __, ss) => {
-      ss((prev) => ({ ...prev, history: [], output: [] }));
-      return null;
-    },
+    desc: "Clear the terminal", usage: "clear",
+    run: () => { document.getElementById("output").innerHTML = ""; return null; }
   },
 
   reset: {
-    desc: "Reset terminal (alias for clear)",
-    usage: "reset",
-    run: (_, s, ss) => COMMANDS.clear.run([], s, ss),
+    desc: "Reset terminal (alias for clear)", usage: "reset",
+    run: () => COMMANDS.clear.run()
   },
 
   history: {
-    desc: "Show command history",
-    usage: "history",
-    run: (_, s) =>
-      s.cmdHistory.map((cmd, i) => `${ansi.dim(String(i + 1).padStart(4))}  ${cmd}`),
+    desc: "Show command history", usage: "history",
+    run: () => HIST.map((cmd, i) => `${cc.dim(String(i+1).padStart(4))}  ${cmd}`)
   },
 
   alias: {
-    desc: "Set or list aliases",
-    usage: "alias [name=cmd]",
-    run: ([pair], _, ss) => {
-      if (!pair) {
-        // list handled in executeCommand
-        return "__LIST_ALIASES__";
-      }
-      if (!pair.includes("=")) return ansi.err("alias: invalid syntax. Use: alias name=command");
+    desc: "Set or list aliases", usage: "alias [name=cmd]",
+    run: ([pair]) => {
+      if (!pair) return Object.entries(ALIASES).map(([k,v]) => `alias ${cc.cyan(k)}='${cc.ok(v)}'`);
+      if (!pair.includes("=")) return cc.err("alias: invalid syntax. Use: alias name=command");
       const [name, ...rest] = pair.split("=");
-      const cmd = rest.join("=").replace(/^['"]|['"]$/g, "");
-      ss((prev) => ({ ...prev, aliases: { ...prev.aliases, [name]: cmd } }));
-      return ansi.ok(`Alias set: ${name} → ${cmd}`);
-    },
+      ALIASES[name] = rest.join("=").replace(/^['"]|['"]$/g,"");
+      return cc.ok(`Alias set: ${name} → ${ALIASES[name]}`);
+    }
   },
 
-  // ── TEXT UTILITIES ────────────────────────────────────────
+  // ── TEXT UTILS ────────────────────────────────────────────────
   sort: {
-    desc: "Sort lines from file",
-    usage: "sort <file>",
-    run: ([file], s) => {
-      if (!file) return ansi.err("sort: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`sort: ${file}: No such file`);
-      return s.fs[p].content.split("\n").sort();
-    },
+    desc: "Sort lines from file", usage: "sort <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("sort: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`sort: ${f}: No such file`);
+      return FS[p].content.split("\n").sort();
+    }
   },
 
   uniq: {
-    desc: "Remove duplicate lines from file",
-    usage: "uniq <file>",
-    run: ([file], s) => {
-      if (!file) return ansi.err("uniq: missing operand");
-      const p = resolvePath(s.cwd, file);
-      if (!s.fs[p]) return ansi.err(`uniq: ${file}: No such file`);
-      const lines = s.fs[p].content.split("\n");
-      return lines.filter((l, i) => i === 0 || l !== lines[i - 1]);
-    },
+    desc: "Remove duplicate adjacent lines", usage: "uniq <file>",
+    run: ([f]) => {
+      if (!f) return cc.err("uniq: missing operand");
+      const p = resolvePath(CWD, f);
+      if (!FS[p]) return cc.err(`uniq: ${f}: No such file`);
+      const lines = FS[p].content.split("\n");
+      return lines.filter((l,i) => i === 0 || l !== lines[i-1]);
+    }
   },
 
   tr: {
-    desc: "Translate characters",
-    usage: "tr <from> <to> <text...>",
+    desc: "Translate characters", usage: "tr <from> <to> <text...>",
     run: ([from, to, ...rest]) => {
-      if (!from || !to) return ansi.err("tr: missing operand");
-      const text = rest.join(" ");
-      return [...text].map((c) => {
-        const i = from.indexOf(c);
-        return i !== -1 && i < to.length ? to[i] : c;
-      }).join("");
-    },
+      if (!from || !to) return cc.err("tr: missing operand");
+      return [...rest.join(" ")].map(ch => { const i = from.indexOf(ch); return i !== -1 && i < to.length ? to[i] : ch; }).join("");
+    }
   },
 
-  // ── FUN ───────────────────────────────────────────────────
-  cowsay: {
-    desc: "A cow says something",
-    usage: "cowsay <text...>",
-    run: (args) => {
-      const msg = args.join(" ") || "Moo!";
-      const border = "-".repeat(msg.length + 2);
-      return [
-        ` ${border}`,
-        `< ${msg} >`,
-        ` ${border}`,
-        "        \\   ^__^",
-        "         \\  (oo)\\_______",
-        "            (__)\\       )\\/\\",
-        "                ||----w |",
-        "                ||     ||",
-      ];
-    },
-  },
-
-  banner: {
-    desc: "Print large ASCII text",
-    usage: "banner <text>",
-    run: (args) => {
-      const text = (args.join(" ") || "HI").toUpperCase().slice(0, 6);
-      const block = `<span style="color:#61afef;font-size:0.75em;letter-spacing:2px;font-weight:bold">${text
-        .split("")
-        .map((c) => `[${c}]`)
-        .join("")}</span>`;
-      return [block];
-    },
-  },
-
-  matrix: {
-    desc: "Show a quick matrix rain",
-    usage: "matrix",
-    run: () => {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
-      const lines = Array.from({ length: 6 }, () =>
-        Array.from({ length: 40 }, () =>
-          chars[Math.floor(Math.random() * chars.length)]
-        ).map((c) =>
-          `<span style="color:hsl(${100 + Math.random() * 40},100%,${35 + Math.random() * 30}%)">${c}</span>`
-        ).join("")
-      );
-      return lines;
-    },
-  },
-
-  fortune: {
-    desc: "Print a random fortune",
-    usage: "fortune",
-    run: () => {
-      const fortunes = [
-        "The best way to predict the future is to invent it. — Alan Kay",
-        "Programs must be written for people to read. — SICP",
-        "Talk is cheap. Show me the code. — Linus Torvalds",
-        "Any sufficiently advanced technology is indistinguishable from magic. — Clarke",
-        "First, solve the problem. Then, write the code. — John Johnson",
-        "Code is like humor. When you have to explain it, it's bad. — Cory House",
-        "It works on my machine. — Every developer, ever",
-        "There are only two hard things in CS: cache invalidation and naming things.",
-      ];
-      return ansi.warn('"') + fortunes[Math.floor(Math.random() * fortunes.length)] + ansi.warn('"');
-    },
-  },
-
-  // ── PROCESS ───────────────────────────────────────────────
+  // ── PROCESS ───────────────────────────────────────────────────
   ps: {
-    desc: "List running processes (mock)",
-    usage: "ps",
+    desc: "List running processes (mock)", usage: "ps",
     run: () => [
-      `${ansi.bold("PID")}  ${ansi.bold("TTY")}     ${ansi.bold("TIME")}   ${ansi.bold("CMD")}`,
-      `  ${ansi.cyan("1")}   pts/0  00:00:00  webterm`,
-      `  ${ansi.cyan("2")}   pts/0  00:00:00  bash`,
-      `  ${ansi.cyan("3")}   pts/0  00:00:00  node`,
-    ],
+      `${cc.bold("PID")}  ${cc.bold("TTY")}     ${cc.bold("CMD")}`,
+      `  ${cc.cyan("1")}   pts/0  t9os`,
+      `  ${cc.cyan("2")}   pts/0  bash`,
+      `  ${cc.cyan("3")}   pts/0  node`,
+    ]
   },
 
   kill: {
-    desc: "Terminate a process (mock)",
-    usage: "kill <pid>",
-    run: ([pid]) => {
-      if (!pid) return ansi.err("kill: missing operand");
-      return ansi.ok(`Process ${pid} terminated.`);
-    },
+    desc: "Terminate a process (mock)", usage: "kill <pid>",
+    run: ([pid]) => pid ? cc.ok(`Process ${pid} terminated.`) : cc.err("kill: missing operand")
   },
 
   sleep: {
-    desc: "Pause for N seconds (cosmetic)",
-    usage: "sleep <n>",
-    run: ([n]) => ansi.dim(`Slept for ${n || 1}s`),
+    desc: "Pause for N seconds (cosmetic)", usage: "sleep <n>",
+    run: ([n]) => cc.dim(`Slept for ${n||1}s`)
   },
 
-  // ── NETWORK (mock) ────────────────────────────────────────
+  // ── NETWORK ───────────────────────────────────────────────────
   ping: {
-    desc: "Ping a host (mock)",
-    usage: "ping <host>",
+    desc: "Ping a host (mock)", usage: "ping <host>",
     run: ([host]) => {
-      if (!host) return ansi.err("ping: missing operand");
-      const ms = () => (Math.random() * 20 + 1).toFixed(3);
+      if (!host) return cc.err("ping: missing operand");
+      const ms = () => (Math.random()*20+1).toFixed(3);
       return [
         `PING ${host}: 56 data bytes`,
         `64 bytes from ${host}: icmp_seq=0 ttl=64 time=${ms()} ms`,
@@ -669,374 +517,276 @@ const COMMANDS = {
         `--- ${host} ping statistics ---`,
         `3 packets transmitted, 3 received, 0% packet loss`,
       ];
-    },
+    }
   },
 
   curl: {
-    desc: "Fetch a URL (mock)",
-    usage: "curl <url>",
-    run: ([url]) => {
-      if (!url) return ansi.err("curl: missing URL");
-      return ansi.dim(`curl: real network requests not supported in browser sandbox.\nTip: use 'js fetch("${url}").then(r=>r.text()).then(console.log)' for real fetches.`);
-    },
+    desc: "Fetch a URL (mock)", usage: "curl <url>",
+    run: ([url]) => url ? cc.dim(`curl: browser sandbox active — try: js fetch("${url}").then(r=>r.text()).then(console.log)`) : cc.err("curl: missing URL")
   },
 
   ifconfig: {
-    desc: "Show network interfaces (mock)",
-    usage: "ifconfig",
+    desc: "Show network interfaces (mock)", usage: "ifconfig",
     run: () => [
-      `${ansi.bold("lo0")}:  inet 127.0.0.1  netmask 0xff000000`,
-      `${ansi.bold("eth0")}: inet 10.0.2.15   netmask 0xffffff00  broadcast 10.0.2.255`,
-    ],
+      `${cc.bold("lo0")}:  inet 127.0.0.1   netmask 0xff000000`,
+      `${cc.bold("eth0")}: inet 10.0.2.15    netmask 0xffffff00  broadcast 10.0.2.255`,
+    ]
   },
 
-  // ── HELP ──────────────────────────────────────────────────
+  // ── FUN ───────────────────────────────────────────────────────
+  cowsay: {
+    desc: "A cow says something", usage: "cowsay <text...>",
+    run: (args) => {
+      const msg = args.join(" ") || "Moo!";
+      const b   = "-".repeat(msg.length + 2);
+      return [` ${b}`, `< ${msg} >`, ` ${b}`, "        \\   ^__^", "         \\  (oo)\\_______", "            (__)\\       )\\/\\", "                ||----w |", "                ||     ||"];
+    }
+  },
+
+  banner: {
+    desc: "Print large ASCII-style text", usage: "banner <text>",
+    run: (args) => {
+      const text = (args.join(" ") || "T9 OS").toUpperCase().slice(0,8);
+      return [`<span style="color:#61afef;font-size:0.8em;letter-spacing:3px;font-weight:bold">${text.split("").map(ch=>`[${ch}]`).join("")}</span>`];
+    }
+  },
+
+  matrix: {
+    desc: "Show matrix rain effect", usage: "matrix",
+    run: () => {
+      const ch = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+      return Array.from({length:8}, () =>
+        Array.from({length:50}, () => ch[Math.floor(Math.random()*ch.length)])
+          .map(x => `<span style="color:hsl(${110+Math.random()*30},100%,${35+Math.random()*30}%)">${x}</span>`)
+          .join("")
+      );
+    }
+  },
+
+  fortune: {
+    desc: "Print a random fortune", usage: "fortune",
+    run: () => {
+      const f = [
+        "The best way to predict the future is to invent it. — Alan Kay",
+        "Talk is cheap. Show me the code. — Linus Torvalds",
+        "Programs must be written for people to read. — SICP",
+        "Any sufficiently advanced technology is indistinguishable from magic. — Arthur C. Clarke",
+        "There are only two hard things in CS: cache invalidation and naming things.",
+        "It works on my machine. — Every developer, ever",
+        "Code is like humor. When you have to explain it, it's bad. — Cory House",
+        "First, solve the problem. Then, write the code. — John Johnson",
+      ];
+      return cc.warn('"') + f[Math.floor(Math.random()*f.length)] + cc.warn('"');
+    }
+  },
+
+  // ── HELP ──────────────────────────────────────────────────────
   help: {
-    desc: "Show available commands",
-    usage: "help [command]",
+    desc: "Show available commands", usage: "help [command]",
     run: ([cmd]) => {
       if (cmd) {
-        const c = COMMANDS[cmd];
-        if (!c) return ansi.err(`help: no such command: ${cmd}`);
-        return [
-          ansi.bold(cmd),
-          `  ${ansi.dim("Description:")} ${c.desc}`,
-          `  ${ansi.dim("Usage:")}       ${ansi.cyan(c.usage)}`,
-        ];
+        const h = COMMANDS[cmd];
+        if (!h) return cc.err(`help: no such command: ${cmd}`);
+        return [cc.bold(cmd), `  ${cc.dim("Description:")} ${h.desc}`, `  ${cc.dim("Usage:")}       ${cc.cyan(h.usage)}`];
       }
-
-      // Group commands
       const groups = {
-        "Navigation": ["pwd", "cd", "ls"],
-        "File Operations": ["cat", "echo", "touch", "mkdir", "rm", "rmdir", "cp", "mv", "write", "append", "head", "tail", "wc", "grep", "find"],
-        "JavaScript": ["js", "node", "eval"],
-        "Text Utilities": ["sort", "uniq", "tr"],
-        "System Info": ["whoami", "hostname", "uname", "uptime", "date", "env", "export", "ps", "kill", "sleep"],
-        "Network": ["ping", "curl", "ifconfig"],
-        "Terminal": ["clear", "reset", "history", "alias"],
-        "Fun": ["cowsay", "banner", "matrix", "fortune"],
-        "Help": ["help"],
+        "Navigation":      ["pwd","cd","ls"],
+        "File Operations": ["cat","echo","touch","mkdir","rm","rmdir","cp","mv","write","append","head","tail","wc","grep","find"],
+        "JavaScript":      ["js","node","eval"],
+        "Text Utilities":  ["sort","uniq","tr"],
+        "System":          ["whoami","hostname","uname","uptime","date","env","export","ps","kill","sleep"],
+        "Network":         ["ping","curl","ifconfig"],
+        "Terminal":        ["clear","reset","history","alias"],
+        "Fun":             ["cowsay","banner","matrix","fortune"],
       };
-
       const lines = [
-        ansi.bold("┌─── T9 OS Commands ───────────────────────────────────┐"),
-        ansi.bold("│") + ansi.dim(" Type 'help <cmd>' for detailed usage of any command ") + ansi.bold("│"),
-        ansi.bold("└──────────────────────────────────────────────────────┘"),
+        cc.bold("┌─── T9 OS Commands ───────────────────────────────────┐"),
+        cc.bold("│") + cc.dim(" Type 'help &lt;cmd&gt;' for detailed usage of any command ") + cc.bold("│"),
+        cc.bold("└──────────────────────────────────────────────────────┘"),
         "",
       ];
       for (const [group, cmds] of Object.entries(groups)) {
-        lines.push(ansi.warn("  ▸ " + group));
-        for (const name of cmds) {
-          const c = COMMANDS[name];
-          if (c) lines.push(`    ${ansi.cyan(name.padEnd(12))} ${ansi.dim(c.desc)}`);
-        }
+        lines.push(cc.warn("  ▸ " + group));
+        for (const name of cmds) { const h = COMMANDS[name]; if (h) lines.push(`    ${cc.cyan(name.padEnd(12))} ${cc.dim(h.desc)}`); }
         lines.push("");
       }
-      lines.push(ansi.dim("  Tip: Use ↑↓ arrow keys to navigate history, Tab to autocomplete."));
+      lines.push(cc.dim("  ↑↓ = history  |  Tab = autocomplete  |  Ctrl+C = cancel  |  Ctrl+L = clear"));
       return lines;
-    },
+    }
   },
 };
 
-// ─── INITIAL STATE ────────────────────────────────────────────
-const makeInitialState = () => ({
-  cwd: "/home/user",
-  fs: buildFS(),
-  env: { USER: "user", HOME: "/home/user", SHELL: "/bin/bash", TERM: "xterm-256color" },
-  cmdHistory: [],
-  aliases: { ll: "ls -la", la: "ls -a" },
-  startTime: Date.now(),
+// ── EXECUTE ─────────────────────────────────────────────────────
+function execute(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) return [];
+  const parts   = trimmed.split(/\s+/);
+  const aliased = ALIASES[parts[0]];
+  const resolved = aliased ? (aliased + " " + parts.slice(1).join(" ")).trim() : trimmed;
+  const [cmd, ...args] = resolved.split(/\s+/);
+  const handler = COMMANDS[cmd.toLowerCase()];
+  if (!handler) return [cc.err(`bash: ${cmd}: command not found`), cc.dim("Type 'help' to see available commands.")];
+  const result = handler.run(args);
+  if (result === null || result === undefined || result === "") return [];
+  if (Array.isArray(result)) return result.filter(r => r !== "");
+  return [result];
+}
+
+// ── RENDER ──────────────────────────────────────────────────────
+function promptHTML() {
+  const path = CWD.replace("/home/user", "~");
+  return `<span class="prompt-user">user</span><span class="prompt-at">@</span><span class="prompt-host">t9os</span><span class="prompt-colon">:</span><span class="prompt-path">${path}</span><span class="prompt-sym">$ </span>`;
+}
+
+function updatePrompt() {
+  document.getElementById("prompt-el").innerHTML = promptHTML();
+}
+
+function print(lines) {
+  const out = document.getElementById("output");
+  for (const line of lines) {
+    const div = document.createElement("div");
+    div.className = "line";
+    div.innerHTML = line;
+    out.appendChild(div);
+  }
+  out.scrollTop = out.scrollHeight;
+}
+
+function printEntry(inputText, lines) {
+  const out = document.getElementById("output");
+  // prompt + command row
+  const row = document.createElement("div");
+  row.className = "input-row";
+  row.innerHTML = promptHTML() + `<span class="cmd-text">${inputText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</span>`;
+  out.appendChild(row);
+  // output lines
+  for (const line of lines) {
+    const div = document.createElement("div");
+    div.className = "line";
+    div.innerHTML = line;
+    out.appendChild(div);
+  }
+  out.scrollTop = out.scrollHeight;
+}
+
+// ── AUTOCOMPLETE ────────────────────────────────────────────────
+function tabComplete() {
+  const parts = inputBuf.split(/\s+/);
+  if (parts.length === 1) {
+    const prefix  = parts[0].toLowerCase();
+    const matches = Object.keys(COMMANDS).filter(k => k.startsWith(prefix));
+    if (matches.length === 1)     { inputBuf = matches[0] + " "; refreshInput(); }
+    else if (matches.length > 1)  { print([matches.map(m => cc.cyan(m)).join("  ")]); }
+  } else {
+    const partial = parts[parts.length - 1];
+    const dir     = partial.includes("/") ? resolvePath(CWD, partial.substring(0, partial.lastIndexOf("/")+1)) : CWD;
+    const prefix  = partial.includes("/") ? partial.split("/").pop() : partial;
+    const matches = children(dir).map(k => k.split("/").pop()).filter(n => n.startsWith(prefix));
+    if (matches.length === 1) {
+      const base = partial.substring(0, partial.length - prefix.length);
+      inputBuf   = parts.slice(0,-1).join(" ") + " " + base + matches[0];
+      refreshInput();
+    } else if (matches.length > 1) { print([matches.map(m => cc.cyan(m)).join("  ")]); }
+  }
+}
+
+function refreshInput() {
+  document.getElementById("fake-input").textContent = inputBuf;
+}
+
+// ── BOOT BANNER ─────────────────────────────────────────────────
+function boot() {
+  print([
+    `<span style="color:#61afef;font-weight:bold">████████╗ █████╗      ██████╗ ███████╗</span>`,
+    `<span style="color:#61afef;font-weight:bold">╚══██╔══╝██╔══██╗    ██╔═══██╗██╔════╝</span>`,
+    `<span style="color:#56b6c2;font-weight:bold">   ██║   ╚██████║    ██║   ██║███████╗</span>`,
+    `<span style="color:#56b6c2;font-weight:bold">   ██║    ╚═══██║    ██║   ██║╚════██║</span>`,
+    `<span style="color:#c678dd;font-weight:bold">   ██║    █████╔╝    ╚██████╔╝███████║</span>`,
+    `<span style="color:#c678dd;font-weight:bold">   ╚═╝    ╚════╝      ╚═════╝ ╚══════╝</span>`,
+    ``,
+    `<span class="c-ok">T9 OS — Linux-like shell with JS execution • Type </span><span class="c-bold">help</span><span class="c-ok"> to get started</span>`,
+    `<span class="c-dim">T9 OS v1.0.0 | Session started ${new Date().toLocaleString()}</span>`,
+    ``,
+  ]);
+  updatePrompt();
+}
+
+// ── INPUT HANDLING ───────────────────────────────────────────────
+const input = document.getElementById("real-input");
+
+document.getElementById("terminal").addEventListener("click", () => input.focus());
+
+input.addEventListener("input", () => {
+  inputBuf = input.value;
+  refreshInput();
 });
 
-// ─── EXECUTE COMMAND ──────────────────────────────────────────
-const executeCommand = (input, state, setState) => {
-  const trimmed = input.trim();
-  if (!trimmed) return [];
-
-  // Alias expansion
-  const parts = trimmed.split(/\s+/);
-  const aliasedCmd = state.aliases[parts[0]];
-  const resolved = aliasedCmd ? (aliasedCmd + " " + parts.slice(1).join(" ")).trim() : trimmed;
-  const [cmd, ...args] = resolved.split(/\s+/);
-
-  const handler = COMMANDS[cmd.toLowerCase()];
-  if (!handler) {
-    return [ansi.err(`bash: ${cmd}: command not found`), ansi.dim(`Type 'help' to see available commands.`)];
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const cmd = inputBuf;
+    input.value = "";
+    inputBuf    = "";
+    histIdx     = -1;
+    refreshInput();
+    if (cmd.trim()) HIST.push(cmd.trim());
+    const lines = execute(cmd);
+    printEntry(cmd, lines);
+    updatePrompt();
+    return;
   }
 
-  const result = handler.run(args, state, setState);
-
-  if (result === "__LIST_ALIASES__") {
-    return Object.entries(state.aliases).map(([k, v]) => `alias ${ansi.cyan(k)}='${ansi.ok(v)}'`);
+  if (e.key === "Tab") {
+    e.preventDefault();
+    tabComplete();
+    return;
   }
 
-  if (result === null || result === undefined) return [];
-  if (Array.isArray(result)) return result.filter((r) => r !== "");
-  if (result === "") return [];
-  return [result];
-};
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (!HIST.length) return;
+    histIdx  = Math.min(histIdx + 1, HIST.length - 1);
+    inputBuf = HIST[HIST.length - 1 - histIdx];
+    input.value = inputBuf;
+    refreshInput();
+    return;
+  }
 
-// ─── PROMPT COMPONENT ─────────────────────────────────────────
-const Prompt = ({ cwd, disabled }) => {
-  const displayCwd = cwd.replace("/home/user", "~");
-  return (
-    <span style={{ userSelect: "none" }}>
-      <span style={{ color: "#98c379" }}>user</span>
-      <span style={{ color: "#abb2bf" }}>@</span>
-      <span style={{ color: "#61afef" }}>t9os</span>
-      <span style={{ color: "#abb2bf" }}>:</span>
-      <span style={{ color: "#c678dd" }}>{displayCwd}</span>
-      <span style={{ color: "#abb2bf" }}>$ </span>
-    </span>
-  );
-};
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    histIdx  = Math.max(histIdx - 1, -1);
+    inputBuf = histIdx === -1 ? "" : HIST[HIST.length - 1 - histIdx];
+    input.value = inputBuf;
+    refreshInput();
+    return;
+  }
 
-// ─── MAIN TERMINAL ────────────────────────────────────────────
-export default function Terminal() {
-  const [termState, setTermState] = useState(makeInitialState);
-  const [input, setInput] = useState("");
-  const [histIdx, setHistIdx] = useState(-1);
-  const [output, setOutput] = useState([
-    {
-      type: "banner",
-      lines: [
-        `<span style="color:#61afef;font-weight:bold">████████╗ █████╗      ██████╗ ███████╗</span>`,
-        `<span style="color:#61afef;font-weight:bold">╚══██╔══╝██╔══██╗    ██╔═══██╗██╔════╝</span>`,
-        `<span style="color:#56b6c2;font-weight:bold">   ██║   ╚██████║    ██║   ██║███████╗</span>`,
-        `<span style="color:#56b6c2;font-weight:bold">   ██║    ╚═══██║    ██║   ██║╚════██║</span>`,
-        `<span style="color:#c678dd;font-weight:bold">   ██║    █████╔╝    ╚██████╔╝███████║</span>`,
-        `<span style="color:#c678dd;font-weight:bold">   ╚═╝    ╚════╝      ╚═════╝ ╚══════╝</span>`,
-        ``,
-        `<span style="color:#98c379">T9 OS — Linux-like shell with JS execution • Type </span><span style="color:#e5c07b;font-weight:bold">help</span><span style="color:#98c379"> to get started</span>`,
-        `<span style="color:#5c6370">T9 OS v1.0.0 | Session started ${new Date().toLocaleString()}</span>`,
-        ``,
-      ],
-    },
-  ]);
-  const bottomRef = useRef(null);
-  const inputRef = useRef(null);
-  const stateRef = useRef(termState);
+  if (e.key === "l" && e.ctrlKey) {
+    e.preventDefault();
+    document.getElementById("output").innerHTML = "";
+    return;
+  }
 
-  useEffect(() => {
-    stateRef.current = termState;
-  }, [termState]);
+  if (e.key === "c" && e.ctrlKey) {
+    e.preventDefault();
+    printEntry(inputBuf, [cc.err("^C")]);
+    input.value = "";
+    inputBuf    = "";
+    histIdx     = -1;
+    refreshInput();
+    updatePrompt();
+    return;
+  }
+});
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [output]);
+// On backspace/delete fix sync
+input.addEventListener("keyup", () => {
+  inputBuf = input.value;
+  refreshInput();
+});
 
-  const focusInput = () => inputRef.current?.focus();
-
-  // Tab autocomplete
-  const handleTab = useCallback(
-    (e) => {
-      e.preventDefault();
-      const parts = input.split(/\s+/);
-      if (parts.length === 1) {
-        // Complete command
-        const prefix = parts[0].toLowerCase();
-        const matches = Object.keys(COMMANDS).filter((c) => c.startsWith(prefix));
-        if (matches.length === 1) setInput(matches[0] + " ");
-        else if (matches.length > 1) {
-          setOutput((prev) => [
-            ...prev,
-            {
-              type: "autocomplete",
-              lines: [matches.map((m) => ansi.cyan(m)).join("  ")],
-            },
-          ]);
-        }
-      } else {
-        // Complete file/dir
-        const partial = parts[parts.length - 1];
-        const dir =
-          partial.includes("/")
-            ? resolvePath(stateRef.current.cwd, partial.substring(0, partial.lastIndexOf("/") + 1))
-            : stateRef.current.cwd;
-        const prefix = partial.includes("/") ? partial.split("/").pop() : partial;
-        const children = getNodeChildren(stateRef.current.fs, dir);
-        const matches = children
-          .map((c) => c.split("/").pop())
-          .filter((n) => n.startsWith(prefix));
-        if (matches.length === 1) {
-          const rest = parts.slice(0, -1);
-          const base = partial.substring(0, partial.length - prefix.length);
-          setInput(rest.join(" ") + " " + base + matches[0]);
-        } else if (matches.length > 1) {
-          setOutput((prev) => [
-            ...prev,
-            {
-              type: "autocomplete",
-              lines: [matches.map((m) => ansi.cyan(m)).join("  ")],
-            },
-          ]);
-        }
-      }
-    },
-    [input]
-  );
-
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Tab") {
-        handleTab(e);
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        const newIdx = Math.min(histIdx + 1, stateRef.current.cmdHistory.length - 1);
-        setHistIdx(newIdx);
-        setInput(stateRef.current.cmdHistory[stateRef.current.cmdHistory.length - 1 - newIdx] || "");
-        return;
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        const newIdx = Math.max(histIdx - 1, -1);
-        setHistIdx(newIdx);
-        setInput(newIdx === -1 ? "" : stateRef.current.cmdHistory[stateRef.current.cmdHistory.length - 1 - newIdx] || "");
-        return;
-      }
-      if (e.key === "l" && e.ctrlKey) {
-        e.preventDefault();
-        setOutput([]);
-        return;
-      }
-      if (e.key === "c" && e.ctrlKey) {
-        e.preventDefault();
-        setOutput((prev) => [
-          ...prev,
-          {
-            type: "entry",
-            cwd: stateRef.current.cwd,
-            input,
-            lines: [ansi.err("^C")],
-          },
-        ]);
-        setInput("");
-        setHistIdx(-1);
-      }
-    },
-    [handleTab, histIdx, input]
-  );
-
-  const handleSubmit = useCallback(() => {
-    const cmd = input.trim();
-    if (!cmd) {
-      setOutput((prev) => [...prev, { type: "entry", cwd: stateRef.current.cwd, input: "", lines: [] }]);
-      return;
-    }
-
-    // Update history before running
-    const newHistory = [...stateRef.current.cmdHistory, cmd];
-    setTermState((prev) => ({ ...prev, cmdHistory: newHistory }));
-    stateRef.current = { ...stateRef.current, cmdHistory: newHistory };
-
-    const lines = executeCommand(cmd, stateRef.current, setTermState);
-
-    setOutput((prev) => [
-      ...prev,
-      { type: "entry", cwd: stateRef.current.cwd, input: cmd, lines },
-    ]);
-    setInput("");
-    setHistIdx(-1);
-  }, [input]);
-
-  const handleKey = useCallback(
-    (e) => {
-      handleKeyDown(e);
-      if (e.key === "Enter") handleSubmit();
-    },
-    [handleKeyDown, handleSubmit]
-  );
-
-  return (
-    <div
-      onClick={focusInput}
-      style={{
-        minHeight: "100vh",
-        background: "#1e2127",
-        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace",
-        fontSize: "13px",
-        lineHeight: "1.65",
-        color: "#abb2bf",
-        padding: "0",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Terminal output */}
-      <div
-        style={{
-          flex: 1,
-          padding: "16px",
-          overflowY: "auto",
-          cursor: "text",
-        }}
-      >
-        {output.map((entry, i) => (
-          <div key={i} style={{ marginBottom: entry.type === "banner" ? 0 : 2 }}>
-            {entry.type !== "banner" && entry.type !== "autocomplete" && (
-              <div style={{ display: "flex", alignItems: "baseline", gap: 0, flexWrap: "wrap" }}>
-                <Prompt cwd={entry.cwd} />
-                <span style={{ color: "#e5c07b" }}>{entry.input}</span>
-              </div>
-            )}
-            {entry.lines?.map((line, j) => (
-              <div
-                key={j}
-                style={{ paddingLeft: entry.type === "banner" ? 0 : 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}
-                dangerouslySetInnerHTML={{ __html: line }}
-              />
-            ))}
-          </div>
-        ))}
-
-        {/* Current input line */}
-        <div style={{ display: "flex", alignItems: "baseline" }}>
-          <Prompt cwd={termState.cwd} />
-          <div style={{ position: "relative", flex: 1 }}>
-            <span style={{ color: "#e5c07b", whiteSpace: "pre" }}>{input}</span>
-            <span
-              style={{
-                display: "inline-block",
-                width: "0.55em",
-                height: "1.1em",
-                background: "#528bff",
-                verticalAlign: "text-bottom",
-                animation: "blink 1.1s step-end infinite",
-              }}
-            />
-          </div>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => { setInput(e.target.value); setHistIdx(-1); }}
-            onKeyDown={handleKey}
-            autoFocus
-            style={{
-              position: "absolute",
-              opacity: 0,
-              width: 1,
-              height: 1,
-              pointerEvents: "none",
-            }}
-            spellCheck={false}
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-          />
-        </div>
-        <div ref={bottomRef} />
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1e2127; }
-        ::-webkit-scrollbar-thumb { background: #3e4451; border-radius: 3px; }
-        * { box-sizing: border-box; }
-      `}</style>
-    </div>
-  );
-}
+boot();
+</script>
+</body>
+</html>
