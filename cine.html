@@ -1,1771 +1,890 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="./ghost.js"></script>
-    <script src="/uv/uv.bundle.js"></script>
-    <script src="/uv/uv.config.js"></script>
-    <link rel="stylesheet" href="/styles.css" />
-    <script src="./index.config.js"></script>
-    <script src="./surf/baremux/index.js"></script>
-    <script src="./surf/scram/scramjet.all.js"></script>
-    <title>T9 Browser</title>
-    <meta name="title" content="T9 Browser" />
-    <meta name="description" content="a modern web proxy browser" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://t9.rhw.one/" />
-    <meta property="og:title" content="T9 Browser" />
-    <meta property="og:description" content="a modern web proxy browser" />
-    <meta property="og:image" content="https://t9.rhw.one/card.png" />
-    <meta property="twitter:card" content="summary_large_image" />
-    <script>
-      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
-      }
-    </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WDHVNCL11H"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date()); gtag('config', 'G-WDHVNCL11H');
-    </script>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <style>
-      :root {
-        --bg-dark:          #050505;
-        --glass-surface:    rgba(20, 20, 25, 0.6);
-        --glass-highlight:  rgba(255,255,255,0.08);
-        --glass-border:     rgba(255,255,255,0.12);
-        --glass-shadow:     0 8px 32px rgba(0,0,0,0.4);
-        --blur:             40px;
-
-        --accent:           #ffb7b2;
-        --accent-glow:      rgba(255,183,178,0.4);
-        --accent2:          #ffd4d0;
-        --text:             #ffffff;
-        --text-sub:         #a0a0aa;
-        --text-muted:       #606070;
-        --danger:           #ff6b6b;
-        --success:          #6bffb3;
-
-        --r-xs:   6px;
-        --r-sm:   10px;
-        --r-md:   16px;
-        --r-lg:   20px;
-        --r-pill: 999px;
-
-        --ease-elastic: cubic-bezier(0.175,0.885,0.32,1.275);
-        --ease-smooth:  cubic-bezier(0.2,0.8,0.2,1);
-      }
-
-      body.incognito-mode {
-        --glass-surface:  rgba(5,0,0,0.72);
-        --glass-border:   rgba(255,50,50,0.22);
-        --accent:         #ff3a3a;
-        --accent-glow:    rgba(255,42,42,0.4);
-        --text-sub:       #aa8080;
-      }
-
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-      html, body {
-        height: 100%;
-        background: var(--bg-dark);
-        color: var(--text);
-        font-family: 'Outfit', sans-serif;
-        overflow: hidden;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      /* ─── WALLPAPER LAYERS ─────────────────────────────────────────── */
-      .wallpaper-layer {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        object-fit: cover;
-        z-index: -1;
-        transition: opacity 1s var(--ease-smooth), transform 1.2s var(--ease-smooth), filter 1.2s;
-        will-change: transform, opacity;
-      }
-      #wallpaper-default  { opacity: 1; }
-      #wallpaper-incognito{ opacity: 0; }
-
-      body.incognito-mode #wallpaper-default   { opacity: 0; transform: scale(1.05); }
-      body.incognito-mode #wallpaper-incognito { opacity: 1; transform: scale(1); }
-
-      body.browser-active .wallpaper-layer {
-        transform: scale(1.05);
-        filter: blur(12px) brightness(0.35);
-      }
-
-      /* ─── HIDDEN LEGACY ELEMENTS ──────────────────────────────────── */
-      #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
-      #proxy-shell { display: none !important; }
-
-      /* ─── START PAGE ──────────────────────────────────────────────── */
-      #start-page {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 12vh;
-        z-index: 10;
-        transition: opacity 0.5s var(--ease-smooth), transform 0.5s var(--ease-smooth);
-        overflow-y: auto;
-        scrollbar-width: none;
-      }
-      #start-page::-webkit-scrollbar { display: none; }
-
-      body.browser-active #start-page {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(-30px) scale(0.95);
-      }
-
-      .animate-in {
-        opacity: 0;
-        transform: translateY(18px);
-        animation: fadeInUp 0.75s var(--ease-elastic) forwards;
-      }
-      .d1 { animation-delay: 0.05s; }
-      .d2 { animation-delay: 0.15s; }
-      .d3 { animation-delay: 0.25s; }
-      .d4 { animation-delay: 0.35s; }
-
-      @keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      /* Clock */
-      .clock-wrap {
-        text-align: center;
-        margin-bottom: 36px;
-        text-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      }
-      #nt-clock {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: clamp(4rem, 10vw, 7rem);
-        font-weight: 700;
-        line-height: 0.92;
-        letter-spacing: -0.04em;
-        background: linear-gradient(to bottom, #fff, #ccc);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-variant-numeric: tabular-nums;
-      }
-      #nt-date {
-        font-size: 1rem;
-        color: var(--accent);
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        margin-top: 14px;
-        font-weight: 500;
-        text-shadow: 0 0 18px var(--accent-glow);
-      }
-
-      /* Brand */
-      .nt-brand {
-        text-align: center;
-        margin-bottom: 32px;
-      }
-      .nt-brand-name {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2.4rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .nt-brand-name span { color: var(--accent); text-shadow: 0 0 18px var(--accent-glow); }
-      .nt-brand-tag {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        letter-spacing: 0.3em;
-        text-transform: uppercase;
-        margin-top: 4px;
-        font-family: 'Space Grotesk', sans-serif;
-      }
-
-      /* Search Pill */
-      .search-wrap {
-        position: relative;
-        width: 600px;
-        max-width: 92vw;
-        margin-bottom: 24px;
-        perspective: 1000px;
-      }
-      .search-pill {
-        width: 100%;
-        height: 62px;
-        background: var(--glass-surface);
-        backdrop-filter: blur(var(--blur)) saturate(180%);
-        -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-        border: 1px solid var(--glass-border);
-        border-top-color: var(--glass-highlight);
-        border-radius: 22px;
-        display: flex;
-        align-items: center;
-        padding: 0 8px 0 22px;
-        gap: 12px;
-        box-shadow: var(--glass-shadow);
-        transition: all 0.3s var(--ease-smooth);
-      }
-      .search-pill:focus-within {
-        transform: translateY(-2px);
-        border-color: var(--accent);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--accent);
-      }
-      .search-pill i.ph { font-size: 1.3rem; color: var(--accent); flex-shrink: 0; }
-      #nt-s {
-        flex: 1;
-        background: transparent;
-        border: none;
-        color: var(--text);
-        font-size: 1.1rem;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 300;
-        outline: none;
-        min-width: 0;
-      }
-      #nt-s::placeholder { color: rgba(255,255,255,0.35); }
-
-      /* SE toggle inside search pill */
-      #se-toggle {
-        flex-shrink: 0;
-        width: 42px; height: 42px;
-        border-radius: var(--r-pill);
-        background: rgba(255,255,255,0.06);
-        border: 1px solid var(--glass-border);
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 18px;
-        transition: background 0.15s, transform 0.15s;
-        user-select: none;
-      }
-      #se-toggle:hover {
-        background: rgba(255,255,255,0.12);
-        transform: scale(1.05);
-      }
-
-      /* Go button */
-      .search-go {
-        flex-shrink: 0;
-        height: 44px;
-        padding: 0 22px;
-        border-radius: var(--r-pill);
-        border: none;
-        background: var(--accent);
-        color: #000;
-        font-size: 0.85rem;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        cursor: pointer;
-        transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
-        box-shadow: 0 4px 18px var(--accent-glow);
-      }
-      .search-go:hover { opacity: 0.88; transform: scale(1.04); box-shadow: 0 6px 24px var(--accent-glow); }
-      .search-go:active { transform: scale(0.97); }
-
-      /* Resume button */
-      #resume-btn {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 34px;
-        background: var(--accent);
-        color: #000;
-        border-radius: var(--r-pill);
-        font-weight: 700;
-        font-size: 0.95rem;
-        cursor: pointer;
-        box-shadow: 0 0 22px var(--accent-glow);
-        margin-bottom: 28px;
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(0.9);
-        transition: transform 0.3s var(--ease-elastic), opacity 0.3s, box-shadow 0.2s;
-      }
-      #resume-btn.visible { opacity: 1; pointer-events: auto; transform: scale(1); }
-      #resume-btn:hover   { transform: scale(1.05); box-shadow: 0 0 32px var(--accent-glow); }
-
-      /* App grid */
-      .app-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 28px;
-        max-width: 700px;
-        margin-bottom: 32px;
-      }
-      .app-shortcut {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        opacity: 0.85;
-        transition: opacity 0.25s, transform 0.25s var(--ease-smooth);
-      }
-      .app-shortcut:hover { opacity: 1; transform: translateY(-7px); }
-      .app-shortcut:hover .app-icon-box {
-        background: rgba(255,255,255,0.15);
-        border-color: var(--accent);
-        box-shadow: 0 10px 28px var(--accent-glow);
-      }
-      .app-icon-box {
-        width: 60px; height: 60px;
-        background: var(--glass-surface);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        border-top-color: var(--glass-highlight);
-        border-radius: 18px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 28px;
-        color: var(--accent);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.22);
-        transition: 0.25s var(--ease-smooth);
-      }
-      .app-label {
-        font-size: 0.82rem;
-        font-weight: 400;
-        letter-spacing: 0.02em;
-        color: var(--text-sub);
-      }
-
-      /* SE dropdown on new tab */
-      #se-dropdown-nt {
-        position: absolute;
-        z-index: 9999;
-        top: calc(100% + 10px);
-        left: 0;
-        background: rgba(10,10,14,0.96);
-        backdrop-filter: blur(28px) saturate(1.5);
-        -webkit-backdrop-filter: blur(28px) saturate(1.5);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-md);
-        padding: 6px;
-        min-width: 220px;
-        box-shadow: 0 18px 50px rgba(0,0,0,0.7);
-        display: none;
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.9rem;
-        animation: dropIn 0.14s ease;
-      }
-      #se-dropdown-nt.open { display: block; }
-
-      /* ─── BROWSER UI ──────────────────────────────────────────────── */
-      #browser-ui {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        z-index: 20;
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(1.02);
-        transition: opacity 0.4s var(--ease-smooth), transform 0.4s var(--ease-smooth);
-      }
-      body.browser-active #browser-ui {
-        opacity: 1;
-        pointer-events: auto;
-        transform: scale(1);
-      }
-
-      /* Top bar (tabs) */
-      .topbar {
-        height: 52px;
-        background: var(--glass-surface);
-        backdrop-filter: blur(var(--blur)) saturate(180%);
-        -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-        border-bottom: 1px solid var(--glass-border);
-        display: flex;
-        align-items: center;
-        padding: 0 14px;
-        gap: 12px;
-        z-index: 100;
-        flex-shrink: 0;
-      }
-
-      .topbar-brand {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 1rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        cursor: pointer;
-        text-shadow: 0 0 12px var(--accent-glow);
-        flex-shrink: 0;
-        white-space: nowrap;
-      }
-      .topbar-brand span { color: var(--accent); }
-
-      .topbar-sep {
-        width: 1px; height: 22px;
-        background: var(--glass-border);
-        flex-shrink: 0;
-      }
-
-      /* Tabs strip */
-      #tab-strip {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-        padding: 5px 0;
-      }
-      #tab-strip::-webkit-scrollbar { display: none; }
-
-      .tab {
-        max-width: 210px;
-        min-width: 130px;
-        height: 36px;
-        background: rgba(255,255,255,0.02);
-        border: 1px solid transparent;
-        border-radius: var(--r-sm);
-        display: flex;
-        align-items: center;
-        padding: 0 10px;
-        gap: 8px;
-        font-size: 0.82rem;
-        color: var(--text-sub);
-        cursor: pointer;
-        flex-shrink: 0;
-        transition: background 0.18s, color 0.18s, border-color 0.18s;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      .tab:hover  { background: rgba(255,255,255,0.07); }
-      .tab.active {
-        background: rgba(255,255,255,0.11);
-        color: var(--text);
-        border-color: var(--glass-border);
-        border-top-color: var(--glass-highlight);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-      }
-      .tab-fav { width: 14px; height: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-      .tab-fav img { width: 14px; height: 14px; object-fit: contain; border-radius: 3px; }
-      .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
-      .tab-x {
-        flex-shrink: 0;
-        width: 18px; height: 18px;
-        border-radius: 6px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 11px;
-        color: var(--text-sub);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        opacity: 0;
-        transition: background 0.15s, color 0.15s, opacity 0.15s;
-        padding: 0;
-      }
-      .tab:hover .tab-x, .tab.active .tab-x { opacity: 1; }
-      .tab-x:hover { background: rgba(255,107,107,0.25); color: var(--danger); }
-
-      #btn-newtab {
-        flex-shrink: 0;
-        width: 32px; height: 32px;
-        border-radius: var(--r-sm);
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--glass-border);
-        color: var(--text-sub);
-        font-size: 18px;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.18s, color 0.18s;
-      }
-      #btn-newtab:hover { background: rgba(255,255,255,0.08); color: var(--accent); }
-
-      /* Topbar action buttons */
-      .topbar-action {
-        flex-shrink: 0;
-        width: 34px; height: 34px;
-        border-radius: var(--r-sm);
-        border: none;
-        background: transparent;
-        color: var(--text-sub);
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.1rem;
-        transition: background 0.18s, color 0.18s;
-      }
-      .topbar-action:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-
-      /* Address bar */
-      .address-bar {
-        height: 50px;
-        background: var(--glass-surface);
-        backdrop-filter: blur(var(--blur)) saturate(180%);
-        -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-        border-bottom: 1px solid var(--glass-border);
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        gap: 10px;
-        z-index: 99;
-        flex-shrink: 0;
-      }
-
-      .nav-btn {
-        flex-shrink: 0;
-        width: 32px; height: 32px;
-        border-radius: var(--r-sm);
-        background: transparent;
-        border: none;
-        color: var(--text-sub);
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1rem;
-        transition: background 0.15s, color 0.15s, transform 0.12s;
-      }
-      .nav-btn:hover:not(:disabled)  { background: rgba(255,255,255,0.08); color: var(--text); transform: translateY(-1px); }
-      .nav-btn:active:not(:disabled) { transform: translateY(1px); }
-      .nav-btn:disabled { opacity: 0.25; cursor: default; }
-
-      /* Proxy / SE chrome badges */
-      .chrome-badge {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 10px;
-        border-radius: var(--r-xs);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.04);
-        color: var(--text-sub);
-        font-size: 0.72rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        cursor: pointer;
-        user-select: none;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-      }
-      .chrome-badge:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); color: var(--text); }
-      .badge-dot {
-        width: 5px; height: 5px;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 5px var(--accent-glow);
-        flex-shrink: 0;
-      }
-      .badge-dot.green { background: var(--success); box-shadow: 0 0 5px rgba(107,255,179,0.5); }
-      #badge-se .badge-dot { background: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
-
-      /* URL bar */
-      #url-bar {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        background: rgba(0,0,0,0.28);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: var(--r-sm);
-        height: 36px;
-        padding: 0 6px 0 12px;
-        gap: 8px;
-        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-        cursor: text;
-      }
-      #url-bar:focus-within {
-        background: rgba(0,0,0,0.42);
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(255,183,178,0.15);
-      }
-      #url-scheme {
-        font-size: 0.7rem;
-        font-family: 'Space Grotesk', sans-serif;
-        flex-shrink: 0;
-        padding: 2px 7px;
-        border-radius: var(--r-xs);
-        background: rgba(107,255,179,0.1);
-        color: var(--success);
-        border: 1px solid rgba(107,255,179,0.18);
-        display: none;
-      }
-      #url-scheme.visible { display: block; }
-      #url-scheme.insecure { background: rgba(255,107,107,0.1); color: var(--danger); border-color: rgba(255,107,107,0.18); }
-
-      #url-input {
-        flex: 1;
-        border: none;
-        background: transparent;
-        font-size: 0.88rem;
-        color: var(--text);
-        font-family: 'Outfit', sans-serif;
-        font-weight: 300;
-        outline: none;
-        min-width: 0;
-      }
-      #url-input::placeholder { color: var(--text-muted); font-size: 0.88rem; }
-
-      #url-go {
-        width: 28px; height: 28px;
-        border-radius: var(--r-pill);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.04);
-        color: var(--text-sub);
-        cursor: pointer;
-        flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.9rem;
-        transition: background 0.15s, color 0.15s, border-color 0.15s;
-        padding: 0;
-      }
-      #url-go:hover { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-
-      .side-btn {
-        flex-shrink: 0;
-        width: 32px; height: 32px;
-        border-radius: var(--r-sm);
-        border: none;
-        background: transparent;
-        color: var(--text-sub);
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1rem;
-        transition: background 0.15s, color 0.15s;
-      }
-      .side-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-      .side-btn.starred { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
-
-      /* Content / frame */
-      #content {
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-        background: #fff;
-      }
-
-      #proxy-frame {
-        position: absolute;
-        inset: 0;
-        border: none;
-        display: none;
-        width: 100%;
-        height: 100%;
-      }
-
-      /* Progress bar */
-      #prog {
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 2px;
-        pointer-events: none;
-        z-index: 200;
-      }
-      #prog-bar {
-        height: 100%;
-        width: 0;
-        opacity: 0;
-        background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
-        background-size: 200% 100%;
-        border-radius: var(--r-pill);
-        transition: opacity 0.3s;
-      }
-      #prog-bar.loading {
-        opacity: 1;
-        animation: progAnim 1.8s ease infinite;
-      }
-      @keyframes progAnim {
-        0%   { width: 0%;  background-position: 0% 0%; }
-        60%  { width: 82%; background-position: 100% 0%; }
-        100% { width: 82%; background-position: 0% 0%; }
-      }
-
-      /* ─── DROPDOWNS ───────────────────────────────────────────────── */
-      .chrome-dropdown {
-        position: fixed;
-        z-index: 9999;
-        display: none;
-        background: rgba(10,10,14,0.96);
-        backdrop-filter: blur(28px) saturate(1.5);
-        -webkit-backdrop-filter: blur(28px) saturate(1.5);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-md);
-        padding: 6px;
-        min-width: 190px;
-        box-shadow: 0 20px 55px rgba(0,0,0,0.75);
-        font-size: 0.88rem;
-        font-family: 'Outfit', sans-serif;
-        animation: dropIn 0.14s ease;
-      }
-      @keyframes dropIn {
-        from { opacity:0; transform:translateY(-6px) scale(0.97); }
-        to   { opacity:1; transform:none; }
-      }
-      .drop-section-label {
-        font-size: 0.68rem;
-        color: var(--text-muted);
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        padding: 6px 12px 4px;
-        font-family: 'Space Grotesk', sans-serif;
-      }
-      .drop-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px;
-        border-radius: var(--r-sm);
-        cursor: pointer;
-        color: var(--text-sub);
-        transition: background 0.12s, color 0.12s;
-        position: relative;
-      }
-      .drop-item:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-      .drop-item.active { color: var(--accent); }
-      .drop-item.active::after {
-        content: '';
-        position: absolute; right: 12px;
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: var(--accent); box-shadow: 0 0 7px var(--accent-glow);
-      }
-      .drop-item-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 1rem; }
-
-      .se-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px;
-        border-radius: var(--r-sm);
-        cursor: pointer;
-        color: var(--text-sub);
-        transition: background 0.12s, color 0.12s;
-        position: relative;
-      }
-      .se-item:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-      .se-item.active { color: var(--accent); }
-      .se-item.active::after {
-        content: '';
-        position: absolute; right: 12px;
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: var(--accent); box-shadow: 0 0 7px var(--accent-glow);
-      }
-      .se-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
-      .se-name { font-weight: 500; }
-
-      /* ─── OMNIBAR ────────────────────────────────────────────────── */
-      #omni {
-        position: fixed;
-        z-index: 9999;
-        display: none;
-        background: rgba(10,10,14,0.96);
-        backdrop-filter: blur(28px) saturate(1.5);
-        -webkit-backdrop-filter: blur(28px) saturate(1.5);
-        border: 1px solid rgba(255,255,255,0.14);
-        border-radius: var(--r-lg);
-        padding: 6px;
-        min-width: 440px;
-        max-width: 580px;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.75);
-        top: 110px;
-        left: 50%;
-        transform: translateX(-50%);
-        animation: dropIn 0.15s ease;
-      }
-      .or {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 13px;
-        border-radius: var(--r-sm);
-        cursor: pointer;
-        color: var(--text-sub);
-        transition: background 0.1s, color 0.1s;
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.88rem;
-      }
-      .or:hover, .or.sel { background: rgba(255,255,255,0.08); color: var(--text); }
-      .or-icon { width: 22px; text-align: center; flex-shrink: 0; }
-      .or-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .ob {
-        font-size: 0.68rem;
-        padding: 2px 7px;
-        border-radius: var(--r-xs);
-        background: rgba(255,255,255,0.06);
-        color: var(--text-muted);
-        letter-spacing: 0.08em;
-        flex-shrink: 0;
-        border: 1px solid var(--glass-border);
-        text-transform: uppercase;
-        font-family: 'Space Grotesk', sans-serif;
-      }
-
-      /* ─── SETTINGS MENU ──────────────────────────────────────────── */
-      #settings-menu {
-        position: fixed;
-        z-index: 9999;
-        top: 100px;
-        right: 16px;
-        width: 220px;
-        background: rgba(10,10,14,0.96);
-        backdrop-filter: blur(28px) saturate(1.5);
-        -webkit-backdrop-filter: blur(28px) saturate(1.5);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-md);
-        padding: 6px;
-        display: none;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-        animation: dropIn 0.14s ease;
-      }
-      #settings-menu.open { display: block; }
-      .menu-item {
-        padding: 11px 13px;
-        border-radius: var(--r-sm);
-        color: var(--text-sub);
-        cursor: pointer;
-        display: flex; align-items: center; gap: 10px;
-        font-size: 0.9rem;
-        transition: background 0.12s, color 0.12s;
-      }
-      .menu-item:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-      .menu-item.danger { color: rgba(255,107,107,0.8); }
-      .menu-item.danger:hover { background: rgba(255,107,107,0.1); color: var(--danger); }
-      .menu-divider { height: 1px; background: var(--glass-border); margin: 4px 8px; }
-
-      /* ─── INCOGNITO TOGGLE ────────────────────────────────────────── */
-      #incognito-toggle {
-        position: relative;
-      }
-      body.incognito-mode #incognito-toggle { color: var(--accent) !important; }
-
-      /* ─── TOAST ──────────────────────────────────────────────────── */
-      #toast-container {
-        position: fixed;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-        pointer-events: none;
-      }
-      .toast {
-        background: rgba(15,15,18,0.95);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        color: var(--text);
-        padding: 10px 22px;
-        border-radius: var(--r-pill);
-        font-size: 0.88rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        animation: toastIn 0.3s var(--ease-elastic);
-        white-space: nowrap;
-      }
-      @keyframes toastIn {
-        from { opacity:0; transform:translateY(14px) scale(0.92); }
-        to   { opacity:1; transform:none; }
-      }
-
-      /* ─── WALLPAPER PANEL ────────────────────────────────────────── */
-      #wallpaper-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 10000;
-        background: rgba(0,0,0,0.65);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      #wallpaper-overlay.open { display: flex; animation: overlayIn 0.2s ease; }
-      @keyframes overlayIn { from { opacity:0; } to { opacity:1; } }
-
-      #wallpaper-panel {
-        width: 100%;
-        max-width: 680px;
-        background: rgba(8,8,12,0.98);
-        backdrop-filter: blur(40px) saturate(1.5);
-        border: 1px solid var(--glass-border);
-        border-bottom: none;
-        border-radius: 28px 28px 0 0;
-        padding: 22px 24px 36px;
-        animation: panelUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
-        box-shadow: 0 -24px 80px rgba(0,0,0,0.65);
-      }
-      @keyframes panelUp {
-        from { transform: translateY(100%); opacity: 0; }
-        to   { transform: none; opacity: 1; }
-      }
-      .wp-handle { width: 36px; height: 4px; background: var(--glass-border); border-radius: var(--r-pill); margin: 0 auto 20px; }
-      .wp-title { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-      .wp-subtitle { font-size: 0.7rem; color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 18px; }
-      .wp-section-label { font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.22em; text-transform: uppercase; font-family: 'Space Grotesk', sans-serif; margin-bottom: 10px; }
-
-      #wp-presets {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 8px;
-        margin-bottom: 18px;
-      }
-      .wp-swatch {
-        aspect-ratio: 16/9;
-        border-radius: var(--r-sm);
-        border: 2px solid transparent;
-        cursor: pointer;
-        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
-        position: relative; overflow: hidden;
-      }
-      .wp-swatch:hover { transform: scale(1.07); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
-      .wp-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 18px var(--accent-glow); }
-      .wp-check { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(255,183,178,0.25); font-size: 15px; }
-      .wp-swatch.active .wp-check { display: flex; }
-      .wp-none-swatch {
-        background: repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, rgba(255,255,255,0.07) 0% 50%) 0 0 / 12px 12px;
-        border: 2px solid var(--glass-border);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 15px; color: var(--text-muted);
-      }
-      .wp-actions { display: flex; gap: 8px; margin-top: 6px; }
-      .wp-btn {
-        flex: 1; height: 40px;
-        border-radius: var(--r-sm);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.04);
-        color: var(--text-sub);
-        font-size: 0.82rem;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 500;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        gap: 7px;
-        transition: background 0.15s, border-color 0.15s, color 0.15s;
-      }
-      .wp-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: var(--text); }
-      .wp-btn.primary { background: rgba(255,183,178,0.12); border-color: rgba(255,183,178,0.3); color: var(--accent); }
-      .wp-btn.primary:hover { background: rgba(255,183,178,0.2); }
-
-      /* small scrollbar for start page */
-      @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-    </style>
-  </head>
-
-  <body>
-    <!-- Video wallpapers -->
-    <video id="wallpaper-default" class="wallpaper-layer" autoplay loop muted playsinline>
-      <source src="/browser_1773875312272.mp4" type="video/mp4" />
-    </video>
-    <video id="wallpaper-incognito" class="wallpaper-layer" loop muted playsinline>
-      <source src="/incognito_1773875312273.mp4" type="video/mp4" />
-    </video>
-
-    <!-- Hidden legacy proxy elements -->
-    <select id="background-select" style="display:none"></select>
-    <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
-    <div id="proxy-shell" style="display:none">
-      <div id="proxy-loading"></div>
-      <div id="proxy-watermark"><pre id="watermark-logo"></pre><div class="watermark-hint"></div></div>
-    </div>
-    <div id="terminal-shell" style="display:none">
-      <div id="term"><div id="term-output">
-        <div id="term-status"><span class="term-status-label">url:</span><span id="term-location"></span></div>
-        <form id="term-input-row">
-          <span id="term-prefix">root@t9:~$&nbsp;</span>
-          <input id="term-input" autocomplete="off" spellcheck="false" />
-          <span id="term-cursor"></span><span id="term-cursor-measure"></span>
-        </form>
-      </div></div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         START PAGE
-    ════════════════════════════════════════════════ -->
-    <div id="start-page">
-
-      <!-- Clock -->
-      <div class="clock-wrap animate-in d1">
-        <div id="nt-clock">00:00:00</div>
-        <div id="nt-date">Loading…</div>
-      </div>
-
-      <!-- Brand -->
-      <div class="nt-brand animate-in d2">
-        <div class="nt-brand-name">T<span>9</span></div>
-        <div class="nt-brand-tag">proxy browser</div>
-      </div>
-
-      <!-- Search pill -->
-      <div class="search-wrap animate-in d2" style="position:relative;">
-        <div class="search-pill">
-          <button id="se-toggle" title="Search engine" onclick="B.toggleSeDropdownNT(event)">
-            <span id="se-icon-nt">🦆</span>
-          </button>
-          <i class="ph ph-magnifying-glass"></i>
-          <input id="nt-s" type="text" placeholder="Search the web or enter a URL…"
-            autocomplete="off" spellcheck="false"
-            onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
-          <button class="search-go" onclick="B.navigate(document.getElementById('nt-s').value)">GO →</button>
-        </div>
-        <div id="se-dropdown-nt"></div>
-      </div>
-
-      <!-- Resume session -->
-      <div id="resume-btn" onclick="B.resumeSession()">
-        <i class="ph ph-arrows-in-simple"></i>
-        <span>Resume Session</span>
-      </div>
-
-      <!-- App shortcuts -->
-      <div class="app-grid animate-in d3" id="app-grid"></div>
-
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         BROWSER UI
-    ════════════════════════════════════════════════ -->
-    <div id="browser-ui">
-
-      <!-- Tab strip -->
-      <div class="topbar">
-        <div class="topbar-brand" onclick="B.home()">T<span>9</span></div>
-        <div class="topbar-sep"></div>
-
-        <div id="tab-strip">
-          <button id="btn-newtab" title="New tab (Ctrl+T)" onclick="B.addTab()">+</button>
-        </div>
-
-        <button class="topbar-action" id="incognito-toggle" onclick="B.toggleIncognito()" title="Incognito mode">
-          <i class="ph ph-sunglasses"></i>
-        </button>
-        <button class="topbar-action" id="menu-open-btn" onclick="B.openMenu(event)" title="Menu">
-          <i class="ph ph-list"></i>
-        </button>
-      </div>
-
-      <!-- Address bar -->
-      <div class="address-bar">
-        <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" onclick="B.back()">
-          <i class="ph ph-arrow-left"></i>
-        </button>
-        <button class="nav-btn" id="btn-fwd" title="Forward (Alt+Right)" onclick="B.fwd()">
-          <i class="ph ph-arrow-right"></i>
-        </button>
-        <button class="nav-btn" id="btn-reload" title="Reload (Ctrl+R)" onclick="B.reload()">
-          <i class="ph ph-arrow-clockwise"></i>
-        </button>
-        <button class="nav-btn" id="btn-home" title="Home" onclick="B.home()">
-          <i class="ph ph-house"></i>
-        </button>
-
-        <div class="chrome-badge" id="badge-proxy" onclick="B.toggleProxyDropdown(event)" title="Proxy engine">
-          <span class="badge-dot green" id="proxy-dot"></span>
-          <span id="proxy-name">SJ</span>
-          <i class="ph ph-caret-down" style="font-size:0.65rem"></i>
-        </div>
-
-        <div class="chrome-badge" id="badge-se" onclick="B.toggleSeDropdownChrome(event)" title="Search engine">
-          <span class="badge-dot"></span>
-          <span id="se-name-badge">DDG</span>
-          <i class="ph ph-caret-down" style="font-size:0.65rem"></i>
-        </div>
-
-        <div id="url-bar" onclick="B.focusUrl()">
-          <i class="ph ph-lock-key" style="font-size:0.85rem;color:var(--success);flex-shrink:0" id="lock-icon"></i>
-          <span id="url-scheme"></span>
-          <input id="url-input" type="text" placeholder="Search or enter a URL…"
-            autocomplete="off" spellcheck="false"
-            onfocus="B.onFocus()" onblur="B.onBlur()"
-            oninput="B.onInput(this.value)"
-            onkeydown="B.onKey(event)" />
-          <button id="url-go" onclick="B.navigate(document.getElementById('url-input').value)" title="Go">
-            <i class="ph ph-arrow-right"></i>
-          </button>
-        </div>
-
-        <button class="side-btn" id="btn-star" title="Bookmark" onclick="B.star()">
-          <i class="ph ph-star" id="star-icon-ph"></i>
-        </button>
-      </div>
-
-      <!-- Page content -->
-      <div id="content">
-        <div id="prog"><div id="prog-bar"></div></div>
-        <iframe id="proxy-frame" title="T9 Proxy"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
-      </div>
-
-    </div><!-- /#browser-ui -->
-
-    <!-- Settings menu -->
-    <div id="settings-menu">
-      <div class="menu-item" onclick="B.addTab(); B.closeMenu()">
-        <i class="ph ph-plus-circle"></i> New Tab
-      </div>
-      <div class="menu-item" onclick="B.reload(); B.closeMenu()">
-        <i class="ph ph-arrow-clockwise"></i> Reload
-      </div>
-      <div class="menu-item" onclick="B.home(); B.closeMenu()">
-        <i class="ph ph-house"></i> Minimize Browser
-      </div>
-      <div class="menu-item" onclick="openWallpaper(); B.closeMenu()">
-        <i class="ph ph-image"></i> Wallpaper
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-item danger" onclick="B.closeAllTabs(); B.closeMenu()">
-        <i class="ph ph-x-circle"></i> Clear Session
-      </div>
-    </div>
-
-    <!-- Omnibar -->
-    <div id="omni"></div>
-
-    <!-- Proxy / SE dropdowns -->
-    <div class="chrome-dropdown" id="proxy-dropdown"></div>
-    <div class="chrome-dropdown" id="se-dropdown-chrome"></div>
-
-    <!-- Toast container -->
-    <div id="toast-container"></div>
-
-    <!-- Wallpaper overlay -->
-    <div id="wallpaper-overlay" onclick="if(event.target===this)closeWallpaper()">
-      <div id="wallpaper-panel">
-        <div class="wp-handle"></div>
-        <div class="wp-title">Wallpaper</div>
-        <div class="wp-subtitle">Choose a background</div>
-        <div class="wp-section-label">Presets</div>
-        <div id="wp-presets">
-          <div class="wp-swatch wp-none-swatch" onclick="WP.clearBg()" title="None">
-            <span>✕</span>
-            <div class="wp-check">✓</div>
-          </div>
-        </div>
-        <div class="wp-section-label" style="margin-top:4px">Custom</div>
-        <div class="wp-actions">
-          <button class="wp-btn primary" onclick="document.getElementById('background-upload').click()">
-            <i class="ph ph-upload-simple"></i> Upload image or video
-          </button>
-          <button class="wp-btn" onclick="WP.clearBg()">
-            <i class="ph ph-x"></i> Clear
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         JAVASCRIPT
-    ════════════════════════════════════════════════ -->
-    <script>
-    const SEARCH_ENGINES = {
-      duckduckgo: { name:'DuckDuckGo',  short:'DDG', icon:'🦆', url:'https://duckduckgo.com/?q=' },
-      google:     { name:'Google',      short:'GGL', icon:'🔍', url:'https://www.google.com/search?q=' },
-      bing:       { name:'Bing',        short:'BNG', icon:'🔷', url:'https://www.bing.com/search?q=' },
-      brave:      { name:'Brave',       short:'BRV', icon:'🦁', url:'https://search.brave.com/search?q=' },
-      startpage:  { name:'Startpage',   short:'SPG', icon:'🔒', url:'https://www.startpage.com/sp/search?query=' },
-      ecosia:     { name:'Ecosia',      short:'ECO', icon:'🌱', url:'https://www.ecosia.org/search?q=' },
-    };
-
-    const DEFAULT_APPS = [
-      { name:'DuckDuckGo', icon:'ph-globe',           url:'https://duckduckgo.com' },
-      { name:'YouTube',    icon:'ph-youtube-logo',    url:'https://youtube.com' },
-      { name:'Reddit',     icon:'ph-reddit-logo',     url:'https://reddit.com' },
-      { name:'GitHub',     icon:'ph-github-logo',     url:'https://github.com' },
-      { name:'Wikipedia',  icon:'ph-book-open',       url:'https://en.wikipedia.org' },
-      { name:'Discord',    icon:'ph-discord-logo',    url:'https://discord.com' },
-    ];
-
-    const B = (() => {
-      let tabs        = [mkTab()];
-      let cur         = 0;
-      let omniIdx     = -1;
-      let _progTimer;
-      let _isIncognito = false;
-      let currentProxy  = 'scramjet';
-      let currentSearch = localStorage.getItem('t9_search') || 'duckduckgo';
-
-      // ── UV init ──────────────────────────────────────────────────────
-      const wispUrl = "wss://wisp.rhw.one/wisp/";
-      let uvConnection  = null;
-      let uvInitPromise = null;
-
-      function initUV() {
-        if (uvInitPromise) return uvInitPromise;
-        uvInitPromise = (async () => {
-          try {
-            if (typeof BareMux === 'undefined') {
-              await new Promise((resolve, reject) => {
-                let attempts = 0;
-                const check = setInterval(() => {
-                  if (typeof BareMux !== 'undefined') { clearInterval(check); resolve(); }
-                  if (++attempts > 50) { clearInterval(check); reject(new Error('BareMux timeout')); }
-                }, 100);
-              });
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- T9 proxy scripts -->
+        <script src="./ghost.js"></script>
+        <script src="/uv/uv.bundle.js"></script>
+        <script src="/uv/uv.config.js"></script>
+        <link rel="stylesheet" href="/styles.css" />
+        <script src="./index.config.js"></script>
+        <script src="./surf/baremux/index.js"></script>
+        <script src="./surf/scram/scramjet.all.js"></script>
+        <title>Cine Browser</title>
+        <meta name="title" content="T9 Browser" />
+        <meta name="description" content="a modern web proxy browser" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://t9.rhw.one/" />
+        <meta property="og:title" content="T9 Browser" />
+        <meta property="og:description" content="a modern web proxy browser" />
+        <meta property="og:image" content="https://t9.rhw.one/card.png" />
+        <meta property="twitter:card" content="summary_large_image" />
+        <script>
+          if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+          }
+        </script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-WDHVNCL11H"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date()); gtag('config', 'G-WDHVNCL11H');
+        </script>
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet" />
+
+        <style>
+            :root {
+                --bg-dark: #050505;
+                --glass-surface: rgba(20, 20, 25, 0.55);
+                --glass-highlight: rgba(255, 255, 255, 0.08);
+                --glass-border: rgba(255, 255, 255, 0.12);
+                --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+                --accent-primary: #ffb7b2;
+                --accent-glow: rgba(255, 183, 178, 0.4);
+                --text-main: #ffffff;
+                --text-sub: #a0a0aa;
+                --danger: #ff6b6b;
+                --success: #6bffb3;
+                --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+                --blur-amount: 40px;
             }
-            uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-            await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-          } catch (e) {
-            console.error('UV init failed:', e);
-            uvInitPromise = null;
-            throw e;
-          }
-        })();
-        return uvInitPromise;
-      }
 
-      function mkTab(url, title) {
-        return { url: url||'', title: title||'New tab', fav: null, hist: url?[url]:[], hidx: url?0:-1 };
-      }
-      function ct() { return tabs[cur]; }
-      function getFaviconUrl(url) {
-        try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
-        catch { return null; }
-      }
-      function resolveUrl(raw) {
-        raw = (raw||'').trim();
-        if (!raw) return null;
-        if (/^https?:\/\//i.test(raw)) return raw;
-        if (/^[a-z][a-z0-9+\-.]*:\/\//i.test(raw)) return raw;
-        if (/^localhost(:\d+)?(\/|$)/.test(raw)) return 'http://'+raw;
-        if (raw.includes('.') && !raw.includes(' ')) return 'https://'+raw;
-        return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
-      }
+            body.incognito-mode {
+                --glass-surface: rgba(5, 0, 0, 0.7);
+                --glass-border: rgba(255, 50, 50, 0.2);
+                --accent-primary: #ff2a2a;
+                --accent-glow: rgba(255, 42, 42, 0.4);
+                --text-sub: #aa8080;
+            }
 
-      // Clock
-      function tick() {
-        const n = new Date();
-        const cl = document.getElementById('nt-clock');
-        const dl = document.getElementById('nt-date');
-        if (cl) cl.textContent = n.toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
-        if (dl) dl.textContent = n.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }).toUpperCase();
-      }
-      setInterval(tick, 1000); tick();
+            * { box-sizing: border-box; margin: 0; padding: 0; outline: none; user-select: none; -webkit-font-smoothing: antialiased; }
 
-      // ── TABS ──────────────────────────────────────────────────────────
-      function renderTabs() {
-        const strip = document.getElementById('tab-strip');
-        const add   = document.getElementById('btn-newtab');
-        strip.querySelectorAll('.tab').forEach(el => el.remove());
-        tabs.forEach((t, i) => {
-          const d = document.createElement('div');
-          d.className = 'tab' + (i===cur?' active':'');
-          const favHtml = t.fav
-            ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">`
-            : `<i class="ph ph-globe-simple" style="font-size:0.85rem"></i>`;
-          d.innerHTML = `<span class="tab-fav">${favHtml}</span><span class="tab-title">${esc(t.title)}</span><button class="tab-x">✕</button>`;
-          d.onclick = () => { if (cur!==i){cur=i;sync();} };
-          d.querySelector('.tab-x').onclick = e => { e.stopPropagation(); closeTab(i); };
-          strip.insertBefore(d, add);
-        });
-        document.getElementById('btn-back').disabled = ct().hidx <= 0;
-        document.getElementById('btn-fwd').disabled  = ct().hidx >= ct().hist.length-1;
-      }
+            body {
+                font-family: "Outfit", sans-serif;
+                background: var(--bg-dark);
+                height: 100vh;
+                overflow: hidden;
+                color: var(--text-main);
+            }
 
-      function sync() {
-        const t = ct();
-        document.getElementById('url-input').value = t.url;
-        setScheme(t.url);
-        renderTabs();
-        if (t.url) { showFrame(); doLoad(t.url, false); }
-        else        { showNew(); }
-      }
+            .wallpaper-layer {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                object-fit: cover; z-index: -1;
+                transition: opacity 1s var(--ease-smooth), transform 1.2s var(--ease-smooth), filter 1.2s;
+                will-change: transform, opacity;
+            }
+            #wallpaper-default  { opacity: 1; }
+            #wallpaper-incognito{ opacity: 0; }
+            body.incognito-mode #wallpaper-default   { opacity: 0; transform: scale(1.05); }
+            body.incognito-mode #wallpaper-incognito { opacity: 1; transform: scale(1); }
+            body.browser-active .wallpaper-layer { transform: scale(1.05); filter: blur(12px) brightness(0.4); }
 
-      function addTab(url, title) {
-        tabs.push(mkTab(url, title));
-        cur = tabs.length-1;
-        sync();
-        if (!url) setTimeout(() => document.getElementById('nt-s').focus(), 50);
-        saveSession();
-        updateResumeBtn();
-      }
+            /* START PAGE */
+            #start-page {
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                display: flex; flex-direction: column; align-items: center;
+                padding-top: 15vh; z-index: 10;
+                transition: 0.5s var(--ease-smooth);
+            }
+            body.browser-active #start-page { opacity: 0; pointer-events: none; transform: translateY(-30px) scale(0.95); }
 
-      function closeTab(i) {
-        if (tabs.length===1) { tabs=[mkTab()]; cur=0; sync(); updateResumeBtn(); return; }
-        tabs.splice(i,1);
-        if (cur>=tabs.length) cur=tabs.length-1;
-        sync();
-        if (tabs.length===0) goHome();
-        saveSession();
-        updateResumeBtn();
-      }
+            .animate-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.8s var(--ease-elastic) forwards; }
+            .delay-1 { animation-delay: 0.1s; }
+            .delay-2 { animation-delay: 0.2s; }
+            .delay-3 { animation-delay: 0.3s; }
+            @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
-      function closeAllTabs() {
-        tabs = [mkTab()]; cur = 0;
-        sync(); goHome();
-        showToast('Session cleared');
-        saveSession();
-        updateResumeBtn();
-      }
+            .clock-container { text-align: center; margin-bottom: 40px; text-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+            .clock-time {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 7rem; font-weight: 700; line-height: 0.9; letter-spacing: -3px;
+                background: linear-gradient(to bottom, #fff, #ccc);
+                -webkit-background-clip: text; color: transparent;
+            }
+            .clock-date {
+                font-size: 1.1rem; color: var(--accent-primary); letter-spacing: 4px;
+                text-transform: uppercase; margin-top: 15px; font-weight: 500;
+                text-shadow: 0 0 15px var(--accent-glow);
+            }
 
-      // ── NAVIGATE ──────────────────────────────────────────────────────
-      function navigate(raw, pushHist=true) {
-        const url = resolveUrl(raw);
-        if (!url) return;
-        const t = ct();
-        if (pushHist) {
-          t.hist = t.hist.slice(0, t.hidx+1);
-          t.hist.push(url);
-          t.hidx = t.hist.length-1;
-        }
-        t.url = url; t.title = url; t.fav = getFaviconUrl(url);
-        try { t.title = new URL(url).hostname; } catch {}
-        document.getElementById('url-input').value = url;
-        setScheme(url);
-        renderTabs();
-        showFrame();
-        doLoad(url, pushHist);
-        hideOmni();
-        if (!_isIncognito) saveSession();
-      }
+            .search-container { position: relative; width: 600px; max-width: 90%; z-index: 100; perspective: 1000px; }
+            .search-pill {
+                width: 100%; height: 64px;
+                background: var(--glass-surface);
+                backdrop-filter: blur(var(--blur-amount)) saturate(180%);
+                border: 1px solid var(--glass-border);
+                border-top: 1px solid var(--glass-highlight);
+                border-radius: 24px;
+                display: flex; align-items: center; padding: 0 25px;
+                box-shadow: var(--glass-shadow);
+                transition: all 0.3s var(--ease-smooth);
+            }
+            .search-pill:focus-within {
+                transform: translateY(-2px); border-color: var(--accent-primary);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--accent-primary);
+            }
+            .search-input {
+                flex: 1; background: transparent; border: none; color: white;
+                font-size: 1.2rem; margin-left: 15px;
+                font-family: "Outfit", sans-serif; font-weight: 300;
+            }
+            .search-input::placeholder { color: rgba(255,255,255,0.4); }
 
-      async function doLoad(url, updateHash) {
-        startProg();
-        const frame = document.getElementById('proxy-frame');
-        if (currentProxy==='scramjet') {
-          if (typeof openInFrame==='function') {
-            openInFrame(url);
-            if (updateHash && typeof setHashFromUrl==='function') setHashFromUrl(url);
-          } else {
-            const iv = setInterval(() => {
-              if (typeof openInFrame==='function') {
-                clearInterval(iv);
-                openInFrame(url);
-                if (updateHash && typeof setHashFromUrl==='function') setHashFromUrl(url);
-              }
-            }, 100);
-          }
-        } else {
-          try {
-            await initUV();
-            const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-            frame.onload = null;
-            frame.src = encoded;
-          } catch (e) {
-            console.warn('UV load error, falling back:', e);
-            if (typeof openInFrame==='function') openInFrame(url);
-            else { stopProg(); return; }
-          }
-        }
-        frame.onload = null;
-        frame.onload = () => { stopProg(); tryUpdateTitle(); };
-      }
+            .resume-btn {
+                margin-top: 30px; padding: 12px 35px;
+                background: var(--accent-primary); color: #000;
+                border-radius: 30px; font-weight: 600; cursor: pointer;
+                display: flex; align-items: center; gap: 10px;
+                box-shadow: 0 0 20px var(--accent-glow);
+                transform: scale(0.9); opacity: 0; pointer-events: none;
+                transition: 0.3s var(--ease-elastic);
+            }
+            .resume-btn.visible { transform: scale(1); opacity: 1; pointer-events: auto; }
+            .resume-btn:hover   { transform: scale(1.05); box-shadow: 0 0 30px var(--accent-glow); }
 
-      function tryUpdateTitle() {
-        try {
-          const title = document.getElementById('proxy-frame').contentDocument?.title;
-          if (title) { ct().title = title; renderTabs(); }
-        } catch {}
-      }
+            .app-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 60px; max-width: 800px; }
+            .app-shortcut { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s var(--ease-smooth); opacity: 0.85; }
+            .app-shortcut:hover { opacity: 1; transform: translateY(-8px); }
+            .app-shortcut:hover .app-icon-box { background: rgba(255,255,255,0.15); border-color: var(--accent-primary); box-shadow: 0 10px 30px var(--accent-glow); }
+            .app-icon-box {
+                width: 64px; height: 64px;
+                background: var(--glass-surface); backdrop-filter: blur(12px);
+                border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight);
+                border-radius: 20px; display: flex; align-items: center; justify-content: center;
+                font-size: 32px; color: var(--accent-primary);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s var(--ease-smooth);
+            }
+            .app-label { font-size: 0.9rem; font-weight: 300; letter-spacing: 0.5px; }
 
-      function back() {
-        const t=ct(); if(t.hidx>0){ t.hidx--; const u=t.hist[t.hidx]; t.url=u; t.fav=getFaviconUrl(u); document.getElementById('url-input').value=u; setScheme(u); renderTabs(); doLoad(u,false); }
-      }
-      function fwd() {
-        const t=ct(); if(t.hidx<t.hist.length-1){ t.hidx++; const u=t.hist[t.hidx]; t.url=u; t.fav=getFaviconUrl(u); document.getElementById('url-input').value=u; setScheme(u); renderTabs(); doLoad(u,false); }
-      }
-      function reload() { if(ct().url){startProg();doLoad(ct().url,false);} }
+            .bookmarks-section {
+                width: 100%; display: flex; justify-content: center; flex-wrap: wrap;
+                gap: 15px; margin-top: 40px; padding-top: 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+            }
+            .section-title {
+                width: 100%; text-align: center; font-size: 0.75rem; color: var(--text-sub);
+                margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6;
+            }
 
-      function home() {
-        if (typeof goHome==='function') goHome();
-        ct().url=''; ct().title='New tab'; ct().fav=null;
-        document.getElementById('url-input').value='';
-        setScheme('');
-        renderTabs();
-        showNew();
-        document.body.classList.remove('browser-active');
-        setTimeout(() => document.getElementById('nt-s').focus(), 50);
-      }
+            /* BROWSER UI */
+            #browser-ui {
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                display: flex; flex-direction: column; z-index: 20;
+                opacity: 0; pointer-events: none; transform: scale(1.02);
+                transition: 0.4s var(--ease-smooth);
+                background: rgba(0,0,0,0.3);
+            }
+            body.browser-active #browser-ui { opacity: 1; pointer-events: auto; transform: scale(1); }
 
-      function goToHome() {
-        document.body.classList.remove('browser-active');
-        updateResumeBtn();
-      }
+            .browser-topbar {
+                height: 56px;
+                background: var(--glass-surface);
+                backdrop-filter: blur(var(--blur-amount));
+                border-bottom: 1px solid var(--glass-border);
+                display: flex; align-items: center; padding: 0 15px; gap: 15px; z-index: 50;
+            }
+            .brand { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 1px; color: white; text-shadow: 0 0 15px var(--accent-glow); }
 
-      function resumeSession() {
-        if (tabs.some(t => t.url)) {
-          document.body.classList.add('browser-active');
-        }
-      }
+            .tabs-strip { flex: 1; display: flex; gap: 6px; overflow-x: auto; padding: 5px 0; scroll-behavior: smooth; }
+            .tabs-strip::-webkit-scrollbar { height: 0; width: 0; }
 
-      function showFrame() {
-        document.getElementById('proxy-frame').style.display = 'block';
-        document.body.classList.add('browser-active');
-      }
-      function showNew() {
-        document.getElementById('proxy-frame').style.display = 'none';
-      }
+            .tab {
+                max-width: 220px; min-width: 140px; height: 38px;
+                background: rgba(255,255,255,0.02); border-radius: 10px;
+                display: flex; align-items: center; padding: 0 12px; gap: 10px;
+                font-size: 0.85rem; color: var(--text-sub); cursor: pointer;
+                border: 1px solid transparent; transition: 0.2s;
+                position: relative; overflow: hidden;
+            }
+            .tab:hover { background: rgba(255,255,255,0.08); }
+            .tab.active { background: rgba(255,255,255,0.12); color: white; border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .tab-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+            .tab-close { margin-left: auto; padding: 4px; border-radius: 6px; font-size: 0.9rem; opacity: 0; transition: 0.2s; }
+            .tab:hover .tab-close { opacity: 0.6; }
+            .tab-close:hover { background: var(--danger); color: white; opacity: 1; }
 
-      function saveSession() {
-        if (_isIncognito) return;
-        try {
-          localStorage.setItem('t9_tabs', JSON.stringify(tabs.filter(t=>t.url)));
-        } catch {}
-      }
-      function loadSession() {
-        try {
-          const saved = JSON.parse(localStorage.getItem('t9_tabs')||'[]');
-          if (saved.length) {
-            tabs = saved.concat(tabs.filter(t=>!t.url)); // preserve new tab
-            if (!tabs.find(t=>!t.url)) tabs.push(mkTab());
-            // keep last new tab at end
-          }
-          updateResumeBtn();
-        } catch {}
-      }
-      function updateResumeBtn() {
-        const btn = document.getElementById('resume-btn');
-        const hasLive = tabs.some(t=>t.url);
-        btn.classList.toggle('visible', hasLive);
-      }
+            .address-bar-container {
+                height: 48px;
+                background: var(--glass-surface); backdrop-filter: blur(var(--blur-amount));
+                display: flex; align-items: center; padding: 0 20px;
+                border-bottom: 1px solid var(--glass-border); gap: 15px; z-index: 49;
+            }
+            .nav-btn { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); cursor: pointer; transition: 0.2s; }
+            .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-1px); }
+            .nav-btn:active { transform: translateY(1px); }
+            .nav-btn.disabled { opacity: 0.25; pointer-events: none; }
 
-      // ── URL BAR ───────────────────────────────────────────────────────
-      function focusUrl() { document.getElementById('url-input').select(); }
-      function setScheme(url) {
-        const el = document.getElementById('url-scheme');
-        const lock = document.getElementById('lock-icon');
-        if (!url) { el.textContent=''; el.classList.remove('visible','insecure'); return; }
-        try {
-          const u = new URL(url);
-          if (u.protocol==='https:') {
-            el.textContent='https'; el.className='visible';
-            if (lock) { lock.className='ph ph-lock-key'; lock.style.color='var(--success)'; }
-          } else {
-            el.textContent=u.protocol.replace(':',''); el.className='visible insecure';
-            if (lock) { lock.className='ph ph-lock-key-open'; lock.style.color='var(--danger)'; }
-          }
-        } catch { el.textContent=''; el.classList.remove('visible','insecure'); }
-      }
-      function onFocus() { setTimeout(()=>document.getElementById('url-input').select(),0); }
-      function onBlur()  { hideOmni(); }
-      function onInput(val) { setScheme(val); buildOmni(val); }
-      function onKey(e) {
-        const rows = document.querySelectorAll('#omni .or');
-        if (e.key==='ArrowDown')     { e.preventDefault(); omniIdx=Math.min(omniIdx+1,rows.length-1); hilite(); }
-        else if (e.key==='ArrowUp')  { e.preventDefault(); omniIdx=Math.max(omniIdx-1,0); hilite(); }
-        else if (e.key==='Enter') {
-          if (omniIdx>=0&&rows[omniIdx]) rows[omniIdx].click(); else navigate(e.target.value);
-          hideOmni();
-        } else if (e.key==='Escape') { hideOmni(); e.target.blur(); }
-      }
+            .url-display {
+                flex: 1; background: rgba(0,0,0,0.25); height: 34px; border-radius: 10px;
+                display: flex; align-items: center; padding: 0 12px; color: var(--text-sub);
+                font-size: 0.9rem; border: 1px solid transparent; transition: 0.3s;
+            }
+            .url-display:focus-within { background: rgba(0,0,0,0.4); border-color: var(--accent-primary); color: white; }
+            .url-input { background: transparent; border: none; width: 100%; color: inherit; height: 100%; font-family: "Outfit"; font-size: 0.9rem; }
 
-      const QUICK = [
-        {icon:'🔍',q:'google.com'},{icon:'▶️',q:'youtube.com'},{icon:'👾',q:'reddit.com'},
-        {icon:'🐙',q:'github.com'},{icon:'🐦',q:'twitter.com'},{icon:'💬',q:'discord.com'},
-        {icon:'📡',q:'twitch.tv'}, {icon:'📖',q:'wikipedia.org'},
-      ];
-      function buildOmni(val) {
-        const d = document.getElementById('omni');
-        if (!val) { hideOmni(); return; }
-        omniIdx=-1;
-        const isUrl = /^https?:\/\/|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(val);
-        const se = SEARCH_ENGINES[currentSearch];
-        let html = isUrl
-          ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span class="or-icon">🔗</span><span class="or-text">${esc(val)}</span><span class="ob">navigate</span></div>`
-          : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span class="or-icon">${se.icon}</span><span class="or-text">${esc(val)}</span><span class="ob">search ${se.short}</span></div>`;
-        QUICK.filter(q=>q.q.includes(val.toLowerCase())).slice(0,4).forEach(q=>{
-          html+=`<div class="or" onclick="B.navigate('https://${esc(q.q)}')"><span class="or-icon">${q.icon}</span><span class="or-text">${esc(q.q)}</span><span class="ob">site</span></div>`;
-        });
-        d.innerHTML = html;
-        d.style.display = 'block';
-      }
-      function hilite() { document.querySelectorAll('#omni .or').forEach((el,i)=>el.classList.toggle('sel',i===omniIdx)); }
-      function hideOmni() { setTimeout(()=>{document.getElementById('omni').style.display='none';},150); }
+            #content-area { flex: 1; background: #fff; position: relative; overflow: hidden; }
 
-      // ── PROGRESS ──────────────────────────────────────────────────────
-      function startProg() {
-        const b=document.getElementById('prog-bar');
-        clearTimeout(_progTimer); b.style.transition='none'; b.style.width='0'; b.style.opacity='1'; b.classList.add('loading');
-      }
-      function stopProg() {
-        const b=document.getElementById('prog-bar');
-        b.classList.remove('loading'); b.style.transition='width .2s ease'; b.style.width='100%';
-        _progTimer=setTimeout(()=>{b.style.opacity='0';b.style.width='0';},350);
-      }
+            #proxy-frame { width: 100%; height: 100%; border: none; display: block; background: #fff; }
 
-      // ── PROXY DROPDOWN ────────────────────────────────────────────────
-      function toggleProxyDropdown(e) {
-        e.stopPropagation();
-        const d=document.getElementById('proxy-dropdown');
-        if(d.style.display==='block'){d.style.display='none';return;}
-        const rect=document.getElementById('badge-proxy').getBoundingClientRect();
-        d.style.top=(rect.bottom+6)+'px'; d.style.left=rect.left+'px';
-        d.innerHTML=`
-          <div class="drop-section-label">Proxy Engine</div>
-          <div class="drop-item ${currentProxy==='ultraviolet'?'active':''}" onclick="B.setProxy('ultraviolet')">
-            <span class="drop-item-icon">☀️</span><span>Ultraviolet</span>
-          </div>
-          <div class="drop-item ${currentProxy==='scramjet'?'active':''}" onclick="B.setProxy('scramjet')">
-            <span class="drop-item-icon">⚡</span><span>Scramjet</span>
-          </div>`;
-        d.style.display='block';
-        setTimeout(()=>document.addEventListener('click',()=>d.style.display='none',{once:true}),0);
-      }
-      function setProxy(p) {
-        currentProxy=p;
-        document.getElementById('proxy-name').textContent = p==='scramjet'?'SJ':'UV';
-        document.getElementById('proxy-dropdown').style.display='none';
-        if(p==='ultraviolet'){uvInitPromise=null;uvConnection=null;}
-        if(ct().url) doLoad(ct().url,false);
-      }
+            #prog { position: absolute; top: 0; left: 0; right: 0; height: 2px; pointer-events: none; z-index: 200; }
+            #prog-bar { height: 100%; width: 0; opacity: 0; background: linear-gradient(90deg, var(--accent-primary), #ffd4d0, var(--accent-primary)); background-size: 200% 100%; border-radius: 999px; transition: opacity 0.3s; }
+            #prog-bar.loading { opacity: 1; animation: progAnim 1.8s ease infinite; }
+            @keyframes progAnim { 0%{width:0%;background-position:0% 0%} 60%{width:82%;background-position:100% 0%} 100%{width:82%;background-position:0% 0%} }
 
-      // ── SEARCH ENGINE ─────────────────────────────────────────────────
-      function updateSeUI() {
-        const se=SEARCH_ENGINES[currentSearch];
-        document.getElementById('se-icon-nt').textContent    = se.icon;
-        document.getElementById('se-name-badge').textContent = se.short;
-        localStorage.setItem('t9_search', currentSearch);
-      }
-      function setSearchEngine(key) {
-        currentSearch=key; updateSeUI();
-        document.getElementById('se-dropdown-nt').style.display='none';
-        document.getElementById('se-dropdown-chrome').style.display='none';
-      }
-      function buildSeItems() {
-        return Object.entries(SEARCH_ENGINES).map(([key,se])=>
-          `<div class="se-item ${currentSearch===key?'active':''}" onclick="B.setSearchEngine('${key}')">
-            <span class="se-icon">${se.icon}</span>
-            <div><div class="se-name">${se.name}</div></div>
-          </div>`
-        ).join('');
-      }
-      function toggleSeDropdownNT(e) {
-        e.stopPropagation();
-        const d=document.getElementById('se-dropdown-nt');
-        if(d.classList.contains('open')){d.classList.remove('open');return;}
-        d.innerHTML=`<div class="drop-section-label">Search Engine</div>`+buildSeItems();
-        d.classList.add('open');
-        setTimeout(()=>document.addEventListener('click',()=>d.classList.remove('open'),{once:true}),0);
-      }
-      function toggleSeDropdownChrome(e) {
-        e.stopPropagation();
-        const d=document.getElementById('se-dropdown-chrome');
-        if(d.style.display==='block'){d.style.display='none';return;}
-        const rect=document.getElementById('badge-se').getBoundingClientRect();
-        d.style.top=(rect.bottom+6)+'px'; d.style.left=rect.left+'px';
-        d.innerHTML=`<div class="drop-section-label">Search Engine</div>`+buildSeItems();
-        d.style.display='block';
-        setTimeout(()=>document.addEventListener('click',()=>d.style.display='none',{once:true}),0);
-      }
+            .settings-menu {
+                position: absolute; top: 65px; right: 20px; width: 260px;
+                background: #121216; border: 1px solid var(--glass-border); border-radius: 16px;
+                padding: 8px; z-index: 1000; display: none;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.6); transform-origin: top right;
+            }
+            .settings-menu.open { display: block; animation: menuPop 0.2s var(--ease-smooth); }
+            .menu-item { padding: 12px 15px; border-radius: 10px; color: var(--text-sub); cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 0.95rem; transition: 0.2s; }
+            .menu-item:hover { background: rgba(255,255,255,0.08); color: white; }
+            .menu-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
+            @keyframes menuPop { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
 
-      // ── STAR / BOOKMARK ───────────────────────────────────────────────
-      function star() {
-        const btn=document.getElementById('btn-star');
-        const ico=document.getElementById('star-icon-ph');
-        btn.classList.toggle('starred');
-        if(btn.classList.contains('starred')){
-          ico.className='ph ph-star-fill';
-          showToast('Bookmarked!');
-        } else {
-          ico.className='ph ph-star';
-        }
-      }
+            #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+            .toast { background: rgba(20,20,20,0.9); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s var(--ease-elastic); }
+            @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
-      // ── INCOGNITO ─────────────────────────────────────────────────────
-      function toggleIncognito() {
-        _isIncognito = !_isIncognito;
-        document.body.classList.toggle('incognito-mode');
-        const vd=document.getElementById('wallpaper-default');
-        const vi=document.getElementById('wallpaper-incognito');
-        if(_isIncognito){ vd.pause(); vi.play(); showToast('Incognito Mode Active'); }
-        else             { vi.pause(); vd.play(); showToast('Standard Mode Active'); }
-      }
+            /* hide legacy T9 elements */
+            #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
+        </style>
+    </head>
+    <body>
+        <!-- Cinematic Backgrounds -->
+        <video id="wallpaper-default" class="wallpaper-layer" autoplay loop muted playsinline>
+            <source src="/browser_1773875312272.mp4" type="video/mp4" />
+        </video>
+        <video id="wallpaper-incognito" class="wallpaper-layer" loop muted playsinline>
+            <source src="/incognito_1773875312273.mp4" type="video/mp4" />
+        </video>
 
-      // ── MENU ──────────────────────────────────────────────────────────
-      function openMenu(e) {
-        e.stopPropagation();
-        document.getElementById('settings-menu').classList.toggle('open');
-      }
-      function closeMenu() { document.getElementById('settings-menu').classList.remove('open'); }
+        <!-- Hidden legacy T9 elements (needed by ghost.js / scramjet internals) -->
+        <select id="background-select" style="display:none"></select>
+        <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
+        <div id="proxy-shell" style="display:none">
+            <div id="proxy-loading"></div>
+            <div id="proxy-watermark"><pre class="watermark-logo" id="watermark-logo"></pre><div class="watermark-hint"></div></div>
+        </div>
+        <div id="terminal-shell" style="display:none">
+            <div id="term"><div id="term-output">
+                <div id="term-status"><span class="term-status-label">url:</span><span id="term-location"></span></div>
+                <form id="term-input-row">
+                    <span id="term-prefix">root@cine:~$&nbsp;</span>
+                    <input id="term-input" autocomplete="off" spellcheck="false" />
+                    <span id="term-cursor" aria-hidden="true"></span><span id="term-cursor-measure" aria-hidden="true"></span>
+                </form>
+            </div></div>
+        </div>
 
-      // ── APP GRID ──────────────────────────────────────────────────────
-      function renderApps() {
-        const grid=document.getElementById('app-grid');
-        DEFAULT_APPS.forEach(app=>{
-          const el=document.createElement('div');
-          el.className='app-shortcut';
-          el.innerHTML=`<div class="app-icon-box"><i class="ph ${app.icon}"></i></div><div class="app-label">${app.name}</div>`;
-          el.onclick=()=>{ B.navigate(app.url); };
-          grid.appendChild(el);
-        });
-      }
+        <!-- ═══════════════════════════════════════
+             START PAGE
+        ═══════════════════════════════════════ -->
+        <div id="start-page">
+            <div class="clock-container animate-in">
+                <div class="clock-time" id="clock-time">00:00</div>
+                <div class="clock-date" id="clock-date">LOADING SYSTEM</div>
+            </div>
 
-      // ── KEYBOARD SHORTCUTS ────────────────────────────────────────────
-      document.addEventListener('keydown', e=>{
-        if(e.ctrlKey||e.metaKey){
-          if(e.key==='t'){e.preventDefault();addTab();}
-          if(e.key==='w'){e.preventDefault();closeTab(cur);}
-          if(e.key==='l'){e.preventDefault();focusUrl();}
-          if(e.key==='r'){e.preventDefault();reload();}
-          if(e.key==='Tab'){e.preventDefault();cur=(cur+1)%tabs.length;sync();}
-        }
-        if(e.key==='Escape') closeMenu();
-      });
+            <div class="search-container animate-in delay-1">
+                <div class="search-pill">
+                    <i class="ph ph-magnifying-glass" style="font-size: 1.4rem; color: var(--accent-primary)"></i>
+                    <input type="text" class="search-input" id="home-search" placeholder="Search the web or enter URL..." autocomplete="off" />
+                </div>
+            </div>
 
-      document.addEventListener('click', e=>{
-        const menu=document.getElementById('settings-menu');
-        const btn=document.getElementById('menu-open-btn');
-        if(!menu.contains(e.target)&&!btn.contains(e.target)) menu.classList.remove('open');
-      });
+            <div class="resume-btn" id="resume-btn" onclick="resumeSession()">
+                <i class="ph ph-arrows-in-simple"></i>
+                <span>Resume Session</span>
+            </div>
 
-      // ── HASH SYNC ─────────────────────────────────────────────────────
-      window.addEventListener('hashchange', ()=>{
-        if(currentProxy!=='scramjet') return;
-        const token=window.location.hash.replace(/^#/,'');
-        if(!token) return;
-        try {
-          if(typeof decodeTarget==='function'){
-            const url=decodeTarget(token);
-            if(url&&url!==ct().url){ ct().url=url; ct().fav=getFaviconUrl(url); try{ct().title=new URL(url).hostname;}catch{} document.getElementById('url-input').value=url; setScheme(url); renderTabs(); showFrame(); }
-          }
-        } catch {}
-      });
+            <div class="app-grid animate-in delay-2" id="app-grid"></div>
 
-      window._browserSyncUrl = function(url){
-        if(!url||url===ct().url) return;
-        ct().url=url; ct().fav=getFaviconUrl(url);
-        try{ct().title=new URL(url).hostname;}catch{}
-        document.getElementById('url-input').value=url;
-        setScheme(url); renderTabs();
-      };
+            <div class="bookmarks-section animate-in delay-3" id="bookmarks-section">
+                <div class="section-title">Saved Destinations</div>
+            </div>
+        </div>
 
-      // ── INIT ──────────────────────────────────────────────────────────
-      renderTabs();
-      showNew();
-      initUV();
-      updateSeUI();
-      renderApps();
-      loadSession();
+      
+        <div id="browser-ui">
+            <div class="browser-topbar">
+                <div class="brand" onclick="goHome()" style="cursor:pointer">
+                    CINE<span style="color:var(--accent-primary)">WEB</span>
+                </div>
+                <div style="width:1px;height:24px;background:var(--glass-border);margin:0 10px;"></div>
 
-      return {
-        addTab, closeAllTabs, navigate, back, fwd, reload, home, resumeSession,
-        focusUrl, onFocus, onBlur, onInput, onKey,
-        star, openMenu, closeMenu,
-        setProxy, toggleProxyDropdown,
-        setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome,
-        toggleIncognito,
-      };
-    })();
+                <div class="tabs-strip" id="tabs-strip"></div>
 
-    function esc(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+                <div class="nav-btn" onclick="createNewTab()" title="New Tab">
+                    <i class="ph ph-plus" style="font-weight:bold"></i>
+                </div>
+                <div class="nav-btn" id="menu-btn" onclick="toggleMenu(event)" title="Menu">
+                    <i class="ph ph-list" style="font-weight:bold"></i>
+                </div>
+            </div>
 
-    function showToast(msg) {
-      const c = document.getElementById('toast-container');
-      const t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
-      c.appendChild(t);
-      setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; t.style.transition='0.3s'; setTimeout(()=>t.remove(),300); }, 2400);
-    }
-    </script>
+            <div class="address-bar-container">
+                <div style="display:flex;gap:4px">
+                    <div class="nav-btn" id="btn-back" onclick="navBack()"><i class="ph ph-arrow-left"></i></div>
+                    <div class="nav-btn" id="btn-fwd"  onclick="navFwd()"><i class="ph ph-arrow-right"></i></div>
+                    <div class="nav-btn" onclick="reloadTab()"><i class="ph ph-arrow-clockwise"></i></div>
+                </div>
+                <div class="url-display">
+                    <i class="ph ph-lock-key" id="lock-icon" style="margin-right:10px;color:var(--accent-primary);font-size:0.9rem;"></i>
+                    <input type="text" class="url-input" id="address-input" value="" autocomplete="off" />
+                    <i class="ph ph-star" id="bookmark-icon" style="cursor:pointer;transition:0.2s;margin-left:10px;" onclick="toggleBookmark()" title="Bookmark"></i>
+                </div>
+                <div class="nav-btn" id="incognito-toggle" onclick="toggleIncognito()" title="Toggle Incognito Mode">
+                    <i class="ph ph-sunglasses"></i>
+                </div>
+            </div>
 
-    <!-- ── WALLPAPER SYSTEM ──────────────────────────────────────────── -->
-    <script>
-    const WP_PRESETS=[
-      {id:'aurora',   label:'Aurora',   bg:'linear-gradient(135deg,#0d0d2b 0%,#1a0533 35%,#002244 65%,#001133 100%)'},
-      {id:'midnight', label:'Midnight', bg:'linear-gradient(160deg,#04040e 0%,#0a0a20 40%,#0d0520 70%,#040410 100%)'},
-      {id:'ember',    label:'Ember',    bg:'linear-gradient(135deg,#1a0a00 0%,#2d1000 40%,#1a0808 70%,#100010 100%)'},
-      {id:'ocean',    label:'Ocean',    bg:'linear-gradient(160deg,#000d1a 0%,#001533 45%,#002244 75%,#001122 100%)'},
-      {id:'forest',   label:'Forest',   bg:'linear-gradient(145deg,#020d06 0%,#041a0c 40%,#031208 70%,#010a04 100%)'},
-      {id:'violet',   label:'Violet',   bg:'linear-gradient(140deg,#0e0520 0%,#1a0a33 40%,#0d0820 70%,#08041a 100%)'},
-      {id:'steel',    label:'Steel',    bg:'linear-gradient(135deg,#0a0c10 0%,#131820 40%,#0c1018 70%,#080c12 100%)'},
-      {id:'dusk',     label:'Dusk',     bg:'linear-gradient(155deg,#1a0a18 0%,#0d1020 40%,#0a1a18 70%,#0d0a1a 100%)'},
-      {id:'crimson',  label:'Crimson',  bg:'linear-gradient(145deg,#1a0208 0%,#250410 40%,#1a0010 70%,#0d0010 100%)'},
-      {id:'slate',    label:'Slate',    bg:'linear-gradient(150deg,#080a10 0%,#0d1018 40%,#0a0d14 70%,#060810 100%)'},
-    ];
+            <div id="content-area">
+                <div id="prog"><div id="prog-bar"></div></div>
+                <iframe id="proxy-frame" title="T9 Proxy"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
+            </div>
 
-    (function buildSwatches(){
-      const grid=document.getElementById('wp-presets');
-      WP_PRESETS.forEach(p=>{
-        const el=document.createElement('div');
-        el.className='wp-swatch'; el.id='swatch-'+p.id; el.title=p.label;
-        el.style.background=p.bg;
-        el.innerHTML=`<div class="wp-check">✓</div>`;
-        el.onclick=()=>WP.applyPreset(p.id,p.bg);
-        grid.appendChild(el);
-      });
-    })();
+            <div class="settings-menu" id="settings-menu">
+                <div class="menu-item" onclick="goHome(); closeMenu()"><i class="ph ph-house"></i> Minimize Browser</div>
+                <div class="menu-item" onclick="toggleIncognito(); closeMenu()"><i class="ph ph-user-secret"></i> Switch Mode</div>
+                <div class="menu-divider"></div>
+                <div class="menu-item" style="color:var(--danger)" onclick="closeAllTabs(); closeMenu()"><i class="ph ph-x-circle"></i> Clear Session</div>
+            </div>
+        </div>
 
-    let _activeSwatch=null;
-    function setActiveSwatch(id){
-      document.querySelectorAll('.wp-swatch').forEach(s=>s.classList.remove('active'));
-      _activeSwatch=id;
-      if(id==='none') document.querySelector('.wp-none-swatch')?.classList.add('active');
-      else if(id) document.getElementById('swatch-'+id)?.classList.add('active');
-    }
+        <div id="toast-container"></div>
 
-    function openWallpaper()  { document.getElementById('wallpaper-overlay').classList.add('open'); }
-    function closeWallpaper() { document.getElementById('wallpaper-overlay').classList.remove('open'); }
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWallpaper(); });
+        <script>
+            // ══════════════════════════════════════════════════════════════
+            //  T9 PROXY ENGINE
+            // ══════════════════════════════════════════════════════════════
+            const wispUrl = "wss://wisp.rhw.one/wisp/";
+            let uvConnection  = null;
+            let uvInitPromise = null;
+            let currentProxy  = 'scramjet';
 
-    const WP=(()=>{
-      const DB_NAME='BackgroundStorage', STORE='media';
-      let _db=null;
-      function openDB(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const req=indexedDB.open(DB_NAME,1); req.onerror=()=>rej(req.error); req.onsuccess=()=>{_db=req.result;res(_db);}; req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE);}; }); }
-      async function dbSet(k,v){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction([STORE],'readwrite');t.objectStore(STORE).put(v,k).onsuccess=r;t.onerror=j;});}
-      async function dbGet(k){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction([STORE],'readonly');const req=t.objectStore(STORE).get(k);req.onsuccess=()=>r(req.result);req.onerror=j;});}
-      async function dbDel(k){const db=await openDB();return new Promise((r,j)=>{const t=db.transaction([STORE],'readwrite');t.objectStore(STORE).delete(k).onsuccess=r;t.onerror=j;});}
+            function initUV() {
+                if (uvInitPromise) return uvInitPromise;
+                uvInitPromise = (async () => {
+                    try {
+                        if (typeof BareMux === 'undefined') {
+                            await new Promise((res, rej) => {
+                                let n = 0;
+                                const t = setInterval(() => {
+                                    if (typeof BareMux !== 'undefined') { clearInterval(t); res(); }
+                                    if (++n > 50) { clearInterval(t); rej(new Error('BareMux not loaded')); }
+                                }, 100);
+                            });
+                        }
+                        uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+                        await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+                    } catch (e) {
+                        console.error('UV init failed:', e);
+                        uvInitPromise = null;
+                        throw e;
+                    }
+                })();
+                return uvInitPromise;
+            }
 
-      function applyImageUrl(url){const vb=document.getElementById('wallpaper-default');vb.style.display='none';vb.src='';vb.pause();document.body.style.backgroundImage=`url(${url})`;document.body.style.backgroundSize='cover';document.body.style.backgroundPosition='center';document.body.style.backgroundRepeat='no-repeat';document.body.style.backgroundAttachment='fixed';}
-      function applyGradient(css){const vb=document.getElementById('wallpaper-default');vb.style.display='none';vb.src='';document.body.style.backgroundImage=css;document.body.style.backgroundSize='cover';document.body.style.backgroundPosition='center';}
-      function applyVideoUrl(url){document.body.style.backgroundImage='';const vb=document.getElementById('wallpaper-default');vb.src=url;vb.style.display='block';vb.play();}
-      function clearAll(){document.body.style.backgroundImage='';const vb=document.getElementById('wallpaper-default');vb.src='';vb.style.display='none';}
+            let _progTimer;
+            function startProg() {
+                const b = document.getElementById('prog-bar');
+                clearTimeout(_progTimer);
+                b.style.transition = 'none'; b.style.width = '0'; b.style.opacity = '1';
+                b.classList.add('loading');
+            }
+            function stopProg() {
+                const b = document.getElementById('prog-bar');
+                b.classList.remove('loading');
+                b.style.transition = 'width .2s ease'; b.style.width = '100%';
+                _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
+            }
 
-      function applyPreset(id,css){applyGradient(css);localStorage.setItem('bg_type','preset');localStorage.setItem('bg_preset_id',id);localStorage.setItem('bg_preset_css',css);localStorage.removeItem('bg_data_url');dbDel('savedVideo').catch(()=>{});dbDel('savedImage').catch(()=>{});setActiveSwatch(id);}
-      async function clearBg(){clearAll();localStorage.removeItem('bg_type');localStorage.removeItem('bg_preset_id');localStorage.removeItem('bg_preset_css');localStorage.removeItem('bg_data_url');await dbDel('savedVideo').catch(()=>{});await dbDel('savedImage').catch(()=>{});setActiveSwatch('none');}
+            async function proxyLoad(url) {
+                if (!url) return;
+                startProg();
+                const frame = document.getElementById('proxy-frame');
+                if (currentProxy === 'scramjet') {
+                    if (typeof openInFrame === 'function') {
+                        openInFrame(url);
+                    } else {
+                        const iv = setInterval(() => {
+                            if (typeof openInFrame === 'function') { clearInterval(iv); openInFrame(url); }
+                        }, 100);
+                    }
+                } else {
+                    try {
+                        await initUV();
+                        const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+                        frame.onload = null;
+                        frame.src = encoded;
+                    } catch (e) {
+                        console.warn('UV failed, fallback:', e);
+                        if (typeof openInFrame === 'function') openInFrame(url);
+                        else { stopProg(); return; }
+                    }
+                }
+                frame.onload = null;
+                frame.onload = () => stopProg();
+            }
 
-      document.getElementById('background-upload').addEventListener('change',async()=>{
-        const file=document.getElementById('background-upload').files[0];
-        if(!file) return;
-        if(file.type.startsWith('video/')){
-          showToast('Saving video…');
-          try{const buf=await file.arrayBuffer();await dbSet('savedVideo',{data:buf,type:file.type});await dbDel('savedImage').catch(()=>{});localStorage.setItem('bg_type','video');localStorage.removeItem('bg_data_url');localStorage.removeItem('bg_preset_id');const url=URL.createObjectURL(new Blob([buf],{type:file.type}));applyVideoUrl(url);setActiveSwatch('custom');showToast('Video saved!');closeWallpaper();}catch(err){showToast('Failed — out of storage?');console.error(err);}
-        } else if(file.type.startsWith('image/')){
-          showToast('Saving image…');
-          try{const buf=await file.arrayBuffer();if(file.size>500000){await dbSet('savedImage',{data:buf,type:file.type});localStorage.setItem('bg_type','image-idb');localStorage.removeItem('bg_data_url');}else{const dataUrl=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(file);});localStorage.setItem('bg_type','image-data');localStorage.setItem('bg_data_url',dataUrl);}await dbDel('savedVideo').catch(()=>{});localStorage.removeItem('bg_preset_id');const url=URL.createObjectURL(new Blob([buf],{type:file.type}));applyImageUrl(url);setActiveSwatch('custom');showToast('Image saved!');closeWallpaper();}catch(err){showToast('Failed to save image');console.error(err);}
-        }
-        document.getElementById('background-upload').value='';
-      });
+            function resolveUrl(raw) {
+                raw = (raw || '').trim();
+                if (!raw) return null;
+                if (/^https?:\/\//i.test(raw)) return raw;
+                if (/^[a-z][a-z0-9+\-.]*:\/\//i.test(raw)) return raw;
+                if (/^localhost(:\d+)?(\/|$)/.test(raw)) return 'http://' + raw;
+                if (raw.includes('.') && !raw.includes(' ')) return 'https://' + raw;
+                return 'https://duckduckgo.com/?q=' + encodeURIComponent(raw);
+            }
 
-      async function load(){
-        const type=localStorage.getItem('bg_type');
-        if(!type) return;
-        if(type==='preset'){const id=localStorage.getItem('bg_preset_id');const css=localStorage.getItem('bg_preset_css');if(css){applyGradient(css);setActiveSwatch(id);}}
-        else if(type==='video'){try{const v=await dbGet('savedVideo');if(v?.data){const url=URL.createObjectURL(new Blob([v.data],{type:v.type}));applyVideoUrl(url);setActiveSwatch('custom');}}catch(e){console.error(e);}}
-        else if(type==='image-idb'){try{const img=await dbGet('savedImage');if(img?.data){const url=URL.createObjectURL(new Blob([img.data],{type:img.type}));applyImageUrl(url);setActiveSwatch('custom');}}catch(e){console.error(e);}}
-        else if(type==='image-data'){const d=localStorage.getItem('bg_data_url');if(d){applyImageUrl(d);setActiveSwatch('custom');}}
-      }
-      load();
-      return {applyPreset,clearBg};
-    })();
-    </script>
+            function tryHostname(url) { try { return new URL(url).hostname; } catch { return url; } }
 
-    <!-- ── HASH & SCRAMJET SYNC ──────────────────────────────────────── -->
-    <script>
-    window.addEventListener('load',()=>{
-      const orig=window.setLocationLabel;
-      if(typeof orig==='function'){
-        window.setLocationLabel=function(val){
-          orig(val);
-          if(typeof window._browserSyncUrl==='function') window._browserSyncUrl(val);
-        };
-      }
-      const hash=window.location.hash.replace(/^#/,'');
-      if(hash&&typeof decodeTarget==='function'){
-        try{
-          const url=decodeTarget(hash);
-          if(url){window._browserSyncUrl(url);document.getElementById('proxy-frame').style.display='block';document.body.classList.add('browser-active');}
-        }catch{}
-      }
-      // Pause incognito video initially
-      document.getElementById('wallpaper-incognito').pause();
-    });
-    </script>
+            // ══════════════════════════════════════════════════════════════
+            //  CORE DATA
+            // ══════════════════════════════════════════════════════════════
+            let normalTabs    = [];
+            let incognitoTabs = [];
+            let isIncognito   = false;
+            let activeTabId   = null;
+            let tabCounter    = 0;
+            let tabHistories  = {};
+            let bookmarks     = JSON.parse(localStorage.getItem("cineweb_bookmarks") || "[]");
 
-    <script src="./app.js" defer></script>
-  </body>
+            const defaultApps = [
+                { name: "DuckDuckGo", icon: "ph-globe",           url: "https://duckduckgo.com" },
+                { name: "Wikipedia",  icon: "ph-book-open",        url: "https://en.m.wikipedia.org" },
+                { name: "VS Code",    icon: "ph-code",             url: "https://vscode.dev" },
+                { name: "Music",      icon: "ph-music-notes",      url: "https://soundcloud.com" },
+                { name: "Gaming",     icon: "ph-game-controller",  url: "https://poki.com" },
+                { name: "Reddit",     icon: "ph-reddit-logo",      url: "https://reddit.com" },
+            ];
+
+            // ══════════════════════════════════════════════════════════════
+            //  INIT
+            // ══════════════════════════════════════════════════════════════
+            window.onload = () => {
+                renderApps();
+                renderBookmarks();
+                updateClock();
+                setInterval(updateClock, 1000);
+                loadSession();
+                initUV();
+                document.getElementById("wallpaper-incognito").pause();
+            };
+
+            function updateClock() {
+                const now = new Date();
+                document.getElementById("clock-time").textContent =
+                    now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                document.getElementById("clock-date").textContent =
+                    now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  SESSION
+            // ══════════════════════════════════════════════════════════════
+            function saveSession() {
+                if (isIncognito) return;
+                localStorage.setItem("cineweb_tabs", JSON.stringify(normalTabs));
+                localStorage.setItem("cineweb_active_id", activeTabId);
+            }
+
+            function loadSession() {
+                const savedTabs     = JSON.parse(localStorage.getItem("cineweb_tabs") || "[]");
+                const savedActiveId = localStorage.getItem("cineweb_active_id");
+                if (savedTabs.length > 0) {
+                    normalTabs = savedTabs;
+                    savedTabs.forEach(t => {
+                        const num = parseInt(t.id.replace("tab-", ""));
+                        if (num > tabCounter) tabCounter = num;
+                        tabHistories[t.id] = { stack: [t.url], idx: 0 };
+                        addTabToStrip(t.id, t.title || tryHostname(t.url));
+                    });
+                    const targetId = savedActiveId && normalTabs.some(t => t.id === savedActiveId)
+                        ? savedActiveId
+                        : normalTabs[normalTabs.length - 1].id;
+                    switchTab(targetId);
+                    updateResumeButton();
+                }
+            }
+
+            function updateResumeButton() {
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const btn  = document.getElementById("resume-btn");
+                const hasLive = tabs.some(t => t.url);
+                btn.classList.toggle("visible", hasLive);
+                if (hasLive) btn.querySelector("span").textContent = isIncognito ? "Return to Incognito" : "Resume Session";
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  TABS
+            // ══════════════════════════════════════════════════════════════
+            function createNewTab(url) {
+                url = url || "https://duckduckgo.com";
+                tabCounter++;
+                const id   = `tab-${tabCounter}`;
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                tabs.push({ id, url, title: tryHostname(url) });
+                tabHistories[id] = { stack: [url], idx: 0 };
+                addTabToStrip(id, "New Tab");
+                switchTab(id);
+                if (!isIncognito) saveSession();
+            }
+
+            function addTabToStrip(id, title) {
+                const tab = document.createElement("div");
+                tab.className = "tab";
+                tab.id = `tab-ui-${id}`;
+                tab.innerHTML = `
+                    <i class="ph ph-globe-simple" style="font-size:0.9rem;flex-shrink:0"></i>
+                    <span class="tab-text">${title}</span>
+                    <i class="ph ph-x tab-close"></i>
+                `;
+                tab.addEventListener("click", e => {
+                    if (e.target.classList.contains("tab-close") || e.target.closest && e.target.closest(".tab-close")) {
+                        closeTab(id, e);
+                    } else {
+                        switchTab(id);
+                    }
+                });
+                document.getElementById("tabs-strip").appendChild(tab);
+                tab.scrollIntoView({ behavior: "smooth" });
+            }
+
+            function switchTab(id) {
+                activeTabId = id;
+                const tabs    = isIncognito ? incognitoTabs : normalTabs;
+                const tabData = tabs.find(t => t.id === id);
+
+                document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+                const activeUi = document.getElementById(`tab-ui-${id}`);
+                if (activeUi) activeUi.classList.add("active");
+
+                if (tabData) {
+                    document.getElementById("address-input").value = tabData.url;
+                    updateNavBtns(id);
+                    checkBookmarkStatus(tabData.url);
+                    proxyLoad(tabData.url);
+                }
+                if (!isIncognito) saveSession();
+            }
+
+            function closeTab(id, e) {
+                if (e) e.stopPropagation();
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const idx  = tabs.findIndex(t => t.id === id);
+                if (idx > -1) {
+                    tabs.splice(idx, 1);
+                    delete tabHistories[id];
+                    const el = document.getElementById(`tab-ui-${id}`);
+                    if (el) el.remove();
+                    if (tabs.length === 0) {
+                        goHome();
+                    } else {
+                        switchTab(tabs[Math.min(idx, tabs.length - 1)].id);
+                    }
+                }
+                if (!isIncognito) saveSession();
+                updateResumeButton();
+            }
+
+            function closeAllTabs() {
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                [...tabs].forEach(t => {
+                    const el = document.getElementById(`tab-ui-${t.id}`);
+                    if (el) el.remove();
+                    delete tabHistories[t.id];
+                });
+                tabs.length = 0;
+                showToast("Session Cleared");
+                goHome();
+                if (!isIncognito) saveSession();
+                updateResumeButton();
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  NAVIGATION
+            // ══════════════════════════════════════════════════════════════
+            function handleSearch(val) {
+                if (!val) return;
+                const url = resolveUrl(val);
+                if (!url) return;
+                if (document.body.classList.contains("browser-active")) {
+                    navigateCurrent(url);
+                } else {
+                    openBrowser(url);
+                }
+            }
+
+            function navigateCurrent(url) {
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (!tab) return;
+                tab.url   = url;
+                tab.title = tryHostname(url);
+
+                if (!tabHistories[activeTabId]) tabHistories[activeTabId] = { stack: [], idx: -1 };
+                const h = tabHistories[activeTabId];
+                h.stack = h.stack.slice(0, h.idx + 1);
+                h.stack.push(url);
+                h.idx = h.stack.length - 1;
+
+                document.getElementById("address-input").value = url;
+                const tabUi = document.getElementById(`tab-ui-${activeTabId}`);
+                if (tabUi) tabUi.querySelector(".tab-text").textContent = tryHostname(url);
+                proxyLoad(url);
+                updateNavBtns(activeTabId);
+                checkBookmarkStatus(url);
+                if (!isIncognito) saveSession();
+            }
+
+            function openBrowser(url) {
+                document.body.classList.add("browser-active");
+                createNewTab(url);
+            }
+
+            function resumeSession() {
+                document.body.classList.add("browser-active");
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                if (activeTabId) {
+                    const tab = tabs.find(t => t.id === activeTabId);
+                    if (tab) proxyLoad(tab.url);
+                } else if (tabs.length > 0) {
+                    switchTab(tabs[tabs.length - 1].id);
+                }
+            }
+
+            function goHome() {
+                document.body.classList.remove("browser-active");
+                updateResumeButton();
+            }
+
+            function reloadTab() {
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (tab) { proxyLoad(tab.url); showToast("Reloading..."); }
+            }
+
+            function navBack() {
+                if (!activeTabId || !tabHistories[activeTabId]) return;
+                const h = tabHistories[activeTabId];
+                if (h.idx <= 0) return;
+                h.idx--;
+                const url = h.stack[h.idx];
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (tab) { tab.url = url; tab.title = tryHostname(url); }
+                document.getElementById("address-input").value = url;
+                const tabUi = document.getElementById(`tab-ui-${activeTabId}`);
+                if (tabUi) tabUi.querySelector(".tab-text").textContent = tryHostname(url);
+                proxyLoad(url);
+                updateNavBtns(activeTabId);
+            }
+
+            function navFwd() {
+                if (!activeTabId || !tabHistories[activeTabId]) return;
+                const h = tabHistories[activeTabId];
+                if (h.idx >= h.stack.length - 1) return;
+                h.idx++;
+                const url = h.stack[h.idx];
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (tab) { tab.url = url; tab.title = tryHostname(url); }
+                document.getElementById("address-input").value = url;
+                const tabUi = document.getElementById(`tab-ui-${activeTabId}`);
+                if (tabUi) tabUi.querySelector(".tab-text").textContent = tryHostname(url);
+                proxyLoad(url);
+                updateNavBtns(activeTabId);
+            }
+
+            function updateNavBtns(id) {
+                const h    = tabHistories[id];
+                const back = document.getElementById("btn-back");
+                const fwd  = document.getElementById("btn-fwd");
+                if (!h) { back.classList.add("disabled"); fwd.classList.add("disabled"); return; }
+                back.classList.toggle("disabled", h.idx <= 0);
+                fwd.classList.toggle("disabled",  h.idx >= h.stack.length - 1);
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  INCOGNITO
+            // ══════════════════════════════════════════════════════════════
+            function toggleIncognito() {
+                document.getElementById("tabs-strip").innerHTML = "";
+                isIncognito = !isIncognito;
+                document.body.classList.toggle("incognito-mode");
+
+                const vDefault = document.getElementById("wallpaper-default");
+                const vIncog   = document.getElementById("wallpaper-incognito");
+                if (isIncognito) { vDefault.pause(); vIncog.play(); showToast("Incognito Mode Active"); }
+                else             { vIncog.pause();   vDefault.play(); showToast("Standard Mode Active"); }
+
+                document.getElementById("incognito-toggle").style.color = isIncognito ? "var(--accent-primary)" : "";
+
+                const targetTabs = isIncognito ? incognitoTabs : normalTabs;
+                if (targetTabs.length > 0) {
+                    targetTabs.forEach(t => addTabToStrip(t.id, t.title || tryHostname(t.url)));
+                    switchTab(targetTabs[targetTabs.length - 1].id);
+                } else {
+                    createNewTab();
+                }
+                updateResumeButton();
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  INPUT HANDLERS
+            // ══════════════════════════════════════════════════════════════
+            document.getElementById("home-search").addEventListener("keypress", e => {
+                if (e.key === "Enter") { handleSearch(e.target.value); e.target.value = ""; }
+            });
+            document.getElementById("address-input").addEventListener("keypress", e => {
+                if (e.key === "Enter") { handleSearch(e.target.value); document.getElementById("address-input").blur(); }
+            });
+            document.getElementById("address-input").addEventListener("focus", function () { this.select(); });
+
+            // Keyboard shortcuts
+            document.addEventListener("keydown", e => {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === "t") { e.preventDefault(); createNewTab(); }
+                    if (e.key === "w") { e.preventDefault(); if (activeTabId) closeTab(activeTabId, null); }
+                    if (e.key === "l") { e.preventDefault(); document.getElementById("address-input").focus(); }
+                    if (e.key === "r") { e.preventDefault(); reloadTab(); }
+                }
+            });
+
+            // ══════════════════════════════════════════════════════════════
+            //  BOOKMARKS
+            // ══════════════════════════════════════════════════════════════
+            function toggleBookmark() {
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (!tab) return;
+                const idx  = bookmarks.findIndex(b => b.url === tab.url);
+                const icon = document.getElementById("bookmark-icon");
+                if (idx > -1) {
+                    bookmarks.splice(idx, 1);
+                    icon.className = "ph ph-star"; icon.style.color = "";
+                    showToast("Bookmark Removed");
+                } else {
+                    const name = prompt("Bookmark Name:", tryHostname(tab.url));
+                    if (name) {
+                        bookmarks.push({ title: name, url: tab.url });
+                        icon.className = "ph ph-star-fill"; icon.style.color = "var(--accent-primary)";
+                        showToast("Bookmark Added");
+                    }
+                }
+                localStorage.setItem("cineweb_bookmarks", JSON.stringify(bookmarks));
+                renderBookmarks();
+            }
+
+            function checkBookmarkStatus(url) {
+                const isBm = bookmarks.some(b => b.url === url);
+                const icon = document.getElementById("bookmark-icon");
+                icon.className = isBm ? "ph ph-star-fill" : "ph ph-star";
+                icon.style.color = isBm ? "var(--accent-primary)" : "";
+            }
+
+            function renderBookmarks() {
+                const section = document.getElementById("bookmarks-section");
+                const title   = section.querySelector(".section-title");
+                section.innerHTML = "";
+                section.appendChild(title);
+                if (bookmarks.length === 0) { section.style.display = "none"; return; }
+                section.style.display = "flex";
+                bookmarks.forEach(bm => {
+                    const el = document.createElement("div");
+                    el.className = "app-shortcut";
+                    el.style.transform = "scale(0.85)";
+                    el.innerHTML = `<div class="app-icon-box" style="border-radius:50%;width:50px;height:50px;font-size:24px;"><i class="ph ph-star-fill"></i></div><div class="app-label">${bm.title}</div>`;
+                    el.onclick = () => openBrowser(bm.url);
+                    el.oncontextmenu = ev => {
+                        ev.preventDefault();
+                        if (confirm(`Delete bookmark "${bm.title}"?`)) {
+                            bookmarks = bookmarks.filter(b => b.url !== bm.url);
+                            localStorage.setItem("cineweb_bookmarks", JSON.stringify(bookmarks));
+                            renderBookmarks();
+                        }
+                    };
+                    section.appendChild(el);
+                });
+            }
+
+            function renderApps() {
+                const grid = document.getElementById("app-grid");
+                defaultApps.forEach(app => {
+                    const el = document.createElement("div");
+                    el.className = "app-shortcut";
+                    el.innerHTML = `<div class="app-icon-box"><i class="ph ${app.icon}"></i></div><div class="app-label">${app.name}</div>`;
+                    el.onclick = () => openBrowser(app.url);
+                    grid.appendChild(el);
+                });
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  MENU & TOAST
+            // ══════════════════════════════════════════════════════════════
+            function toggleMenu(event) {
+                event.stopPropagation();
+                document.getElementById("settings-menu").classList.toggle("open");
+            }
+            function closeMenu() { document.getElementById("settings-menu").classList.remove("open"); }
+            document.addEventListener("click", e => {
+                const menu = document.getElementById("settings-menu");
+                const btn  = document.getElementById("menu-btn");
+                if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove("open");
+            });
+
+            function showToast(msg) {
+                const c = document.getElementById("toast-container");
+                const t = document.createElement("div");
+                t.className = "toast"; t.innerText = msg; c.appendChild(t);
+                setTimeout(() => {
+                    t.style.opacity = "0"; t.style.transform = "translateY(10px)"; t.style.transition = "0.3s";
+                    setTimeout(() => t.remove(), 300);
+                }, 2500);
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            //  SCRAMJET URL SYNC
+            // ══════════════════════════════════════════════════════════════
+            window._browserSyncUrl = function(url) {
+                if (!url) return;
+                const tabs = isIncognito ? incognitoTabs : normalTabs;
+                const tab  = tabs.find(t => t.id === activeTabId);
+                if (!tab || url === tab.url) return;
+                tab.url   = url;
+                tab.title = tryHostname(url);
+                document.getElementById("address-input").value = url;
+                const tabUi = document.getElementById(`tab-ui-${activeTabId}`);
+                if (tabUi) tabUi.querySelector(".tab-text").textContent = tryHostname(url);
+                if (tabHistories[activeTabId]) {
+                    const h = tabHistories[activeTabId];
+                    if (h.stack[h.idx] !== url) { h.stack = h.stack.slice(0, h.idx + 1); h.stack.push(url); h.idx = h.stack.length - 1; }
+                }
+                updateNavBtns(activeTabId);
+                checkBookmarkStatus(url);
+                if (!isIncognito) saveSession();
+            };
+
+            window.addEventListener("load", () => {
+                const orig = window.setLocationLabel;
+                if (typeof orig === "function") {
+                    window.setLocationLabel = function(val) { orig(val); if (typeof window._browserSyncUrl === "function") window._browserSyncUrl(val); };
+                }
+                const hash = window.location.hash.replace(/^#/, "");
+                if (hash && typeof decodeTarget === "function") {
+                    try { const url = decodeTarget(hash); if (url) openBrowser(url); } catch {}
+                }
+            });
+        </script>
+
+        <script src="./app.js" defer></script>
+    </body>
 </html>
