@@ -2,7 +2,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
 
-<title>T9 OS</title>
+
+<title>Learnify</title>
 
 </head>
 <body>
@@ -21,13 +21,13 @@
     
 
 
+  
 
 <style>
 
 @import url('https://fonts.googleapis.com/css?family=Luckiest+Guy');
 
   body {
-  background: linear-gradient(to bottom, #000000, #3a0057, #550075);
   background-repeat: no-repeat;
   background-size: cover;   /* make sure images cover the whole screen */
   margin: 0;
@@ -68,41 +68,110 @@ color: white;
 
   }
 
-  /* Navbar Styles */
-.navbar {
-  position: fixed;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  width: 60px; /* thinner width since it's vertical */
-  height: auto;
-  background: linear-gradient(
-    145deg,
-    rgba(0, 0, 0, 0.842),
-    rgba(0, 0, 0, 0.534)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow:
-    inset 0 1px 2px rgba(46, 46, 46, 0.3),
-    0 4px 10px rgba(0, 0, 0, 0.4);
-  border-radius: 100px;
-  display: flex;
-  flex-direction: column; /* now stack items vertically */
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  box-shadow: 0px 4px 12px #31313133;
-  opacity: 0.6;
-  backdrop-filter: blur(2px);
-  transition: all 0.1s ease-in-out; 
-}
-.navbar:hover{
-  border-radius: 20px;
-}
-.navbar img{
-  opacity:1;
-}
+ .navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(255,255,255,0.08),
+        rgba(0,0,0,0.65)
+      );
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+
+    .navbar:hover {
+      height: 64px;
+      border-radius: 20px;
+      border-color: rgba(0,180,255,0.6);
+    }
+
+    .navbar::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+
+    .navbar img {
+      width: 30px;
+      height: 30px;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .navbar img:hover {
+      transform: scale(1.25) translateY(-3px);
+    }
+    .navbar img:active{
+        transform: scale(0.97);
+    }
+
+      .navbar.sidebar {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: 64px;
+      height: auto;
+      flex-direction: column;
+      gap: 14px;
+      padding: 12px 0;
+      border-radius: 18px;
+      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
+    }
+
+    .navbar.sidebar:hover {
+      width: 72px;
+      height: auto;
+      border-radius: 24px;
+    }
+
+    .navbar.sidebar img:hover {
+      transform: scale(1.25) translateX(3px);
+    }
+.navbar.sidebar img:active{
+        transform: scale(0.97);
+    }
+    .navbar.sidebar::after {
+      inset: 0;
+      box-shadow: 0 0 0 0 rgba(0,180,255,.5);
+      transition: box-shadow 0.3s;
+      background: none;
+    }
+
+    .navbar.sidebar:hover::after {
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+      background: none;
+    }
 
 
 
@@ -118,9 +187,7 @@ color: white;
     font-size:20px;
 } 
 
-.close-btn:hover {
-    color: #ff0000; /* Change color on hover */
-}
+
  .full-btn {
     background: none;
     border: none;
@@ -165,36 +232,36 @@ color: white;
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:85%;
-    height: 77%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
       animation: popIn2 0.5s ease-out forwards;
 
   }
-   #aiDiv {
+    #aiDiv {
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:85%;
-    height: 77%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -205,56 +272,76 @@ box-shadow: 2px #141414;
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-border: 1px solid rgb(34, 34, 34);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);   
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:85%;
-    height: 77%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+   #movieDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
       animation: popIn2 0.5s ease-out forwards;
 
   }
-  #movieDiv {
+  #musicDiv {
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-border: 1px solid rgb(34, 34, 34);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);   
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:85%;
-    height: 77%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
       animation: popIn2 0.5s ease-out forwards;
 
   }
-   #musicDiv {
+    #roDiv {
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-border: 1px solid rgb(34, 34, 34);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);   
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:85%;
-    height: 77%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -290,8 +377,8 @@ box-shadow: 2px #141414;
     display: none;
     margin-top: 20px;
     padding: 10px;
-  background: rgba(0, 0, 0, 0.3); 
-border: 1px solid rgba(255, 255, 255, 0.15);   
+background-color: rgba(24, 81, 106, 0.504);
+  border: 1px solid rgba(0,180,255,.5);   
     color: white;
     inset: 0;
     margin:auto;
@@ -329,8 +416,8 @@ backdrop-filter: blur(7px);
     #updateDiv {
     margin-top: 20px;
     padding: 10px;
-  background: rgba(0, 0, 0, 0.3); 
-border: 1px solid rgba(255, 255, 255, 0.15);  
+background-color: rgba(24, 81, 106, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
@@ -342,16 +429,16 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     height: 500px; 
     overflow-x: hidden;
     overflow-y: auto;
-      animation: popIn 0.5s ease-out forwards;
+      animation: popIn 0.49s ease-out forwards;
 
   }
     #widgetDiv {
     margin-top: 20px;
     padding: 10px;
-    background: rgba(0,0,0,0.4);    
-backdrop-filter: blur(7px);   
-border: 1px solid rgba(255, 255, 255, 0.15);   
-    color: white;
+backdrop-filter: blur(2px);   
+background-color: rgba(24, 81, 106, 0.504);
+  border: 1px solid rgba(0,180,255,.5);   
+   color: white;
    right:50px;
    top:50px;
     position: fixed;
@@ -369,8 +456,8 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
     margin-top: 20px;
     padding: 10px;
-  background: rgba(0, 0, 0, 0.3); 
-border: 1px solid rgba(255, 255, 255, 0.15);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5); 
     color: white;
     inset: 0;
     margin:auto;
@@ -409,8 +496,8 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
     margin-top: 20px;
     padding: 10px;
-  background: rgba(0, 0, 0, 0.3); 
-border: 1px solid rgba(255, 255, 255, 0.15);  
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
@@ -423,42 +510,62 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     overflow-x: hidden;
     overflow-y: auto;
       animation: popIn 0.5s ease-out forwards;
+
+  }
+     #calcDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:25%;
+    height: 60%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
 
   }
    #emulatorDiv {
     display: none;
     margin-top: 20px;
     padding: 10px;
-   background: rgba(0, 0, 0, 0.3); 
-border: 1px solid rgba(255, 255, 255, 0.15);  
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:20px; 
-    opacity:85%; 
-    width:600px;
-    height: 500px; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
-      animation: popIn 0.5s ease-out forwards;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
 
   }
   #searchDiv {
     display: none;
     margin-top: 20px;
     padding: 10px;
-background-color: #1b1b1bbd;
-border: 1px solid rgba(255, 255, 255, 0.15);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:90%;
-    height: 80%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -585,6 +692,8 @@ border: 1px solid rgba(255, 255, 255, 0.15);
         transform: scale(1);
       }
     }
+
+    
   
 #searchBar{
   text-align:center;
@@ -601,7 +710,13 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 }
 
+
   
+  /* Reduce shadow complexity */
+  .navbar, #settingsDiv, #appsDiv {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+  }
+
 </style>
 </head>
 <body>
@@ -610,11 +725,15 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 <!-- Navbar -->
 <div id="navbar" class="navbar">
-  <a onclick="t9()">
-    <img src="favicon.png">
-  </a>
+  
   <a id="toggleDivButton">
-    <img src="gameicon.png">
+    <img src="game.png">
+  </a>
+  <a onclick="terminal()">
+    <img src="terminal.png">
+  </a>
+  <a onclick="www()">
+    <img src="search.png">
   </a>
    <a onclick="ai()">
     <img src="ai.png">
@@ -625,12 +744,9 @@ border: 1px solid rgba(255, 255, 255, 0.15);
    <a onclick="music()">
     <img src="music3.png">
   </a>
-  <a onclick="s()">
-    <img  src="search.png">
-  </a>
-  
+ 
   <a onclick="emulator()">
-    <img src="apps1.png">
+    <img src="tv.png">
   </a>
 
     <a onclick="Chat()">
@@ -642,52 +758,42 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 </div>
 
 <!-- Hidden Div -->
-<div id="appsDiv">
-  <button class="close-btn" onclick="document.getElementById('appsDiv').style.display = 'none';">●</button>
-  <h1 class="gtext"> Apps </h1>
-  <p color="white" text-align="center">Warning if it says page not found refresh then it should work</p>
 
-          
-     <a href='https://t9os.com/active/iframe#https://netflix.com'>
-     <img class="btn" src="netflix.png">
-          </a>
-          <a href='https://t9os.com/active/iframe#https://discord.com'>
-           <img class="btn" src="dc.png">
-                </a>
-                <a href='https://t9os.com/active/iframe#https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2'>
-                  <img class="btn" src="fortnite.png">
-                       </a>
-                       <a href='https://t9os.com/active/iframe#https://www.tiktok.com/'>
-                        <img class="btn" src="tiktok.png">
-                             </a>
-           
-     
-        
-       
-
-          
-</div>
 
 <div id="collabDiv">
   <button class="close-btn" onclick="document.getElementById('collabDiv').style.display = 'none';">●</button>
   <h1 class="gtext"> Partners </h1>
   <p color="white" style="text-align: center;"></p>
 
-          
-     <a href="https://ratgames.vercel.app/">
+           <a href="https://forms.gle/D95nf65yRoxeMtP3A" target="_blank">
+     <img class="btn" src="partner.png">
+          </a>
+
+     <a href="https://ratgames.vercel.app/" target="_blank">
      <img class="btn" src="rat.gif">
           </a>
           
-           <a href="https://1anime.app">
+           <a href="https://1anime.app" target="_blank">
      <img class="btn" src="anime-partner.png">
           </a>
         
-           <a href="https://ducky-ea0.pages.dev">
+           <a href="https://ducky-ea0.pages.dev" target="_blank">
      <img class="btn" src="duckmath.png">
           </a>
 
-            <a href="https://demonzero.space/">
+            <a href="https://demonzero.space" target="_blank">
      <img class="btn" src="demon.png">
+          </a>
+
+             <a href="https://classroomspot.b-cdn.net" target="_blank">
+     <img class="btn" src="cs.png">
+          </a>
+
+          <a href="https://sites.google.com/view/thesolarsystem67/home" target="_blank">
+     <img class="btn" src="jupiter.gif">
+
+         <a href="https://ixi-os.rs-p.workers.dev/" target="_blank">
+     <img class="btn" src="rsos.png">
           </a>
      
      
@@ -699,21 +805,24 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 <div id="updateDiv">
   <button class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
-
-<h1 style="text-align: center;">Version 2.61</h1>
-
-                        <h3 style="text-align: center; color:white;">T9 OS V3 coming soon. Its gonna have more games, looks better, better functionality and more.</h3>
-
-                <h3 style="text-align: center; color:white;">Links: t9os.vercel.app t9osclass.vercel.app learningbooks.vercel.app. More links in the link docs</h3>
-
-
-  <a style="background-color: white; padding:10px 20px; color:black; border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://docs.google.com/document/d/1mR-52jkUgqwVoEXaIC1CmPccFzuLK18fQ-jCn9VkZn0/edit?usp=sharing"  target="_blank">Current links</a>
-
+  <h1 class="gtext">Updates</h1>
+<h1 style="text-align: center;">Version 3.27</h1>
+        <h3 style="text-align: center; color:white;">New update: fixed the browser and rblx (revamp update coming in 4/22)</h3>
+                <h3 style="text-align: center; color:white;">New links: t9math.pages.dev, t9-os.b-cdn.net</h3>
+                  <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io
+"  target="_blank">make Vercel links</a>
+  <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://app.netlify.com/start/deploy?repository=https%3A%2F%2Fgithub.com%2Ft9lat22%2Ft9lat22.github.io"  target="_blank">make Netlify links</a>
+    <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://forms.gle/BSTZQSijox8Dm2nL8"  target="_blank">Give feedback</a>
 
 
-        <h3 style="text-align: center; color:white;">If you would like to help out T9 OS please donate to our Ko-Fi, It helps us buy domains/links, Servers if needed, and more. Thank you!</h3>
-                <h3 style="text-align: center; color:white;">Donaters get early access to updates, go on the wll of fame, and gets special perks on dc server.</h3>
 
+
+
+
+
+
+
+        <h3 style="text-align: center; color:white;">If you would like to help out T9 OS please donate to our Ko-Fi. Thank you!</h3>
 
 
 
@@ -722,8 +831,22 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   <a style="background-color: white; padding:10px 20px; color:black; border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://ko-fi.com/t9oss"  target="_blank">Donate!</a>
 
     <a style="background-color: 	#7289da; padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://dsc.gg/t9os"  target="_blank">Join server!</a>
+        <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="ad.html"  target="_blank">support T9 OS for free</a>
 
 
+    
+
+<h3 style="text-align: center;" id="random-text">Fun fact:</h3>
+
+
+  <script>
+        const texts = [
+            'Fun fact: none.'
+
+
+        ];
+        document.getElementById("random-text").textContent = texts[Math.floor(Math.random() * texts.length)];
+    </script>
 
 
         
@@ -737,83 +860,228 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 
 
-      <h2 style="transform: translateX(-50%); top:20px; position:fixed; left:50%; text-align:center; color:white; ">CPU  usage:   <span id="cpu"></span></h2>
-<img src="memory.png" style="width:30px; bottom:0; position: fixed; transform: translateX(-50%); left:50%;">
- 
-<script>
-  function updateStats() {
-    let cpuPercent = Math.floor(Math.random() * 100);
-    document.getElementById('cpu').textContent = cpuPercent + '%';
-  }
-
-  setInterval(updateStats, 1000);
-</script>
+ <span id="wIcon">⌛</span>
+  <span id="wCond">Loading</span>
+  <span id="wTemp">--°</span>
+  <span id="wCity">Detecting...</span>
 
 <style>
-  #cpu{
-      font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-      text-shadow: white 10px;
-  }
+/* Weather container */
+#widgetDiv #miniWeather,
+#widgetDiv {
+  box-sizing: border-box;
+}
+
+/* Icon */
+#widgetDiv #wIcon{
+  display:block;
+  font-size:35px;
+  text-align:center;
+  line-height:36px;
+  margin-top:6px;
+  height:36px; /* locks height so it never jumps */
+}
+
+/* Temperature */
+#widgetDiv #wTemp{
+  display:block;
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+  height:26px;
+  line-height:26px;
+}
+
+/* Condition text */
+#widgetDiv #wCond{
+  display:block;
+  text-align:center;
+  font-size:13px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  opacity:.85;
+  height:14px;
+  line-height:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+
+/* City */
+#widgetDiv #wCity{
+  display:block;
+  text-align:center;
+  font-size:11px;
+  opacity:.7;
+  margin-top:2px;
+  height:12px;
+  line-height:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
 </style>
-    
+<script>
+async function loadWidgetWeather() {
+  let loc;
+
+  // --- cache location so we never spam the API ---
+  if (localStorage.weatherGeo) {
+    loc = JSON.parse(localStorage.weatherGeo);
+  } else {
+    const res = await fetch("https://ipwho.is/");
+    loc = await res.json();
+
+    if (!loc.success) throw new Error("Geo lookup failed");
+
+    localStorage.weatherGeo = JSON.stringify(loc);
+  }
+
+  const lat = loc.latitude;
+  const lon = loc.longitude;
+
+  document.getElementById("wCity").textContent = loc.city || "Unknown";
+
+  // --- Open-Meteo (no key) ---
+  const data = await fetch(
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+  ).then(r => r.json());
+
+  const w = data.current_weather;
+  if (!w) throw new Error("Weather unavailable");
+
+  const code = w.weathercode;
+  const temp = Math.round(w.temperature);
+
+  const map = {
+    0: ["☀️", "Sunny"],
+    1: ["🌤️", "Mostly Sunny"],
+    2: ["⛅", "Partly Cloudy"],
+    3: ["☁️", "Cloudy"],
+    45: ["🌫️", "Foggy"],
+    51: ["🌦️", "Drizzle"],
+    61: ["🌧️", "Rainy"],
+    63: ["🌧️", "Rainy"],
+    65: ["🌧️", "Heavy Rain"],
+    71: ["❄️", "Snowy"],
+    80: ["🌧️", "Showers"],
+    95: ["⛈️", "Storm"]
+  };
+
+  const d = map[code] || ["🌡️", "Weather"];
+
+  document.getElementById("wIcon").textContent = d[0];
+  document.getElementById("wCond").textContent = d[1];
+  document.getElementById("wTemp").textContent = temp + "°C";
+}
+
+// run once
+loadWidgetWeather();
+
+</script>
 
 
-
-
-
-
-
-        
-       
-
-          
 </div>
+<div id="wwwDiv">
+  <button class="close-btn" onclick="document.getElementById('wwwDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
 
-<div id="ChatDiv">
-  <button class="close-btn" onclick="document.getElementById('ChatDiv').style.display = 'none';">●</button>
-
-
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Browser</h3>
  
-<iframe class="frame" src="chat3.html"></iframe>
+
+
+
+<iframe id="framesearch" src="p.html"></iframe>
   <style>
-    .frame{
+    #framesearch{
       width:100%;
       height:95%;
       bottom:0;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left:0;
+      border-top: 1px solid rgb(37, 37, 37);
     }
-     #ChatDiv {
-    display: none;
-    margin-top: 20px;
-    padding: 10px;
-background-color: #1b1b1bbd;
-       border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    inset: 0;
-    margin:auto;
-    position: fixed;
-    z-index: 1000;
-    border-radius:20px; 
-    opacity:85%; 
-    width:85%;
-    height: 73%; 
-    overflow-x: hidden;
-    overflow-y: auto;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.589);
-
-      animation: popIn 0.5s ease-out forwards;
-
-  }
+  
   </style>
+
+
+
+    <script>
+    function fullscreenIframesearch() {
+      let iframe = document.getElementById("framesearch");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="ChatDiv">
+  <button class="close-btn" onclick="document.getElementById('ChatDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Chat</h3>
+ 
+
+
+
+<iframe id="framechat" src="chat4.html"></iframe>
+  <style>
+    #framechat{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframechat() {
+      let iframe = document.getElementById("framechat");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
  
            
 </div>
 
 <div id="terminalDiv">
   <button class="close-btn" onclick="document.getElementById('terminalDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeter()">●</button>
+
+    <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame3').src = 'terminal.html';">←</button>
+
         <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Terminal</h3>
 
 
@@ -827,13 +1095,26 @@ background-color: #1b1b1bbd;
       bottom:10px;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left: 0;
       bottom: 0;
     }
    
   </style>
- 
+     <script>
+    function fullscreenIframeter() {
+      let iframe = document.getElementById("frame3");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
            
 </div>
 
@@ -854,7 +1135,7 @@ background-color: #1b1b1bbd;
       bottom:10px;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left: 0;
       bottom: 0;
     }
@@ -863,6 +1144,46 @@ background-color: #1b1b1bbd;
    <script>
     function fullscreenIframe3() {
       let iframe = document.getElementById("mframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+<div id="calcDiv">
+  <button class="close-btn" onclick="document.getElementById('calcDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframecalc()">●</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Calculator</h3>
+
+
+
+ 
+<iframe id="calcframe" class="calcframe" src="calc.html"></iframe>
+  <style>
+    .calcframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframecalc() {
+      let iframe = document.getElementById("calcframe");
       if (iframe.requestFullscreen) {
         iframe.requestFullscreen();
       } else if (iframe.mozRequestFullScreen) { 
@@ -911,7 +1232,12 @@ background-color: #1b1b1bbd;
 
           
 </div>
-
+<script>
+  function www(){
+    const div = document.getElementById('wwwDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 <script>
   function Chat(){
     const div = document.getElementById('ChatDiv');
@@ -925,64 +1251,63 @@ background-color: #1b1b1bbd;
   }
 </script>
 
-<div id="emulatorDiv">
-  <button class="close-btn" onclick="document.getElementById('emulatorDiv').style.display = 'none';">×</button>
-  <h1 class="gtext">| Apps |</h1>
-  <p color="white" style="text-align: center;"></p>
-
-  
-           <a href='/windows11.html'>
-     <img class="btn" src="windows11.png">
-          </a>
-        
-           <a href='/emulatorjs.html'>
-     <img class="btn" src="emulatorjs.png">
-          </a>
-
-           <a href='/webretro.html'>
-     <img class="btn" src="emulator.png">
-          </a>
-
-          
-           <a href='/music.html'>
-     <img class="btn" src="music2.png">
-          </a>
-
-              <a href='/yt.html'>
-     <img class="btn" src="yt.png">
-          </a>
-        
 
 
-        
-     
-        
-       
-
-          
-</div>
+<script>
+  function terminal(){
+    const div = document.getElementById('terminalDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 
 <div id="t9Div">
   <button class="close-btn2" onclick="document.getElementById('t9Div').style.display = 'none';">●</button>
-      <h4 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >T9 OS</h4>
+      <h4 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >T9's Secret corner</h4>
 
 
   &nbsp;&nbsp;&nbsp;&nbsp; 
   
-  <div class="btn-container">
-    <a onclick="terminal()"><img class="t9btn" src="terminal.png"></a>
-  </div>
-<script>
-  function terminal() {
-    const div = document.getElementById('terminalDiv');
-    if (div.style.display === 'block') {
-      div.style.display = 'none';
-    } else {
-      div.style.display = 'block';
-    }
-    document.getElementById('t9Div').style.display = 'none';
+ <h1 style="text-align: center;">welcome to my secret corner</h1>
+ <h2 style="text-align: center;">btw how did u find my secret corner?</h2>
+<h3 style="text-align: center;" id="count">0 people online</h2>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, onDisconnect, set }
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "chat2-a86b2.firebaseapp.com",
+  databaseURL: "https://chat2-a86b2-default-rtdb.firebaseio.com",
+  projectId: "chat2-a86b2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const connectionsRef = ref(db, "connections");
+const connectedRef = ref(db, ".info/connected");
+
+onValue(connectedRef, (snap) => {
+  if (snap.val()) {
+    const myConnection = push(connectionsRef);
+    set(myConnection, true);
+    onDisconnect(myConnection).remove();
   }
+});
+
+onValue(connectionsRef, (snapshot) => {
+  const data = snapshot.val();
+  const count = data ? Object.keys(data).length : 0;
+  document.getElementById("count").innerText =
+    count + " people online";
+});
 </script>
+
+
+<img style="width:75px; height:50px;" src="cat.gif">
+<img style="width:100px; height:75px;" src="please.png">
 
 
 
@@ -1071,7 +1396,7 @@ background-color: #1b1b1bbd;
 
   <p class="warn"></p>
 
-  <iframe id="frame3" class="frame" src="https://98sxnh-8080.csb.app"></iframe>
+  <iframe id="frame3" class="frame" src="b.html"></iframe>
   <style>
     .frame{
       width:100%;
@@ -1079,7 +1404,7 @@ background-color: #1b1b1bbd;
       bottom:0;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left:0;
     }
   </style>
@@ -1099,10 +1424,6 @@ background-color: #1b1b1bbd;
     }
   </script>
            
-        
-       
-
-          
 </div>
 
 <div id="leaderboardDiv">
@@ -1148,9 +1469,9 @@ background-color: #1b1b1bbd;
     position:fixed;
     left:50%;
 transform: translateX(-50%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     width:25%;
     border-radius: 0px 0px 15px 15px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1173,7 +1494,65 @@ transform: translateX(-50%);
  
 </style>
 
+</div>
+<div id="emulatorDiv">
+<button class="close-btn" onclick="document.getElementById('emulatorDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframea()">●</button>
 
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >T9 TV     (credits to Star Stream for TV)</h3>
+
+ 
+
+
+
+<iframe id="framea" src="t9tv.html"></iframe>
+  <style>
+    #framea{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 12px 12px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+    .backa {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+        transform: translateY(2px);
+        top:-2px;
+
+}
+
+  </style>
+
+
+
+  <script>
+    function fullscreenIframea() {
+      let iframe = document.getElementById("framea");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+ 
+
+</div>
+
+<button onclick="t9()" style="position: fixed; bottom:0; right:0; padding:10px 20px; opacity: 0;"></button>
    
              
 </div>
@@ -1181,14 +1560,15 @@ transform: translateX(-50%);
 <button class="close-btn" onclick="document.getElementById('hiddenDiv').style.display = 'none';">●</button>
     <button class="full-btn" onclick="fullscreenIframe()">●</button>
 
-  <button class="back" style="top:10px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame2').src = 'test99.html';">←</button>
+  <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame2').src = 'gnmath1.html';">←</button>
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Games</h3>
 <h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
+
  
 
 
 
-<iframe id="frame2" src="test99.html"></iframe>
+<iframe id="frame2" src="gnmath1.html"></iframe>
   <style>
     #frame2{
       width:100%;
@@ -1196,9 +1576,10 @@ transform: translateX(-50%);
       bottom:0;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 12px 12px;
       left:0;
       border-top: 1px solid rgb(37, 37, 37);
+      background-image:url("space2.png");
     }
     .back {
     background: none;
@@ -1216,22 +1597,44 @@ transform: translateX(-50%);
     display: none;
     margin-top: 20px;
     padding: 10px;
-     background: rgba(0,0,0,0.4);   
-backdrop-filter: blur(7px);   
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:20px; 
-    opacity:85%; 
-    width:85%;
-    height: 73%; 
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
 
-      animation: popIn 0.5s ease-out forwards;
+  
+
+  }
+      #wwwDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+background-color: rgba(5, 139, 196, 0.504);
+  border: 1px solid rgba(0,180,255,.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  
 
   }
   </style>
@@ -1272,6 +1675,53 @@ requestAnimationFrame(trackFPS);
     }
   </script>
  
+
+</div>
+<div id="roDiv">
+  <button class="close-btn" onclick="document.getElementById('roDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeRo()">●</button>
+
+
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Ro<span>blox</span></h3>
+ 
+
+
+
+<iframe id="frameRo" src="r2.html"></iframe>
+  <style>
+    #frameRo{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeRo() {
+      let iframe = document.getElementById("frameRo");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
            
 </div>
 
@@ -1284,7 +1734,7 @@ requestAnimationFrame(trackFPS);
 
 
 
-<iframe id="frameMusic" src="music2.html"></iframe>
+<iframe id="frameMusic" src="music3.html"></iframe>
   <style>
     #frameMusic{
       width:100%;
@@ -1292,12 +1742,14 @@ requestAnimationFrame(trackFPS);
       bottom:0;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left:0;
       border-top: 1px solid rgb(37, 37, 37);
     }
   
   </style>
+
+
 
     <script>
     function fullscreenIframeMusic() {
@@ -1328,7 +1780,7 @@ requestAnimationFrame(trackFPS);
 
 
 
-<iframe id="frame5" src="/ai/index.html"></iframe>
+<iframe id="frame5" src="test100.html"></iframe>
   <style>
     #frame5{
       width:100%;
@@ -1336,7 +1788,7 @@ requestAnimationFrame(trackFPS);
       bottom:0;
       position: absolute;
       border:none;
-      border-radius:0px 0px 20px 20px;
+      border-radius:0px 0px 15px 15px;
       left:0;
       border-top: 1px solid rgb(37, 37, 37);
     }
@@ -1352,28 +1804,7 @@ requestAnimationFrame(trackFPS);
         top:-2px;
 
 }
-     #ChatDiv {
-    display: none;
-    margin-top: 20px;
-    padding: 10px;
-     background: rgba(0,0,0,0.4);   
-backdrop-filter: blur(7px);   
-    color: white;
-    inset: 0;
-    margin:auto;
-    position: fixed;
-    z-index: 1000;
-    border-radius:20px; 
-    opacity:85%; 
-    width:85%;
-    height: 73%; 
-    overflow-x: hidden;
-    overflow-y: auto;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 
-      animation: popIn 0.5s ease-out forwards;
-
-  }
   </style>
 
   
@@ -1392,10 +1823,40 @@ backdrop-filter: blur(7px);
       }
     }
   </script>
-           
+           <style>
+    #hiddenDiv iframe {
+      pointer-events: none;
+    }
+
+    #hiddenDiv.dragging iframe,
+    #hiddenDiv.resizing iframe {
+      pointer-events: none;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      cursor: move;
+      z-index: 5;
+    }
+
+    .resizer {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      right: 0;
+      bottom: 0;
+      cursor: nwse-resize;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.1);
+    }
+</style>
 </div>
 
-<div class="tnav">
+<div id="tnav" class="tnav">
 
    
 
@@ -1425,8 +1886,8 @@ backdrop-filter: blur(7px);
     
 
   
-    <a onclick="hacks()">
-    <img class="timg" src="hacks.png">
+    <a onclick="calc()">
+    <img class="timg" src="calc.png">
   </a>
 
  
@@ -1448,17 +1909,17 @@ backdrop-filter: blur(7px);
 
 
 <div id="settingsDiv">
-  <button class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">×</button>
+  <button class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
 
   <h1 class="seth">|| Settings ||</h1>
+
   
    <label class="label" for="background-select">Select Background:</label>
 <select id="background-select">
   <option value="t9os6.png">Default</option>
                       <option value="abstract.png">T9 Abstract</option>
-
-                                                  <option value="silver2.gif">Silver Surfer live </option>
-
+                                            <option value="stars3.png">blue space</option>
+                                                                        <option value="silver2.gif">Silver Surfer Live</option>
                             <option value="silver.jpeg">Silver Surfer</option>
                           <option value="naruto.png">Naruto</option>
                   <option value="red.jpg">Red Abstract</option>
@@ -1492,10 +1953,126 @@ backdrop-filter: blur(7px);
 
 </select>
 
+<input type="file" id="background-upload" accept="image/*">
+
+
 
   
 <a   onclick="openGame()"  class="round-btn">Hide url</a>
-<a  id="toggleBTN" class="round-btn">Toggle logo</a>
+<a   onclick="toggleNavbar()" class="round-btn">Toggle navbar</a>
+<h2 style="text-align: center;">Appearances</h2>
+
+    <label class="label" for="picker">Select theme:</label>
+        <input type="color" id="picker" value="#333333">
+
+    <a   id="reset" class="round-btn">Reset theme</a>
+
+
+        <script>
+    // List of div IDs
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv'];
+
+    // Store each div's original colors when the page opens
+    const originalColors = {};
+    divIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            originalColors[id] = {
+                bg: getComputedStyle(el).backgroundColor,
+                border: getComputedStyle(el).borderColor
+            };
+        }
+    });
+
+    // Store original text shadows for time and battery
+    const timeEl = document.getElementById('time');
+    const batteryEl = document.getElementById('batteryPercentage');
+    const originalTextShadows = {
+        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
+        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
+    };
+
+    // 1. Load saved progress from LocalStorage
+    window.addEventListener('load', () => {
+        const savedColor = localStorage.getItem('userColor');
+        if (savedColor) {
+            divIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.backgroundColor = savedColor;
+                    el.style.borderColor = savedColor;
+                }
+            });
+            
+            // Apply saved color to text shadows
+            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
+            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
+            
+            document.getElementById('picker').value = savedColor;
+        }
+    });
+
+    // 2. Change color for the list of divs
+    document.getElementById('picker').addEventListener('input', function() {
+        const newColor = this.value;
+
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.backgroundColor = newColor;
+                el.style.borderColor = newColor;
+            }
+        });
+
+        // Update text shadows for time and battery
+        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
+        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
+
+        localStorage.setItem('userColor', newColor);
+    });
+
+    // 3. Reset to "Normal" (Each div returns to its own original color)
+    document.getElementById('reset').addEventListener('click', () => {
+        divIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && originalColors[id]) {
+                el.style.backgroundColor = originalColors[id].bg;
+                el.style.borderColor = originalColors[id].border;
+            }
+        });
+
+        // Reset text shadows to original
+        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
+        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
+
+        localStorage.removeItem('userColor');
+    });
+</script>
+
+ <script>
+    // Load saved position on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const navbar = document.querySelector('.navbar');
+      const savedPosition = localStorage.getItem('navbarPosition');
+      
+      if (savedPosition === 'sidebar') {
+        navbar.classList.add('sidebar');
+      }
+    });
+
+    function toggleNavbar() {
+      const navbar = document.querySelector('.navbar');
+      navbar.classList.toggle('sidebar');
+      
+      // Save the current position
+      if (navbar.classList.contains('sidebar')) {
+        localStorage.setItem('navbarPosition', 'sidebar');
+      } else {
+        localStorage.setItem('navbarPosition', 'dock');
+      }
+    }
+  </script>
+
    <label class="label" for="preset">Select Tab Cloak:</label>
 
  <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
@@ -1504,7 +2081,7 @@ backdrop-filter: blur(7px);
     <option value="classroom">Google Classroom</option>
     <option value="vocab">Vocabulary.com</option>
   </select>
-
+</div>
 <style>
    .round-btn {
     border-radius: 12px;
@@ -1521,26 +2098,146 @@ backdrop-filter: blur(7px);
   
 </style>
 
+<style>
 
-  
-</div>
-  
+
+
+
+
+.icon { 
+  position: absolute; width: 80px; text-align: center; cursor: default;}
+
+.icon img {
+   width: 48px; height: 48px; pointer-events: none;}
+
+.icon span {
+   display: block; font-size: 12px; margin-top: 6px; line-height: 1.2; color:white; word-break: break-word; pointer-events: none; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+}
+
+/* Optional: selection highlight */.icon.selected { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}.icon:hover { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}
+
+
+
+</style> </div> <div onclick="movie()" class="icon" style="left:100px; top:120px;"> <img src="flix.png" alt="browser"> <span>Movies</span> </div>
+
+<div onclick="settings()" class="icon" style="left:100px; top:220px;"> 
+  <img src="seting.png" alt="settings"> 
+  <span>Settings</span> </div> 
+
+  <div onclick="ro()" class="icon" style="left:100px; top:320px;"> 
+    <img src="ro.png"> 
+    <span>Roblox</span> </div> 
 
 
 
 <script>
-    const presetSelect = document.getElementById("preset");
+  const icons = document.querySelectorAll('.icon');
+const gridSize = 100;
+const offsetX = 5;  // Matches your HTML left: 5px
+const offsetY = 20; // Matches your HTML top: 120px/220px grid logic
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const saved = localStorage.getItem("cloak_preset") || "default";
-      presetSelect.value = saved;
-    });
+let draggingIcon = null;
+let mouseOffset = { x: 0, y: 0 };
+let mouseStart = { x: 0, y: 0 };
+let isDragging = false;
+const dragThreshold = 5;
 
-    presetSelect.addEventListener("change", () => {
-      localStorage.setItem("cloak_preset", presetSelect.value);
-      console.log("✅ Preset saved:", presetSelect.value);
-    });
+// Precision snapping functions
+const snapX = (v) => Math.round((v - offsetX) / gridSize) * gridSize + offsetX;
+const snapY = (v) => Math.round((v - offsetY) / gridSize) * gridSize + offsetY;
+
+// Check for collisions using snapped coordinates
+function isOccupied(x, y, ignore) {
+  return Array.from(icons).some(ic => 
+    ic !== ignore && 
+    parseInt(ic.style.left) === x && 
+    parseInt(ic.style.top) === y
+  );
+}
+
+icons.forEach(icon => {
+  icon.addEventListener('mousedown', (e) => {
+    draggingIcon = icon;
+    mouseStart = { x: e.clientX, y: e.clientY };
+    const rect = icon.getBoundingClientRect();
+    mouseOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    icon.style.zIndex = 1000;
+  });
+
+  // Captures and blocks the click if the mouse moved (dragging)
+  icon.addEventListener('click', (e) => {
+    if (isDragging) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  }, true); 
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!draggingIcon) return;
+
+  const dx = e.clientX - mouseStart.x;
+  const dy = e.clientY - mouseStart.y;
+
+  if (!isDragging && Math.hypot(dx, dy) > dragThreshold) {
+    isDragging = true;
+  }
+
+  if (!isDragging) return;
+
+  // Real-time movement logic
+  let x = Math.min(Math.max(e.clientX - mouseOffset.x, 0), window.innerWidth - draggingIcon.offsetWidth);
+  let y = Math.min(Math.max(e.clientY - mouseOffset.y, 0), window.innerHeight - draggingIcon.offsetHeight);
+
+  draggingIcon.style.left = x + 'px';
+  draggingIcon.style.top = y + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  if (!draggingIcon) return;
+
+  if (isDragging) {
+    const targetX = snapX(draggingIcon.offsetLeft);
+    const targetY = snapY(draggingIcon.offsetTop);
+
+    if (isOccupied(targetX, targetY, draggingIcon)) {
+      // Snap back to original grid spot if blocked
+      draggingIcon.style.left = snapX(mouseStart.x - mouseOffset.x) + 'px';
+      draggingIcon.style.top = snapY(mouseStart.y - mouseOffset.y) + 'px';
+    } else {
+      // Lock into new grid spot
+      draggingIcon.style.left = targetX + 'px';
+      draggingIcon.style.top = targetY + 'px';
+    }
+
+    // Delay resetting the flag so 'click' event doesn't trigger 's()'
+    setTimeout(() => { isDragging = false; }, 50);
+  }
+
+  draggingIcon.style.zIndex = '';
+  draggingIcon = null;
+});
+
+document.addEventListener('selectstart', e => e.preventDefault());
   </script>
+
+
+
+
+
+<script>
+  const presetSelect = document.getElementById("preset");
+
+  window.addEventListener("DOMContentLoaded", () => {
+    presetSelect.value = localStorage.getItem("cloak_preset") || "default";
+  });
+
+  presetSelect.addEventListener("change", () => {
+    localStorage.setItem("cloak_preset", presetSelect.value);
+    console.log("✅ Preset saved:", presetSelect.value);
+  });
+</script>
 
 <script>
   // If no background is saved yet, set default
@@ -1740,10 +2437,22 @@ backdrop-filter: blur(7px);
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
+<script>
+  function calc(){
+    const div = document.getElementById('calcDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 
 <script>
   function s(){
     const div = document.getElementById('searchDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function ro(){
+    const div = document.getElementById('roDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
@@ -1809,26 +2518,41 @@ backdrop-filter: blur(7px);
 
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-// Get the select element
-var select = document.getElementById("background-select");
+document.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("background-select");
+  const upload = document.getElementById("background-upload");
+  const body = document.body;
 
-// Set initial background image based on stored preference or default
-var selectedBackground = localStorage.getItem("selectedBackground");
+  // Apply background
+  function setBackground(src) {
+    body.style.backgroundImage = src ? `url(${src})` : "";
+    localStorage.setItem("selectedBackground", src || "");
+  }
 
-if (selectedBackground) {
-  document.body.style.backgroundImage = "url(" + selectedBackground + ")";
-  select.value = selectedBackground;
-}
+  // Load saved background
+  const savedBg = localStorage.getItem("selectedBackground");
+  if (savedBg) setBackground(savedBg);
 
- // Listen for changes in the select element
- select.addEventListener("change", function() {
-   var newBackground = this.value;
-   document.body.style.backgroundImage = "url(" + newBackground + ")";
-   localStorage.setItem("selectedBackground", newBackground);
- });
+  // Dropdown change
+  select.addEventListener("change", () => {
+    if (select.value) {
+      setBackground(select.value);
+    }
+  });
+
+  // Upload custom background
+  upload.addEventListener("change", () => {
+    const file = upload.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBackground(reader.result); // base64 image
+      select.value = ""; // reset dropdown
+    };
+    reader.readAsDataURL(file);
+  });
 });
-
 </script>
 
 <script>
@@ -1844,10 +2568,7 @@ if (selectedBackground) {
   });
 </script>
 
- <div id="imgBox">
 
-
- </div>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -1996,8 +2717,9 @@ if (selectedBackground) {
     }
   }
 </style>
-<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">Version 2.6</p>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">Version 3.25</p>
 <p style="color:#acacac; position: fixed; bottom: -3px; left: 100px; opacity: 0.6;" id="myId">ID: <span id="idValue"></span></p>
+
 
 <!-- Include Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -2005,7 +2727,7 @@ if (selectedBackground) {
 
 <script>
   // ========== CONFIG ==========
-  const OWNER_ID = "0635354315"; // your owner ID
+  const OWNER_IDS = ["6528690208", "4084803237", "0635354315", "8862060932", "9937301888", "5069664537", "1362852477"]; // add both owner IDs here
   const ID_KEY = "numericUserID";
   // ============================
 
@@ -2036,7 +2758,6 @@ if (selectedBackground) {
   (function() {
     'use strict';
     
-    // Store original localStorage methods
     const originalSetItem = Storage.prototype.setItem;
     const originalRemoveItem = Storage.prototype.removeItem;
     const originalClear = Storage.prototype.clear;
@@ -2044,42 +2765,22 @@ if (selectedBackground) {
     let isLocked = false;
     let myID = null;
 
-    // Function to lock screen
     function lockScreen() {
       if (isLocked) return;
       isLocked = true;
-      
-      // Clear the page
       document.body.innerHTML = "";
-      document.body.style.cssText = "background: red; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 40px; overflow: hidden; margin: 0; height: 100vh; text-align:center;";
+      document.body.style.cssText = "background: red; color: white; display: flex; justify-content: center; align-items: center; font-size: 40px; overflow: hidden; margin: 0; height: 100vh;";
+      document.body.innerText = "BANNED";
 
-      // SHOW BANNED + ID
-      document.body.innerHTML = `
-        <div>BANNED</div>
-                <div>appeal ban at dsc.gg/t9os </div>
-
-        <div style="font-size:22px;margin-top:15px;opacity:0.85;">
-          Your ID: <b>${myID}</b>
-        </div>
-      `;
-
-      // Prevent all interactions
-      const preventAll = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      };
-      
-      ['keydown', 'keyup', 'keypress', 'mousedown', 'mouseup', 'click', 
-       'touchstart', 'touchend', 'contextmenu', 'beforeunload'].forEach(event => {
+      const preventAll = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
+      ['keydown','keyup','keypress','mousedown','mouseup','click','touchstart','touchend','contextmenu','beforeunload'].forEach(event => {
         document.addEventListener(event, preventAll, true);
         window.addEventListener(event, preventAll, true);
       });
 
-      // Prevent localStorage manipulation
-      Storage.prototype.setItem = function() { return; };
-      Storage.prototype.removeItem = function() { return; };
-      Storage.prototype.clear = function() { return; };
+      Storage.prototype.setItem = function() {};
+      Storage.prototype.removeItem = function() {};
+      Storage.prototype.clear = function() {};
       
       Object.freeze(localStorage);
       Object.freeze(sessionStorage);
@@ -2093,41 +2794,30 @@ if (selectedBackground) {
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Get or create user ID using original methods
       myID = originalSetItem.call(localStorage, ID_KEY, localStorage.getItem(ID_KEY) || generateNumericID()) || localStorage.getItem(ID_KEY);
       if (!myID) {
         myID = generateNumericID();
         originalSetItem.call(localStorage, ID_KEY, myID);
       }
 
-      // Show ID
       const idSpan = document.getElementById("idValue");
       if (idSpan) idSpan.textContent = myID;
 
-      // Monitor localStorage changes - prevent ID tampering
       const checkInterval = setInterval(() => {
         const currentID = localStorage.getItem(ID_KEY);
-        if (currentID !== myID) {
-          originalSetItem.call(localStorage, ID_KEY, myID);
-        }
-        
-        if (isLocked) {
-          lockScreen();
-        }
+        if (currentID !== myID) originalSetItem.call(localStorage, ID_KEY, myID);
+        if (isLocked) lockScreen();
       }, 100);
 
-      // Check banned list from Firebase
       const bannedRef = db.ref("bannedIDs");
       bannedRef.on("value", (snapshot) => {
         const bannedIDs = snapshot.val() || [];
-        if (bannedIDs.includes(myID)) {
-          lockScreen();
-        }
+        if (bannedIDs.includes(myID)) lockScreen();
       });
 
       // Owner shortcut: press "," to ban/unban
       document.addEventListener("keydown", async (e) => {
-        if (myID !== OWNER_ID) return;
+        if (!OWNER_IDS.includes(myID)) return; // check against both owners
         if (e.key === ",") {
           const action = prompt("Type 'ban' to ban or 'unban' to unban:");
           if (!action) return;
@@ -2158,100 +2848,460 @@ if (selectedBackground) {
   })();
 </script>
 
+<!-- Test-->
+
+
+
+
+
+
+
 <!--test2-->
 
+  <script>
+const HEADER_HEIGHT = 30; // was 40
 
-<script>
-/* ===============================
-   T9 OS – Hidden Iframe Freeze & Mute
-   =============================== */
+const wins = [
+document.getElementById("hiddenDiv"),
+document.getElementById("ChatDiv"),
+document.getElementById("musicDiv"),
+document.getElementById("searchDiv"),
+document.getElementById("updateDiv"),
+document.getElementById("aiDiv"),
+document.getElementById("terminalDiv"),
+document.getElementById("emulatorDiv"),
+document.getElementById("movieDiv"),
+document.getElementById("roDiv"),
+document.getElementById("settingsDiv"),
+document.getElementById("calcDiv"),
+document.getElementById("wwwDiv"),
 
-const APP_WINDOWS = [
-  "hiddenDiv",
-  "aiDiv",
-  "movieDiv",
-  "terminalDiv",
-  "searchDiv",
-  "ChatDiv",
-  "emulatorDiv",
-  "appsDiv"
+
+
+
+
 ];
 
-const PAUSE_MESSAGE = { type: "pause" };
-const RESUME_MESSAGE = { type: "resume" };
-const MUTE_MESSAGE = { type: "mute" };
-const UNMUTE_MESSAGE = { type: "unmute" };
+wins.forEach(win => {
+if (!win) return;
 
-// Send message to iframe to pause/resume/mute/unmute
-function sendMessage(frame, message) {
-  frame.contentWindow?.postMessage(message, "*");
+// ───────── Drag handle ─────────
+let dragHandle = win.querySelector(".drag-handle");
+if (!dragHandle) {
+dragHandle = document.createElement("div");
+dragHandle.className = "drag-handle";
+Object.assign(dragHandle.style,{
+position:"absolute",top:"0",left:"50px",right:"0",
+height: HEADER_HEIGHT + "px",
+cursor:"move",zIndex:"5",pointerEvents:"none"
+});
+win.appendChild(dragHandle);
 }
 
-// Freeze and mute iframe
-function freezeIframe(frame) {
-  sendMessage(frame, PAUSE_MESSAGE);
-  sendMessage(frame, MUTE_MESSAGE);
-  frame.dataset.paused = "true";
+// ───────── Resizer ─────────
+let resizer = win.querySelector(".resizer");
+if (!resizer) {
+resizer = document.createElement("div");
+resizer.className = "resizer";
+Object.assign(resizer.style,{
+position:"absolute",width:"30px",height:"30px",
+right:"0",bottom:"0",cursor:"nwse-resize",zIndex:"10",
+background:"rgba(255,255,255,0.1)"
+});
+win.appendChild(resizer);
 }
 
-// Restore and unmute iframe
-function restoreIframe(frame) {
-  sendMessage(frame, RESUME_MESSAGE);
-  sendMessage(frame, UNMUTE_MESSAGE);
-  delete frame.dataset.paused;
+// ───────── Ensure iframe container respects header ─────────
+win.querySelectorAll("iframe").forEach(iframe => {
+if (!iframe.style.marginTop) {
+iframe.style.marginTop = HEADER_HEIGHT + "px";
+iframe.style.height = "calc(100% - " + HEADER_HEIGHT + "px)";
+iframe.style.display = "block";
 }
-
-// Freeze/mute all iframes in a container
-function freezeContainer(containerId) {
-  const box = document.getElementById(containerId);
-  if (!box) return;
-
-  box.querySelectorAll("iframe").forEach(frame => freezeIframe(frame));
-}
-
-// Restore/unmute all iframes in a container
-function restoreContainer(containerId) {
-  const box = document.getElementById(containerId);
-  if (!box) return;
-
-  box.querySelectorAll("iframe").forEach(frame => restoreIframe(frame));
-}
-
-// Observe div visibility changes
-APP_WINDOWS.forEach(id => {
-  const box = document.getElementById(id);
-  if (!box) return;
-
-  const observer = new MutationObserver(() => {
-    if (getComputedStyle(box).display === "none") {
-      freezeContainer(id);
-    } else {
-      restoreContainer(id);
-    }
-  });
-
-  observer.observe(box, { attributes: true, attributeFilter: ["style"] });
 });
 
-// Pause/mute everything if browser tab is hidden
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    APP_WINDOWS.forEach(freezeContainer);
-  } else {
-    APP_WINDOWS.forEach(restoreContainer);
-  }
+let isDragging=false,isResizing=false,offsetX=0,offsetY=0,
+startX=0,startY=0,startWidth=0,startHeight=0,hasBeenPositioned=false;
+
+// 🔒 SAFE iframe control
+function disableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.dataset._pe=i.style.pointerEvents;
+i.style.pointerEvents="none";
+});
+}
+function enableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.style.pointerEvents=i.dataset._pe||"auto";
+delete i.dataset._pe;
+});
+}
+
+// ───────── DRAG ─────────
+win.addEventListener("mousedown",e=>{
+if(e.target.closest("button,a,input,select,textarea")) return;
+const r=win.getBoundingClientRect();
+if(e.clientY-r.top>HEADER_HEIGHT||isResizing) return;
+
+if(!hasBeenPositioned){
+win.style.transform="none";
+win.style.margin="0";
+win.style.inset="auto";
+win.style.left=r.left+"px";
+win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+
+isDragging=true;
+offsetX=e.clientX-r.left;
+offsetY=e.clientY-r.top;
+disableIframeTemp();
+dragHandle.style.pointerEvents="auto";
+e.preventDefault();
+});
+
+// ───────── RESIZE ─────────
+resizer.addEventListener("mousedown",e=>{
+const r=win.getBoundingClientRect();
+if(!hasBeenPositioned){
+win.style.transform="none";win.style.margin="0";win.style.inset="auto";
+win.style.left=r.left+"px";win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+isResizing=true;disableIframeTemp();
+startX=e.clientX;startY=e.clientY;
+startWidth=r.width;startHeight=r.height;
+win.style.width=startWidth+"px";win.style.height=startHeight+"px";
+e.preventDefault();e.stopPropagation();
+});
+
+// ───────── MOVE ─────────
+document.addEventListener("mousemove",e=>{
+if(isDragging){
+let x=e.clientX-offsetX;
+let y=e.clientY-offsetY;
+win.style.left=x+"px";
+win.style.top=y+"px";
+if(win.id==="hiddenDiv") win.style.willChange="transform";
+}
+if(isResizing){
+const dx=e.clientX-startX;
+const dy=e.clientY-startY;
+win.style.width=Math.max(300,startWidth+dx)+"px";
+win.style.height=Math.max(90,startHeight+dy)+"px";
+}
+});
+
+// ───────── FORCE UNFREEZE ─────────
+function stopAll(){
+enableIframeTemp();
+dragHandle.style.pointerEvents="none";
+isDragging=false;isResizing=false;
+win.style.willChange="auto";
+}
+document.addEventListener("mouseup",stopAll);
+document.addEventListener("mouseleave",stopAll);
+window.addEventListener("blur",stopAll);
 });
 </script>
+<script>
+ /**
+ * T9 OS Performance Optimizer - Smart Edition
+ * Optimizes performance WITHOUT affecting visuals or animations
+ * Focuses on reducing unnecessary work behind the scenes
+ */
+
+(function() {
+  'use strict';
+  
+  console.log('🚀 Smart Performance Optimizer loading...');
+
+  // ============================================
+  // 1. OPTIMIZE FIREBASE WITHOUT BREAKING IT
+  // ============================================
+  
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    const originalOnValue = firebase.database.Reference.prototype.on;
+    firebase.database.Reference.prototype.on = function(eventType, callback, cancelCallbackOrContext, context) {
+      let throttledCallback = callback;
+      
+      if (eventType === 'value' && !this.toString().includes('bannedIDs') && !this.toString().includes('globalMessages')) {
+        let pending = false;
+        
+        throttledCallback = function(...args) {
+          if (!pending) {
+            pending = true;
+            setTimeout(() => {
+              callback.apply(this, args);
+              pending = false;
+            }, 1000);
+          }
+        };
+      }
+      
+      return originalOnValue.call(this, eventType, throttledCallback, cancelCallbackOrContext, context);
+    };
+  }
+
+  // ============================================
+  // 2. DEBOUNCE LOCALSTORAGE WRITES
+  // ============================================
+  
+  const localStorageQueue = new Map();
+  let saveTimeout = null;
+  
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    if (key.includes('icon') || key.includes('theme') || key.includes('background')) {
+      localStorageQueue.set(key, value);
+      
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        localStorageQueue.forEach((val, k) => {
+          originalSetItem(k, val);
+        });
+        localStorageQueue.clear();
+      }, 300);
+    } else {
+      originalSetItem(key, value);
+    }
+  };
+
+  // ============================================
+  // 3. OPTIMIZE IFRAMES
+  // ============================================
+  
+  function optimizeIframes() {
+    document.querySelectorAll('iframe').forEach(iframe => {
+      const parent = iframe.closest('[id$="Div"]');
+      if (!parent) return;
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          try {
+            iframe.contentWindow?.postMessage(
+              { type: entry.isIntersecting ? 'resume' : 'pause' }, '*'
+            );
+          } catch(e) {}
+        });
+      }, { threshold: 0.01 });
+      
+      observer.observe(parent);
+    });
+  }
+  
+  optimizeIframes();
+  setInterval(optimizeIframes, 5000);
+
+  // ============================================
+  // 4. BATCH DOM UPDATES
+  // ============================================
+  
+  window.batchDOMUpdate = function(read, write) {
+    requestAnimationFrame(() => {
+      const data = read ? read() : null;
+      requestAnimationFrame(() => write && write(data));
+    });
+  };
+
+  // ============================================
+  // 5. DRAG PERFORMANCE
+  // ============================================
+  
+  let activeDrags = new Set();
+  
+  document.addEventListener('mousedown', e => {
+    const d = e.target.closest('.icon, [id$="Div"]');
+    if (d && !activeDrags.has(d)) {
+      activeDrags.add(d);
+      d.style.willChange = 'transform,left,top';
+    }
+  }, true);
+  
+  document.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      activeDrags.forEach(el => el.style.willChange = 'auto');
+      activeDrags.clear();
+    }, 100);
+  }, true);
+
+  // ============================================
+  // 6. CLOCK/BATTERY CONTAINMENT
+  // ============================================
+  
+  document.getElementById('time')?.style.setProperty('contain','layout style paint');
+  document.getElementById('batteryPercentage')?.style.setProperty('contain','layout style paint');
+
+  // ============================================
+  // 7. PASSIVE EVENTS
+  // ============================================
+  
+  const passiveEvents = ['scroll','touchstart','touchmove','wheel'];
+  const origAdd = EventTarget.prototype.addEventListener;
+  
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (passiveEvents.includes(type)) {
+      options = typeof options === 'object' ? {...options, passive:true} : {passive:true};
+    }
+    return origAdd.call(this,type,listener,options);
+  };
+
+  // ============================================
+  // 8. NOTIFICATION OPTIMIZATION
+  // ============================================
+  
+  if (window.showNotification) {
+    const queue=[];
+    window.originalShowNotification=window.showNotification;
+    window.showNotification=function(text){
+      if(queue.includes(text))return;
+      queue.push(text);
+      if(queue.length>3)queue.shift();
+      requestAnimationFrame(()=>window.originalShowNotification(text));
+    };
+  }
+
+  // ============================================
+  // 9. LAZY LOAD IMAGES
+  // ============================================
+  
+  const lazy=()=>document.querySelectorAll('img:not([loading])')
+    .forEach(i=>i.loading='lazy');
+  lazy();
+  new MutationObserver(lazy).observe(document.body,{childList:true,subtree:true});
+
+  // ============================================
+  // 10. TAB VISIBILITY
+  // ============================================
+  
+  document.addEventListener('visibilitychange',()=>{
+    document.querySelectorAll('iframe').forEach(f=>{
+      try{
+        f.contentWindow?.postMessage(
+          {type:document.hidden?'pause':'resume'},'*'
+        );
+      }catch(e){}
+    });
+  });
+
+  // ============================================
+  // 11. CHROMEBOOK MODE
+  // ============================================
+  
+  const isChromebook=/CrOS/.test(navigator.userAgent);
+  const isLowMemory=navigator.deviceMemory&&navigator.deviceMemory<4;
+  
+  if(isChromebook||isLowMemory){
+    const style=document.createElement('style');
+    style.textContent=`
+      @media (prefers-reduced-motion: reduce){
+        *,*::before,*::after{
+          animation-duration:.01ms!important;
+          animation-iteration-count:1!important;
+          transition-duration:.01ms!important;
+        }
+      }
+      /* FIX: navbar removed from GPU transform */
+      .icon,[id$="Div"]{
+        transform:translateZ(0);
+        backface-visibility:hidden;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ============================================
+  // 12. FPS COUNTER
+  // ============================================
+  
+  const fps=document.getElementById('fpsCounter');
+  if(fps&&window.trackFPS){
+    let last=0;
+    const orig=window.trackFPS;
+    window.trackFPS=function(){
+      const now=performance.now();
+      if(now-last>500){orig();last=now;}
+    };
+  }
+
+  // ============================================
+  // 13. MEMORY OBSERVER
+  // ============================================
+  
+  new MutationObserver(()=>{}).observe(document.body,{childList:true,subtree:true});
+
+  // ============================================
+  // 14. GPU ACCELERATION (NAVBAR EXCLUDED)
+  // ============================================
+  
+  document.querySelectorAll('[id$="Div"], .icon')
+    .forEach(el=>{
+      el.style.transform=el.style.transform||'translateZ(0)';
+    });
+
+  // ============================================
+  // NAVBAR HARD FIX
+  // ============================================
+  
+  const navFix=document.createElement('style');
+  navFix.textContent=`
+   .navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(255,255,255,0.08),
+        rgba(0,0,0,0.65)
+      );
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+  `;
+  document.head.appendChild(navFix);
+
+  console.log('✅ Smart Performance Optimizer loaded successfully!');
+})();
+
+</script>
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="https://t9osspace.matomo.cloud/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '1']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src='https://cdn.matomo.cloud/t9osspace.matomo.cloud/matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
 
 
+  <!--testing part-->
 
 
 
 </body>
 
-
-
 </html>
-
 
 
