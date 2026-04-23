@@ -361,65 +361,13 @@
 
         <script>
             // ══════════════════════════════════════════════════════════════
-            //  PROXY ENGINE — Scramjet-first, UV fallback
+            //  PROXY ENGINE — Scramjet only
+            //  ghost.js / app.js already boot the Scramjet worker and expose
+            //  openInScramjet(url, frame).  We just wait for that function.
             // ══════════════════════════════════════════════════════════════
-            const wispUrl = "wss://wisp.rhw.one/wisp/";
 
-            // Tracks whether each engine has finished its one-time setup
-            let scramjetReady  = false;
-            let uvReady        = false;
-            let scramjetPromise = null;
-            let uvPromise       = null;
-
-            // ── Scramjet init ──────────────────────────────────────────
-            function initScramjet() {
-                if (scramjetPromise) return scramjetPromise;
-                scramjetPromise = (async () => {
-                    // Wait for the ScramjetController class to be defined by scramjet.all.js
-                    await waitFor(() => typeof ScramjetController !== 'undefined', 5000);
-
-                    const controller = new ScramjetController({
-                        prefix: "/scramjet/",
-                        // Scramjet ships these workers inside its own bundle path
-                        files: {
-                            wasm:    "/surf/scram/scramjet.wasm.js",
-                            worker:  "/surf/scram/scramjet.worker.js",
-                            client:  "/surf/scram/scramjet.client.js",
-                            shared:  "/surf/scram/scramjet.shared.js",
-                            sync:    "/surf/scram/scramjet.sync.js",
-                        },
-                    });
-
-                    await controller.init();
-
-                    // Connect transport
-                    await controller.js.connection.setTransport(
-                        "/libcurl/index.mjs",
-                        [{ websocket: wispUrl }]
-                    );
-
-                    // Expose encode helper globally so proxyLoad can use it
-                    window.__scramjet = controller;
-                    scramjetReady = true;
-                })();
-                return scramjetPromise;
-            }
-
-            // ── UV init ────────────────────────────────────────────────
-            function initUV() {
-                if (uvPromise) return uvPromise;
-                uvPromise = (async () => {
-                    await waitFor(() => typeof BareMux !== 'undefined', 5000);
-                    const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-                    await conn.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-                    window.__uvConn = conn;
-                    uvReady = true;
-                })();
-                return uvPromise;
-            }
-
-            // Generic poll-until helper
-            function waitFor(condFn, timeoutMs = 5000) {
+            // Generic poll-until helper (no wispUrl here — app.js owns it)
+            function waitFor(condFn, timeoutMs = 8000) {
                 return new Promise((resolve, reject) => {
                     if (condFn()) { resolve(); return; }
                     const start = Date.now();
@@ -427,53 +375,39 @@
                         if (condFn()) { clearInterval(iv); resolve(); }
                         else if (Date.now() - start > timeoutMs) {
                             clearInterval(iv);
-                            reject(new Error('waitFor timeout: ' + condFn.toString()));
+                            reject(new Error('waitFor timeout'));
                         }
                     }, 80);
                 });
             }
 
             // ── Core load function ─────────────────────────────────────
+            // Scramjet (via ghost.js/app.js) registers one of these globals:
+            //   • openInScramjet(url, frame)   ← preferred
+            //   • openInFrame(url)             ← legacy alias some builds use
             async function proxyLoad(url) {
                 if (!url) return;
                 startProg();
                 const frame = document.getElementById('proxy-frame');
+                frame.onload = () => { stopProg(); frame.onload = null; };
 
-                // Helper to wire up stopProg once
-                function attachStop() {
-                    const prev = frame.onload;
-                    frame.onload = () => { stopProg(); frame.onload = null; };
-                }
-
-                // 1. Try Scramjet
                 try {
-                    await initScramjet();
-                    if (window.__scramjet) {
-                        const encoded = window.__scramjet.encodeUrl(url);
-                        attachStop();
-                        frame.src = encoded;
-                        return;
+                    // Wait for scramjet to be ready (ghost.js sets this up async)
+                    await waitFor(() =>
+                        typeof openInScramjet === 'function' ||
+                        typeof openInFrame    === 'function'
+                    , 8000);
+
+                    if (typeof openInScramjet === 'function') {
+                        openInScramjet(url, frame);
+                    } else {
+                        openInFrame(url);           // legacy — navigates the shared frame
                     }
                 } catch (e) {
-                    console.warn('[CineWeb] Scramjet failed, trying UV:', e);
+                    console.error('[CineWeb] Scramjet unavailable:', e);
+                    stopProg();
+                    showToast("Proxy unavailable — check your connection");
                 }
-
-                // 2. Fallback: UV
-                try {
-                    await initUV();
-                    if (typeof __uv$config !== 'undefined') {
-                        const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-                        attachStop();
-                        frame.src = encoded;
-                        return;
-                    }
-                } catch (e) {
-                    console.warn('[CineWeb] UV also failed:', e);
-                }
-
-                // 3. Last resort — direct (won't work cross-origin but better than silence)
-                stopProg();
-                showToast("Proxy unavailable — check your connection");
             }
 
             // ── Progress bar ───────────────────────────────────────────
