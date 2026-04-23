@@ -361,37 +361,122 @@
 
         <script>
             // ══════════════════════════════════════════════════════════════
-            //  T9 PROXY ENGINE
+            //  PROXY ENGINE — Scramjet-first, UV fallback
             // ══════════════════════════════════════════════════════════════
             const wispUrl = "wss://wisp.rhw.one/wisp/";
-            let uvConnection  = null;
-            let uvInitPromise = null;
-            let currentProxy  = 'scramjet';
 
-            function initUV() {
-                if (uvInitPromise) return uvInitPromise;
-                uvInitPromise = (async () => {
-                    try {
-                        if (typeof BareMux === 'undefined') {
-                            await new Promise((res, rej) => {
-                                let n = 0;
-                                const t = setInterval(() => {
-                                    if (typeof BareMux !== 'undefined') { clearInterval(t); res(); }
-                                    if (++n > 50) { clearInterval(t); rej(new Error('BareMux not loaded')); }
-                                }, 100);
-                            });
-                        }
-                        uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-                        await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
-                    } catch (e) {
-                        console.error('UV init failed:', e);
-                        uvInitPromise = null;
-                        throw e;
-                    }
+            // Tracks whether each engine has finished its one-time setup
+            let scramjetReady  = false;
+            let uvReady        = false;
+            let scramjetPromise = null;
+            let uvPromise       = null;
+
+            // ── Scramjet init ──────────────────────────────────────────
+            function initScramjet() {
+                if (scramjetPromise) return scramjetPromise;
+                scramjetPromise = (async () => {
+                    // Wait for the ScramjetController class to be defined by scramjet.all.js
+                    await waitFor(() => typeof ScramjetController !== 'undefined', 5000);
+
+                    const controller = new ScramjetController({
+                        prefix: "/scramjet/",
+                        // Scramjet ships these workers inside its own bundle path
+                        files: {
+                            wasm:    "/surf/scram/scramjet.wasm.js",
+                            worker:  "/surf/scram/scramjet.worker.js",
+                            client:  "/surf/scram/scramjet.client.js",
+                            shared:  "/surf/scram/scramjet.shared.js",
+                            sync:    "/surf/scram/scramjet.sync.js",
+                        },
+                    });
+
+                    await controller.init();
+
+                    // Connect transport
+                    await controller.js.connection.setTransport(
+                        "/libcurl/index.mjs",
+                        [{ websocket: wispUrl }]
+                    );
+
+                    // Expose encode helper globally so proxyLoad can use it
+                    window.__scramjet = controller;
+                    scramjetReady = true;
                 })();
-                return uvInitPromise;
+                return scramjetPromise;
             }
 
+            // ── UV init ────────────────────────────────────────────────
+            function initUV() {
+                if (uvPromise) return uvPromise;
+                uvPromise = (async () => {
+                    await waitFor(() => typeof BareMux !== 'undefined', 5000);
+                    const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+                    await conn.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+                    window.__uvConn = conn;
+                    uvReady = true;
+                })();
+                return uvPromise;
+            }
+
+            // Generic poll-until helper
+            function waitFor(condFn, timeoutMs = 5000) {
+                return new Promise((resolve, reject) => {
+                    if (condFn()) { resolve(); return; }
+                    const start = Date.now();
+                    const iv = setInterval(() => {
+                        if (condFn()) { clearInterval(iv); resolve(); }
+                        else if (Date.now() - start > timeoutMs) {
+                            clearInterval(iv);
+                            reject(new Error('waitFor timeout: ' + condFn.toString()));
+                        }
+                    }, 80);
+                });
+            }
+
+            // ── Core load function ─────────────────────────────────────
+            async function proxyLoad(url) {
+                if (!url) return;
+                startProg();
+                const frame = document.getElementById('proxy-frame');
+
+                // Helper to wire up stopProg once
+                function attachStop() {
+                    const prev = frame.onload;
+                    frame.onload = () => { stopProg(); frame.onload = null; };
+                }
+
+                // 1. Try Scramjet
+                try {
+                    await initScramjet();
+                    if (window.__scramjet) {
+                        const encoded = window.__scramjet.encodeUrl(url);
+                        attachStop();
+                        frame.src = encoded;
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[CineWeb] Scramjet failed, trying UV:', e);
+                }
+
+                // 2. Fallback: UV
+                try {
+                    await initUV();
+                    if (typeof __uv$config !== 'undefined') {
+                        const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+                        attachStop();
+                        frame.src = encoded;
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[CineWeb] UV also failed:', e);
+                }
+
+                // 3. Last resort — direct (won't work cross-origin but better than silence)
+                stopProg();
+                showToast("Proxy unavailable — check your connection");
+            }
+
+            // ── Progress bar ───────────────────────────────────────────
             let _progTimer;
             function startProg() {
                 const b = document.getElementById('prog-bar');
@@ -406,34 +491,7 @@
                 _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
             }
 
-            async function proxyLoad(url) {
-                if (!url) return;
-                startProg();
-                const frame = document.getElementById('proxy-frame');
-                if (currentProxy === 'scramjet') {
-                    if (typeof openInFrame === 'function') {
-                        openInFrame(url);
-                    } else {
-                        const iv = setInterval(() => {
-                            if (typeof openInFrame === 'function') { clearInterval(iv); openInFrame(url); }
-                        }, 100);
-                    }
-                } else {
-                    try {
-                        await initUV();
-                        const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-                        frame.onload = null;
-                        frame.src = encoded;
-                    } catch (e) {
-                        console.warn('UV failed, fallback:', e);
-                        if (typeof openInFrame === 'function') openInFrame(url);
-                        else { stopProg(); return; }
-                    }
-                }
-                frame.onload = null;
-                frame.onload = () => stopProg();
-            }
-
+            // ── URL resolver ───────────────────────────────────────────
             function resolveUrl(raw) {
                 raw = (raw || '').trim();
                 if (!raw) return null;
@@ -475,7 +533,9 @@
                 updateClock();
                 setInterval(updateClock, 1000);
                 loadSession();
-                initUV();
+                // Eagerly warm up both engines in the background
+                initScramjet().catch(() => {});
+                initUV().catch(() => {});
                 document.getElementById("wallpaper-incognito").pause();
             };
 
@@ -852,7 +912,7 @@
             }
 
             // ══════════════════════════════════════════════════════════════
-            //  SCRAMJET URL SYNC
+            //  URL SYNC (from scramjet frame postMessage / setLocationLabel)
             // ══════════════════════════════════════════════════════════════
             window._browserSyncUrl = function(url) {
                 if (!url) return;
@@ -874,10 +934,15 @@
             };
 
             window.addEventListener("load", () => {
+                // Patch legacy setLocationLabel if ghost.js defines it
                 const orig = window.setLocationLabel;
                 if (typeof orig === "function") {
-                    window.setLocationLabel = function(val) { orig(val); if (typeof window._browserSyncUrl === "function") window._browserSyncUrl(val); };
+                    window.setLocationLabel = function(val) {
+                        orig(val);
+                        if (typeof window._browserSyncUrl === "function") window._browserSyncUrl(val);
+                    };
                 }
+                // Handle deep-link hash
                 const hash = window.location.hash.replace(/^#/, "");
                 if (hash && typeof decodeTarget === "function") {
                     try { const url = decodeTarget(hash); if (url) openBrowser(url); } catch {}
