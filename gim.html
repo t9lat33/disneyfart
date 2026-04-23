@@ -333,8 +333,6 @@
 
       #content { flex: 1; position: relative; overflow: hidden; background: var(--bg); }
 
-      /* FIX: removed allow-same-origin note — sandbox warning is unavoidable for proxy use.
-         We keep both attributes and suppress the console noise via a clear comment in JS. */
       #proxy-frame {
         position: absolute;
         inset: 0;
@@ -361,7 +359,6 @@
         100% { width: 80%; background-position: 0% 0%; }
       }
 
-      /* FIX: Error page shown when proxy fails to connect */
       #error-page {
         position: absolute;
         inset: 0;
@@ -382,7 +379,7 @@
         max-width: 420px; line-height: 1.6;
         font-family: 'JetBrains Mono', monospace;
       }
-      .err-actions { display: flex; gap: 8px; margin-top: 8px; }
+      .err-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
       .err-btn {
         padding: 9px 18px; border-radius: var(--r-sm);
         border: 1px solid var(--border); background: var(--glass);
@@ -402,8 +399,17 @@
         border-radius: var(--r-xs); padding: 4px 10px; letter-spacing: 0.06em;
         opacity: 0.7;
       }
+      /* Auto-retry banner */
+      #retry-banner {
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: rgba(139,143,255,0.15); border: 1px solid rgba(139,143,255,0.3);
+        border-radius: var(--r-sm); padding: 8px 16px;
+        font-size: 11px; font-family: 'JetBrains Mono', monospace;
+        color: var(--accent); display: none; white-space: nowrap;
+        animation: fadeUp 0.3s ease;
+      }
+      #retry-banner.show { display: block; }
 
-      /* FIX: WISP status indicator shown in nav */
       #wisp-status {
         font-family: 'JetBrains Mono', monospace;
         font-size: 9px;
@@ -666,22 +672,7 @@
         <div class="watermark-hint"></div>
       </div>
     </div>
-    <div id="terminal-shell" style="display:none">
-      <div id="term">
-        <div id="term-output">
-          <div id="term-status">
-            <span class="term-status-label">url:</span>
-            <span id="term-location"></span>
-          </div>
-          <form id="term-input-row">
-            <span id="term-prefix">root@t9:~$&nbsp;</span>
-            <input id="term-input" autocomplete="off" spellcheck="false" />
-            <span id="term-cursor" aria-hidden="true"></span>
-            <span id="term-cursor-measure" aria-hidden="true"></span>
-          </form>
-        </div>
-      </div>
-    </div>
+    <div id="terminal-shell" style="display:none"></div>
 
     <div id="browser">
       <div id="chrome">
@@ -705,7 +696,6 @@
 
           <div id="brand-badge">T9</div>
 
-          <!-- FIX: WISP live status shown inline -->
           <div id="wisp-status" title="WISP server status">
             <span class="ws-dot"></span>
             <span id="wisp-label">WISP</span>
@@ -747,26 +737,23 @@
       <div id="content">
         <div id="prog"><div id="prog-bar"></div></div>
 
-        <!--
-          NOTE: allow-scripts + allow-same-origin is required for the proxy to function.
-          The browser security warning about sandbox escape is expected and unavoidable
-          for any web proxy. Removing either attribute would break proxying entirely.
-        -->
         <iframe id="proxy-frame" title="T9 Proxy"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
 
-        <!-- FIX: User-facing error page for proxy failures -->
         <div id="error-page">
           <div class="err-icon" id="err-icon">⚠️</div>
           <div class="err-title" id="err-title">Connection failed</div>
-          <div class="err-msg" id="err-msg">Could not connect to the proxy server. The WISP relay may be down or unreachable.</div>
+          <div class="err-msg" id="err-msg">Could not connect to the proxy server.</div>
           <div class="err-actions">
             <button class="err-btn primary" onclick="B.retryLoad()">Try again</button>
             <button class="err-btn" onclick="B.switchAndRetry()">Switch proxy &amp; retry</button>
+            <button class="err-btn" onclick="B.recheckWispAndRetry()">Re-check WISP</button>
             <button class="err-btn" onclick="B.home()">New tab</button>
           </div>
           <div class="err-code" id="err-code">ERR_CONNECTION_FAILED</div>
         </div>
+
+        <div id="retry-banner"></div>
 
         <div id="newtab">
           <div id="nt-clock-wrap">
@@ -814,7 +801,14 @@
         ecosia:     { name: 'Ecosia',       short: 'ECO', icon: '🌱', url: 'https://www.ecosia.org/search?q=' },
       };
 
-      // ── KNOWN BLOCKED SITES (FIX: warn user instead of silently 500ing) ──
+      // ── WISP server pool — add more backup servers here for better reliability ──
+      // The system will automatically race all of them and pick the fastest working one.
+      const WISP_SERVERS = [
+        "wss://wisp.rhw.one/wisp/",
+        // Add backup WISP servers below (same format):
+        // "wss://your-backup-wisp.example.com/wisp/",
+      ];
+
       const BLOCKED_HOSTS = [
         'play.geforcenow.com', 'geforcenow.com',
         'netflix.com', 'hulu.com', 'disneyplus.com',
@@ -826,44 +820,105 @@
         } catch { return false; }
       }
 
+      // ── Device detection ──────────────────────────────────────────────────────
+      const IS_CHROMEBOOK = /CrOS/.test(navigator.userAgent);
+      const IS_SLOW_DEVICE = IS_CHROMEBOOK || /Android/.test(navigator.userAgent);
+      // Longer timeouts for Chromebooks / slow devices
+      const LOAD_TIMEOUT_MS   = IS_SLOW_DEVICE ? 22000 : 13000;
+      const SW_WAIT_TIMEOUT   = IS_SLOW_DEVICE ? 8000  : 3500;
+      const WISP_CHECK_TIMEOUT = IS_SLOW_DEVICE ? 7000 : 4000;
+
       const B = (() => {
         let tabs   = [mkTab()];
         let cur    = 0;
         let recent = [];
         let omniIdx = -1;
         let _progTimer;
-        let _lastLoadedUrl = null;
+        let _lastLoadedUrl  = null;
+        let _loadGeneration = 0; // increments each navigate; used to cancel stale retries
 
-        let currentProxy = 'scramjet';
+        let currentProxy  = 'scramjet';
         let currentSearch = localStorage.getItem('t9_search') || 'duckduckgo';
 
-        // ── WISP / UV connection ──────────────────────────────────────────
-        const wispUrl = "wss://wisp.rhw.one/wisp/";
+        // ── WISP pool state ───────────────────────────────────────────────────
+        let activeWispUrl = WISP_SERVERS[0];
+        let wispAlive     = null; // null=unknown true=ok false=dead
         let uvConnection  = null;
         let uvInitPromise = null;
-        let wispAlive     = null; // null=unknown, true=ok, false=dead
+        let swSupported   = null; // null=unchecked
 
-        // FIX: Pre-flight WebSocket check before trusting WISP is alive
-        function checkWisp(timeout = 4000) {
-          return new Promise(resolve => {
-            setWispStatus('checking');
+        // ── Service-worker support check ──────────────────────────────────────
+        // Some Chromebooks block SW entirely (enterprise policy). Detect early.
+        async function checkSWSupport() {
+          if (swSupported !== null) return swSupported;
+          if (!('serviceWorker' in navigator)) { swSupported = false; return false; }
+          try {
+            await navigator.serviceWorker.getRegistrations();
+            swSupported = true;
+          } catch {
+            swSupported = false;
+          }
+          return swSupported;
+        }
+
+        // ── Single-server WISP check ──────────────────────────────────────────
+        function checkWispUrl(url, timeout) {
+          timeout = timeout || WISP_CHECK_TIMEOUT;
+          return new Promise(function(resolve) {
             let done = false;
-            const finish = (ok) => {
-              if (done) return;
-              done = true;
-              wispAlive = ok;
-              setWispStatus(ok ? 'ok' : 'err');
-              resolve(ok);
-            };
+            function finish(ok) { if (done) return; done = true; resolve(ok); }
             try {
-              const ws = new WebSocket(wispUrl);
-              ws.onopen  = () => { ws.close(); finish(true); };
-              ws.onerror = () => finish(false);
-              ws.onclose = (e) => { if (!done) finish(e.code !== 1000 && e.code !== 1001 ? false : true); };
-              setTimeout(() => finish(false), timeout);
-            } catch (e) {
-              finish(false);
+              const ws = new WebSocket(url);
+              ws.onopen  = function() { ws.close(); finish(true); };
+              ws.onerror = function() { finish(false); };
+              ws.onclose = function(e) { if (!done) finish(e.code === 1000 || e.code === 1001 || e.code === 1006); };
+              setTimeout(function() { finish(false); }, timeout);
+            } catch(e) { finish(false); }
+          });
+        }
+
+        // ── Race all WISP servers; use whichever responds first ───────────────
+        function findBestWisp() {
+          setWispStatus('checking');
+          return new Promise(function(resolve) {
+            if (WISP_SERVERS.length === 0) {
+              wispAlive = false; setWispStatus('err'); resolve(false); return;
             }
+            if (WISP_SERVERS.length === 1) {
+              checkWispUrl(WISP_SERVERS[0]).then(function(ok) {
+                wispAlive = ok;
+                if (ok) activeWispUrl = WISP_SERVERS[0];
+                setWispStatus(ok ? 'ok' : 'err');
+                resolve(ok);
+              });
+              return;
+            }
+            let resolved = false;
+            let failures  = 0;
+            WISP_SERVERS.forEach(function(url) {
+              checkWispUrl(url).then(function(ok) {
+                if (ok && !resolved) {
+                  resolved    = true;
+                  activeWispUrl = url;
+                  wispAlive   = true;
+                  setWispStatus('ok');
+                  resolve(true);
+                } else if (!ok) {
+                  failures++;
+                  if (failures === WISP_SERVERS.length && !resolved) {
+                    wispAlive = false;
+                    setWispStatus('err');
+                    resolve(false);
+                  }
+                }
+              });
+            });
+            // Hard fallback timeout
+            setTimeout(function() {
+              if (!resolved) {
+                wispAlive = false; setWispStatus('err'); resolve(false);
+              }
+            }, WISP_CHECK_TIMEOUT + 1000);
           });
         }
 
@@ -874,26 +929,27 @@
           if (state === 'checking') lbl.textContent = 'WISP…';
           else if (state === 'ok')  lbl.textContent = 'WISP';
           else                       lbl.textContent = 'WISP ✕';
-          // Auto-hide the OK indicator after 3s so it doesn't clutter nav
-          if (state === 'ok') setTimeout(() => { if (wispAlive) el.classList.remove('show'); }, 3000);
+          if (state === 'ok') setTimeout(function() { if (wispAlive) el.classList.remove('show'); }, 3000);
         }
 
-        // FIX: Full UV init with proper await + retry guard
+        // ── UV init (uses activeWispUrl, so call after findBestWisp) ──────────
         function initUV() {
+          // Always use the currently active WISP URL.
+          // We reset uvInitPromise whenever activeWispUrl changes.
           if (uvInitPromise) return uvInitPromise;
           uvInitPromise = (async () => {
             try {
               if (typeof BareMux === 'undefined') {
-                await new Promise((resolve, reject) => {
+                await new Promise(function(resolve, reject) {
                   let attempts = 0;
-                  const check = setInterval(() => {
+                  const check = setInterval(function() {
                     if (typeof BareMux !== 'undefined') { clearInterval(check); resolve(); }
-                    if (++attempts > 50) { clearInterval(check); reject(new Error('BareMux not loaded')); }
+                    if (++attempts > 80) { clearInterval(check); reject(new Error('BareMux not loaded')); }
                   }, 100);
                 });
               }
               uvConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-              await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+              await uvConnection.setTransport("/libcurl/index.mjs", [{ websocket: activeWispUrl }]);
             } catch (e) {
               uvInitPromise = null;
               throw e;
@@ -902,13 +958,18 @@
           return uvInitPromise;
         }
 
-        // ── Tab helpers ───────────────────────────────────────────────────
+        function resetUV() {
+          uvInitPromise = null;
+          uvConnection  = null;
+        }
+
+        // ── Tab helpers ───────────────────────────────────────────────────────
         function mkTab(url, title) {
-          return { url: url || '', title: title || 'New tab', fav: null, hist: url ? [url] : [], hidx: url ? 0 : -1 };
+          return { url: url||'', title: title||'New tab', fav: null, hist: url?[url]:[], hidx: url?0:-1 };
         }
         function ct() { return tabs[cur]; }
         function getFaviconUrl(url) {
-          try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
+          try { return 'https://www.google.com/s2/favicons?domain=' + new URL(url).hostname + '&sz=32'; }
           catch { return null; }
         }
         function resolveUrl(raw) {
@@ -921,30 +982,30 @@
           return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
         }
 
-        // ── Clock ─────────────────────────────────────────────────────────
+        // ── Clock ─────────────────────────────────────────────────────────────
         function tick() {
           const n  = new Date();
           const cl = document.getElementById('nt-clock');
           const dl = document.getElementById('nt-date');
-          if (cl) cl.textContent = n.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          if (dl) dl.textContent = n.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+          if (cl) cl.textContent = n.toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+          if (dl) dl.textContent = n.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
         }
         setInterval(tick, 1000); tick();
 
-        // ── Tabs ──────────────────────────────────────────────────────────
+        // ── Tabs ──────────────────────────────────────────────────────────────
         function renderTabs() {
           const strip = document.getElementById('tab-strip');
           const add   = document.getElementById('btn-newtab');
-          strip.querySelectorAll('.tab').forEach(el => el.remove());
-          tabs.forEach((t, i) => {
+          strip.querySelectorAll('.tab').forEach(function(el) { el.remove(); });
+          tabs.forEach(function(t, i) {
             const d = document.createElement('div');
             d.className = 'tab' + (i === cur ? ' active' : '');
             const favHtml = t.fav
-              ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">`
-              : `<span style="font-size:11px">🌐</span>`;
-            d.innerHTML = `<span class="tab-fav">${favHtml}</span><span class="tab-title">${esc(t.title)}</span><button class="tab-x">✕</button>`;
-            d.onclick = () => { if (cur !== i) { cur = i; sync(); } };
-            d.querySelector('.tab-x').onclick = e => { e.stopPropagation(); closeTab(i); };
+              ? '<img src="' + esc(t.fav) + '" alt="" onerror="this.style.display=\'none\'">'
+              : '<span style="font-size:11px">🌐</span>';
+            d.innerHTML = '<span class="tab-fav">' + favHtml + '</span><span class="tab-title">' + esc(t.title) + '</span><button class="tab-x">✕</button>';
+            d.onclick = function() { if (cur !== i) { cur = i; sync(); } };
+            d.querySelector('.tab-x').onclick = function(e) { e.stopPropagation(); closeTab(i); };
             strip.insertBefore(d, add);
           });
           document.getElementById('btn-back').disabled = ct().hidx <= 0;
@@ -965,7 +1026,7 @@
           tabs.push(mkTab(url, title));
           cur = tabs.length - 1;
           sync();
-          if (!url) setTimeout(() => document.getElementById('nt-s').focus(), 50);
+          if (!url) setTimeout(function() { document.getElementById('nt-s').focus(); }, 50);
         }
 
         function closeTab(i) {
@@ -986,38 +1047,31 @@
           const list = document.getElementById('nt-rc');
           if (!recent.length) { sec.style.display = 'none'; return; }
           sec.style.display = '';
-          list.innerHTML = recent.map(r => {
+          list.innerHTML = recent.map(function(r) {
             const favHtml = r.fav
-              ? `<img src="${esc(r.fav)}" alt="" onerror="this.style.display='none'">`
-              : `<span style="font-size:13px">🌐</span>`;
-            return `<div class="rc" onclick="B.navigate('${esc(r.url)}')">
-              <span class="rc-fav">${favHtml}</span>
-              <span class="rc-url">${esc(r.url)}</span>
-              <span class="rc-lbl">closed</span>
-            </div>`;
+              ? '<img src="' + esc(r.fav) + '" alt="" onerror="this.style.display=\'none\'">'
+              : '<span style="font-size:13px">🌐</span>';
+            return '<div class="rc" onclick="B.navigate(\'' + esc(r.url) + '\')">' +
+              '<span class="rc-fav">' + favHtml + '</span>' +
+              '<span class="rc-url">' + esc(r.url) + '</span>' +
+              '<span class="rc-lbl">closed</span></div>';
           }).join('');
         }
 
-        // ── Navigation ────────────────────────────────────────────────────
-        function navigate(raw, pushHist = true) {
+        // ── Navigation ────────────────────────────────────────────────────────
+        function navigate(raw, pushHist) {
+          if (pushHist === undefined) pushHist = true;
           const url = resolveUrl(raw);
           if (!url) return;
 
-          // FIX: Warn user about known-blocked sites before attempting proxy
           if (isKnownBlocked(url)) {
-            showError(
-              '🚫',
-              'Site blocks proxies',
-              `${new URL(url).hostname} actively detects and rejects proxy connections. This is not a T9 bug — the site refuses the request server-side.`,
-              'ERR_PROXY_BLOCKED'
-            );
+            showError('🚫', 'Site blocks proxies',
+              new URL(url).hostname + ' actively detects and rejects proxy connections. This is not a T9 bug.',
+              'ERR_PROXY_BLOCKED');
             const t = ct();
             t.url = url; t.title = new URL(url).hostname; t.fav = getFaviconUrl(url);
             document.getElementById('url-input').value = url;
-            setScheme(url); renderTabs();
-            _lastLoadedUrl = url;
-            stopProg();
-            return;
+            setScheme(url); renderTabs(); stopProg(); return;
           }
 
           const t = ct();
@@ -1026,36 +1080,92 @@
             t.hist.push(url);
             t.hidx = t.hist.length - 1;
           }
-          t.url   = url;
-          t.title = url;
-          t.fav   = getFaviconUrl(url);
+          t.url = url; t.title = url; t.fav = getFaviconUrl(url);
           try { t.title = new URL(url).hostname; } catch {}
           document.getElementById('url-input').value = url;
-          setScheme(url);
-          renderTabs();
-          hideError();
-          showFrame();
+          setScheme(url); renderTabs(); hideError(); showFrame();
           _lastLoadedUrl = url;
           doLoad(url, pushHist);
           hideOmni();
         }
 
-        // FIX: doLoad with WISP pre-check, proper fallback chain, and error page
-        async function doLoad(url, updateHash) {
+        // ── Core load logic — with auto-retry on different engine ─────────────
+        // attempt: 1 = first try (preferred engine), 2 = auto-switched engine
+        async function doLoad(url, updateHash, attempt) {
+          attempt = attempt || 1;
+          const myGen = ++_loadGeneration; // stamp this load so stale retries abort
+
           startProg();
           hideError();
-          const frame = document.getElementById('proxy-frame');
+          hideRetryBanner();
 
+          // ── Pre-flight: if WISP is unknown, check it first ─────────────────
+          if (wispAlive === null) {
+            await findBestWisp();
+          }
+
+          // ── SW check (once per session) ────────────────────────────────────
+          const hasSW = await checkSWSupport();
+          // If no SW support, force UV (scramjet requires a service worker)
+          if (!hasSW && currentProxy === 'scramjet') {
+            currentProxy = 'ultraviolet';
+            document.getElementById('proxy-name').textContent = 'UV';
+            resetUV();
+          }
+
+          const frame = document.getElementById('proxy-frame');
+          let loadFired = false;
+
+          // Cleanup previous load listeners
+          frame.onload  = null;
+          frame.onerror = null;
+
+          const onLoaded = function() {
+            if (myGen !== _loadGeneration) return; // stale, ignore
+            loadFired = true;
+            clearTimeout(loadTimeoutId);
+            stopProg();
+            tryUpdateTitle();
+          };
+          frame.onload = onLoaded;
+
+          // ── Auto-retry timeout ─────────────────────────────────────────────
+          const loadTimeoutId = setTimeout(async function() {
+            if (myGen !== _loadGeneration) return; // navigated away
+            if (loadFired) return;
+            stopProg();
+
+            if (attempt < 2) {
+              // Auto-switch engine and retry silently
+              const nextProxy = currentProxy === 'scramjet' ? 'ultraviolet' : 'scramjet';
+              // Don't switch to scramjet if SW is broken
+              const canUseSJ = hasSW && (typeof openInFrame === 'function' || true);
+              const chosen = nextProxy === 'scramjet' && !canUseSJ ? 'ultraviolet' : nextProxy;
+
+              currentProxy = chosen;
+              document.getElementById('proxy-name').textContent = chosen === 'scramjet' ? 'SJ' : 'UV';
+              if (chosen === 'ultraviolet') resetUV();
+
+              showRetryBanner('Auto-switching to ' + (chosen === 'scramjet' ? 'Scramjet' : 'Ultraviolet') + '…');
+              await doLoad(url, false, 2);
+            } else {
+              // Both engines failed — show error page
+              showError('⚠️', 'Connection failed',
+                'Neither proxy engine could load this page. ' +
+                (wispAlive === false ? 'The WISP relay appears offline. ' : '') +
+                'Try re-checking WISP or reload the page.',
+                'ERR_ALL_ENGINES_FAILED');
+            }
+          }, LOAD_TIMEOUT_MS);
+
+          // ── Scramjet path ──────────────────────────────────────────────────
           if (currentProxy === 'scramjet') {
-            // FIX: Check WISP first if status is unknown or previously failed
             if (wispAlive === false) {
+              clearTimeout(loadTimeoutId);
               stopProg();
-              showError(
-                '📡',
-                'WISP server unreachable',
-                `Cannot connect to ${wispUrl}. The relay server may be offline. Try switching to Ultraviolet or check your connection.`,
-                'ERR_WISP_OFFLINE'
-              );
+              showError('📡', 'WISP server unreachable',
+                'Cannot reach ' + activeWispUrl + '. Try switching to Ultraviolet or tap "Re-check WISP".',
+                'ERR_WISP_OFFLINE');
               return;
             }
 
@@ -1063,58 +1173,70 @@
               openInFrame(url);
               if (updateHash && typeof setHashFromUrl === 'function') setHashFromUrl(url);
             } else {
-              // Wait up to 3s for scramjet to load
+              // Wait for scramjet SW to register
               let waited = 0;
-              const iv = setInterval(() => {
-                waited += 100;
+              const iv = setInterval(function() {
+                waited += 150;
                 if (typeof openInFrame === 'function') {
                   clearInterval(iv);
                   openInFrame(url);
                   if (updateHash && typeof setHashFromUrl === 'function') setHashFromUrl(url);
-                } else if (waited >= 3000) {
+                } else if (waited >= SW_WAIT_TIMEOUT) {
                   clearInterval(iv);
+                  clearTimeout(loadTimeoutId);
                   stopProg();
-                  showError('⚡', 'Scramjet not ready', 'The Scramjet service worker failed to initialize. Try reloading the page.', 'ERR_SW_TIMEOUT');
+                  if (attempt < 2) {
+                    // SW never loaded — fall over to UV immediately (no point waiting)
+                    currentProxy = 'ultraviolet';
+                    document.getElementById('proxy-name').textContent = 'UV';
+                    resetUV();
+                    showRetryBanner('Scramjet SW unavailable — switching to Ultraviolet…');
+                    doLoad(url, false, 2);
+                  } else {
+                    showError('⚡', 'Scramjet unavailable',
+                      'The Scramjet service worker failed to initialize.' +
+                      (IS_CHROMEBOOK ? ' This is common on managed Chromebooks. Ultraviolet also failed.' : ''),
+                      'ERR_SW_TIMEOUT');
+                  }
                 }
-              }, 100);
+              }, 150);
             }
 
           } else {
-            // Ultraviolet path
+            // ── Ultraviolet path ───────────────────────────────────────────
             try {
+              // If WISP is dead, UV won't work either — but try with a fresh check
+              if (wispAlive === false) {
+                const recheckOk = await findBestWisp();
+                if (!recheckOk) {
+                  clearTimeout(loadTimeoutId);
+                  stopProg();
+                  showError('📡', 'WISP server unreachable',
+                    'All WISP servers are offline. The proxy cannot function without a relay.',
+                    'ERR_WISP_ALL_DOWN');
+                  return;
+                }
+                resetUV(); // re-init with new WISP URL
+              }
               await initUV();
               const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-              frame.onload = null;
               frame.src = encoded;
             } catch (e) {
-              console.warn('[T9] UV load failed, trying Scramjet fallback:', e);
-              // FIX: Graceful fallback to scramjet instead of silent fail
-              if (typeof openInFrame === 'function') {
+              clearTimeout(loadTimeoutId);
+              stopProg();
+              if (attempt < 2) {
                 currentProxy = 'scramjet';
                 document.getElementById('proxy-name').textContent = 'SJ';
-                openInFrame(url);
+                showRetryBanner('UV failed — falling back to Scramjet…');
+                doLoad(url, false, 2);
               } else {
-                stopProg();
-                showError('☀️', 'Ultraviolet failed', 'Could not initialize the UV proxy engine. ' + e.message, 'ERR_UV_INIT');
-                return;
+                showError('☀️', 'Ultraviolet failed',
+                  'UV proxy engine error: ' + e.message,
+                  'ERR_UV_INIT');
               }
+              return;
             }
           }
-
-          frame.onload = null;
-          frame.onload = () => { stopProg(); tryUpdateTitle(); };
-
-          // FIX: Timeout — show error if frame never fires onload after 15s
-          const loadTimeout = setTimeout(() => {
-            // Only error if this load is still current
-            if (_lastLoadedUrl === url && document.getElementById('proxy-frame').style.display === 'block') {
-              const errPage = document.getElementById('error-page');
-              // Only surface if the frame appears empty (can't read cross-origin contentDocument reliably)
-              // We just stop the spinner; don't overlay an error in case the page is actually loading slowly
-              stopProg();
-            }
-          }, 15000);
-          frame.onload = () => { clearTimeout(loadTimeout); stopProg(); tryUpdateTitle(); };
         }
 
         function tryUpdateTitle() {
@@ -1124,19 +1246,35 @@
           } catch {}
         }
 
-        // FIX: Retry helpers exposed to the error page buttons
+        // ── Retry banner (non-blocking status notice) ─────────────────────────
+        function showRetryBanner(msg) {
+          const b = document.getElementById('retry-banner');
+          b.textContent = msg; b.classList.add('show');
+          setTimeout(function() { b.classList.remove('show'); }, 3500);
+        }
+        function hideRetryBanner() {
+          document.getElementById('retry-banner').classList.remove('show');
+        }
+
+        // ── Manual retry / switch controls ────────────────────────────────────
         function retryLoad() {
           if (_lastLoadedUrl) { hideError(); navigate(_lastLoadedUrl, false); }
-          else { home(); }
+          else home();
         }
         function switchAndRetry() {
           currentProxy = currentProxy === 'scramjet' ? 'ultraviolet' : 'scramjet';
           document.getElementById('proxy-name').textContent = currentProxy === 'scramjet' ? 'SJ' : 'UV';
-          if (currentProxy === 'ultraviolet') { uvInitPromise = null; uvConnection = null; }
+          if (currentProxy === 'ultraviolet') resetUV();
+          retryLoad();
+        }
+        async function recheckWispAndRetry() {
+          wispAlive = null;
+          resetUV();
+          await findBestWisp();
           retryLoad();
         }
 
-        // ── History navigation ────────────────────────────────────────────
+        // ── History navigation ────────────────────────────────────────────────
         function back() {
           const t = ct();
           if (t.hidx > 0) {
@@ -1145,8 +1283,7 @@
             t.url = url; t.fav = getFaviconUrl(url);
             document.getElementById('url-input').value = url;
             setScheme(url); renderTabs(); hideError();
-            _lastLoadedUrl = url;
-            doLoad(url, false);
+            _lastLoadedUrl = url; doLoad(url, false);
           }
         }
         function fwd() {
@@ -1157,20 +1294,19 @@
             t.url = url; t.fav = getFaviconUrl(url);
             document.getElementById('url-input').value = url;
             setScheme(url); renderTabs(); hideError();
-            _lastLoadedUrl = url;
-            doLoad(url, false);
+            _lastLoadedUrl = url; doLoad(url, false);
           }
         }
-        function reload() { if (ct().url) { hideError(); startProg(); doLoad(ct().url, false); } }
+        function reload() { if (ct().url) { hideError(); doLoad(ct().url, false); } }
         function home() {
           if (typeof goHome === 'function') goHome();
           ct().url = ''; ct().title = 'New tab'; ct().fav = null;
           document.getElementById('url-input').value = '';
           setScheme(''); renderTabs(); hideError(); showNew();
-          setTimeout(() => document.getElementById('nt-s').focus(), 50);
+          setTimeout(function() { document.getElementById('nt-s').focus(); }, 50);
         }
 
-        // ── View helpers ──────────────────────────────────────────────────
+        // ── View helpers ──────────────────────────────────────────────────────
         function showFrame() {
           document.getElementById('proxy-frame').style.display = 'block';
           document.getElementById('newtab').style.display      = 'none';
@@ -1194,7 +1330,7 @@
           document.getElementById('error-page').classList.remove('visible');
         }
 
-        // ── URL bar ───────────────────────────────────────────────────────
+        // ── URL bar ───────────────────────────────────────────────────────────
         function focusUrl() { document.getElementById('url-input').select(); }
         function setScheme(url) {
           const el = document.getElementById('url-scheme');
@@ -1205,7 +1341,7 @@
             else { el.textContent = u.protocol.replace(':',''); el.className = 'visible insecure'; }
           } catch { el.textContent = ''; el.classList.remove('visible','insecure'); }
         }
-        function onFocus() { setTimeout(() => document.getElementById('url-input').select(), 0); }
+        function onFocus() { setTimeout(function() { document.getElementById('url-input').select(); }, 0); }
         function onBlur()  { hideOmni(); }
         function onInput(val) { setScheme(val); buildOmni(val); }
         function onKey(e) {
@@ -1219,7 +1355,7 @@
           } else if (e.key === 'Escape') { hideOmni(); e.target.blur(); }
         }
 
-        // ── Omnibox ───────────────────────────────────────────────────────
+        // ── Omnibox ───────────────────────────────────────────────────────────
         const QUICK = [
           { icon:'🔍', q:'google.com' }, { icon:'▶️', q:'youtube.com' }, { icon:'👾', q:'reddit.com' },
           { icon:'🐙', q:'github.com' }, { icon:'🐦', q:'twitter.com' }, { icon:'💬', q:'discord.com' },
@@ -1232,17 +1368,17 @@
           const isUrl = /^https?:\/\/|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(val);
           const se = SEARCH_ENGINES[currentSearch];
           let html = isUrl
-            ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span class="or-icon">🔗</span><span class="or-text">${esc(val)}</span><span class="ob">navigate</span></div>`
-            : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span class="or-icon">${se.icon}</span><span class="or-text">${esc(val)}</span><span class="ob">search ${se.short}</span></div>`;
-          QUICK.filter(q => q.q.includes(val.toLowerCase())).slice(0,4).forEach(q => {
-            html += `<div class="or" onclick="B.navigate('https://${esc(q.q)}')"><span class="or-icon">${q.icon}</span><span class="or-text">${esc(q.q)}</span><span class="ob">site</span></div>`;
+            ? '<div class="or" onclick="B.navigate(\'' + esc(val) + '\')"><span class="or-icon">🔗</span><span class="or-text">' + esc(val) + '</span><span class="ob">navigate</span></div>'
+            : '<div class="or" onclick="B.navigate(' + JSON.stringify(val) + ')"><span class="or-icon">' + se.icon + '</span><span class="or-text">' + esc(val) + '</span><span class="ob">search ' + se.short + '</span></div>';
+          QUICK.filter(function(q) { return q.q.includes(val.toLowerCase()); }).slice(0,4).forEach(function(q) {
+            html += '<div class="or" onclick="B.navigate(\'https://' + esc(q.q) + '\')"><span class="or-icon">' + q.icon + '</span><span class="or-text">' + esc(q.q) + '</span><span class="ob">site</span></div>';
           });
           d.innerHTML = html; d.style.display = 'block';
         }
-        function hilite() { document.querySelectorAll('#omni .or').forEach((el, i) => el.classList.toggle('sel', i === omniIdx)); }
-        function hideOmni() { setTimeout(() => { document.getElementById('omni').style.display = 'none'; }, 150); }
+        function hilite() { document.querySelectorAll('#omni .or').forEach(function(el, i) { el.classList.toggle('sel', i === omniIdx); }); }
+        function hideOmni() { setTimeout(function() { document.getElementById('omni').style.display = 'none'; }, 150); }
 
-        // ── Progress bar ──────────────────────────────────────────────────
+        // ── Progress bar ──────────────────────────────────────────────────────
         function startProg() {
           const b = document.getElementById('prog-bar');
           clearTimeout(_progTimer);
@@ -1253,47 +1389,39 @@
           const b = document.getElementById('prog-bar');
           b.classList.remove('loading');
           b.style.transition = 'width .2s ease'; b.style.width = '100%';
-          _progTimer = setTimeout(() => { b.style.opacity = '0'; b.style.width = '0'; }, 350);
+          _progTimer = setTimeout(function() { b.style.opacity = '0'; b.style.width = '0'; }, 350);
         }
 
-        // ── Proxy dropdown ────────────────────────────────────────────────
+        // ── Proxy dropdown ────────────────────────────────────────────────────
         function toggleProxyDropdown(e) {
           e.stopPropagation();
           const d = document.getElementById('proxy-dropdown');
           if (d.style.display === 'block') { d.style.display = 'none'; return; }
           const rect = document.getElementById('badge-proxy').getBoundingClientRect();
           d.style.top = (rect.bottom + 6) + 'px'; d.style.left = rect.left + 'px';
-          d.innerHTML = `
-            <div class="drop-section-label">Proxy Engine</div>
-            <div class="drop-item ${currentProxy==='ultraviolet'?'active':''}" onclick="B.setProxy('ultraviolet')">
-              <span class="drop-item-icon">☀️</span><span>Ultraviolet</span>
-            </div>
-            <div class="drop-item ${currentProxy==='scramjet'?'active':''}" onclick="B.setProxy('scramjet')">
-              <span class="drop-item-icon">⚡</span><span>Scramjet</span>
-            </div>
-            <div class="drop-divider"></div>
-            <div class="drop-item" onclick="B.recheckWisp()">
-              <span class="drop-item-icon">📡</span><span>Re-check WISP</span>
-            </div>
-          `;
+          const swNote = hasSWSupport() ? '' : ' <span style="font-size:9px;color:var(--red)">(no SW)</span>';
+          d.innerHTML =
+            '<div class="drop-section-label">Proxy Engine</div>' +
+            '<div class="drop-item ' + (currentProxy==='ultraviolet'?'active':'') + '" onclick="B.setProxy(\'ultraviolet\')"><span class="drop-item-icon">☀️</span><span>Ultraviolet</span></div>' +
+            '<div class="drop-item ' + (currentProxy==='scramjet'?'active':'') + '" onclick="B.setProxy(\'scramjet\')"><span class="drop-item-icon">⚡</span><span>Scramjet' + swNote + '</span></div>' +
+            '<div class="drop-divider"></div>' +
+            '<div class="drop-item" onclick="B.recheckWispAndRetry()"><span class="drop-item-icon">📡</span><span>Re-check WISP</span></div>' +
+            '<div class="drop-item" style="font-size:10px;color:var(--text-muted);padding:4px 12px 8px;font-family:\'JetBrains Mono\',monospace">' +
+            (IS_CHROMEBOOK ? '🖥 Chromebook mode' : '') + '</div>';
           d.style.display = 'block';
-          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+          setTimeout(function() { document.addEventListener('click', function() { d.style.display = 'none'; }, { once:true }); }, 0);
         }
+        function hasSWSupport() { return swSupported !== false; }
 
-        // FIX: Reset UV promise when switching back to UV; expose WISP re-check
         function setProxy(p) {
           currentProxy = p;
           document.getElementById('proxy-name').textContent = p === 'scramjet' ? 'SJ' : 'UV';
           document.getElementById('proxy-dropdown').style.display = 'none';
-          if (p === 'ultraviolet') { uvInitPromise = null; uvConnection = null; }
+          if (p === 'ultraviolet') resetUV();
           if (ct().url) { hideError(); doLoad(ct().url, false); }
         }
-        async function recheckWisp() {
-          document.getElementById('proxy-dropdown').style.display = 'none';
-          await checkWisp();
-        }
 
-        // ── Search engine ──────────────────────────────────────────────────
+        // ── Search engine ─────────────────────────────────────────────────────
         function updateSeUI() {
           const se = SEARCH_ENGINES[currentSearch];
           document.getElementById('se-icon-nt').textContent    = se.icon;
@@ -1306,20 +1434,20 @@
           document.getElementById('se-dropdown-chrome').style.display = 'none';
         }
         function buildSeDropdownHtml() {
-          return Object.entries(SEARCH_ENGINES).map(([key, se]) =>
-            `<div class="se-item ${currentSearch===key?'active':''}" onclick="B.setSearchEngine('${key}')">
-              <span class="se-icon">${se.icon}</span>
-              <div><div class="se-name">${se.name}</div></div>
-            </div>`
-          ).join('');
+          return Object.entries(SEARCH_ENGINES).map(function(e) {
+            const key = e[0]; const se = e[1];
+            return '<div class="se-item ' + (currentSearch===key?'active':'') + '" onclick="B.setSearchEngine(\'' + key + '\')">' +
+              '<span class="se-icon">' + se.icon + '</span>' +
+              '<div><div class="se-name">' + se.name + '</div></div></div>';
+          }).join('');
         }
         function toggleSeDropdownNT(e) {
           e.stopPropagation();
           const d = document.getElementById('se-dropdown');
           if (d.style.display === 'block') { d.style.display = 'none'; return; }
-          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.innerHTML = '<div class="drop-section-label">Search Engine</div>' + buildSeDropdownHtml();
           d.style.display = 'block';
-          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+          setTimeout(function() { document.addEventListener('click', function() { d.style.display = 'none'; }, { once:true }); }, 0);
         }
         function toggleSeDropdownChrome(e) {
           e.stopPropagation();
@@ -1327,12 +1455,12 @@
           if (d.style.display === 'block') { d.style.display = 'none'; return; }
           const rect = document.getElementById('badge-se').getBoundingClientRect();
           d.style.top = (rect.bottom + 6) + 'px'; d.style.left = rect.left + 'px';
-          d.innerHTML = `<div class="drop-section-label">Search Engine</div>` + buildSeDropdownHtml();
+          d.innerHTML = '<div class="drop-section-label">Search Engine</div>' + buildSeDropdownHtml();
           d.style.display = 'block';
-          setTimeout(() => document.addEventListener('click', () => d.style.display = 'none', { once: true }), 0);
+          setTimeout(function() { document.addEventListener('click', function() { d.style.display = 'none'; }, { once:true }); }, 0);
         }
 
-        // ── Star / Menu ───────────────────────────────────────────────────
+        // ── Star / Menu ───────────────────────────────────────────────────────
         function star() {
           const btn = document.getElementById('btn-star');
           btn.classList.toggle('starred');
@@ -1340,50 +1468,42 @@
           if (btn.classList.contains('starred')) icon.querySelector('path').setAttribute('fill', 'currentColor');
           else icon.querySelector('path').setAttribute('fill', 'none');
         }
-
         function menu(e) {
           const old = document.getElementById('_smenu');
           if (old) { old.remove(); return; }
           const items = [
-            ['New tab',        'Ctrl+T', () => addTab()],
-            ['Reload',         'Ctrl+R', () => reload()],
-            ['Home',           null,     () => home()],
-            ['Re-check WISP',  null,     () => recheckWisp()],
-            ['Wallpaper',      null,     () => openWallpaper()],
-            ['Dev tools',      null,     () => { if (typeof handleDev === 'function') handleDev(); }],
-            ['Toggle adblock', null,     () => { if (typeof setAdblockEnabled === 'function') setAdblockEnabled(!adblockEnabled); }],
+            ['New tab',        'Ctrl+T', function() { addTab(); }],
+            ['Reload',         'Ctrl+R', function() { reload(); }],
+            ['Home',           null,     function() { home(); }],
+            ['Re-check WISP',  null,     function() { recheckWispAndRetry(); }],
+            ['Wallpaper',      null,     function() { openWallpaper(); }],
+            ['Dev tools',      null,     function() { if (typeof handleDev === 'function') handleDev(); }],
+            ['Toggle adblock', null,     function() { if (typeof setAdblockEnabled === 'function') setAdblockEnabled(!adblockEnabled); }],
           ];
           const m = document.createElement('div');
           m.id = '_smenu';
           const nb = document.getElementById('nav-bar').getBoundingClientRect();
-          m.style.cssText = `position:fixed;z-index:9999;
-            background:rgba(12,12,22,0.93);backdrop-filter:blur(24px) saturate(1.4);
-            -webkit-backdrop-filter:blur(24px) saturate(1.4);
-            border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:6px;min-width:190px;
-            font-size:13px;font-family:'Outfit',sans-serif;
-            box-shadow:0 20px 60px rgba(0,0,0,.7);
-            right:10px;top:${nb.bottom+6}px;animation:dropIn 0.14s ease;`;
+          m.style.cssText = 'position:fixed;z-index:9999;background:rgba(12,12,22,0.93);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:6px;min-width:190px;font-size:13px;font-family:\'Outfit\',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.7);right:10px;top:' + (nb.bottom+6) + 'px;animation:dropIn 0.14s ease;';
           const styleEl = document.createElement('style');
-          styleEl.textContent = `@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}`;
+          styleEl.textContent = '@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}';
           m.appendChild(styleEl);
-          items.forEach(([lbl, kbd, fn]) => {
+          items.forEach(function(item) {
+            const lbl = item[0]; const kbd = item[1]; const fn = item[2];
             const r = document.createElement('div');
-            r.style.cssText = `display:flex;align-items:center;justify-content:space-between;
-              padding:9px 12px;border-radius:8px;cursor:pointer;
-              color:rgba(150,150,180,1);transition:background .1s,color .1s;gap:20px;`;
-            r.innerHTML = `<span>${lbl}</span>${kbd ? `<span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:rgba(100,100,130,1);letter-spacing:.05em">${kbd}</span>` : ''}`;
-            r.onmouseenter = () => { r.style.background='rgba(255,255,255,0.07)'; r.style.color='#eeeef6'; };
-            r.onmouseleave = () => { r.style.background=''; r.style.color='rgba(150,150,180,1)'; };
-            r.onclick = () => { fn(); m.remove(); };
+            r.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;cursor:pointer;color:rgba(150,150,180,1);transition:background .1s,color .1s;gap:20px;';
+            r.innerHTML = '<span>' + lbl + '</span>' + (kbd ? '<span style="font-size:9px;font-family:\'JetBrains Mono\',monospace;color:rgba(100,100,130,1);letter-spacing:.05em">' + kbd + '</span>' : '');
+            r.onmouseenter = function() { r.style.background='rgba(255,255,255,0.07)'; r.style.color='#eeeef6'; };
+            r.onmouseleave = function() { r.style.background=''; r.style.color='rgba(150,150,180,1)'; };
+            r.onclick = function() { fn(); m.remove(); };
             m.appendChild(r);
           });
           document.body.appendChild(m);
-          setTimeout(() => document.addEventListener('click', () => m.remove(), { once: true }), 0);
+          setTimeout(function() { document.addEventListener('click', function() { m.remove(); }, { once:true }); }, 0);
           e.stopPropagation();
         }
 
-        // ── Keyboard shortcuts ────────────────────────────────────────────
-        document.addEventListener('keydown', e => {
+        // ── Keyboard shortcuts ────────────────────────────────────────────────
+        document.addEventListener('keydown', function(e) {
           if (e.ctrlKey || e.metaKey) {
             if (e.key === 't') { e.preventDefault(); addTab(); }
             if (e.key === 'w') { e.preventDefault(); closeTab(cur); }
@@ -1393,8 +1513,8 @@
           }
         });
 
-        // ── Hash sync for scramjet ────────────────────────────────────────
-        window.addEventListener('hashchange', () => {
+        // ── Hash sync for scramjet ────────────────────────────────────────────
+        window.addEventListener('hashchange', function() {
           if (currentProxy !== 'scramjet') return;
           const token = window.location.hash.replace(/^#/, '');
           if (!token) return;
@@ -1421,35 +1541,38 @@
           _lastLoadedUrl = url;
         };
 
-        // ── Init ──────────────────────────────────────────────────────────
+        // ── Init ──────────────────────────────────────────────────────────────
         renderTabs();
         showNew();
         updateSeUI();
 
-        // FIX: Run WISP health check on startup (non-blocking)
-        checkWisp().then(ok => {
-          if (!ok) {
-            console.warn('[T9] WISP server unreachable at startup:', wispUrl);
-            // Quietly switch to UV if scramjet is selected and WISP is dead
-            if (currentProxy === 'scramjet') {
-              currentProxy = 'ultraviolet';
-              document.getElementById('proxy-name').textContent = 'UV';
-              uvInitPromise = null;
-              initUV().catch(() => {
-                console.warn('[T9] UV init also failed. Both proxy engines unavailable.');
-              });
-            }
-          } else {
-            // Kick off UV init early so it's ready before first navigate
-            initUV().catch(() => {});
+        // Run startup checks non-blocking
+        (async function startup() {
+          // 1. Check SW support first (instant)
+          const hasSW = await checkSWSupport();
+          if (!hasSW) {
+            // Chromebook / managed device with SW blocked — use UV
+            console.warn('[T9] Service worker unavailable — defaulting to Ultraviolet');
+            currentProxy = 'ultraviolet';
+            document.getElementById('proxy-name').textContent = 'UV';
           }
-        });
+
+          // 2. Race all WISP servers
+          const wispOk = await findBestWisp();
+          if (!wispOk) {
+            console.warn('[T9] All WISP servers unreachable at startup:', WISP_SERVERS);
+          } else {
+            // 3. Pre-warm UV in background so first navigate is faster
+            initUV().catch(function() {});
+          }
+        })();
 
         return {
           addTab, navigate, back, fwd, reload, home,
           focusUrl, onFocus, onBlur, onInput, onKey,
           star, menu,
-          setProxy, toggleProxyDropdown, recheckWisp,
+          setProxy, toggleProxyDropdown,
+          recheckWispAndRetry, recheckWisp: recheckWispAndRetry,
           setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome,
           retryLoad, switchAndRetry,
         };
@@ -1508,26 +1631,27 @@
 
       (function buildSwatches() {
         const grid = document.getElementById('wp-presets');
-        WP_PRESETS.forEach(p => {
+        WP_PRESETS.forEach(function(p) {
           const el = document.createElement('div');
           el.className = 'wp-swatch'; el.id = 'swatch-' + p.id; el.title = p.label;
           el.style.background = p.bg;
-          el.innerHTML = `<div class="wp-check">✓</div>`;
-          el.onclick = () => WP.applyPreset(p.id, p.bg);
+          el.innerHTML = '<div class="wp-check">✓</div>';
+          el.onclick = function() { WP.applyPreset(p.id, p.bg); };
           grid.appendChild(el);
         });
       })();
 
       let _activeSwatch = null;
       function setActiveSwatch(id) {
-        document.querySelectorAll('.wp-swatch').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.wp-swatch').forEach(function(s) { s.classList.remove('active'); });
         _activeSwatch = id;
         if (id === 'none') document.querySelector('.wp-none-swatch')?.classList.add('active');
-        else if (id) document.getElementById('swatch-' + id)?.classList.add('active');
+        else if (id) { const el = document.getElementById('swatch-' + id); if (el) el.classList.add('active'); }
       }
 
       let _toastTimer;
-      function showToast(msg, state = 'loading') {
+      function showToast(msg, state) {
+        state = state || 'loading';
         clearTimeout(_toastTimer);
         const t = document.getElementById('wp-toast');
         const d = document.getElementById('toast-dot');
@@ -1535,38 +1659,37 @@
         m.textContent = msg;
         d.className = 'toast-dot' + (state !== 'loading' ? ' ' + state : '');
         t.classList.add('show');
-        if (state !== 'loading') _toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+        if (state !== 'loading') _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2000);
       }
       function hideToast() { clearTimeout(_toastTimer); document.getElementById('wp-toast').classList.remove('show'); }
-
       function openWallpaper()  { document.getElementById('wallpaper-overlay').classList.add('open'); }
       function closeWallpaper() { document.getElementById('wallpaper-overlay').classList.remove('open'); }
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWallpaper(); });
+      document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeWallpaper(); });
 
       const WP = (() => {
         const DB_NAME = 'BackgroundStorage', STORE = 'media';
         let _db = null;
 
         function openDB() {
-          return new Promise((res, rej) => {
+          return new Promise(function(res, rej) {
             if (_db) return res(_db);
             const req = indexedDB.open(DB_NAME, 1);
-            req.onerror  = () => rej(req.error);
-            req.onsuccess = () => { _db = req.result; res(_db); };
-            req.onupgradeneeded = e => {
+            req.onerror = function() { rej(req.error); };
+            req.onsuccess = function() { _db = req.result; res(_db); };
+            req.onupgradeneeded = function(e) {
               const db = e.target.result;
               if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
             };
           });
         }
-        async function dbSet(key, val) { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).put(val,key).onsuccess=r; t.onerror=j; }); }
-        async function dbGet(key)      { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readonly'); const req=t.objectStore(STORE).get(key); req.onsuccess=()=>r(req.result); req.onerror=j; }); }
-        async function dbDel(key)      { const db = await openDB(); return new Promise((r,j)=>{ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).delete(key).onsuccess=r; t.onerror=j; }); }
+        async function dbSet(key, val) { const db = await openDB(); return new Promise(function(r,j){ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).put(val,key).onsuccess=r; t.onerror=j; }); }
+        async function dbGet(key)      { const db = await openDB(); return new Promise(function(r,j){ const t=db.transaction([STORE],'readonly'); const req=t.objectStore(STORE).get(key); req.onsuccess=function(){ r(req.result); }; req.onerror=j; }); }
+        async function dbDel(key)      { const db = await openDB(); return new Promise(function(r,j){ const t=db.transaction([STORE],'readwrite'); t.objectStore(STORE).delete(key).onsuccess=r; t.onerror=j; }); }
 
         function applyImageUrl(url) {
           const vb = document.getElementById('video-background');
           vb.style.display='none'; vb.src='';
-          document.body.style.backgroundImage    = `url(${url})`;
+          document.body.style.backgroundImage    = 'url(' + url + ')';
           document.body.style.backgroundSize     = 'cover';
           document.body.style.backgroundPosition = 'center';
           document.body.style.backgroundRepeat   = 'no-repeat';
@@ -1598,8 +1721,8 @@
           localStorage.setItem('bg_preset_id', id);
           localStorage.setItem('bg_preset_css', gradientCss);
           localStorage.removeItem('bg_data_url');
-          dbDel('savedVideo').catch(()=>{});
-          dbDel('savedImage').catch(()=>{});
+          dbDel('savedVideo').catch(function(){});
+          dbDel('savedImage').catch(function(){});
           setActiveSwatch(id);
         }
 
@@ -1609,12 +1732,12 @@
           localStorage.removeItem('bg_preset_id');
           localStorage.removeItem('bg_preset_css');
           localStorage.removeItem('bg_data_url');
-          await dbDel('savedVideo').catch(()=>{});
-          await dbDel('savedImage').catch(()=>{});
+          await dbDel('savedVideo').catch(function(){});
+          await dbDel('savedImage').catch(function(){});
           setActiveSwatch('none');
         }
 
-        document.getElementById('background-upload').addEventListener('change', async () => {
+        document.getElementById('background-upload').addEventListener('change', async function() {
           const file = document.getElementById('background-upload').files[0];
           if (!file) return;
 
@@ -1623,7 +1746,7 @@
             try {
               const buf = await file.arrayBuffer();
               await dbSet('savedVideo', { data: buf, type: file.type });
-              await dbDel('savedImage').catch(()=>{});
+              await dbDel('savedImage').catch(function(){});
               localStorage.setItem('bg_type', 'video');
               localStorage.removeItem('bg_data_url');
               localStorage.removeItem('bg_preset_id');
@@ -1641,11 +1764,11 @@
                 localStorage.setItem('bg_type', 'image-idb');
                 localStorage.removeItem('bg_data_url');
               } else {
-                const dataUrl = await new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(file); });
+                const dataUrl = await new Promise(function(r) { const fr=new FileReader(); fr.onload=function(){ r(fr.result); }; fr.readAsDataURL(file); });
                 localStorage.setItem('bg_type', 'image-data');
                 localStorage.setItem('bg_data_url', dataUrl);
               }
-              await dbDel('savedVideo').catch(()=>{});
+              await dbDel('savedVideo').catch(function(){});
               localStorage.removeItem('bg_preset_id');
               const url = URL.createObjectURL(new Blob([buf], { type: file.type }));
               applyImageUrl(url); setActiveSwatch('custom');
@@ -1665,12 +1788,12 @@
           } else if (type === 'video') {
             try {
               const v = await dbGet('savedVideo');
-              if (v?.data) { const url=URL.createObjectURL(new Blob([v.data],{type:v.type})); applyVideoUrl(url); setActiveSwatch('custom'); }
+              if (v && v.data) { const url=URL.createObjectURL(new Blob([v.data],{type:v.type})); applyVideoUrl(url); setActiveSwatch('custom'); }
             } catch(e) { console.error('bg load error:', e); }
           } else if (type === 'image-idb') {
             try {
               const img = await dbGet('savedImage');
-              if (img?.data) { const url=URL.createObjectURL(new Blob([img.data],{type:img.type})); applyImageUrl(url); setActiveSwatch('custom'); }
+              if (img && img.data) { const url=URL.createObjectURL(new Blob([img.data],{type:img.type})); applyImageUrl(url); setActiveSwatch('custom'); }
             } catch(e) { console.error('bg load error:', e); }
           } else if (type === 'image-data') {
             const dataUrl = localStorage.getItem('bg_data_url');
@@ -1684,7 +1807,7 @@
     </script>
 
     <script>
-      window.addEventListener('load', () => {
+      window.addEventListener('load', function() {
         const orig = window.setLocationLabel;
         if (typeof orig === 'function') {
           window.setLocationLabel = function(val) {
