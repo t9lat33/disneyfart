@@ -1,4 +1,3 @@
-<!-- Bidvertiser2103482 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +5,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
-    <script type="text/javascript" src="//ads.adplunge.com/w/d3ee34cb-11dd-47da-a537-576ee1b8b11b.js" async defer></script><script>var wapTag = wapTag || {};wapTag.gdprShowConsentToolButton = false;</script><script type="text/javascript" src="//ads.adplunge.com/ata/adv/d3ee34cb-11dd-47da-a537-576ee1b8b11b.js" async defer></script>
-    <script>
-        window.addEventListener('beforeunload', function (event) {
-            event.preventDefault();
-            event.returnValue = '';
-            return 'Are you sure you want to leave? Any unsaved changes will be lost.';
-        });
-    </script>
-    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
@@ -31,9 +22,8 @@
     <meta property="og:description" content="Play games online. Fast, free, no downloads.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Cine-Play Games">
-    <meta name="ppck-ver" content="3a583f64da995abf422fabcf5da9644e" />
     <meta name="twitter:description" content="Play games online. Fast, free, no downloads.">
-    <meta name="monetag" content="bb44d9f98c1988aa33c02a34ccc0ed1b">
+    <meta name="theme-color" content="#8fdcff">
     <style>
         :root {
             --primary: #8fdcff;
@@ -184,7 +174,6 @@
         }
 
         .zone-item:hover { transform: translateY(-3px); }
-        .zone-item::before { display: none; }
 
         .zone-item img {
             width: 200px;
@@ -204,12 +193,10 @@
             opacity: 0.8;
         }
 
-        .zone-item button { display: none; }
-
         #zoneViewer {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: #000;
             z-index: 10000;
             display: none;
             flex-direction: column;
@@ -222,14 +209,16 @@
         }
 
         .zone-header {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(20px);
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 56px;
+            flex-shrink: 0;
         }
 
         .zone-title {
@@ -238,52 +227,58 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            overflow: hidden;
         }
 
         #zoneName {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             margin: 0;
             color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        #zoneId { display: none; }
+        #zoneId, #zoneSource { display: none; }
 
         #zoneAuthor {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
             transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         #zoneAuthor:hover { color: #8fdcff; text-decoration: underline; }
 
-        .zone-controls { display: flex; gap: 10px; }
+        .zone-controls { display: flex; gap: 8px; flex-shrink: 0; }
 
         .zone-controls button {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             padding: 8px 16px;
-            border-radius: 15px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             transition: all 0.2s ease;
             backdrop-filter: blur(10px);
+            white-space: nowrap;
         }
 
         .zone-controls button:hover {
             background: rgba(140, 220, 255, 0.2);
             border-color: #8fdcff;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         #zoneFrame {
             flex-grow: 1;
             border: none;
             width: 100%;
-            height: calc(100% - 70px);
             background: black;
         }
 
@@ -372,8 +367,7 @@
             outline: none;
         }
 
-        #popupBody input[type="text"]:focus,
-        #popupBody input[type="file"]:focus {
+        #popupBody input[type="text"]:focus {
             border-color: #8fdcff;
             box-shadow: 0 0 15px rgba(140, 220, 255, 0.3);
         }
@@ -385,14 +379,15 @@
             width: 100%;
             background: rgba(0, 0, 0, 0.5);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            padding: 12px 15px;
             z-index: 100;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            align-items: center;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
@@ -414,19 +409,26 @@
             box-shadow: 0 5px 15px rgba(140, 220, 255, 0.2);
         }
 
+        .footer-credit {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
         .info-button {
             background: rgba(255, 255, 255, 0.1);
             border: none;
             cursor: pointer;
-            padding: 8px;
+            padding: 6px;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             transition: all 0.2s ease;
             color: white;
+            flex-shrink: 0;
         }
 
         .info-button:hover { background: rgba(140, 220, 255, 0.2); transform: scale(1.1); }
@@ -450,66 +452,35 @@
 
         #tooltip.show { opacity: 1; }
 
-        #zoneCount {
-            margin: 0 0 15px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 600;
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(140, 220, 255, 0.3);
+            border-top-color: #8fdcff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
         }
 
-        .settings-button {
-            background: rgba(140, 220, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(140, 220, 255, 0.3);
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .settings-button:hover {
-            background: rgba(140, 220, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(140, 220, 255, 0.3);
-        }
-
-        .control-buttons { display: flex; gap: 10px; }
-
-        .control-buttons button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            cursor: pointer;
-            padding: 0;
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
+        .zone-loading {
+            position: absolute;
+            inset: 56px 0 0 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+            background: #000;
         }
 
-        .control-buttons button:hover {
-            background: rgba(140, 220, 255, 0.2);
-            border-color: #8fdcff;
-            transform: translateY(-2px);
+        .zone-loading p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
         }
-
-        .control-button img {
-            width: 24px;
-            height: 24px;
-            transition: transform 0.4s ease;
-            filter: brightness(0) invert(1);
-        }
-
-        .control-button:hover img { transform: rotate(40deg); }
 
         @media (max-width: 768px) {
             .header-content { flex-direction: column; gap: 10px; }
@@ -519,13 +490,17 @@
             main { padding: 100px 15px 120px; }
             #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
             .zone-item img { width: 150px; height: 150px; }
+            .zone-header { padding: 10px 15px; }
+            #zoneName { font-size: 1rem; }
+            .zone-controls button { padding: 6px 12px; font-size: 12px; }
         }
 
         @media (max-width: 480px) {
             #container, #featuredZones { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
             .zone-item img { width: 120px; height: 120px; }
-            .zone-controls { flex-wrap: wrap; }
-            .zone-controls button { padding: 6px 12px; font-size: 12px; }
+            .zone-controls { flex-wrap: wrap; gap: 5px; }
+            .zone-controls button { padding: 5px 10px; font-size: 11px; border-radius: 8px; }
+            .zone-title { gap: 6px; }
         }
     </style>
     <link rel="manifest" href="manifest.json">
@@ -550,8 +525,6 @@
         </div>
     </header>
 
-    <script type="text/javascript"> (wapTag.Init = window.wapTag.Init || []).push(function () { wAPITag.initStickyBanner("pw_49753"); }); </script>
-
     <main>
         <br>
         <details id="featuredZonesWrapper" open>
@@ -571,7 +544,7 @@
             <div class="zone-title">
                 <h2 id="zoneName">Game</h2>
                 <button class="info-button" onclick="showZoneInfo()" title="Game Information">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="16" x2="12" y2="12"></line>
                         <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -579,23 +552,27 @@
                 </button>
                 <span id="zoneId" style="display: none;"></span>
                 <span id="zoneSource" style="display: none;"></span>
-                <a id="zoneAuthor" href="#" target="_blank">by Author</a>
+                <span id="zoneAuthor">by Author</span>
             </div>
             <div class="zone-controls">
+                <button onclick="reloadZone()" title="Reload">Reload</button>
                 <button onclick="fullscreenZone()">Fullscreen</button>
-                <button onclick="aboutBlank()">Open in New Tab</button>
-                <button onclick="downloadZone()">Download</button>
+                <button onclick="aboutBlank()">New Tab</button>
                 <button onclick="closeZone()">Close</button>
             </div>
         </div>
-        <iframe id="zoneFrame"></iframe>
+        <div id="zoneLoading" class="zone-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading game...</p>
+        </div>
+        <iframe id="zoneFrame" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-fullscreen"></iframe>
     </div>
 
     <div id="popupOverlay">
         <div class="popup">
             <div class="popup-header">
                 <h3 id="popupTitle">Title</h3>
-                <button id="popupClose" onclick="closePopup()">×</button>
+                <button id="popupClose" onclick="closePopup()">&times;</button>
             </div>
             <div id="popupBody">Content will be here</div>
         </div>
@@ -603,7 +580,7 @@
 
     <footer>
         <div class="footer-links">
-            <h3 style="color:white; position:fixed; bottom:0; left:7px; font-family: 'Courier New', Courier, monospace;">Games provided by Noah's Calculus Tutoring and Genizy</h3>
+            <span class="footer-credit">Games provided by Noah's Calculus Tutoring and Genizy</span>
             <a href="javascript:saveData()">Export Data</a>
             <a href="#" onclick="document.getElementById('importData').click(); return false;">Import Data</a>
             <input type="file" id="importData" style="display: none;" onchange="loadData(event)">
@@ -611,9 +588,15 @@
     </footer>
 
     <script>
+        // ============================================
+        // CINE-PLAY GAME LOADER
+        // Games execute properly in sandboxed iframe
+        // ============================================
+
         const container = document.getElementById('container');
         const zoneViewer = document.getElementById('zoneViewer');
-        let zoneFrame = document.getElementById('zoneFrame');
+        const zoneFrame = document.getElementById('zoneFrame');
+        const zoneLoading = document.getElementById('zoneLoading');
         const searchBar = document.getElementById('searchBar');
         const sortOptions = document.getElementById('sortOptions');
         const filterOptions = document.getElementById('filterOptions');
@@ -627,11 +610,10 @@
         const BESTSAB_HTML = "https://cdn.jsdelivr.net/gh/bestsabplayerox/html@master/";
 
         // ============================================
-        // CINE-PLAY SOURCE 2: Noah's Complete Collection (200+ games)
+        // CINE-PLAY SOURCE 2: Noah's Complete Collection
         // ============================================
         const NOAH_BASE = "https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master";
-        
-        // Complete 200+ game titles from Noah's collection
+
         const NOAH_GAME_TITLES = [
             "Alien Hominid", "Customer Support", "The Deadseat", "Fireboy & Watergirl", "Pizza Tower",
             "Bloons TD 1", "Bloons TD 2", "Bloons TD 3", "Bloons TD 4", "Bloons TD 5",
@@ -675,7 +657,7 @@
         ];
 
         let zones = [];
-        let popularityData = {};
+        let currentZone = null;
         const featuredContainer = document.getElementById('featuredZones');
 
         // ============================================
@@ -691,7 +673,7 @@
                     url: (g.url || "").replace("{HTML_URL}", BESTSAB_HTML),
                     cover: (g.cover || "").replace("{COVER_URL}", BESTSAB_COVER).replace("{HTML_URL}", BESTSAB_HTML),
                     author: "bestsabplayerox",
-                    special: g.special || [],
+                    special: Array.isArray(g.special) ? g.special : ["HTML5"],
                     featured: idx < 8,
                     _source: "bestsabplayerox"
                 }));
@@ -721,14 +703,14 @@
         // LOAD ALL GAMES FROM BOTH SOURCES
         // ============================================
         async function listZones() {
-            container.innerHTML = "Loading games from Cine-Play sources (bestsabplayerox + Noah's 200+ collection)...";
-            
+            container.innerHTML = '<div style="text-align:center; padding:40px;"><div class="loading-spinner"></div><p style="color:rgba(255,255,255,0.6); margin-top:15px;">Loading games from Cine-Play sources...</p></div>';
+
             try {
                 const bestSabGames = await fetchBestSabGames();
                 const noahZones = createNoahZones();
-                
+
                 zones = [...bestSabGames, ...noahZones];
-                
+
                 // Remove duplicates by name
                 const seen = new Set();
                 zones = zones.filter(z => {
@@ -737,9 +719,9 @@
                     seen.add(key);
                     return true;
                 });
-                
+
                 sortZones();
-                
+
                 // Build tag filter
                 let alltags = [];
                 for (const obj of zones) {
@@ -754,10 +736,10 @@
                     opt.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
                     filteroption.appendChild(opt);
                 }
-                
+
             } catch (error) {
                 console.error(error);
-                container.innerHTML = `Error loading zones: ${error}`;
+                container.innerHTML = `Error loading zones: ${error.message}`;
                 zones = createNoahZones();
                 sortZones();
             }
@@ -778,9 +760,9 @@
             } else if (sortBy === 'id') {
                 zones.sort((a, b) => (a.id || 0) - (b.id || 0));
             } else if (sortBy === 'popular') {
-                zones.sort((a, b) => ((popularityData[b._source]?.[b.id]) || 0) - ((popularityData[a._source]?.[a.id]) || 0));
+                zones.sort((a, b) => (b._loadCount || 0) - (a._loadCount || 0));
             }
-            
+
             const featured = zones.filter(z => z.featured).slice(0, 16);
             displayFeaturedZones(featured);
             displayZones(zones);
@@ -796,6 +778,24 @@
             img.alt = file.name;
             img.loading = "lazy";
             img.className = "lazy-zone-img";
+            img.onerror = function() {
+                // Fallback: generate a colored placeholder with game initial
+                this.onerror = null;
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 200;
+                const ctx = canvas.getContext('2d');
+                // Random hue based on game name
+                const hue = file.name.split('').reduce((a,c) => a + c.charCodeAt(0), 0) % 360;
+                ctx.fillStyle = `hsl(${hue}, 50%, 30%)`;
+                ctx.fillRect(0, 0, 200, 200);
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.font = 'bold 80px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText((file.name || '?')[0].toUpperCase(), 100, 100);
+                this.src = canvas.toDataURL();
+            };
 
             img.addEventListener('mouseenter', e => {
                 tooltip.textContent = file.name;
@@ -867,60 +867,171 @@
         }
 
         // ============================================
-        // OPEN / CLOSE ZONE
+        // OPEN / CLOSE / RELOAD ZONE - EXECUTES GAMES
         // ============================================
         function openZone(file) {
-            if (file.url && file.url.startsWith("http") && !file.url.includes("{") && !file.url.includes("}")) {
-                window.open(file.url, "_blank");
-                return;
-            }
-            const url = resolveURL(file);
-            if (!url) {
+            if (!file || !file.url) {
                 alert("No game URL found");
                 return;
             }
-            
-            fetch(url + "?t=" + Date.now())
-                .then(r => r.text())
-                .then(html => {
-                    if (zoneFrame.contentDocument === null) {
-                        zoneFrame = document.createElement("iframe");
-                        zoneFrame.id = "zoneFrame";
-                        zoneViewer.appendChild(zoneFrame);
+
+            // Track load count for popularity sort
+            file._loadCount = (file._loadCount || 0) + 1;
+            currentZone = file;
+
+            const url = resolveURL(file);
+
+            // Show viewer
+            document.getElementById('zoneName').textContent = file.name;
+            document.getElementById('zoneId').textContent = file.id;
+            document.getElementById('zoneSource').textContent = file._source;
+            document.getElementById('zoneAuthor').textContent = "by " + (file.author || "Cine-Play Collection");
+            zoneViewer.style.display = "flex";
+            zoneLoading.style.display = "flex";
+
+            // Use a Blob URL approach for games that need same-origin execution
+            // OR direct src for cross-origin games
+            loadGameInIframe(url, file);
+
+            // Update URL
+            const u = new URL(window.location);
+            u.searchParams.set('id', file.id);
+            u.searchParams.set('src', file._source);
+            history.pushState(null, '', u.toString());
+        }
+
+        async function loadGameInIframe(url, file) {
+            zoneLoading.style.display = "flex";
+            zoneFrame.style.display = "none";
+
+            try {
+                // Try to fetch and create a blob URL so the game executes
+                // with proper same-origin context for its assets
+                const response = await fetch(url + "?t=" + Date.now());
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+
+                if (contentType.includes('application/json')) {
+                    // BestSab format: JSON with HTML content
+                    const data = await response.json();
+
+                    let htmlContent = '';
+                    if (data.html) {
+                        htmlContent = data.html;
+                    } else if (data.content) {
+                        htmlContent = data.content;
+                    } else if (data.url) {
+                        // Redirect to another URL
+                        zoneFrame.src = data.url;
+                        zoneFrame.onload = () => {
+                            zoneLoading.style.display = "none";
+                            zoneFrame.style.display = "block";
+                        };
+                        return;
+                    } else {
+                        // Try to stringify the whole object as HTML
+                        htmlContent = JSON.stringify(data);
                     }
-                    zoneFrame.contentDocument.open();
-                    zoneFrame.contentDocument.write(html);
-                    zoneFrame.contentDocument.close();
-                    document.getElementById('zoneName').textContent = file.name;
-                    document.getElementById('zoneId').textContent = file.id;
-                    document.getElementById('zoneSource').textContent = file._source;
-                    document.getElementById('zoneAuthor').textContent = "by " + (file.author || "Cine-Play Collection");
-                    zoneViewer.style.display = "flex";
-                    const u = new URL(window.location);
-                    u.searchParams.set('id', file.id);
-                    u.searchParams.set('src', file._source);
-                    history.pushState(null, '', u.toString());
-                })
-                .catch(error => {
-                    console.error("Failed to load zone:", error);
-                    if (confirm("Game couldn't load. Open in new tab?")) {
-                        window.open(url, "_blank");
-                    }
-                });
+
+                    // Fix relative URLs in the HTML content
+                    htmlContent = fixRelativeUrls(htmlContent, url);
+
+                    // Write to iframe
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    zoneFrame.src = blobUrl;
+
+                    // Clean up blob URL after load (iframe will keep the content)
+                    zoneFrame.onload = () => {
+                        zoneLoading.style.display = "none";
+                        zoneFrame.style.display = "block";
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                    };
+                    zoneFrame.onerror = () => {
+                        // Fallback: try direct src
+                        zoneFrame.src = url;
+                        zoneLoading.style.display = "none";
+                        zoneFrame.style.display = "block";
+                    };
+
+                } else {
+                    // Direct HTML file - fetch and execute as blob
+                    const htmlText = await response.text();
+
+                    // Fix relative URLs in the HTML
+                    const fixedHtml = fixRelativeUrls(htmlText, url);
+
+                    const blob = new Blob([fixedHtml], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    zoneFrame.src = blobUrl;
+
+                    zoneFrame.onload = () => {
+                        zoneLoading.style.display = "none";
+                        zoneFrame.style.display = "block";
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                    };
+                    zoneFrame.onerror = () => {
+                        // Final fallback: direct src
+                        zoneFrame.src = url;
+                        zoneLoading.style.display = "none";
+                        zoneFrame.style.display = "block";
+                    };
+                }
+            } catch (error) {
+                console.error("Failed to load game:", error);
+                // Fallback: direct iframe src (works for many CDN-hosted games)
+                zoneFrame.src = url;
+                zoneLoading.style.display = "none";
+                zoneFrame.style.display = "block";
+            }
+        }
+
+        // Fix relative URLs in HTML content so assets load correctly
+        function fixRelativeUrls(html, baseUrl) {
+            try {
+                const base = new URL(baseUrl);
+                const basePath = base.href.substring(0, base.href.lastIndexOf('/') + 1);
+
+                // Fix href="/..." and src="/..." (absolute paths)
+                html = html.replace(/(href|src)=["']\/([^"']*)["']/gi, `$1="${base.origin}/$2"`);
+
+                // Fix href="..." and src="..." without protocol or leading /
+                html = html.replace(/(href|src)=["']((?!https?:\/\/)(?!\/\/)(?!data:)(?!#))([^"']*)["']/gi, `$1="${basePath}$3"`);
+
+                // Fix url(...) in CSS
+                html = html.replace(/url\(["']?((?!https?:\/\/)(?!\/\/)(?!data:))([^"')]+)["']?\)/gi, `url("${basePath}$2")`);
+
+                // Inject a base tag if not present
+                if (!html.includes('<base')) {
+                    html = html.replace(/<head>/i, `<head><base href="${basePath}">`);
+                }
+
+                return html;
+            } catch {
+                return html;
+            }
+        }
+
+        function reloadZone() {
+            if (currentZone) {
+                openZone(currentZone);
+            }
         }
 
         function aboutBlank() {
-            const id = document.getElementById('zoneId').textContent;
-            const key = document.getElementById('zoneSource').textContent;
-            const zone = zones.find(z => z.id + '' === id && z._source === key);
-            if (zone && zone.url) {
-                window.open(zone.url, "_blank");
+            if (currentZone && currentZone.url) {
+                window.open(currentZone.url, "_blank");
             }
         }
 
         function closeZone() {
             zoneViewer.style.display = "none";
-            if (zoneFrame.parentNode) zoneViewer.removeChild(zoneFrame);
+            zoneFrame.src = "about:blank";
+            currentZone = null;
             const u = new URL(window.location);
             u.searchParams.delete('id');
             u.searchParams.delete('src');
@@ -928,30 +1039,30 @@
         }
 
         function downloadZone() {
-            const id = document.getElementById('zoneId').textContent;
-            const key = document.getElementById('zoneSource').textContent;
-            const zone = zones.find(z => z.id + '' === id && z._source === key);
-            if (zone && zone.url) {
-                fetch(zone.url)
-                    .then(r => r.text())
-                    .then(text => {
-                        const blob = new Blob([text], { type: "text/html" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = zone.name + ".html";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    });
-            }
+            if (!currentZone || !currentZone.url) return;
+            fetch(currentZone.url)
+                .then(r => r.text())
+                .then(text => {
+                    const blob = new Blob([text], { type: "text/html" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = currentZone.name + ".html";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
         }
 
         function fullscreenZone() {
-            const fn = zoneFrame.requestFullscreen || zoneFrame.mozRequestFullScreen ||
-                       zoneFrame.webkitRequestFullscreen || zoneFrame.msRequestFullscreen;
-            if (fn) fn.call(zoneFrame);
+            if (zoneFrame.requestFullscreen) {
+                zoneFrame.requestFullscreen();
+            } else if (zoneFrame.webkitRequestFullscreen) {
+                zoneFrame.webkitRequestFullscreen();
+            } else if (zoneFrame.msRequestFullscreen) {
+                zoneFrame.msRequestFullscreen();
+            }
         }
 
         function showZoneInfo() {
@@ -992,66 +1103,72 @@
         }
 
         async function saveData() {
-            alert("This might take a while, dont touch anything other than this OK button");
+            alert("This might take a while, don't touch anything other than this OK button");
             const result = {};
             result.cookies = document.cookie;
             result.localStorage = {...localStorage};
             result.sessionStorage = {...sessionStorage};
             result.indexedDB = {};
-            const dbs = await indexedDB.databases();
-            for (const dbInfo of dbs) {
-                if (!dbInfo.name) continue;
-                result.indexedDB[dbInfo.name] = {};
-                await new Promise((resolve, reject) => {
-                    const openRequest = indexedDB.open(dbInfo.name, dbInfo.version);
-                    openRequest.onerror = () => reject(openRequest.error);
-                    openRequest.onsuccess = () => {
-                        const db = openRequest.result;
-                        const storeNames = Array.from(db.objectStoreNames);
-                        if (storeNames.length === 0) { resolve(); return; }
-                        const transaction = db.transaction(storeNames, "readonly");
-                        const storePromises = [];
-                        for (const storeName of storeNames) {
-                            result.indexedDB[dbInfo.name][storeName] = [];
-                            const store = transaction.objectStore(storeName);
-                            const getAllRequest = store.getAll();
-                            const p = new Promise((res, rej) => {
-                                getAllRequest.onsuccess = () => {
-                                    result.indexedDB[dbInfo.name][storeName] = sanitizeData(getAllRequest.result, 1000, 100);
-                                    res();
-                                };
-                                getAllRequest.onerror = () => rej(getAllRequest.error);
-                            });
-                            storePromises.push(p);
-                        }
-                        Promise.all(storePromises).then(() => resolve());
-                    };
-                });
-            }
-            result.caches = {};
-            const cacheNames = await caches.keys();
-            for (const cacheName of cacheNames) {
-                const cache = await caches.open(cacheName);
-                const requests = await cache.keys();
-                result.caches[cacheName] = [];
-                for (const req of requests) {
-                    const response = await cache.match(req);
-                    if (!response) continue;
-                    const cloned = response.clone();
-                    const contentType = cloned.headers.get('content-type') || '';
-                    let body;
-                    try {
-                        if (contentType.includes('application/json')) body = await cloned.json();
-                        else if (contentType.includes('text') || contentType.includes('javascript')) body = await cloned.text();
-                        else { const buffer = await cloned.arrayBuffer(); body = btoa(String.fromCharCode(...new Uint8Array(buffer))); }
-                    } catch { body = '[Unable to read body]'; }
-                    result.caches[cacheName].push({ url: req.url, body, contentType });
+            try {
+                const dbs = await indexedDB.databases();
+                for (const dbInfo of dbs) {
+                    if (!dbInfo.name) continue;
+                    result.indexedDB[dbInfo.name] = {};
+                    await new Promise((resolve, reject) => {
+                        const openRequest = indexedDB.open(dbInfo.name, dbInfo.version);
+                        openRequest.onerror = () => reject(openRequest.error);
+                        openRequest.onsuccess = () => {
+                            const db = openRequest.result;
+                            const storeNames = Array.from(db.objectStoreNames);
+                            if (storeNames.length === 0) { resolve(); return; }
+                            const transaction = db.transaction(storeNames, "readonly");
+                            const storePromises = [];
+                            for (const storeName of storeNames) {
+                                result.indexedDB[dbInfo.name][storeName] = [];
+                                const store = transaction.objectStore(storeName);
+                                const getAllRequest = store.getAll();
+                                const p = new Promise((res, rej) => {
+                                    getAllRequest.onsuccess = () => {
+                                        result.indexedDB[dbInfo.name][storeName] = sanitizeData(getAllRequest.result, 1000, 100);
+                                        res();
+                                    };
+                                    getAllRequest.onerror = () => rej(getAllRequest.error);
+                                });
+                                storePromises.push(p);
+                            }
+                            Promise.all(storePromises).then(() => resolve());
+                        };
+                    });
                 }
-            }
+            } catch(e) { console.log('indexedDB export skipped:', e); }
+
+            result.caches = {};
+            try {
+                const cacheNames = await caches.keys();
+                for (const cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const requests = await cache.keys();
+                    result.caches[cacheName] = [];
+                    for (const req of requests) {
+                        const response = await cache.match(req);
+                        if (!response) continue;
+                        const cloned = response.clone();
+                        const contentType = cloned.headers.get('content-type') || '';
+                        let body;
+                        try {
+                            if (contentType.includes('application/json')) body = await cloned.json();
+                            else if (contentType.includes('text') || contentType.includes('javascript')) body = await cloned.text();
+                            else { const buffer = await cloned.arrayBuffer(); body = btoa(String.fromCharCode(...new Uint8Array(buffer))); }
+                        } catch { body = '[Unable to read body]'; }
+                        result.caches[cacheName].push({ url: req.url, body, contentType });
+                    }
+                }
+            } catch(e) { console.log('Cache export skipped:', e); }
+
             alert("Done, wait for the download to come");
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/octet-stream" }));
-            link.download = `${Date.now()}.data`;
+            link.download = `cineplay-backup-${Date.now()}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1062,99 +1179,132 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = async function (e) {
-                const data = JSON.parse(e.target.result);
-                if (data.cookies) data.cookies.split(';').forEach(cookie => { document.cookie = cookie.trim(); });
-                if (data.localStorage) for (const key in data.localStorage) localStorage.setItem(key, data.localStorage[key]);
-                if (data.sessionStorage) for (const key in data.sessionStorage) sessionStorage.setItem(key, data.sessionStorage[key]);
-                if (data.indexedDB) {
-                    for (const dbName in data.indexedDB) {
-                        const stores = data.indexedDB[dbName];
-                        await new Promise((resolve, reject) => {
-                            const request = indexedDB.open(dbName, 1);
-                            request.onupgradeneeded = e => {
-                                const db = e.target.result;
-                                for (const storeName in stores) {
-                                    if (!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-                                }
-                            };
-                            request.onsuccess = e => {
-                                const db = e.target.result;
-                                const transaction = db.transaction(Object.keys(stores), 'readwrite');
-                                transaction.onerror = () => reject(transaction.error);
-                                let pendingStores = Object.keys(stores).length;
-                                for (const storeName in stores) {
-                                    const objectStore = transaction.objectStore(storeName);
-                                    objectStore.clear().onsuccess = () => {
-                                        for (const item of stores[storeName]) objectStore.put(item);
-                                        if (--pendingStores === 0) resolve();
-                                    };
-                                }
-                            };
-                            request.onerror = () => reject(request.error);
-                        });
-                    }
-                }
-                if (data.caches) {
-                    for (const cacheName in data.caches) {
-                        const cache = await caches.open(cacheName);
-                        await cache.keys().then(keys => Promise.all(keys.map(k => cache.delete(k))));
-                        for (const entry of data.caches[cacheName]) {
-                            let responseBody;
-                            if (entry.contentType.includes('application/json')) responseBody = JSON.stringify(entry.body);
-                            else if (entry.contentType.includes('text') || entry.contentType.includes('javascript')) responseBody = entry.body;
-                            else {
-                                const binaryStr = atob(entry.body);
-                                const bytes = new Uint8Array(binaryStr.length);
-                                for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-                                responseBody = bytes.buffer;
-                            }
-                            await cache.put(entry.url, new Response(responseBody, { headers: new Headers({ 'content-type': entry.contentType }) }));
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.cookies) data.cookies.split(';').forEach(cookie => { if(cookie.trim()) document.cookie = cookie.trim(); });
+                    if (data.localStorage) for (const key in data.localStorage) localStorage.setItem(key, data.localStorage[key]);
+                    if (data.sessionStorage) for (const key in data.sessionStorage) sessionStorage.setItem(key, data.sessionStorage[key]);
+                    if (data.indexedDB) {
+                        for (const dbName in data.indexedDB) {
+                            const stores = data.indexedDB[dbName];
+                            await new Promise((resolve, reject) => {
+                                const request = indexedDB.open(dbName, 1);
+                                request.onupgradeneeded = e => {
+                                    const db = e.target.result;
+                                    for (const storeName in stores) {
+                                        if (!db.objectStoreNames.contains(storeName)) db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                                    }
+                                };
+                                request.onsuccess = e => {
+                                    const db = e.target.result;
+                                    const transaction = db.transaction(Object.keys(stores), 'readwrite');
+                                    transaction.onerror = () => {};
+                                    let pendingStores = Object.keys(stores).length;
+                                    if (pendingStores === 0) { resolve(); return; }
+                                    for (const storeName in stores) {
+                                        const objectStore = transaction.objectStore(storeName);
+                                        objectStore.clear().onsuccess = () => {
+                                            for (const item of stores[storeName]) {
+                                                try { objectStore.put(item); } catch(e) {}
+                                            }
+                                            if (--pendingStores === 0) resolve();
+                                        };
+                                    }
+                                };
+                                request.onerror = () => resolve();
+                            });
                         }
                     }
+                    if (data.caches) {
+                        for (const cacheName in data.caches) {
+                            try {
+                                const cache = await caches.open(cacheName);
+                                await cache.keys().then(keys => Promise.all(keys.map(k => cache.delete(k))));
+                                for (const entry of data.caches[cacheName]) {
+                                    let responseBody;
+                                    if (entry.contentType.includes('application/json')) responseBody = JSON.stringify(entry.body);
+                                    else if (entry.contentType.includes('text') || entry.contentType.includes('javascript')) responseBody = entry.body;
+                                    else {
+                                        const binaryStr = atob(entry.body);
+                                        const bytes = new Uint8Array(binaryStr.length);
+                                        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+                                        responseBody = bytes.buffer;
+                                    }
+                                    await cache.put(entry.url, new Response(responseBody, { headers: new Headers({ 'content-type': entry.contentType }) }));
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                    alert("Data loaded successfully!");
+                } catch(err) {
+                    alert("Error loading data: " + err.message);
                 }
-                alert("Data loaded");
             };
-            alert("This might take a while, dont touch anything other than this OK button");
+            alert("This might take a while, don't touch anything other than this OK button");
             reader.readAsText(file);
         }
 
-        function darkMode() { document.body.classList.toggle("dark-mode"); }
-        function cloakIcon(url) {
-            const link = document.querySelector("link[rel~='icon']");
-            link.rel = "icon";
-            link.href = (url + "").trim().length === 0 ? "favicon.png" : url;
-            document.head.appendChild(link);
-        }
-        function cloakName(string) { document.title = (string + "").trim().length === 0 ? "Games" : string; }
+        // ============================================
+        // POPUP HELPERS
+        // ============================================
         function tabCloak() {
             closePopup();
             document.getElementById('popupTitle').textContent = "Tab Cloak";
             document.getElementById('popupBody').innerHTML = `
-                <label style="font-weight: bold;">Set Tab Title:</label><br>
-                <input type="text" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
-                <br><br><br><br>
-                <label style="font-weight: bold;">Set Tab Icon:</label><br>
-                <input type="text" placeholder="Enter new tab icon URL..." oninput='cloakIcon(this.value)'>
+                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Set Tab Title:</label>
+                <input type="text" placeholder="Enter new tab name..." oninput="document.title=this.value||'Games'">
+                <br><br>
+                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Set Tab Icon URL:</label>
+                <input type="text" placeholder="Enter new tab icon URL..." oninput="document.querySelector('link[rel~=icon]').href=this.value||'favicon.png'">
             `;
             document.getElementById('popupOverlay').style.display = "flex";
         }
+
         function showContact() {
             document.getElementById('popupTitle').textContent = "Contact";
-            document.getElementById('popupBody').innerHTML = `<p>Discord: https://discord.gg/NAFw4ykZ7n</p><p>Email: gn.math.business@gmail.com</p>`;
-            document.getElementById('popupOverlay').style.display = "flex";
-        }
-        function loadPrivacy() {
-            document.getElementById('popupTitle').textContent = "Privacy Policy";
-            document.getElementById('popupBody').innerHTML = `<div style="max-height: 60vh; overflow-y: auto;"><h2>PRIVACY POLICY</h2><p>Last updated April 17, 2025</p><p>This Privacy Notice describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services").</p></div>`;
-            document.getElementById('popupOverlay').style.display = "flex";
-        }
-        function loadDMCA() {
-            document.getElementById('popupTitle').textContent = "DMCA";
-            document.getElementById('popupBody').innerHTML = `<p>If you own or developed a game on this site and would like it removed, please contact us.</p>`;
+            document.getElementById('popupBody').innerHTML = `
+                <p><b>Discord:</b> <a href="https://discord.gg/NAFw4ykZ7n" target="_blank" style="color:#8fdcff;">https://discord.gg/NAFw4ykZ7n</a></p>
+                <p><b>Email:</b> gn.math.business@gmail.com</p>
+            `;
             document.getElementById('popupOverlay').style.display = "flex";
         }
 
-        // Block school filters
+        function loadPrivacy() {
+            document.getElementById('popupTitle').textContent = "Privacy Policy";
+            document.getElementById('popupBody').innerHTML = `
+                <div style="max-height: 60vh; overflow-y: auto;">
+                    <h2>PRIVACY POLICY</h2>
+                    <p>Last updated April 17, 2025</p>
+                    <p>This Privacy Notice describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services").</p>
+                </div>`;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+
+        function loadDMCA() {
+            document.getElementById('popupTitle').textContent = "DMCA";
+            document.getElementById('popupBody').innerHTML = `<p>If you own or developed a game on this site and would like it removed, please contact us at gn.math.business@gmail.com</p>`;
+            document.getElementById('popupOverlay').style.display = "flex";
+        }
+
+        // Close popup on overlay click
+        document.getElementById('popupOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closePopup();
+        });
+
+        // Escape key to close zone viewer
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('popupOverlay').style.display === 'flex') {
+                    closePopup();
+                } else if (zoneViewer.style.display === 'flex') {
+                    closeZone();
+                }
+            }
+        });
+
+        // ============================================
+        // SECURITY: Block school filter domains
+        // ============================================
         const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];
         function isBlockedDomain(url) {
             try {
@@ -1164,38 +1314,34 @@
         }
         const originalFetch = window.fetch;
         window.fetch = function (url, options) {
-            if (isBlockedDomain(url)) { console.warn('lam'); return Promise.reject(new Error("lam")); }
+            if (isBlockedDomain(url)) { console.warn('Blocked request to', url); return Promise.reject(new Error("Blocked")); }
             return originalFetch.apply(this, arguments);
         };
         const originalOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function (method, url) {
-            if (isBlockedDomain(url)) { console.warn('lam'); return; }
+            if (isBlockedDomain(url)) { console.warn('Blocked XHR to', url); return; }
             return originalOpen.apply(this, arguments);
         };
-        HTMLCanvasElement.prototype.toDataURL = function (...args) { return ""; };
 
+        // ============================================
+        // INIT
+        // ============================================
         listZones();
-    </script>
 
-    <script>
-        const search = new URLSearchParams(window.location.search);
-        const privacy = search.get('privacy');
-        if (privacy) loadPrivacy();
-    </script>
-    <script>
+        // Check URL params for direct game load
+        const urlParams = new URLSearchParams(window.location.search);
+        const privacyParam = urlParams.get('privacy');
+        if (privacyParam) loadPrivacy();
+
+        // Service worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(location.protocol + "//" + location.hostname + "/sw.js").catch(err => console.log('SW registration failed:', err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
         }
-    </script>
-    <script>
+
+        // Saved background
         document.addEventListener("DOMContentLoaded", () => {
-            const body = document.body;
-            function setBackground(src) {
-                body.style.backgroundImage = src ? `url(${src})` : "";
-                localStorage.setItem("selectedBackground", src || "");
-            }
             const savedBg = localStorage.getItem("selectedBackground");
-            if (savedBg) setBackground(savedBg);
+            if (savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
         });
     </script>
 </body>
