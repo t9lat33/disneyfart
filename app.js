@@ -2010,4 +2010,4 @@ if (proxyWatermark) {
     toggleOverlay();
   });
 }
-init();
+init(); 
