@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>classroomspot unblocked</title>
+<title>T9 BROWSER</title>
 
 <script src="/uv/uv.bundle.js"></script>
 <script src="/uv/uv.config.js"></script>
@@ -316,7 +316,7 @@ body::before {
 </div>
 
 <div class="ntp" id="ntp">
-    <h1>classroomspot unblocked</h1>
+    <h1>T9 BROWSER</h1>
 </div>
 
 <div class="loading-overlay" id="loader">
@@ -325,7 +325,14 @@ body::before {
 </div>
 
 <script>
-navigator.serviceWorker?.register("/uv/sw.js")
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        const unregisterAll = registrations.map(r => r.unregister())
+        Promise.all(unregisterAll).then(() => {
+            navigator.serviceWorker.register("/uv/sw.js")
+        })
+    })
+}
 
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js")
 connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }])
