@@ -1898,12 +1898,30 @@ navigator.getBattery().then(battery => {
 </script>
 <style>
 #battery2 {
+  right: 400px;
+  top: -10px;
+  position: fixed;
+}
+#clock2 {
   right: 100px;
   top: -10px;
   position: fixed;
 }
 </style>
 
+<p id="clock2" style="color:white;"></p>
+<script>
+  const updateTime = () => {
+    const now = new Date();
+    document.getElementById('clock2').textContent = now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+  updateTime();
+  setInterval(updateTime, 1000);
+</script>
  
 <h2 class="battery" id="date"></h2>
 <div class="clock" id="day"></div>
