@@ -363,7 +363,7 @@ color: white;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -399,7 +399,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -469,7 +469,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -492,7 +492,7 @@ display: none;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -1497,7 +1497,7 @@ display: none;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -1520,7 +1520,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -1873,8 +1873,17 @@ document.addEventListener("click", () => {
 
 
  
- <h2 class="battery" id="batteryPercentage"></h2>
-  <div class="clock" id="time"></div>
+<h2 class="battery" id="date"></h2>
+<div class="clock" id="day"></div>
+<script>
+  const now = new Date();
+
+const date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+document.getElementById('date').textContent = date;
+
+const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+document.getElementById('day').textContent = day;
+</script>
 
 
 
