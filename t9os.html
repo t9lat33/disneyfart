@@ -446,7 +446,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
+    border-radius:6px; 
     width:70%;
     height: 71%; 
     overflow-x: hidden;
@@ -883,7 +883,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 <div id="navbar" class="navbar">
   
-  <a id="toggleDivButton">
+  <a onclick="hidden2()">
     <img src="classwork2.png">
   </a>
   
@@ -1898,7 +1898,7 @@ navigator.getBattery().then(battery => {
 </script>
 <style>
 #battery2 {
-  right: 250px;
+  right: 225px;
   top: -10px;
   position: fixed;
 }
@@ -2396,14 +2396,37 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </script>
 
 <script>
-  // If no background is saved yet, set default
+  // Default background (video)
   if (!localStorage.getItem("bg")) {
-    localStorage.setItem("bg", "url('t9os6.png') no-repeat center center fixed");
+    localStorage.setItem("bg", "minecraftCozy2.mp4");
   }
 
-  // Always apply the saved background
-  document.body.style.background = localStorage.getItem("bg");
-  document.body.style.backgroundSize = "cover"; // makes sure image fits screen
+  const bg = localStorage.getItem("bg");
+
+  // If it's a video
+  if (bg.endsWith(".mp4")) {
+    const video = document.createElement("video");
+    video.src = bg;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+
+    video.style.position = "fixed";
+    video.style.top = "0";
+    video.style.left = "0";
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.objectFit = "cover";
+    video.style.zIndex = "-1";
+
+    document.body.appendChild(video);
+  } 
+  // fallback if it's still an image
+  else {
+    document.body.style.background = bg;
+    document.body.style.backgroundSize = "cover";
+  }
 </script>
 
 <script>
@@ -2564,6 +2587,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </script>
 <script>
   function hidden2(){
+    const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function hidden3(){
     const div = document.getElementById('hiddenDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
@@ -3086,16 +3115,7 @@ body::after {
 
 </body>
 
-<script>
 
-  if (!localStorage.getItem("bg")) {
-    localStorage.setItem("bg", "url('t9os6.png') no-repeat center center fixed");
-  }
-
- 
-  document.body.style.background = localStorage.getItem("bg");
-  document.body.style.backgroundSize = "cover"; 
-</script>
 <div id="notifications"></div>
 
 <script type="module">
