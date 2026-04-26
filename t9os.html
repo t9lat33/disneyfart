@@ -1870,7 +1870,39 @@ document.addEventListener("click", () => {
   </a>
 
 
-
+<p id="battery2" style="display:flex; align-items:center; gap:8px; color:white;"></p>
+<script>
+navigator.getBattery().then(battery => {
+  const el = document.getElementById('battery2');
+  const update = () => {
+    const pct = Math.round(battery.level * 100);
+    const charging = battery.charging;
+    const color = pct <= 20 ? '#e74c3c' : pct <= 50 ? '#f39c12' : '#2ecc71';
+    el.innerHTML = `
+      <svg width="28" height="14" viewBox="0 0 28 14" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="24" height="13" rx="3" ry="3"
+              stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <rect x="25" y="4" width="3" height="6" rx="1"
+              fill="currentColor" opacity="0.5"/>
+        <rect x="2" y="2" width="${20 * battery.level}" height="10" rx="2"
+              fill="${color}"/>
+        ${charging ? `<text x="12" y="11" font-size="9" text-anchor="middle" fill="white" font-weight="bold">⚡</text>` : ''}
+      </svg>
+      <span>${pct}%</span>
+    `;
+  };
+  update();
+  battery.addEventListener('levelchange', update);
+  battery.addEventListener('chargingchange', update);
+});
+</script>
+<style>
+#battery2 {
+  right: 100px;
+  top: -5px;
+  position: fixed;
+}
+</style>
 
  
 <h2 class="battery" id="date"></h2>
