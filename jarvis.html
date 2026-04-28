@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jarvis AI</title>
+</head>
+<body>
+  <h1>🧠 Jarvis</h1>
+
+  <button onclick="toggleJarvis()">🎤 Talk to Jarvis</button>
+  <p id="status">Idle...</p>
+
+<script>
+const WORKER_URL = "https://morning-voice-63fa.t9osta.workers.dev";
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+
+recognition.lang = "en-US";
+recognition.interimResults = false;
+
+let isListening = false;
+let isProcessing = false;
+
+function setStatus(text) {
+  document.getElementById("status").innerText = text;
+}
+
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  speechSynthesis.speak(msg);
+}
+
+async function toggleJarvis() {
+  if (isProcessing) return;
+
+  if (isListening) {
+    recognition.stop();
+    isListening = false;
+    setStatus("Stopped listening.");
+    return;
+  }
+
+  try {
+    recognition.start();
+    isListening = true;
+    setStatus("🎤 Listening...");
+  } catch (e) {
+    console.log("Restarting mic...");
+    setTimeout(() => recognition.start(), 300);
+  }
+}
+
+recognition.onresult = async (event) => {
+  const text = event.results[0][0].transcript;
+  setStatus("You: " + text);
+
+  isProcessing = true;
+  recognition.stop();
+  isListening = false;
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await res.json();
+
+    setStatus("Jarvis: " + data.reply);
+    speak(data.reply);
+
+  } catch (err) {
+    setStatus("Error contacting Jarvis");
+  }
+
+  isProcessing = false;
+};
+
+recognition.onend = () => {
+  isListening = false;
+};
+
+recognition.onerror = (e) => {
+  console.log("Speech error:", e);
+  isListening = false;
+  setStatus("Mic error — retrying...");
+};
+</script>
+
+</body>
+</html>
