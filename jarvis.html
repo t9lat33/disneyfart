@@ -6,7 +6,7 @@
 <body>
   <h1>🧠 Jarvis</h1>
 
-  <button onclick="toggleJarvis()">🎤 Talk to Jarvis</button>
+  <button onclick="toggleJarvis()">🎤 Toggle Jarvis</button>
   <p id="status">Idle...</p>
 
 <script>
@@ -16,48 +16,59 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const recognition = new SpeechRecognition();
 
 recognition.lang = "en-US";
+recognition.continuous = false;
 recognition.interimResults = false;
+recognition.maxAlternatives = 1;
 
-let isListening = false;
+let isActive = false;
 let isProcessing = false;
+let retryTimer = null;
 
-function setStatus(text) {
-  document.getElementById("status").innerText = text;
+function setStatus(t) {
+  document.getElementById("status").innerText = t;
 }
 
 function speak(text) {
   const msg = new SpeechSynthesisUtterance(text);
   msg.lang = "en-US";
+  msg.rate = 1;
   speechSynthesis.speak(msg);
 }
 
-async function toggleJarvis() {
-  if (isProcessing) return;
-
-  if (isListening) {
-    recognition.stop();
-    isListening = false;
-    setStatus("Stopped listening.");
-    return;
-  }
-
+function safeStart() {
   try {
     recognition.start();
-    isListening = true;
-    setStatus("🎤 Listening...");
   } catch (e) {
-    console.log("Restarting mic...");
-    setTimeout(() => recognition.start(), 300);
+    // prevents "already started" crash
+    setTimeout(() => {
+      try { recognition.start(); } catch {}
+    }, 300);
   }
 }
 
+function toggleJarvis() {
+  isActive = !isActive;
+
+  if (isActive) {
+    setStatus("🎤 Listening...");
+    safeStart();
+  } else {
+    setStatus("Stopped.");
+    recognition.stop();
+  }
+}
+
+recognition.onstart = () => {
+  setStatus("🎤 Listening...");
+};
+
 recognition.onresult = async (event) => {
   const text = event.results[0][0].transcript;
-  setStatus("You: " + text);
 
+  setStatus("You: " + text);
   isProcessing = true;
+
   recognition.stop();
-  isListening = false;
 
   try {
     const res = await fetch(WORKER_URL, {
@@ -72,20 +83,40 @@ recognition.onresult = async (event) => {
     speak(data.reply);
 
   } catch (err) {
-    setStatus("Error contacting Jarvis");
+    setStatus("Worker error");
   }
 
   isProcessing = false;
-};
 
-recognition.onend = () => {
-  isListening = false;
+  if (isActive) {
+    setTimeout(() => safeStart(), 600);
+  }
 };
 
 recognition.onerror = (e) => {
   console.log("Speech error:", e);
-  isListening = false;
-  setStatus("Mic error — retrying...");
+
+  if (!isActive) return;
+
+  if (e.error === "no-speech") {
+    setStatus("Didn’t hear you — retrying...");
+  }
+
+  if (e.error === "network") {
+    setStatus("Network issue — retrying...");
+  }
+
+  clearTimeout(retryTimer);
+
+  retryTimer = setTimeout(() => {
+    if (isActive) safeStart();
+  }, 800);
+};
+
+recognition.onend = () => {
+  if (isActive && !isProcessing) {
+    retryTimer = setTimeout(() => safeStart(), 400);
+  }
 };
 </script>
 
