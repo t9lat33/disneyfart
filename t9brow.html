@@ -722,8 +722,8 @@ function createTab(url = "") {
   const frame = document.createElement("iframe");
   frame.className = "frame";
   frame.dataset.id = id;
-  // No allow-same-origin — avoids the sandbox escape warning AND is safer
-  frame.setAttribute("sandbox", "allow-scripts allow-forms allow-modals allow-popups allow-downloads allow-pointer-lock");
+  // allow-same-origin is required for UV's SW to intercept requests inside the iframe
+  frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads");
   document.body.appendChild(frame);
 
   const el = document.createElement("div");
