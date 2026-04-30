@@ -256,8 +256,12 @@ body::before {
 ════════════════════════════════ */
 .frame {
   position: fixed;
-  top: var(--chrome-h);
-  left: 0; right: 0; bottom: 0;
+  top: 88px; /* 36px tabstrip + 52px navbar */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(100vh - 88px);
   border: none;
   display: none;
 }
@@ -268,7 +272,7 @@ body::before {
 ════════════════════════════════ */
 #ntp {
   position: fixed;
-  top: var(--chrome-h);
+  top: 88px;
   left: 0; right: 0; bottom: 0;
   display: none;
   flex-direction: column;
