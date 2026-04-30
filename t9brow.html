@@ -658,9 +658,44 @@ svg { display: block; }
 </div>
 
 <script>
-navigator.serviceWorker?.register("/uv/sw.js");
+// ── Service Worker — wait for activated before any navigation ──
+let swReady = false;
+const swReadyPromise = (async () => {
+  if (!navigator.serviceWorker) return;
+  try {
+    const reg = await navigator.serviceWorker.register("/uv/sw.js", { scope: "/uv/service/" });
+
+    // If already active (returning visit) — done immediately
+    if (reg.active && !reg.installing && !reg.waiting) {
+      swReady = true;
+      return;
+    }
+
+    // Otherwise wait for whichever worker is in flight to activate
+    await new Promise(resolve => {
+      const sw = reg.installing || reg.waiting || reg.active;
+      if (!sw || sw.state === "activated") { resolve(); return; }
+      sw.addEventListener("statechange", function handler() {
+        if (sw.state === "activated") {
+          sw.removeEventListener("statechange", handler);
+          resolve();
+        }
+      });
+      // Safety: also resolve when controllerchange fires (handles skipWaiting case)
+      navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true });
+      // Hard timeout — 6 s max, then proceed anyway
+      setTimeout(resolve, 6000);
+    });
+
+    swReady = true;
+  } catch (err) {
+    console.warn("[T9 Surf] SW registration failed:", err);
+    swReady = true; // degrade gracefully — try without proxy
+  }
+})();
 
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+// Set transport immediately — doesn't need the SW to be ready
 connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }]);
 
 // ── State ──
@@ -687,7 +722,8 @@ function createTab(url = "") {
   const frame = document.createElement("iframe");
   frame.className = "frame";
   frame.dataset.id = id;
-  frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads");
+  // No allow-same-origin — avoids the sandbox escape warning AND is safer
+  frame.setAttribute("sandbox", "allow-scripts allow-forms allow-modals allow-popups allow-downloads allow-pointer-lock");
   document.body.appendChild(frame);
 
   const el = document.createElement("div");
@@ -735,7 +771,6 @@ function syncNav() {
   const url = t.index >= 0 ? t.history[t.index] : "";
   urlInput.value = url;
 
-  // scheme badge
   if (url.startsWith("https://")) {
     urlScheme.textContent = "https";
     urlScheme.style.color = "var(--green)";
@@ -752,7 +787,7 @@ function syncNav() {
   ntp.classList.toggle("show", t.index < 0);
 }
 
-// ── Navigation ──
+// ── Navigation — gates on SW being ready ──
 function normalize(raw) {
   raw = raw.trim();
   if (!raw) return "";
@@ -761,7 +796,7 @@ function normalize(raw) {
   return "https://search.brave.com/search?q=" + encodeURIComponent(raw);
 }
 
-function navigate(raw, push = true) {
+async function navigate(raw, push = true) {
   const t = getTab();
   if (!t || !raw) return;
 
@@ -775,19 +810,28 @@ function navigate(raw, push = true) {
   }
 
   ntp.classList.remove("show");
-  t.frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
   urlInput.value = url;
   syncNav();
 
+  // Show a subtle loading state on the tab label while waiting
+  t.el.querySelector(".tab-label").textContent = "Loading…";
+
+  // ← KEY FIX: wait for SW to be active before setting src
+  await swReadyPromise;
+
+  t.frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+
   t.frame.onload = () => {
     try {
-      const doc = t.frame.contentDocument;
-      const title = doc?.title || new URL(url).hostname;
+      const doc   = t.frame.contentDocument;
+      const title = (doc && doc.title) ? doc.title : new URL(url).hostname;
       t.el.querySelector(".tab-label").textContent = title;
       const fav = t.el.querySelector(".tab-favicon");
       fav.src = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`;
       fav.style.display = "inline";
-    } catch {}
+    } catch {
+      t.el.querySelector(".tab-label").textContent = new URL(url).hostname;
+    }
   };
 }
 
