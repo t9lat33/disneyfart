@@ -3,76 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>T9 BROWSER</title>
+<title>T9 Browser</title>
 
 <script src="/uv/uv.bundle.js"></script>
 <script src="/uv/uv.config.js"></script>
 <script src="/baremux/index.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
 <style>
-* { box-sizing: border-box; }
+* { box-sizing: border-box; font-family: Inter, system-ui; }
 
 html, body {
     margin: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    font-family: 'Rajdhani', sans-serif;
-}
-
-body {
-    background: url('https://4kwallpapers.com/images/wallpapers/goku-vs-vegeta-3840x2160-19301.jpg') center/cover no-repeat fixed;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: -1;
-}
-
-.rain-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
+    background: #000000;
     overflow: hidden;
 }
 
-.particle {
-    position: absolute;
-    width: 2px;
-    height: 15px;
-    background: linear-gradient(to bottom, transparent, rgba(100, 200, 255, 0.6), transparent);
-    animation: fall linear infinite;
-}
-
-@keyframes fall {
-    0% { transform: translateY(-100px) translateX(0); opacity: 1; }
-    100% { transform: translateY(100vh) translateX(20px); opacity: 0; }
-}
-
+/* ===== TOP BAR ===== */
 .browser-ui {
     height: 96px;
-    background: rgba(20, 20, 30, 0.85);
-    backdrop-filter: blur(20px);
+    background: #2b2b2b;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid rgba(100, 200, 255, 0.3);
+    border-bottom: 1px solid #000000;
     z-index: 10;
-    position: relative;
 }
 
+/* ===== TABS ===== */
 .tabs {
     height: 38px;
     display: flex;
@@ -88,25 +49,17 @@ body::before {
     max-width: 220px;
     padding: 0 12px;
     border-radius: 8px 8px 0 0;
-    background: rgba(30, 30, 45, 0.9);
-    color: #aaa;
+    background: #212121;
+    color: #ddd;
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    border: 1px solid rgba(100, 200, 255, 0.1);
-    transition: all 0.3s ease;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 12px;
-    text-shadow: 0 0 5px rgba(100, 200, 255, 0.3);
 }
 
 .tab.active {
-    background: rgba(50, 50, 70, 0.95);
-    color: #fff;
-    border-color: rgba(100, 200, 255, 0.5);
-    box-shadow: 0 0 15px rgba(100, 200, 255, 0.3), inset 0 0 10px rgba(100, 200, 255, 0.1);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(100, 200, 255, 0.6);
+    background: #151515;
+    color: white;
 }
 
 .tab span {
@@ -117,13 +70,11 @@ body::before {
 }
 
 .tab i {
-    opacity: 0.6;
-    transition: all 0.2s;
+    opacity: .6;
 }
 .tab i:hover {
     opacity: 1;
     color: #ff6b6b;
-    text-shadow: 0 0 10px #ff6b6b;
 }
 
 .newtab {
@@ -132,16 +83,12 @@ body::before {
     border-radius: 6px;
     border: none;
     background: transparent;
-    color: #64c8ff;
+    color: #aaa;
     cursor: pointer;
-    transition: all 0.3s;
-    text-shadow: 0 0 5px rgba(100, 200, 255, 0.5);
 }
-.newtab:hover { 
-    background: rgba(100, 200, 255, 0.2); 
-    box-shadow: 0 0 15px rgba(100, 200, 255, 0.4);
-}
+.newtab:hover { background: #444; }
 
+/* ===== NAV BAR ===== */
 .navbar {
     height: 58px;
     display: flex;
@@ -156,34 +103,24 @@ body::before {
     border-radius: 50%;
     border: none;
     background: transparent;
-    color: #64c8ff;
+    color: #bbb;
     cursor: pointer;
-    transition: all 0.3s;
-    text-shadow: 0 0 5px rgba(100, 200, 255, 0.5);
 }
 .navbar button:hover {
-    background: rgba(100, 200, 255, 0.2);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(100, 200, 255, 0.5);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    background: #3a3a3a;
+    color: white;
 }
 
+/* ===== URL BAR ===== */
 .urlbar {
     flex: 1;
     height: 36px;
-    background: rgba(10, 10, 20, 0.9);
+    background: #161616;
     border-radius: 18px;
     padding: 0 16px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(100, 200, 255, 0.3);
-    box-shadow: 0 0 10px rgba(100, 200, 255, 0.1), inset 0 0 20px rgba(100, 200, 255, 0.05);
-    transition: all 0.3s;
-}
-
-.urlbar:focus-within {
-    border-color: rgba(100, 200, 255, 0.6);
-    box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), inset 0 0 20px rgba(100, 200, 255, 0.1);
+    color:white;
 }
 
 .urlbar input {
@@ -192,16 +129,11 @@ body::before {
     background: transparent;
     border: none;
     outline: none;
-    color: #fff;
+    color: white;
     font-size: 14px;
-    font-family: 'Rajdhani', sans-serif;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
-.urlbar input::placeholder {
-    color: rgba(100, 200, 255, 0.5);
-}
-
+/* ===== VIEWPORT ===== */
 .viewframe {
     position: absolute;
     top: 96px;
@@ -210,13 +142,13 @@ body::before {
     height: calc(100% - 96px);
     border: none;
     display: none;
-    z-index: 5;
 }
 
 .viewframe.active {
     display: block;
 }
 
+/* ===== NTP ===== */
 .ntp {
     position: absolute;
     top: 96px;
@@ -224,78 +156,15 @@ body::before {
     width: 100%;
     height: calc(100% - 96px);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 5;
-}
-
-.ntp h1 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 4rem;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.8),
-        0 0 20px rgba(255, 255, 255, 0.6),
-        0 0 30px rgba(100, 200, 255, 0.8),
-        0 0 40px rgba(100, 200, 255, 0.6),
-        0 0 50px rgba(100, 200, 255, 0.4);
-    animation: pulse 3s ease-in-out infinite;
-    letter-spacing: 4px;
-}
-
-@keyframes pulse {
-    0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(100, 200, 255, 0.8), 0 0 40px rgba(100, 200, 255, 0.6), 0 0 50px rgba(100, 200, 255, 0.4); }
-    50% { text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(100, 200, 255, 1), 0 0 50px rgba(100, 200, 255, 0.8), 0 0 60px rgba(100, 200, 255, 0.6); }
-}
-
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-}
-
-.loading-overlay.active {
-    display: flex;
-}
-
-.loading-overlay img {
-    width: 200px;
-    height: 200px;
-    border-radius: 20px;
-    box-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
-}
-
-.loading-text {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 2rem;
-    color: #fff;
-    margin-top: 20px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(100, 200, 255, 0.8);
-    animation: blink 1s ease-in-out infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    color: #ffffff;
+    pointer-events: none;
 }
 </style>
-<base target="_blank">
 </head>
 
 <body>
-
-<div class="rain-container" id="rain"></div>
 
 <div class="browser-ui">
     <div class="tabs" id="tabs">
@@ -316,23 +185,11 @@ body::before {
 </div>
 
 <div class="ntp" id="ntp">
-    <h1>T9 BROWSER</h1>
-</div>
-
-<div class="loading-overlay" id="loader">
-    <img src="https://media1.tenor.com/m/fitGu2TwtHoAAAAd/cat-hyppy.gif" alt="Loading">
-    <div class="loading-text">LOADING...</div>
+    <h1>Jonothans Hub</h1>
 </div>
 
 <script>
-if (navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        const unregisterAll = registrations.map(r => r.unregister())
-        Promise.all(unregisterAll).then(() => {
-            navigator.serviceWorker.register("/uv/sw.js")
-        })
-    })
-}
+navigator.serviceWorker?.register("/uv/sw.js")
 
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js")
 connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }])
@@ -341,33 +198,10 @@ const tabsEl = document.getElementById("tabs")
 const newTabBtn = document.getElementById("newtab")
 const urlInput = document.getElementById("url")
 const ntp = document.getElementById("ntp")
-const loader = document.getElementById("loader")
 
 let tabs = []
 let activeId = null
 let idCounter = 0
-
-function createRain() {
-    const container = document.getElementById('rain')
-    for (let i = 0; i < 100; i++) {
-        const particle = document.createElement('div')
-        particle.className = 'particle'
-        particle.style.left = Math.random() * 100 + '%'
-        particle.style.animationDuration = (Math.random() * 2 + 1) + 's'
-        particle.style.animationDelay = Math.random() * 2 + 's'
-        particle.style.opacity = Math.random() * 0.5 + 0.2
-        container.appendChild(particle)
-    }
-}
-createRain()
-
-function showLoader() {
-    loader.classList.add('active')
-}
-
-function hideLoader() {
-    loader.classList.remove('active')
-}
 
 function createTab(url = "") {
     const id = idCounter++
@@ -453,28 +287,21 @@ function navigate(input, push = true) {
         tab.index++
     }
 
-    showLoader()
     tab.iframe.src = __uv$config.prefix + __uv$config.encodeUrl(url)
     urlInput.value = url
     ntp.style.display = "none"
 
     tab.iframe.onload = () => {
-        hideLoader()
         tab.tabBtn.querySelector("span").textContent =
             tab.iframe.contentDocument?.title || new URL(url).hostname
     }
-
-    setTimeout(() => {
-        if (loader.classList.contains('active')) {
-            hideLoader()
-        }
-    }, 5000)
 }
 
 function getTab() {
     return tabs.find(t => t.id === activeId)
 }
 
+/* ===== CONTROLS ===== */
 back.onclick = () => {
     const t = getTab()
     if (!t || t.index <= 0) return
