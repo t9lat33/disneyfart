@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Orion | Browser</title>
+  <title>T9 | Browser</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
@@ -191,6 +191,44 @@
     }
     #go-btn:hover { color: var(--accent); }
 
+    /* UV status badge */
+    #uv-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text3);
+      white-space: nowrap;
+      cursor: default;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    #uv-badge.ready {
+      border-color: rgba(102, 217, 160, 0.3);
+      color: var(--green);
+      background: rgba(102, 217, 160, 0.08);
+    }
+    #uv-badge.loading {
+      border-color: rgba(179, 160, 255, 0.3);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+    #uv-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    #uv-badge.ready .dot { animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
     /* ── CONTENT ── */
     #content {
       flex: 1;
@@ -282,6 +320,22 @@
     .quick-link img { width: 28px; height: 28px; border-radius: 6px; }
     .quick-link span { font-size: 0.75rem; font-weight: 500; color: var(--text2); }
 
+    /* UV status on new tab */
+    .uv-status-card {
+      background: var(--surface1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text2);
+    }
+    .uv-status-card.ok { border-color: rgba(102,217,160,0.25); color: var(--green); background: rgba(102,217,160,0.06); }
+    .uv-status-card.err { border-color: rgba(255,107,124,0.25); color: var(--red); background: rgba(255,107,124,0.06); }
+    .uv-status-card.pending { border-color: rgba(179,160,255,0.25); color: var(--accent); background: var(--accent-soft); }
+
     .blocked-page {
       height: 100%;
       display: flex;
@@ -302,6 +356,8 @@
       font-family: monospace;
       color: var(--accent);
       font-size: 0.8rem;
+      word-break: break-all;
+      max-width: 500px;
     }
     .open-btn {
       background: white;
@@ -314,6 +370,16 @@
       transition: all 0.2s;
     }
     .open-btn:hover { background: var(--accent); color: black; }
+    .err-details {
+      font-size: 0.75rem;
+      color: var(--text3);
+      max-width: 460px;
+      line-height: 1.6;
+      background: var(--surface1);
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      text-align: left;
+    }
 
     #loading-bar {
       position: fixed;
@@ -346,321 +412,440 @@
       <input id="url-input" type="text" placeholder="Search or enter URL" autocomplete="off" spellcheck="false" />
       <span id="go-btn">→</span>
     </div>
+    <div id="uv-badge" class="loading">
+      <span class="dot"></span>
+      <span id="uv-label">UV…</span>
+    </div>
     <button class="nav-btn" id="btn-home">⌂</button>
   </div>
 
   <div id="content"></div>
 </div>
 
-<!-- Required UV scripts -->
+<!-- Ultraviolet core scripts — must load before the app script -->
 <script src="/uv/uv.bundle.js"></script>
 <script src="/uv/uv.config.js"></script>
 <script src="/baremux/index.js"></script>
 
 <script>
-  (function() {
-    // ── UV PROXY SETUP ──
-    const uvConfig = {
-      prefix: '/uv/service/',
-      bare: '/bare/',
-      encodeUrl: Ultraviolet ? Ultraviolet.codec.xor.encode : (url) => url,
-      decodeUrl: Ultraviolet ? Ultraviolet.codec.xor.decode : (url) => url,
+(function () {
+  'use strict';
+
+  // ── ULTRAVIOLET PROXY LAYER ────────────────────────────────────────────────
+  // UV requires:
+  //  1. /uv/uv.bundle.js   – Ultraviolet codec + runtime
+  //  2. /uv/uv.config.js   – exposes __uv$config (prefix, bare, encodeUrl, etc.)
+  //  3. /baremux/index.js  – BareMux transport
+  //  4. A service worker   – registered at the UV prefix scope
+  //
+  // The service worker intercepts requests inside the prefix and rewrites them
+  // through the bare server, so the iframe actually loads the remote page.
+
+  const UV_PREFIX    = '/uv/service/';   // must match __uv$config.prefix
+  const UV_SW_PATH   = '/uv/sw.js';      // service worker script served by your host
+  const BARE_SERVER  = '/bare/';         // bare-server-node endpoint
+
+  let uvReady = false;   // true once SW registered + active
+
+  // ── Service-worker registration ──────────────────────────────────────────
+  async function registerUVServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+      setUVBadge('err', 'SW N/A');
+      return false;
+    }
+
+    try {
+      // Register the UV service-worker scoped to its prefix.
+      // The SW file itself is served by your backend (e.g. Express / static host).
+      const reg = await navigator.serviceWorker.register(UV_SW_PATH, {
+        scope: UV_PREFIX,
+      });
+
+      // Wait for the SW to become active (handles install → activate lifecycle).
+      await waitForSWActive(reg);
+
+      uvReady = true;
+      setUVBadge('ready', 'UV ON');
+      console.log('[Orion] Ultraviolet SW active:', reg.scope);
+      return true;
+    } catch (err) {
+      console.warn('[Orion] UV SW registration failed:', err);
+      setUVBadge('err', 'UV OFF');
+      return false;
+    }
+  }
+
+  function waitForSWActive(reg) {
+    return new Promise((resolve) => {
+      if (reg.active) { resolve(); return; }
+      const sw = reg.installing || reg.waiting;
+      if (!sw) { resolve(); return; }
+      sw.addEventListener('statechange', function handler() {
+        if (sw.state === 'activated') {
+          sw.removeEventListener('statechange', handler);
+          resolve();
+        }
+      });
+      // Safety timeout — resolve anyway after 4 s so the UI isn't stuck
+      setTimeout(resolve, 4000);
+    });
+  }
+
+  // ── UV URL encoder ───────────────────────────────────────────────────────
+  // __uv$config is injected by /uv/uv.config.js
+  function encodeUVUrl(url) {
+    try {
+      const cfg = window.__uv$config;
+      if (cfg && typeof cfg.encodeUrl === 'function') {
+        return cfg.prefix + cfg.encodeUrl(url);
+      }
+    } catch (_) {}
+    // Fallback: simple base64-like xor — matches default UV xor codec
+    try {
+      return UV_PREFIX + xorEncode(url);
+    } catch (_) {
+      return UV_PREFIX + btoa(url);
+    }
+  }
+
+  // XOR codec (mirrors Ultraviolet's default codec exactly)
+  function xorEncode(str) {
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+      result += String.fromCharCode(str.charCodeAt(i) ^ 2);
+    }
+    try { return btoa(result); } catch (_) { return encodeURIComponent(result); }
+  }
+
+  // ── Badge helper ─────────────────────────────────────────────────────────
+  function setUVBadge(state, label) {
+    const badge = document.getElementById('uv-badge');
+    const lbl   = document.getElementById('uv-label');
+    badge.className = 'uv-badge ' + state;  // ready | loading | err
+    badge.id = 'uv-badge'; // keep id
+    lbl.textContent = label;
+  }
+
+  // Start SW registration immediately
+  registerUVServiceWorker();
+
+
+  // ── BROWSER CORE ──────────────────────────────────────────────────────────
+  let tabs        = [];
+  let activeTabId = null;
+  let tabCounter  = 0;
+
+  const HOME          = 'newtab';
+  const SEARCH_ENGINE = 'https://www.google.com/search?q=';
+
+  const QUICK_LINKS = [
+    { label: 'Google',    url: 'https://www.google.com',       icon: 'https://www.google.com/favicon.ico' },
+    { label: 'YouTube',   url: 'https://www.youtube.com',      icon: 'https://www.youtube.com/favicon.ico' },
+    { label: 'Wikipedia', url: 'https://en.wikipedia.org',     icon: 'https://en.wikipedia.org/favicon.ico' },
+    { label: 'GitHub',    url: 'https://github.com',           icon: 'https://github.com/favicon.ico' },
+  ];
+
+  const $  = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+
+  // ── URL normalisation ────────────────────────────────────────────────────
+  function normalizeUrl(raw) {
+    raw = raw.trim();
+    if (!raw || raw === HOME) return HOME;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^[\w\-]+(\.[\w\-]+)+/.test(raw) && !raw.includes(' ')) return 'https://' + raw;
+    return SEARCH_ENGINE + encodeURIComponent(raw);
+  }
+
+  function getDomain(url) {
+    try { return new URL(url).hostname; } catch { return url; }
+  }
+
+  // ── Loading bar ──────────────────────────────────────────────────────────
+  const loadBar = $('#loading-bar');
+  function startLoading() {
+    loadBar.style.width = '0%';
+    loadBar.classList.add('active');
+    requestAnimationFrame(() => { loadBar.style.width = '70%'; });
+    setTimeout(() => { if (loadBar.classList.contains('active')) loadBar.style.width = '90%'; }, 1200);
+  }
+  function stopLoading() {
+    loadBar.style.width = '100%';
+    setTimeout(() => { loadBar.classList.remove('active'); loadBar.style.width = '0%'; }, 350);
+  }
+
+  // ── Tab management ───────────────────────────────────────────────────────
+  function createTab(url = HOME) {
+    const id  = ++tabCounter;
+    const tab = { id, url, title: 'New Tab', favicon: null, history: [], historyPos: -1 };
+    tabs.push(tab);
+
+    const tabEl = document.createElement('div');
+    tabEl.className   = 'tab';
+    tabEl.dataset.id  = id;
+    tabEl.innerHTML   = `
+      <img class="favicon" src="" alt="" />
+      <span class="title">New Tab</span>
+      <span class="close" data-close="${id}">✕</span>`;
+    tabEl.addEventListener('click', (e) => {
+      if (e.target.classList.contains('close')) { closeTab(id); return; }
+      switchTab(id);
+    });
+    $('#new-tab-btn').before(tabEl);
+
+    const wrap       = document.createElement('div');
+    wrap.className   = 'frame-wrap';
+    wrap.dataset.id  = id;
+    $('#content').appendChild(wrap);
+
+    switchTab(id);
+    navigateTo(url, id);
+    return id;
+  }
+
+  function closeTab(id) {
+    if (tabs.length <= 1) { createTab(); }
+    const idx = tabs.findIndex(t => t.id === id);
+    tabs = tabs.filter(t => t.id !== id);
+    document.querySelector(`.tab[data-id="${id}"]`)?.remove();
+    document.querySelector(`.frame-wrap[data-id="${id}"]`)?.remove();
+    if (activeTabId === id) {
+      const next = tabs[Math.min(idx, tabs.length - 1)];
+      if (next) switchTab(next.id);
+    }
+  }
+
+  function switchTab(id) {
+    activeTabId = id;
+    $$('.tab').forEach(el => el.classList.toggle('active', +el.dataset.id === id));
+    $$('.frame-wrap').forEach(el => el.classList.toggle('active', +el.dataset.id === id));
+    const tab = tabs.find(t => t.id === id);
+    if (tab) updateNavFromTab(tab);
+  }
+
+  function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
+  function getTab(id)      { return tabs.find(t => t.id === id); }
+
+  // ── Navigation ───────────────────────────────────────────────────────────
+  function navigateTo(rawUrl, tabId) {
+    const tab = tabId ? getTab(tabId) : getActiveTab();
+    if (!tab) return;
+    const url = normalizeUrl(rawUrl);
+    tab.url   = url;
+
+    if (!tab.history.length || tab.history[tab.historyPos] !== url) {
+      tab.history    = tab.history.slice(0, tab.historyPos + 1);
+      tab.history.push(url);
+      tab.historyPos = tab.history.length - 1;
+    }
+
+    renderContent(tab.id);
+    if (tab.id === activeTabId) updateNavFromTab(tab);
+  }
+
+  function renderContent(tabId) {
+    const tab  = getTab(tabId);
+    const wrap = document.querySelector(`.frame-wrap[data-id="${tabId}"]`);
+    if (!wrap || !tab) return;
+    wrap.innerHTML = '';
+
+    if (tab.url === HOME) {
+      wrap.appendChild(buildNewTabPage());
+      updateTabLabel(tabId, 'New Tab', null);
+      stopLoading();
+      return;
+    }
+
+    startLoading();
+
+    // ── UV proxy routing ─────────────────────────────────────────────────
+    // If the UV service worker is active, route through it.
+    // If not yet ready, try anyway — the SW may have been registered in a
+    // previous page load and still be controlling this scope.
+    const proxiedUrl = uvReady
+      ? encodeUVUrl(tab.url)
+      : encodeUVUrl(tab.url);   // attempt even if not confirmed ready yet
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'fullscreen');
+    // Note: sandbox restricts some sites; remove specific tokens if needed.
+    iframe.setAttribute('sandbox',
+      'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock');
+    iframe.src = proxiedUrl;
+
+    let loadHandled = false;
+    const timeout = setTimeout(() => {
+      if (loadHandled) return;
+      loadHandled = true;
+      stopLoading();
+      // Show a helpful error that distinguishes UV issues from embed blocks
+      showBlockedMessage(wrap, tab.url, uvReady);
+    }, 8000);   // longer timeout to give SW time
+
+    iframe.onload = () => {
+      if (loadHandled) return;
+      loadHandled = true;
+      clearTimeout(timeout);
+      stopLoading();
+
+      const domain  = getDomain(tab.url);
+      const favIcon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        const title = (doc && doc.title) ? doc.title : domain;
+        updateTabLabel(tabId, title, favIcon);
+      } catch {
+        // Cross-origin — normal when proxied correctly; title will be domain
+        updateTabLabel(tabId, domain, favIcon);
+      }
+      updateLockIcon(tab.url);
     };
 
-    let tabs = [];
-    let activeTabId = null;
-    let tabCounter = 0;
+    iframe.onerror = () => {
+      if (loadHandled) return;
+      loadHandled = true;
+      clearTimeout(timeout);
+      stopLoading();
+      showBlockedMessage(wrap, tab.url, uvReady);
+    };
 
-    const HOME = 'newtab';
-    const SEARCH_ENGINE = 'https://www.google.com/search?q=';
+    wrap.appendChild(iframe);
+  }
 
-    const QUICK_LINKS = [
-      { label: 'Google', url: 'https://www.google.com', icon: 'https://www.google.com/favicon.ico' },
-      { label: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico' },
-      { label: 'Wikipedia', url: 'https://en.wikipedia.org', icon: 'https://en.wikipedia.org/favicon.ico' },
-      { label: 'GitHub', url: 'https://github.com', icon: 'https://github.com/favicon.ico' },
-    ];
+  function showBlockedMessage(wrap, url, uvActive) {
+    const isSearch = url.startsWith('https://www.google.com/search');
+    const uvHint = uvActive
+      ? 'The UV proxy is active but the site may still be blocking the request, or the bare server returned an error.'
+      : 'The UV service worker is not active. Make sure <code>/uv/sw.js</code> is served correctly and the bare server at <code>/bare/</code> is running.';
 
-    // ── UTILS ──
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => document.querySelectorAll(sel);
-
-    function normalizeUrl(raw) {
-      raw = raw.trim();
-      if (!raw || raw === HOME) return HOME;
-      if (/^https?:\/\//i.test(raw)) return raw;
-      if (/^[\w\-]+(\.[\w\-]+)+/.test(raw) && !raw.includes(' ')) return 'https://' + raw;
-      return SEARCH_ENGINE + encodeURIComponent(raw);
-    }
-
-    function getDomain(url) {
-      try { return new URL(url).hostname; } catch { return ''; }
-    }
-
-    // Load bar
-    const loadBar = $('#loading-bar');
-    function startLoading() {
-      loadBar.style.width = '0%';
-      loadBar.classList.add('active');
-      requestAnimationFrame(() => {
-        loadBar.style.width = '70%';
-      });
-      setTimeout(() => { if (loadBar.classList.contains('active')) loadBar.style.width = '90%'; }, 1200);
-    }
-    function stopLoading() {
-      loadBar.style.width = '100%';
-      setTimeout(() => {
-        loadBar.classList.remove('active');
-        loadBar.style.width = '0%';
-      }, 350);
-    }
-
-    // ── TAB STATE ──
-    function createTab(url = HOME) {
-      const id = ++tabCounter;
-      const tab = { id, url, title: 'New Tab', favicon: null, history: [], historyPos: -1 };
-      tabs.push(tab);
-
-      // Tab UI
-      const tabEl = document.createElement('div');
-      tabEl.className = 'tab';
-      tabEl.dataset.id = id;
-      tabEl.innerHTML = `
-        <img class="favicon" src="" alt="" />
-        <span class="title">New Tab</span>
-        <span class="close" data-close="${id}">✕</span>
-      `;
-      tabEl.addEventListener('click', (e) => {
-        if (e.target.classList.contains('close')) {
-          closeTab(id);
-          return;
-        }
-        switchTab(id);
-      });
-      $('#new-tab-btn').before(tabEl);
-
-      // Content container
-      const wrap = document.createElement('div');
-      wrap.className = 'frame-wrap';
-      wrap.dataset.id = id;
-      $('#content').appendChild(wrap);
-
-      switchTab(id);
-      navigateTo(url, id);
-      return id;
-    }
-
-    function closeTab(id) {
-      if (tabs.length <= 1) { createTab(); }
-      const idx = tabs.findIndex(t => t.id === id);
-      tabs = tabs.filter(t => t.id !== id);
-      document.querySelector(`.tab[data-id="${id}"]`)?.remove();
-      document.querySelector(`.frame-wrap[data-id="${id}"]`)?.remove();
-
-      if (activeTabId === id) {
-        const newTab = tabs[Math.min(idx, tabs.length - 1)];
-        if (newTab) switchTab(newTab.id);
-      }
-    }
-
-    function switchTab(id) {
-      activeTabId = id;
-      $$('.tab').forEach(el => el.classList.toggle('active', +el.dataset.id === id));
-      $$('.frame-wrap').forEach(el => el.classList.toggle('active', +el.dataset.id === id));
-      const tab = tabs.find(t => t.id === id);
-      if (tab) updateNavFromTab(tab);
-    }
-
-    function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
-    function getTab(id) { return tabs.find(t => t.id === id); }
-
-    // ── NAVIGATION WITH UV ──
-    function navigateTo(rawUrl, tabId) {
-      const tab = tabId ? getTab(tabId) : getActiveTab();
-      if (!tab) return;
-      const url = normalizeUrl(rawUrl);
-      tab.url = url;
-
-      // History update
-      if (!tab.history.length || tab.history[tab.historyPos] !== url) {
-        tab.history = tab.history.slice(0, tab.historyPos + 1);
-        tab.history.push(url);
-        tab.historyPos = tab.history.length - 1;
-      }
-
-      renderContent(tab.id);
-      if (tab.id === activeTabId) updateNavFromTab(tab);
-    }
-
-    function renderContent(tabId) {
-      const tab = getTab(tabId);
-      const wrap = document.querySelector(`.frame-wrap[data-id="${tabId}"]`);
-      if (!wrap || !tab) return;
-      wrap.innerHTML = '';
-
-      if (tab.url === HOME) {
-        wrap.appendChild(buildNewTabPage());
-        updateTabLabel(tabId, 'New Tab', null);
-        stopLoading();
-        return;
-      }
-
-      startLoading();
-
-      // Use UV proxy if available
-      const proxiedUrl = (typeof Ultraviolet !== 'undefined' && uvConfig)
-        ? uvConfig.prefix + uvConfig.encodeUrl(tab.url)
-        : tab.url;
-
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads');
-      iframe.src = proxiedUrl;
-
-      let loadHandled = false;
-      const timeout = setTimeout(() => {
-        if (!loadHandled) {
-          loadHandled = true;
-          stopLoading();
-          showBlockedMessage(wrap, tab.url);
-        }
-      }, 5000);
-
-      iframe.onload = () => {
-        if (loadHandled) return;
-        loadHandled = true;
-        clearTimeout(timeout);
-        stopLoading();
-        try {
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc && doc.title) {
-            updateTabLabel(tabId, doc.title, `https://www.google.com/s2/favicons?domain=${getDomain(tab.url)}&sz=32`);
-          } else {
-            updateTabLabel(tabId, getDomain(tab.url), `https://www.google.com/s2/favicons?domain=${getDomain(tab.url)}&sz=32`);
-          }
-        } catch {
-          updateTabLabel(tabId, getDomain(tab.url), `https://www.google.com/s2/favicons?domain=${getDomain(tab.url)}&sz=32`);
-        }
-        updateLockIcon(tab.url);
-      };
-
-      iframe.onerror = () => {
-        if (loadHandled) return;
-        loadHandled = true;
-        clearTimeout(timeout);
-        stopLoading();
-        showBlockedMessage(wrap, tab.url);
-      };
-
-      wrap.appendChild(iframe);
-    }
-
-    function showBlockedMessage(wrap, url) {
-      wrap.innerHTML = `
-        <div class="blocked-page">
-          <h2>🌐 Page unavailable</h2>
-          <p>${getDomain(url)} blocked embedding. Open directly:</p>
-          <span class="blocked-url">${url}</span>
-          <button class="open-btn" onclick="window.open('${url.replace(/'/g, "\\'")}', '_blank')">Open externally</button>
-        </div>`;
-      updateTabLabel(activeTabId, getDomain(url), null);
-    }
-
-    function buildNewTabPage() {
-      const div = document.createElement('div');
-      div.className = 'newtab-page';
-      div.innerHTML = `
-        <div class="logo">Orion</div>
-        <div class="search-box">
-          <input id="nt-search" type="text" placeholder="Search or enter address" autocomplete="off" />
+    wrap.innerHTML = `
+      <div class="blocked-page">
+        <h2>🌐 Page unavailable</h2>
+        <p>${getDomain(url)} could not be loaded${uvActive ? ' through the UV proxy' : ''}.</p>
+        <span class="blocked-url">${url}</span>
+        <button class="open-btn" onclick="window.open('${url.replace(/'/g, "\\'")}', '_blank')">Open externally ↗</button>
+        <div class="err-details">
+          <strong>UV status:</strong> ${uvActive ? '✅ Service worker active' : '⚠️ Service worker not confirmed'}<br/>
+          ${uvHint}
         </div>
-        <div class="quick-links">
-          ${QUICK_LINKS.map(l => `
-            <div class="quick-link" data-url="${l.url}">
-              <img src="${l.icon}" onerror="this.style.display='none'" alt="${l.label}" />
-              <span>${l.label}</span>
-            </div>`).join('')}
-        </div>`;
-      div.querySelector('#nt-search')?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { navigateTo(e.target.value); e.target.blur(); }
-      });
-      div.querySelectorAll('.quick-link').forEach(el => {
-        el.addEventListener('click', () => navigateTo(el.dataset.url));
-      });
-      return div;
+      </div>`;
+    updateTabLabel(activeTabId, getDomain(url), null);
+  }
+
+  // ── New-tab page ─────────────────────────────────────────────────────────
+  function buildNewTabPage() {
+    const uvState = uvReady
+      ? { cls: 'ok',      icon: '🛡️', msg: 'Ultraviolet proxy active — traffic is routed anonymously.' }
+      : { cls: 'pending', icon: '⏳', msg: 'Waiting for UV service worker… ensure /uv/sw.js is served.' };
+
+    const div = document.createElement('div');
+    div.className = 'newtab-page';
+    div.innerHTML = `
+      <div class="logo">
+        T9 </div>
+      <div class="search-box">
+        <input id="nt-search" type="text" placeholder="Search or enter address" autocomplete="off" />
+      </div>
+      <div class="quick-links">
+        ${QUICK_LINKS.map(l => `
+          <div class="quick-link" data-url="${l.url}">
+            <img src="${l.icon}" onerror="this.style.display='none'" alt="${l.label}" />
+            <span>${l.label}</span>
+          </div>`).join('')}
+      </div>
+      <div class="uv-status-card ${uvState.cls}">
+        <span>${uvState.icon}</span>
+        <span>${uvState.msg}</span>
+      </div>`;
+
+    div.querySelector('#nt-search')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { navigateTo(e.target.value); e.target.blur(); }
+    });
+    div.querySelectorAll('.quick-link').forEach(el => {
+      el.addEventListener('click', () => navigateTo(el.dataset.url));
+    });
+    return div;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function updateTabLabel(tabId, title, favicon) {
+    const tabEl = document.querySelector(`.tab[data-id="${tabId}"]`);
+    if (!tabEl) return;
+    tabEl.querySelector('.title').textContent = title || 'Loading…';
+    const img = tabEl.querySelector('.favicon');
+    if (favicon) { img.src = favicon; img.style.display = 'inline'; }
+    else img.style.display = 'none';
+    const tab = getTab(tabId);
+    if (tab) tab.title = title;
+  }
+
+  function updateNavFromTab(tab) {
+    $('#url-input').value       = tab.url === HOME ? '' : tab.url;
+    $('#btn-back').disabled     = tab.historyPos <= 0;
+    $('#btn-forward').disabled  = tab.historyPos >= tab.history.length - 1;
+    updateLockIcon(tab.url);
+  }
+
+  function updateLockIcon(url) {
+    const icon = $('#lock-icon');
+    if (url === HOME || url.startsWith('https://')) {
+      icon.textContent = '🔒'; icon.style.color = 'var(--green)';
+    } else {
+      icon.textContent = '🔓'; icon.style.color = 'var(--text3)';
     }
+  }
 
-    function updateTabLabel(tabId, title, favicon) {
-      const tabEl = document.querySelector(`.tab[data-id="${tabId}"]`);
-      if (!tabEl) return;
-      tabEl.querySelector('.title').textContent = title || 'Loading...';
-      const img = tabEl.querySelector('.favicon');
-      if (favicon) { img.src = favicon; img.style.display = 'inline'; }
-      else img.style.display = 'none';
-      const tab = getTab(tabId);
-      if (tab) tab.title = title;
+  // ── Event listeners ───────────────────────────────────────────────────────
+  $('#new-tab-btn').addEventListener('click', () => createTab());
+  $('#btn-home').addEventListener('click', () => navigateTo(HOME));
+
+  $('#btn-back').addEventListener('click', () => {
+    const tab = getActiveTab();
+    if (tab && tab.historyPos > 0) {
+      tab.historyPos--;
+      tab.url = tab.history[tab.historyPos];
+      renderContent(tab.id);
+      updateNavFromTab(tab);
     }
+  });
 
-    function updateNavFromTab(tab) {
-      $('#url-input').value = tab.url === HOME ? '' : tab.url;
-      $('#btn-back').disabled = tab.historyPos <= 0;
-      $('#btn-forward').disabled = tab.historyPos >= tab.history.length - 1;
-      updateLockIcon(tab.url);
+  $('#btn-forward').addEventListener('click', () => {
+    const tab = getActiveTab();
+    if (tab && tab.historyPos < tab.history.length - 1) {
+      tab.historyPos++;
+      tab.url = tab.history[tab.historyPos];
+      renderContent(tab.id);
+      updateNavFromTab(tab);
     }
+  });
 
-    function updateLockIcon(url) {
-      const icon = $('#lock-icon');
-      if (url === HOME || url.startsWith('https://')) {
-        icon.textContent = '🔒'; icon.style.color = 'var(--green)';
-      } else {
-        icon.textContent = '🔓'; icon.style.color = 'var(--text3)';
-      }
-    }
+  $('#btn-refresh').addEventListener('click', () => {
+    const tab = getActiveTab();
+    if (tab) renderContent(tab.id);
+  });
 
-    // ── EVENT LISTENERS ──
-    $('#new-tab-btn').addEventListener('click', () => createTab());
-    $('#btn-home').addEventListener('click', () => navigateTo(HOME));
-    $('#btn-back').addEventListener('click', () => {
-      const tab = getActiveTab();
-      if (tab && tab.historyPos > 0) {
-        tab.historyPos--;
-        tab.url = tab.history[tab.historyPos];
-        renderContent(tab.id);
-        updateNavFromTab(tab);
-      }
-    });
-    $('#btn-forward').addEventListener('click', () => {
-      const tab = getActiveTab();
-      if (tab && tab.historyPos < tab.history.length - 1) {
-        tab.historyPos++;
-        tab.url = tab.history[tab.historyPos];
-        renderContent(tab.id);
-        updateNavFromTab(tab);
-      }
-    });
-    $('#btn-refresh').addEventListener('click', () => {
-      const tab = getActiveTab();
-      if (tab) renderContent(tab.id);
-    });
+  const urlInput = $('#url-input');
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { navigateTo(urlInput.value); urlInput.blur(); }
+    if (e.key === 'Escape') urlInput.blur();
+  });
+  urlInput.addEventListener('focus', () => urlInput.select());
+  $('#go-btn').addEventListener('click', () => navigateTo(urlInput.value));
 
-    const urlInput = $('#url-input');
-    urlInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { navigateTo(urlInput.value); urlInput.blur(); }
-       if (e.key === 'Escape') urlInput.blur();
-    });
-    urlInput.addEventListener('focus', () => urlInput.select());
-    $('#go-btn').addEventListener('click', () => navigateTo(urlInput.value));
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key === 't') { e.preventDefault(); createTab(); }
+    if (mod && e.key === 'w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId); }
+    if (mod && e.key === 'l') { e.preventDefault(); urlInput.focus(); }
+    if (mod && e.key === 'r') { e.preventDefault(); const t = getActiveTab(); if (t) renderContent(t.id); }
+  });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 't') { e.preventDefault(); createTab(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'l') { e.preventDefault(); urlInput.focus(); }
-    });
-
-    // Start with a fresh tab
-    createTab();
-  })();
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  createTab();
+})();
 </script>
 </body>
 </html>
