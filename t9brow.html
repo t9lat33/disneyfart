@@ -9,334 +9,853 @@
 <script src="/uv/uv.config.js"></script>
 <script src="/baremux/index.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; font-family: Inter, system-ui; }
+:root {
+  --bg:      #080809;
+  --chrome:  #0e0e10;
+  --lift:    #141416;
+  --line:    #1e1e22;
+  --line2:   #2a2a30;
+  --muted:   #4a4a58;
+  --sub:     #7a7a90;
+  --txt:     #e8e8f0;
+  --bright:  #ffffff;
+  --accent:  #5b8df6;
+  --accent2: #a78bfa;
+  --green:   #34d48a;
+  --red:     #f05b5b;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Geist', system-ui, sans-serif;
+  --h-tab:   36px;
+  --h-nav:   52px;
+  --chrome-h: calc(var(--h-tab) + var(--h-nav));
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    overflow: hidden;
+  width: 100%; height: 100%;
+  background: #080809;
+  overflow: hidden;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  color: var(--txt);
 }
 
-/* ===== TOP BAR ===== */
-.browser-ui {
-    height: 96px;
-    background: #2b2b2b;
-    display: flex;
-    flex-direction: column;
-    border-bottom: 1px solid #000000;
-    z-index: 10;
+/* ════════════════════════════════
+   BACKGROUND LAYER
+════════════════════════════════ */
+#bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  display: none;
+  pointer-events: none;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.30);
+  z-index: -1;
+  pointer-events: none;
 }
 
-/* ===== TABS ===== */
-.tabs {
-    height: 38px;
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    gap: 6px;
-    overflow-x: auto;
+/* ════════════════════════════════
+   CHROME SHELL
+════════════════════════════════ */
+#shell {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(8,8,9,0.72);
+  backdrop-filter: blur(16px) saturate(160%);
 }
+
+/* ════════════════════════════════
+   TAB STRIP
+════════════════════════════════ */
+#tabstrip {
+  height: var(--h-tab);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 10px;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--line);
+}
+#tabstrip::-webkit-scrollbar { display: none; }
 
 .tab {
-    height: 28px;
-    min-width: 160px;
-    max-width: 220px;
-    padding: 0 12px;
-    border-radius: 8px 8px 0 0;
-    background: #212121;
-    color: #ddd;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
+  height: 28px;
+  min-width: 120px;
+  max-width: 200px;
+  padding: 0 10px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--sub);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  position: relative;
+  flex-shrink: 0;
 }
-
+.tab:hover { color: var(--txt); background: var(--lift); }
 .tab.active {
-    background: #151515;
-    color: white;
+  background: var(--lift);
+  border-color: var(--line2);
+  color: var(--bright);
+}
+/* active tab bottom flush */
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 1px;
+  background: var(--lift);
 }
 
-.tab span {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.tab-favicon {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: none;
+}
+.tab-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab-close {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+  line-height: 1;
+}
+.tab-close:hover { color: var(--red); background: rgba(240,91,91,0.12); }
+
+#btn-newtab {
+  height: 24px; width: 24px;
+  margin-bottom: 3px;
+  margin-left: 4px;
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--sub);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+#btn-newtab:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ════════════════════════════════
+   NAVBAR
+════════════════════════════════ */
+#navbar {
+  height: var(--h-nav);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
 }
 
-.tab i {
-    opacity: .6;
+.nav-icon {
+  width: 30px; height: 30px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sub);
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
 }
-.tab i:hover {
-    opacity: 1;
-    color: #ff6b6b;
+.nav-icon:hover:not(:disabled) { background: var(--lift); color: var(--txt); }
+.nav-icon:disabled { opacity: 0.28; cursor: default; }
+
+/* ── URL BAR ── */
+#urlbar {
+  flex: 1;
+  height: 34px;
+  background: var(--lift);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#urlbar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,141,246,0.14);
 }
 
-.newtab {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: #aaa;
-    cursor: pointer;
-}
-.newtab:hover { background: #444; }
-
-/* ===== NAV BAR ===== */
-.navbar {
-    height: 58px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
+#url-scheme {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
 }
 
-.navbar button {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: #bbb;
-    cursor: pointer;
+#url-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--txt);
+  letter-spacing: 0.01em;
 }
-.navbar button:hover {
-    background: #3a3a3a;
-    color: white;
+#url-input::placeholder { color: var(--muted); }
+#url-input:focus::placeholder { color: var(--sub); }
+
+#url-go {
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 2px;
+  transition: color 0.15s;
+}
+#url-go:hover { color: var(--accent); }
+
+/* divider between urlbar and actions */
+.sep {
+  width: 1px; height: 18px;
+  background: var(--line2);
+  flex-shrink: 0;
 }
 
-/* ===== URL BAR ===== */
-.urlbar {
-    flex: 1;
-    height: 36px;
-    background: #161616;
-    border-radius: 18px;
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    color:white;
+/* ════════════════════════════════
+   VIEWPORT
+════════════════════════════════ */
+.frame {
+  position: fixed;
+  top: var(--chrome-h);
+  left: 0; right: 0; bottom: 0;
+  border: none;
+  display: none;
+}
+.frame.active { display: block; }
+
+/* ════════════════════════════════
+   NEW TAB PAGE
+════════════════════════════════ */
+#ntp {
+  position: fixed;
+  top: var(--chrome-h);
+  left: 0; right: 0; bottom: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  overflow: hidden;
+  background: transparent;
+}
+#ntp.show { display: flex; }
+
+/* subtle animated background blobs */
+#ntp::before, #ntp::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  animation: drift 12s ease-in-out infinite alternate;
+}
+#ntp::before {
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, rgba(91,141,246,0.09) 0%, transparent 70%);
+  top: 15%; left: 10%;
+}
+#ntp::after {
+  width: 400px; height: 280px;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.07) 0%, transparent 70%);
+  bottom: 20%; right: 10%;
+  animation-delay: -6s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 20px) scale(1.08); }
 }
 
-.urlbar input {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: white;
-    font-size: 14px;
+/* ── HERO TITLE ── */
+.ntp-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
 }
 
-/* ===== VIEWPORT ===== */
-.viewframe {
-    position: absolute;
-    top: 96px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 96px);
-    border: none;
-    display: none;
+.ntp-title {
+  font-family: var(--mono);
+  font-size: clamp(62px, 9vw, 110px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  position: relative;
+  /* split-tone gradient: cold blue → violet */
+  background: linear-gradient(135deg,
+    #ffffff 0%,
+    #c8d8ff 30%,
+    #a78bfa 60%,
+    #7c6bf5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* glow */
+  filter: drop-shadow(0 0 40px rgba(167,139,250,0.35));
+  animation: title-breathe 5s ease-in-out infinite alternate;
+}
+@keyframes title-breathe {
+  from { filter: drop-shadow(0 0 30px rgba(167,139,250,0.28)); }
+  to   { filter: drop-shadow(0 0 55px rgba(91,141,246,0.45)); }
 }
 
-.viewframe.active {
-    display: block;
+/* scanline flicker overlay on title */
+.ntp-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  pointer-events: none;
 }
 
-/* ===== NTP ===== */
-.ntp {
-    position: absolute;
-    top: 96px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 96px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    pointer-events: none;
+.ntp-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
+
+.ntp-clock {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--sub);
+  margin-top: 4px;
+}
+
+/* ── SEARCH ── */
+.ntp-search {
+  width: min(500px, 82vw);
+  height: 46px;
+  background: rgba(20,20,22,0.8);
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+}
+.ntp-search:focus-within {
+  border-color: rgba(167,139,250,0.5);
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.1), 0 0 20px rgba(167,139,250,0.08);
+}
+.ntp-search svg { flex-shrink: 0; }
+.ntp-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--txt);
+}
+.ntp-search input::placeholder { color: var(--muted); }
+
+/* ── SHORTCUTS ── */
+.ntp-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background: rgba(20,20,22,0.7);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sub);
+  transition: all 0.18s;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+.shortcut:hover {
+  border-color: rgba(167,139,250,0.35);
+  color: var(--txt);
+  background: rgba(167,139,250,0.07);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.shortcut img {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+}
+
+/* ════════════════════════════════
+   SVG ICON HELPER STYLES
+════════════════════════════════ */
+svg { display: block; }
 </style>
 </head>
-
 <body>
 
-<div class="browser-ui">
-    <div class="tabs" id="tabs">
-        <button class="newtab" id="newtab"><i class="fas fa-plus"></i></button>
-    </div>
+<!-- Background layer — same IndexedDB keys as T9 OS so wallpaper is shared -->
+<video id="bg-video" autoplay loop muted playsinline></video>
 
-    <div class="navbar">
-        <button id="back"><i class="fas fa-arrow-left"></i></button>
-        <button id="forward"><i class="fas fa-arrow-right"></i></button>
-        <button id="reload"><i class="fas fa-rotate-right"></i></button>
+<script>
+// ── SHARED BACKGROUND SYSTEM ──────────────────────────────────────────────
+// Reads from the exact same localStorage keys + IndexedDB store that T9 OS writes.
+// Change wallpaper in T9 OS → reloads automatically here via BroadcastChannel.
 
-        <form class="urlbar" id="form">
-            <input id="url" placeholder="Search or enter address">
-        </form>
+(function () {
+  const body  = document.body;
+  const video = document.getElementById('bg-video');
 
-        <button id="popout"><i class="fas fa-external-link"></i></button>
-    </div>
+  // ── IndexedDB helpers (same DB name/store as T9 OS) ──
+  const DB_NAME    = 'BackgroundStorage';
+  const STORE_NAME = 'media';
+  let   _db        = null;
+
+  function openDB() {
+    return new Promise((res, rej) => {
+      if (_db) { res(_db); return; }
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onerror      = () => rej(req.error);
+      req.onsuccess    = () => { _db = req.result; res(_db); };
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME))
+          db.createObjectStore(STORE_NAME);
+      };
+    });
+  }
+
+  async function idbGet(key) {
+    const db  = await openDB();
+    return new Promise((res, rej) => {
+      const tx  = db.transaction([STORE_NAME], 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(key);
+      req.onsuccess = () => res(req.result);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+
+  // ── Apply background ──
+  function applyBg(src, type) {
+    // clear both
+    video.pause();
+    video.removeAttribute('src');
+    video.style.display = 'none';
+    body.style.backgroundImage  = 'none';
+    body.style.backgroundSize   = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundRepeat   = '';
+
+    if (type === 'video' && src) {
+      video.src = src;
+      video.style.display = 'block';
+      video.load();
+      video.play().catch(() => {});
+    } else if (type === 'image' && src) {
+      body.style.backgroundImage    = `url(${src})`;
+      body.style.backgroundSize     = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundRepeat   = 'no-repeat';
+    }
+  }
+
+  // ── Load from same storage T9 OS uses ──
+  async function loadBg() {
+    const savedType  = localStorage.getItem('backgroundType') || 'video';
+    const hasVideo   = localStorage.getItem('hasVideoInIndexedDB') === 'true';
+    const hasLargeImg= localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
+    const savedSrc   = localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
+
+    try {
+      if (savedType === 'video') {
+        if (hasVideo) {
+          const data = await idbGet('savedVideo');
+          if (data?.data) {
+            const blob = new Blob([data.data], { type: data.type || 'video/mp4' });
+            applyBg(URL.createObjectURL(blob), 'video');
+            return;
+          }
+        }
+        applyBg(savedSrc, 'video');
+      } else {
+        if (hasLargeImg) {
+          const data = await idbGet('savedImage');
+          if (data?.data) {
+            const blob = new Blob([data.data], { type: data.type || 'image/jpeg' });
+            applyBg(URL.createObjectURL(blob), 'image');
+            return;
+          }
+        }
+        if (savedSrc) applyBg(savedSrc, 'image');
+      }
+    } catch (err) {
+      console.warn('[T9 Surf] Background load error:', err);
+      applyBg(savedSrc, savedType);
+    }
+  }
+
+  // ── Listen for T9 OS wallpaper changes (same-origin BroadcastChannel) ──
+  try {
+    const bc = new BroadcastChannel('t9_bg_channel');
+    bc.onmessage = () => loadBg();   // T9 OS should postMessage here after saving
+  } catch (_) {}
+
+  // ── Also poll localStorage for cross-tab changes ──
+  window.addEventListener('storage', e => {
+    if (['backgroundType','selectedBackground','hasVideoInIndexedDB','hasLargeImageInIndexedDB'].includes(e.key)) {
+      loadBg();
+    }
+  });
+
+  // Initial load
+  loadBg();
+})();
+</script>
+
+<div id="shell">
+  <!-- TAB STRIP -->
+  <div id="tabstrip">
+    <button id="btn-newtab" title="New tab">+</button>
+  </div>
+
+  <!-- NAVBAR -->
+  <div id="navbar">
+    <!-- back -->
+    <button class="nav-icon" id="btn-back" disabled title="Back">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <!-- forward -->
+    <button class="nav-icon" id="btn-forward" disabled title="Forward">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <!-- reload -->
+    <button class="nav-icon" id="btn-reload" title="Reload">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M12 2.5A5.5 5.5 0 1 1 7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M12 2.5V5.5H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- URL BAR -->
+    <form id="urlform" style="flex:1;display:flex;">
+      <div id="urlbar">
+        <span id="url-scheme">https</span>
+        <input id="url-input" type="text" placeholder="Search or go to URL" autocomplete="off" spellcheck="false" />
+        <span id="url-go">↵</span>
+      </div>
+    </form>
+
+    <div class="sep"></div>
+
+    <!-- popout -->
+    <button class="nav-icon" id="btn-popout" title="Open externally">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M8 1h4v4M12 1l-6 6M6 3H2.5A1.5 1.5 0 0 0 1 4.5v6A1.5 1.5 0 0 0 2.5 12h6A1.5 1.5 0 0 0 10 10.5V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
-<div class="ntp" id="ntp">
-    <h1>T9 SURF</h1>
+<!-- NEW TAB PAGE -->
+<div id="ntp" class="show">
+  <div class="ntp-hero">
+    <div class="ntp-title" data-text="T9 SURF">T9 SURF</div>
+    <div class="ntp-sub">Your private gateway</div>
+    <div class="ntp-clock" id="ntp-clock">--:--:--</div>
+  </div>
+
+  <div class="ntp-search">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <circle cx="6" cy="6" r="4.5" stroke="#4a4a58" stroke-width="1.5"/>
+      <path d="M9.5 9.5l2.5 2.5" stroke="#4a4a58" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <input id="ntp-input" placeholder="Search or enter address" autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div class="ntp-shortcuts">
+    <div class="shortcut" data-url="https://google.com">
+      <img src="https://www.google.com/favicon.ico" /> Google
+    </div>
+    <div class="shortcut" data-url="https://github.com">
+      <img src="https://github.com/favicon.ico" /> GitHub
+    </div>
+    <div class="shortcut" data-url="https://youtube.com">
+      <img src="https://www.youtube.com/favicon.ico" /> YouTube
+    </div>
+    <div class="shortcut" data-url="https://reddit.com">
+      <img src="https://www.reddit.com/favicon.ico" /> Reddit
+    </div>
+    <div class="shortcut" data-url="https://x.com">
+      <img src="https://x.com/favicon.ico" /> X
+    </div>
+  </div>
 </div>
 
 <script>
-navigator.serviceWorker?.register("/uv/sw.js")
+navigator.serviceWorker?.register("/uv/sw.js");
 
-const connection = new BareMux.BareMuxConnection("/baremux/worker.js")
-connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }])
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }]);
 
-const tabsEl = document.getElementById("tabs")
-const newTabBtn = document.getElementById("newtab")
-const urlInput = document.getElementById("url")
-const ntp = document.getElementById("ntp")
+// ── State ──
+let tabs = [], activeId = null, idCounter = 0;
 
-let tabs = []
-let activeId = null
-let idCounter = 0
+const tabstrip   = document.getElementById("tabstrip");
+const newTabBtn  = document.getElementById("btn-newtab");
+const urlInput   = document.getElementById("url-input");
+const urlScheme  = document.getElementById("url-scheme");
+const ntp        = document.getElementById("ntp");
+const ntpInput   = document.getElementById("ntp-input");
+const btnBack    = document.getElementById("btn-back");
+const btnFwd     = document.getElementById("btn-forward");
+const btnReload  = document.getElementById("btn-reload");
+const btnPopout  = document.getElementById("btn-popout");
+const urlForm    = document.getElementById("urlform");
+
+// ── Tab helpers ──
+function getTab(id = activeId) { return tabs.find(t => t.id === id); }
 
 function createTab(url = "") {
-    const id = idCounter++
+  const id = idCounter++;
 
-    const iframe = document.createElement("iframe")
-    iframe.className = "viewframe"
-    iframe.dataset.id = id
+  const frame = document.createElement("iframe");
+  frame.className = "frame";
+  frame.dataset.id = id;
+  frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads");
+  document.body.appendChild(frame);
 
-    iframe.setAttribute("sandbox",
-        "allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-    )
+  const el = document.createElement("div");
+  el.className = "tab";
+  el.dataset.id = id;
+  el.innerHTML = `
+    <img class="tab-favicon" />
+    <span class="tab-label">New Tab</span>
+    <span class="tab-close">✕</span>`;
 
-    document.body.appendChild(iframe)
+  el.addEventListener("click", e => {
+    if (e.target.classList.contains("tab-close")) closeTab(id);
+    else activateTab(id);
+  });
 
-    const tabBtn = document.createElement("div")
-    tabBtn.className = "tab"
-    tabBtn.dataset.id = id
-    tabBtn.innerHTML = `<span>New Tab</span><i class="fas fa-xmark"></i>`
-
-    tabBtn.addEventListener("click", e => {
-        if (e.target.tagName === "I") closeTab(id)
-        else activateTab(id)
-    })
-
-    tabsEl.insertBefore(tabBtn, newTabBtn)
-
-    tabs.push({ id, iframe, tabBtn, history: [], index: -1 })
-    activateTab(id)
-
-    if (url) navigate(url)
+  tabstrip.insertBefore(el, newTabBtn);
+  tabs.push({ id, frame, el, history: [], index: -1 });
+  activateTab(id);
+  if (url) navigate(url);
 }
 
 function activateTab(id) {
-    activeId = id
-
-    tabs.forEach(t => {
-        t.iframe.classList.toggle("active", t.id === id)
-        t.tabBtn.classList.toggle("active", t.id === id)
-    })
-
-    const tab = getTab()
-    if (!tab) return
-
-    if (tab.index >= 0) {
-        urlInput.value = tab.history[tab.index]
-        ntp.style.display = "none"
-    } else {
-        urlInput.value = ""
-        ntp.style.display = "flex"
-    }
+  activeId = id;
+  tabs.forEach(t => {
+    t.frame.classList.toggle("active", t.id === id);
+    t.el.classList.toggle("active", t.id === id);
+  });
+  syncNav();
 }
 
 function closeTab(id) {
-    if (tabs.length === 1) return
-
-    const i = tabs.findIndex(t => t.id === id)
-    const tab = tabs[i]
-
-    tab.iframe.remove()
-    tab.tabBtn.remove()
-    tabs.splice(i, 1)
-
-    activateTab(tabs[Math.max(0, i - 1)].id)
+  if (tabs.length === 1) { createTab(); return; }
+  const i = tabs.findIndex(t => t.id === id);
+  const t = tabs[i];
+  t.frame.remove();
+  t.el.remove();
+  tabs.splice(i, 1);
+  activateTab(tabs[Math.max(0, i - 1)].id);
 }
 
-function normalize(input) {
-    if (!input.includes(".")) {
-        return "https://search.brave.com/search?q=" + encodeURIComponent(input)
-    }
-    if (!input.startsWith("http")) return "https://" + input
-    return input
+function syncNav() {
+  const t = getTab();
+  if (!t) return;
+
+  const url = t.index >= 0 ? t.history[t.index] : "";
+  urlInput.value = url;
+
+  // scheme badge
+  if (url.startsWith("https://")) {
+    urlScheme.textContent = "https";
+    urlScheme.style.color = "var(--green)";
+  } else if (url.startsWith("http://")) {
+    urlScheme.textContent = "http";
+    urlScheme.style.color = "var(--red)";
+  } else {
+    urlScheme.textContent = "T9";
+    urlScheme.style.color = "var(--muted)";
+  }
+
+  btnBack.disabled    = t.index <= 0;
+  btnFwd.disabled     = t.index >= t.history.length - 1;
+  ntp.classList.toggle("show", t.index < 0);
 }
 
-function navigate(input, push = true) {
-    const tab = getTab()
-    if (!tab) return
-
-    const url = normalize(input)
-
-    if (push) {
-        tab.history = tab.history.slice(0, tab.index + 1)
-        tab.history.push(url)
-        tab.index++
-    }
-
-    tab.iframe.src = __uv$config.prefix + __uv$config.encodeUrl(url)
-    urlInput.value = url
-    ntp.style.display = "none"
-
-    tab.iframe.onload = () => {
-        tab.tabBtn.querySelector("span").textContent =
-            tab.iframe.contentDocument?.title || new URL(url).hostname
-    }
+// ── Navigation ──
+function normalize(raw) {
+  raw = raw.trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^[\w-]+(\.[\w-]+)+/.test(raw) && !raw.includes(" ")) return "https://" + raw;
+  return "https://search.brave.com/search?q=" + encodeURIComponent(raw);
 }
 
-function getTab() {
-    return tabs.find(t => t.id === activeId)
+function navigate(raw, push = true) {
+  const t = getTab();
+  if (!t || !raw) return;
+
+  const url = normalize(raw);
+  if (!url) return;
+
+  if (push) {
+    t.history = t.history.slice(0, t.index + 1);
+    t.history.push(url);
+    t.index++;
+  }
+
+  ntp.classList.remove("show");
+  t.frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+  urlInput.value = url;
+  syncNav();
+
+  t.frame.onload = () => {
+    try {
+      const doc = t.frame.contentDocument;
+      const title = doc?.title || new URL(url).hostname;
+      t.el.querySelector(".tab-label").textContent = title;
+      const fav = t.el.querySelector(".tab-favicon");
+      fav.src = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`;
+      fav.style.display = "inline";
+    } catch {}
+  };
 }
 
-/* ===== CONTROLS ===== */
-back.onclick = () => {
-    const t = getTab()
-    if (!t || t.index <= 0) return
-    t.index--
-    navigate(t.history[t.index], false)
-}
+// ── Controls ──
+btnBack.onclick = () => {
+  const t = getTab();
+  if (!t || t.index <= 0) return;
+  t.index--;
+  navigate(t.history[t.index], false);
+};
 
-forward.onclick = () => {
-    const t = getTab()
-    if (!t || t.index >= t.history.length - 1) return
-    t.index++
-    navigate(t.history[t.index], false)
-}
+btnFwd.onclick = () => {
+  const t = getTab();
+  if (!t || t.index >= t.history.length - 1) return;
+  t.index++;
+  navigate(t.history[t.index], false);
+};
 
-reload.onclick = () => {
-    const t = getTab()
-    if (!t) return
-    t.iframe.src = t.iframe.src
-}
+btnReload.onclick = () => {
+  const t = getTab();
+  if (t && t.index >= 0) t.frame.src = t.frame.src;
+};
 
-popout.onclick = () => {
-    const t = getTab()
-    if (!t) return
-    window.open(t.iframe.src, "_blank")
-}
+btnPopout.onclick = () => {
+  const t = getTab();
+  if (t && t.index >= 0) window.open(t.history[t.index], "_blank");
+};
 
-form.onsubmit = e => {
-    e.preventDefault()
-    if (urlInput.value.trim()) navigate(urlInput.value)
-}
+urlForm.onsubmit = e => {
+  e.preventDefault();
+  navigate(urlInput.value);
+  urlInput.blur();
+};
 
-newTabBtn.onclick = () => createTab()
+urlInput.addEventListener("focus", () => urlInput.select());
 
-createTab()
+newTabBtn.onclick = () => createTab();
+
+// NTP search
+ntpInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && ntpInput.value.trim()) navigate(ntpInput.value);
+});
+
+// NTP shortcuts
+document.querySelectorAll(".shortcut[data-url]").forEach(s => {
+  s.addEventListener("click", () => navigate(s.dataset.url));
+});
+
+// Keyboard shortcuts
+document.addEventListener("keydown", e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === "t") { e.preventDefault(); createTab(); }
+  if (mod && e.key === "w") { e.preventDefault(); if (activeId != null) closeTab(activeId); }
+  if (mod && e.key === "l") { e.preventDefault(); urlInput.focus(); }
+  if (mod && e.key === "r") { e.preventDefault(); btnReload.onclick(); }
+});
+
+// Boot
+createTab();
+
+// Live clock
+(function tick() {
+  const el = document.getElementById("ntp-clock");
+  if (el) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    el.textContent = `${hh}:${mm}:${ss}`;
+  }
+  setTimeout(tick, 1000);
+})();
 </script>
-
 </body>
 </html>
