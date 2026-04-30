@@ -977,7 +977,27 @@ async function handleNameSubmit(e){
   if(!n) return;
   if(containsProfanity(n)){ alert('Name contains inappropriate language'); return; }
 
+<<<<<<< HEAD
+async function handleNameSubmit(e){ 
+  e?.preventDefault(); 
+  const n = nameInput.value.trim(); 
+  if(!n) return; 
+  if(containsProfanity(n)) {
+    alert('Name contains inappropriate language');
+    return;
+  }
+  username = n.slice(0, 32); 
+  myID = await getMyID(); 
+  
+  const premiumIDs = ["6528690208","3222695271","0376780508","0635354315","3293484597","9937301888","5069664537","1362852477","2126917941", "1683031661", "1164450983", "9999041312"];
+  if(premiumIDs.includes(myID)) createPollBtn.style.display = 'block'; 
+  
+  nameModal.remove(); 
+  loadMessages(currentRoom); 
+}
+=======
   username = n.slice(0,32);
+>>>>>>> df12ef17223e149cd699b533805d3a19c9fa2134
 
   // Disable button to prevent double-submit
   nameSubmit.disabled = true;
