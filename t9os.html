@@ -2845,11 +2845,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Load saved background on startup
-  async function loadSavedBackground() {
-    const savedType = localStorage.getItem("backgroundType") || 'image';
+ async function loadSavedBackground() {
+    const savedType = localStorage.getItem("backgroundType") || 'video';
     const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
     const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
-    const savedBg = localStorage.getItem("selectedBackground");
+    const savedBg = localStorage.getItem("selectedBackground") || "minecraftCozy2.mp4";
     
     if (savedType === 'video') {
       if (hasVideo) {
@@ -2863,7 +2863,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
           console.error('Failed to load video from IndexedDB:', err);
         }
-      } else if (savedBg) {
+      } else {
         setBackground(savedBg, 'video');
       }
     } else if (savedType === 'image') {
