@@ -2396,39 +2396,7 @@ document.addEventListener('selectstart', e => e.preventDefault());
   });
 </script>
 
-<script>
-  // Default background (video)
-  if (!localStorage.getItem("bg")) {
-    localStorage.setItem("bg", "minecraftCozy2.mp4");
-  }
 
-  const bg = localStorage.getItem("bg");
-
-  // If it's a video
-  if (bg.endsWith(".mp4")) {
-    const video = document.createElement("video");
-    video.src = bg;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-
-    video.style.position = "fixed";
-    video.style.top = "0";
-    video.style.left = "0";
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
-    video.style.zIndex = "-1";
-
-    document.body.appendChild(video);
-  } 
-  // fallback if it's still an image
-  else {
-    document.body.style.background = bg;
-    document.body.style.backgroundSize = "cover";
-  }
-</script>
 
 <script>
   function updateTime() {
@@ -2714,12 +2682,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const upload = document.getElementById("background-upload");
   const body = document.body;
   
-  // REMOVE any existing video background elements first
-  const existingVideo = document.getElementById("video-background");
-  if (existingVideo) {
-    existingVideo.remove();
-  }
-  
   // Create FRESH video element
   const videoBackground = document.createElement("video");
   videoBackground.id = "video-background";
@@ -2806,7 +2768,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function setBackground(src, type = 'image', isBlob = false, blobData = null) {
     const videoBg = document.getElementById("video-background");
     
-    // FORCE stop and hide video properly
+    // 🚨 CRITICAL FIX: Remove ALL existing video elements first
+    document.querySelectorAll('video[style*="fixed"]').forEach(v => {
+      if (v.id !== "video-background") {
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+        v.remove();
+      }
+    });
+    
+    // FORCE stop and hide the main video
     if (videoBg) {
       videoBg.pause();
       videoBg.removeAttribute('src');
@@ -2815,8 +2787,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // Clear any image background
-    body.style.backgroundImage = '';
-    body.style.background = '';
+    body.style.backgroundImage = 'none';
+    body.style.background = 'none';
+    body.style.backgroundColor = 'transparent';
     
     if (type === 'video' && videoBg) {
       let videoUrl = src;
@@ -2829,20 +2802,25 @@ document.addEventListener("DOMContentLoaded", () => {
       videoBg.src = videoUrl;
       videoBg.style.display = 'block';
       videoBg.load();
-      videoBg.play();
+      
+      // Wait for video to load before playing
+      videoBg.onloadeddata = () => {
+        videoBg.play().catch(e => console.log('Video play failed:', e));
+      };
       
       localStorage.setItem("backgroundType", "video");
       localStorage.setItem("hasVideoInIndexedDB", isBlob ? "true" : "false");
       if (!isBlob) {
         localStorage.setItem("selectedBackground", src);
       }
+      localStorage.removeItem("hasLargeImageInIndexedDB");
     } else if (type === 'image') {
       // Set image background DIRECTLY
-      body.style.setProperty('background-image', src ? `url(${src})` : '', 'important');
-      body.style.setProperty('background-size', 'cover', 'important');
-      body.style.setProperty('background-position', 'center', 'important');
-      body.style.setProperty('background-repeat', 'no-repeat', 'important');
-      body.style.setProperty('background-attachment', 'fixed', 'important');
+      body.style.backgroundImage = `url(${src})`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundRepeat = 'no-repeat';
+      body.style.backgroundAttachment = 'fixed';
       
       localStorage.setItem("backgroundType", "image");
       if (src) {
