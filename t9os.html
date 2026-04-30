@@ -2800,9 +2800,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Apply background (supports images and videos)
   async function setBackground(src, type = 'image', isBlob = false, blobData = null) {
-    // Hide video and remove image background
-    videoBackground.style.display = 'none';
-    videoBackground.src = '';
+    // Get the video background element
+    let videoBg = document.getElementById("video-background");
+    if (!videoBg) {
+      videoBg = document.createElement("video");
+      videoBg.id = "video-background";
+      videoBg.autoplay = true;
+      videoBg.loop = true;
+      videoBg.muted = true;
+      videoBg.playsInline = true;
+      videoBg.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -2;
+        pointer-events: none;
+      `;
+      document.body.insertBefore(videoBg, document.body.firstChild);
+    }
+    
+    // ALWAYS hide video and remove image background first
+    videoBg.style.display = 'none';
+    videoBg.src = '';
+    videoBg.load();
     body.style.backgroundImage = '';
     
     if (type === 'video') {
@@ -2813,8 +2836,9 @@ document.addEventListener("DOMContentLoaded", () => {
         videoUrl = URL.createObjectURL(blob);
       }
       
-      videoBackground.src = videoUrl;
-      videoBackground.style.display = 'block';
+      videoBg.src = videoUrl;
+      videoBg.style.display = 'block';
+      videoBg.load();
       
       // Store metadata in localStorage (just the type and flag, not the actual video data)
       localStorage.setItem("backgroundType", "video");
@@ -2823,6 +2847,11 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("selectedBackground", src);
       }
     } else if (type === 'image') {
+      // Make absolutely sure video is hidden and stopped
+      videoBg.src = '';
+      videoBg.style.display = 'none';
+      videoBg.load();
+      
       body.style.backgroundImage = src ? `url(${src})` : "";
       body.style.backgroundSize = "cover";
       body.style.backgroundPosition = "center";
@@ -3006,8 +3035,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Clear background function
   window.clearBackground = async function() {
-    videoBackground.style.display = 'none';
-    videoBackground.src = '';
+    let videoBg = document.getElementById("video-background");
+    if (videoBg) {
+      videoBg.style.display = 'none';
+      videoBg.src = '';
+      videoBg.load();
+    }
     body.style.backgroundImage = '';
     localStorage.removeItem("selectedBackground");
     localStorage.removeItem("backgroundType");
