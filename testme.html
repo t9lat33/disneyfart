@@ -1034,8 +1034,8 @@ requestAnimationFrame(updateFPS);
 <div id="updateDiv">
   <button class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
   <h1 style="text-align: center">Updates</h1>
-<h1 style="text-align: center;">Version 3.51</h1>
-        <h3 style="text-align: center; color:white;">New update: added 5.2k gms, revamped the UI, revamped browser, music, messages, movies, added FPS counter, MP4 video support to wallpapers, and more</h3>
+<h1 style="text-align: center;">Version 3.53</h1>
+        <h3 style="text-align: center; color:white;">New update: replaced current browser with old uv browser and fixed some bugs.</h3>
                 <h3 style="text-align: center; color:white;">New links: t9math.pages.dev, t9-os.b-cdn.net, mathlearn2day.pages.dev</h3>
                   <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io
 "  target="_blank">make Vercel links</a>
@@ -1096,7 +1096,7 @@ requestAnimationFrame(updateFPS);
 
 
 
-<iframe id="framesearch" src="gim.html"></iframe>
+<iframe id="framesearch" src="t9brow.html"></iframe>
   <style>
     #framesearch{
       width:100%;
@@ -1865,9 +1865,14 @@ document.addEventListener("click", () => {
     <img class="timg" src="home.png">
   </a>
 
+
   <a id="fullscreen-button">
     <img class="timg" src="fullscreen.png">
   </a>
+
+
+
+
 
 
 <p id="battery2" style="display:flex; align-items:center; gap:8px; color:white;"></p>
@@ -2386,6 +2391,7 @@ document.addEventListener('selectstart', e => e.preventDefault());
   const presetSelect = document.getElementById("preset");
 
   window.addEventListener("DOMContentLoaded", () => {
+    localStorage.removeItem("bg"); // clean up legacy key
     presetSelect.value = localStorage.getItem("cloak_preset") || "default";
   });
 
@@ -2395,39 +2401,7 @@ document.addEventListener('selectstart', e => e.preventDefault());
   });
 </script>
 
-<script>
-  // Default background (video)
-  if (!localStorage.getItem("bg")) {
-    localStorage.setItem("bg", "minecraftCozy2.mp4");
-  }
 
-  const bg = localStorage.getItem("bg");
-
-  // If it's a video
-  if (bg.endsWith(".mp4")) {
-    const video = document.createElement("video");
-    video.src = bg;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-
-    video.style.position = "fixed";
-    video.style.top = "0";
-    video.style.left = "0";
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
-    video.style.zIndex = "-1";
-
-    document.body.appendChild(video);
-  } 
-  // fallback if it's still an image
-  else {
-    document.body.style.background = bg;
-    document.body.style.backgroundSize = "cover";
-  }
-</script>
 
 <script>
   function updateTime() {
@@ -2713,27 +2687,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const upload = document.getElementById("background-upload");
   const body = document.body;
   
-  // Create or get video element for backgrounds
-  let videoBackground = document.getElementById("video-background");
-  if (!videoBackground) {
-    videoBackground = document.createElement("video");
-    videoBackground.id = "video-background";
-    videoBackground.autoplay = true;
-    videoBackground.loop = true;
-    videoBackground.muted = true;
-    videoBackground.playsInline = true;
-    videoBackground.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
-      pointer-events: none;
-    `;
-    document.body.insertBefore(videoBackground, document.body.firstChild);
-  }
+  // Create FRESH video element
+  const videoBackground = document.createElement("video");
+  videoBackground.id = "video-background";
+  videoBackground.autoplay = true;
+  videoBackground.loop = true;
+  videoBackground.muted = true;
+  videoBackground.playsInline = true;
+  videoBackground.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -9999 !important;
+    pointer-events: none;
+    display: none;
+  `;
+  document.body.insertBefore(videoBackground, document.body.firstChild);
 
   // ========== INDEXEDDB FOR LARGE VIDEO STORAGE ==========
   const DB_NAME = 'BackgroundStorage';
@@ -2798,35 +2770,63 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Apply background (supports images and videos)
-  async function setBackground(src, type = 'image', isBlob = false, blobData = null) {
-    // Hide video and remove image background
-    videoBackground.style.display = 'none';
-    videoBackground.src = '';
-    body.style.backgroundImage = '';
+  function setBackground(src, type = 'image', isBlob = false, blobData = null) {
+    const videoBg = document.getElementById("video-background");
     
-    if (type === 'video') {
+    // 🚨 CRITICAL FIX: Remove ALL existing video elements first
+    document.querySelectorAll('video[style*="fixed"]').forEach(v => {
+      if (v.id !== "video-background") {
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+        v.remove();
+      }
+    });
+    
+    // FORCE stop and hide the main video
+    if (videoBg) {
+      videoBg.pause();
+      videoBg.removeAttribute('src');
+      videoBg.load();
+      videoBg.style.display = 'none';
+    }
+    
+    // Clear any image background
+    body.style.backgroundImage = 'none';
+    body.style.background = 'none';
+    body.style.backgroundColor = 'transparent';
+    
+    if (type === 'video' && videoBg) {
       let videoUrl = src;
       if (isBlob && blobData) {
-        // Create blob URL from stored data
         const blob = new Blob([blobData], { type: blobData.type || 'video/mp4' });
         videoUrl = URL.createObjectURL(blob);
       }
       
-      videoBackground.src = videoUrl;
-      videoBackground.style.display = 'block';
+      // Set video background
+      videoBg.src = videoUrl;
+      videoBg.style.display = 'block';
+      videoBg.load();
       
-      // Store metadata in localStorage (just the type and flag, not the actual video data)
+      // Wait for video to load before playing
+      videoBg.onloadeddata = () => {
+        videoBg.play().catch(e => console.log('Video play failed:', e));
+      };
+      
       localStorage.setItem("backgroundType", "video");
       localStorage.setItem("hasVideoInIndexedDB", isBlob ? "true" : "false");
       if (!isBlob) {
         localStorage.setItem("selectedBackground", src);
       }
+      localStorage.removeItem("hasLargeImageInIndexedDB");
     } else if (type === 'image') {
-      body.style.backgroundImage = src ? `url(${src})` : "";
-      body.style.backgroundSize = "cover";
-      body.style.backgroundPosition = "center";
-      body.style.backgroundRepeat = "no-repeat";
-      body.style.backgroundAttachment = "fixed";
+      // Set image background DIRECTLY
+      body.style.backgroundImage = `url(${src})`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundRepeat = 'no-repeat';
+      body.style.backgroundAttachment = 'fixed';
+      
       localStorage.setItem("backgroundType", "image");
       if (src) {
         if (src.length > 500000) {
@@ -2845,24 +2845,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load saved background on startup
   async function loadSavedBackground() {
-    const savedType = localStorage.getItem("backgroundType") || 'image';
+    const savedType = localStorage.getItem("backgroundType") || 'video';
     const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
     const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
-    const savedBg = localStorage.getItem("selectedBackground");
+    const savedBg = localStorage.getItem("selectedBackground") || "minecraftCozy2.mp4";
     
     if (savedType === 'video') {
       if (hasVideo) {
         try {
           const videoData = await loadFromIndexedDB('savedVideo');
           if (videoData && videoData.data) {
-            const blob = new Blob([videoData.data], { type: videoData.type || 'video/mp4' });
-            const url = URL.createObjectURL(blob);
-            setBackground(url, 'video', true, videoData.data);
+            setBackground('', 'video', true, videoData.data);
           }
         } catch (err) {
           console.error('Failed to load video from IndexedDB:', err);
+          setBackground(savedBg, 'video');
         }
-      } else if (savedBg) {
+      } else {
         setBackground(savedBg, 'video');
       }
     } else if (savedType === 'image') {
@@ -2892,51 +2891,39 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (fileType.startsWith('video/')) {
       const loadingMsg = document.createElement('div');
-      loadingMsg.textContent = 'Saving video... (this may take a moment for large files)';
-      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      loadingMsg.textContent = 'Saving video...';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:99999;';
       document.body.appendChild(loadingMsg);
       
       try {
         const arrayBuffer = await file.arrayBuffer();
-        
         await saveToIndexedDB('savedVideo', {
           data: arrayBuffer,
           type: fileType,
           name: file.name,
           size: file.size
         });
-        
         await deleteFromIndexedDB('savedImage');
         localStorage.removeItem("selectedBackground");
         localStorage.removeItem("hasLargeImageInIndexedDB");
-        
-        const blob = new Blob([arrayBuffer], { type: fileType });
-        const url = URL.createObjectURL(blob);
-        await setBackground(url, 'video', true, arrayBuffer);
-        
+        setBackground('', 'video', true, arrayBuffer);
         localStorage.setItem("backgroundType", "video");
         localStorage.setItem("hasVideoInIndexedDB", "true");
         select.value = "";
-        
         loadingMsg.textContent = '✓ Video saved!';
         setTimeout(() => loadingMsg.remove(), 1500);
       } catch (err) {
-        console.error('Failed to save video:', err);
-        loadingMsg.textContent = '✗ Failed to save video (out of storage space?)';
-        loadingMsg.style.background = 'darkred';
-        setTimeout(() => loadingMsg.remove(), 3000);
-        alert('Failed to save video. Your browser may have run out of storage space. Try a smaller file.');
+        loadingMsg.textContent = '✗ Failed';
+        setTimeout(() => loadingMsg.remove(), 2000);
       }
-      
     } else if (fileType.startsWith('image/')) {
       const loadingMsg = document.createElement('div');
       loadingMsg.textContent = 'Saving image...';
-      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:9999;';
+      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:99999;';
       document.body.appendChild(loadingMsg);
       
       try {
         const arrayBuffer = await file.arrayBuffer();
-        
         if (file.size > 500000) {
           await saveToIndexedDB('savedImage', {
             data: arrayBuffer,
@@ -2946,80 +2933,51 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           localStorage.setItem("hasLargeImageInIndexedDB", "true");
           localStorage.removeItem("selectedBackground");
-          
           const blob = new Blob([arrayBuffer], { type: fileType });
           const url = URL.createObjectURL(blob);
-          await setBackground(url, 'image');
+          setBackground(url, 'image');
         } else {
           const reader = new FileReader();
           const dataUrl = await new Promise((resolve) => {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(file);
           });
-          await setBackground(dataUrl, 'image');
+          setBackground(dataUrl, 'image');
           localStorage.removeItem("hasLargeImageInIndexedDB");
           await deleteFromIndexedDB('savedImage');
         }
-        
         localStorage.setItem("backgroundType", "image");
         localStorage.removeItem("hasVideoInIndexedDB");
         await deleteFromIndexedDB('savedVideo');
         select.value = "";
-        
         loadingMsg.textContent = '✓ Image saved!';
         setTimeout(() => loadingMsg.remove(), 1500);
       } catch (err) {
-        console.error('Failed to save image:', err);
-        loadingMsg.textContent = '✗ Failed to save image';
-        loadingMsg.style.background = 'darkred';
+        loadingMsg.textContent = '✗ Failed';
         setTimeout(() => loadingMsg.remove(), 2000);
       }
-    } else {
-      alert('Please select an image or video file (MP4, WebM, MOV, etc.)');
     }
   });
 
-  // Dropdown change (supports both preset images AND videos)
+  // Dropdown change
   select.addEventListener("change", async () => {
     const value = select.value;
     if (value) {
       const isVideo = value.match(/\.(mp4|webm|mov|ogg|ogv|avi|mkv)$/i);
       const type = isVideo ? 'video' : 'image';
-      
       await setBackground(value, type);
       localStorage.setItem("backgroundType", type);
-      
       if (type === 'video') {
         localStorage.setItem("hasVideoInIndexedDB", "false");
         localStorage.setItem("selectedBackground", value);
       } else {
         localStorage.setItem("selectedBackground", value);
       }
-      
       localStorage.removeItem("hasLargeImageInIndexedDB");
-      
       await deleteFromIndexedDB('savedVideo');
       await deleteFromIndexedDB('savedImage');
     }
   });
-
-  // Clear background function
-  window.clearBackground = async function() {
-    videoBackground.style.display = 'none';
-    videoBackground.src = '';
-    body.style.backgroundImage = '';
-    localStorage.removeItem("selectedBackground");
-    localStorage.removeItem("backgroundType");
-    localStorage.removeItem("hasVideoInIndexedDB");
-    localStorage.removeItem("hasLargeImageInIndexedDB");
-    select.value = "";
-    upload.value = "";
-    
-    await deleteFromIndexedDB('savedVideo');
-    await deleteFromIndexedDB('savedImage');
-    
-    console.log('Background cleared');
-  };
 
   // Load saved background on startup
   loadSavedBackground();
