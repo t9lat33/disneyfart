@@ -1865,78 +1865,13 @@ document.addEventListener("click", () => {
     <img class="timg" src="home.png">
   </a>
 
+
   <a id="fullscreen-button">
     <img class="timg" src="fullscreen.png">
   </a>
-<p id="weather"
-   style="display:flex; align-items:center; gap:8px; color:white; right:400px;  position:fixed;">
-   Loading weather...
-</p>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const weatherEl = document.getElementById("weather");
 
-  function getWeatherDesc(code) {
-    const map = {
-      0: "Clear",
-      1: "Mostly Clear",
-      2: "Partly Cloudy",
-      3: "Cloudy",
-      45: "Fog",
-      48: "Fog",
-      51: "Drizzle",
-      61: "Rain",
-      63: "Rain",
-      65: "Heavy Rain",
-      80: "Showers",
-      95: "Thunderstorm"
-    };
-    return map[code] || "Unknown";
-  }
 
-  function loadWeather(lat, lon) {
-    const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto`;
-
-    const geoURL = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`;
-
-    Promise.all([
-      fetch(weatherURL).then(r => r.json()),
-      fetch(geoURL).then(r => r.json())
-    ])
-    .then(([weatherData, geoData]) => {
-      const c = weatherData.current;
-      const d = weatherData.daily;
-
-      const place = geoData.results?.[0] || {};
-      const city = place.name || "Unknown";
-      const state = place.admin1 || "";
-
-      weatherEl.innerHTML = `
-        📍 ${city}, ${state} |
-        🌤️ ${getWeatherDesc(c.weather_code)} |
-        ${Math.round(c.temperature_2m)}° |
-        Feels ${Math.round(c.apparent_temperature)}° |
-        💧 ${c.relative_humidity_2m}% |
-        💨 ${c.wind_speed_10m} km/h
-      `;
-    })
-    .catch(() => {
-      weatherEl.textContent = "Weather failed to load";
-    });
-  }
-
-  // AUTO RUN (no click)
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => loadWeather(pos.coords.latitude, pos.coords.longitude),
-      () => weatherEl.textContent = "Location denied"
-    );
-  } else {
-    weatherEl.textContent = "Geolocation not supported";
-  }
-});
-</script>
 
 
 
