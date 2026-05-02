@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorem Ipsum Generator</title>
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/theme.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-color);
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--primary);
+            margin-bottom: 10px;
+
+        }
+        .form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        label {
+            font-size: 1.2rem;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 0.8rem;
+            background: var(--button-bg);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+        .btn {
+            border: none;
+            background: var(--primary);
+            color: var(--bg);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+        .btn:hover {
+            background: var(--button-hover);
+        }
+        #lorem-text {
+            background: var(--fourth-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            height: 40vh;
+            overflow-y: auto;
+            line-height: 1.6;
+            color: var(--secondary-text-color);
+        }
+    </style>
+</head>
+<body>
+    <style>#rightad {
+        position: fixed;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10000;
+    }
+  </style>
+      <iframe 
+    src="/ads/160x600.html" 
+    width="160" 
+    height="600"
+    sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+    scrolling="no"
+    style="border:0;" 
+    referrerpolicy="no-referrer"
+    id="rightad">
+  </iframe>
+    <div class="container">
+        <h1>Lorem Ipsum Generator</h1>
+        <div class="form">
+            <label for="amount">Paragraphs:</label>
+            <input type="number" id="amount" value="3" min="1" max="20">
+            <button class="btn" id="generateBtn">Generate</button>
+        </div>
+        <article id="lorem-text"></article>
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const amountEl = document.getElementById('amount');
+        const loremTextEl = document.getElementById('lorem-text');
+
+        const text = [
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+            'Pharetra vel turpis nunc eget lorem dolor sed. Tincidunt augue interdum velit euismod in pellentesque massa. Orci porta non pulvinar neque laoreet suspendisse interdum. Risus sed vulputate odio ut enim. Aliquet enim tortor at auctor urna nunc id cursus metus. Nunc sed augue lacus viverra vitae congue eu consequat. Integer enim neque volutpat ac tincidunt vitae semper quis. Nibh praesent tristique magna sit amet purus gravida quis.',
+            'Volutpat est velit egestas dui id ornare arcu. Egestas tellus rutrum tellus pellentesque eu tincidunt. Eget nunc scelerisque viverra mauris in aliquam. Sagittis purus sit amet volutpat consequat mauris nunc congue. Accumsan lacus vel facilisis volutpat est velit egestas dui. Massa id neque aliquam vestibulum morbi blandit cursus. Sed elementum tempus egestas sed sed risus pretium quam. Nisl vel pretium lectus quam id leo in vitae. Arcu cursus vitae congue mauris rhoncus aenean vel elit.',
+            'Eu sem integer vitae justo eget magna fermentum iaculis eu. Amet consectetur adipiscing elit duis tristique. Ullamcorper morbi tincidunt ornare massa eget egestas purus. Morbi tincidunt augue interdum velit. Turpis egestas maecenas pharetra convallis posuere morbi leo urna. Pellentesque habitant morbi tristique senectus et. Faucibus purus in massa tempor nec feugiat nisl pretium fusce. Sit amet justo donec enim diam vulputate ut pharetra. Congue quisque egestas diam in arcu cursus euismod quis.'
+        ];
+
+        generateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const amount = parseInt(amountEl.value);
+            let tempText = [];
+            for(let i=0; i<amount; i++) {
+                const randomIndex = Math.floor(Math.random() * text.length);
+                tempText.push(`<p>${text[randomIndex]}</p>`);
+            }
+            loremTextEl.innerHTML = tempText.join('');
+        });
+        
+        // Initial generation
+        generateBtn.click();
+    </script>
+</body>
+</html>

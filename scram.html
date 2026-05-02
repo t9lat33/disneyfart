@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Va**r | Browser</title>
+		<link rel="stylesheet" href="/styles/defaults.css">
+		<script
+			src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"
+		></script>
+		<style>
+body,
+html,
+#app {
+	font-family:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	background: var(--bg);
+	overflow: hidden;
+}
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.flex {
+	display: flex;
+}
+.col {
+	flex-direction: column;
+}
+.browser-container {
+	width: 100%;
+	height: 100%;
+	color: var(--text-color);
+	display: flex;
+	box-sizing: border-box;
+	flex-direction: column;
+	padding: 0.5em;
+	padding-top: 0;
+}
+.browser-container.arc-mode {
+	flex-direction: row;
+}
+.browser-container.chrome-mode {
+	flex-direction: column;
+	padding-top: 0.5em;
+}
+.browser-container a {
+	color: var(--primary);
+}
+.browser-container input,
+.browser-container button {
+	font-family:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.browser-container h1 {
+	font-family:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	margin-bottom: 0;
+	color: var(--text-color);
+}
+.sidebar {
+	width: 280px;
+	min-width: 280px;
+	background: var(--bg);
+	display: none;
+	flex-direction: column;
+	overflow: hidden;
+}
+.arc-mode .sidebar {
+	display: flex;
+}
+.chrome-mode .sidebar {
+	display: none;
+}
+.tabs {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+.tabs::-webkit-scrollbar {
+	width: 6px;
+}
+.tabs::-webkit-scrollbar-track {
+	background: transparent;
+}
+.tabs::-webkit-scrollbar-thumb {
+	background: var(--third-bg);
+	border-radius: 3px;
+}
+.section-header {
+	color: var(--secondary-text-color);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.75rem 0.5rem 0.25rem;
+	margin-top: 0.5rem;
+}
+.section-header:first-child {
+	margin-top: 0;
+}
+.tab-group {
+	margin-bottom: 0.5rem;
+}
+.tab-group-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.4rem 0.5rem;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: 0.15s ease;
+	user-select: none;
+}
+.tab-group-header:hover {
+	background: var(--button-bg);
+}
+.tab-group-toggle {
+	font-size: 0.8rem;
+	transition: transform 0.2s ease;
+	color: var(--secondary-text-color);
+}
+.tab-group-toggle.collapsed {
+	transform: rotate(-90deg);
+}
+.tab-group-name {
+	flex: 1;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+.tab-group-count {
+	font-size: 0.8rem;
+	color: var(--secondary-text-color);
+}
+.tab-group-tabs {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	padding-left: 0.5rem;
+	max-height: 1000px;
+	overflow: hidden;
+	transition: max-height 0.3s ease;
+}
+.tab-group-tabs.collapsed {
+	max-height: 0;
+}
+.tab {
+	color: var(--text-color);
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	padding: 0.5rem 0.75rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	transition: 0.15s ease;
+	font-size: 0.95rem;
+	min-height: 36px;
+	position: relative;
+}
+.tab:hover {
+	background-color: var(--button-bg);
+}
+.tab.active {
+	background-color: var(--button-hover);
+}
+.tab.pinned {
+	padding: 0.5rem;
+	justify-content: center;
+	min-height: 40px;
+}
+.tab.pinned .tab-title,
+.tab.pinned .tab-close {
+	display: none;
+}
+.tab-favicon {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	border-radius: 3px;
+}
+.tab.pinned .tab-favicon {
+	width: 20px;
+	height: 20px;
+}
+.tab-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: left;
+}
+.tab-close {
+	background: none;
+	border: none;
+	color: var(--secondary-text-color);
+	cursor: pointer;
+	padding: 0;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	flex-shrink: 0;
+	transition: 0.15s ease;
+	font-size: 1.2rem;
+	opacity: 0;
+}
+.tab:hover .tab-close {
+	opacity: 1;
+}
+.tab-close:hover {
+	background-color: var(--third-bg);
+	color: var(--text-color);
+}
+.tab-preview {
+	position: fixed;
+	background: var(--bg);
+	border: 1px solid var(--button-hover);
+	border-radius: 8px;
+	padding: 0.75rem;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	z-index: 10000;
+	min-width: 200px;
+	max-width: 300px;
+	pointer-events: none;
+}
+.tab-preview-title {
+	font-weight: 500;
+	margin-bottom: 0.25rem;
+	font-size: 0.9rem;
+}
+.tab-preview-url {
+	font-size: 0.8rem;
+	color: var(--secondary-text-color);
+	word-break: break-all;
+}
+.new-tab-container {
+	padding: 0.5rem;
+}
+.new-tab {
+	color: var(--text-color);
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	background: var(--button-bg);
+	padding: 0.5rem;
+	cursor: pointer;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	transition: 0.15s ease;
+	font-size: 0.95rem;
+}
+.new-tab:hover {
+	background-color: var(--button-hover);
+}
+.main-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.chrome-tabs-bar {
+	display: none;
+	padding-top: 0.6rem;
+	padding-bottom: 0rem;
+	gap: 0.3rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	align-items: center;
+}
+.chrome-mode .chrome-tabs-bar {
+	display: flex;
+}
+.chrome-tabs-bar::-webkit-scrollbar {
+	height: 4px;
+}
+.chrome-tabs-bar::-webkit-scrollbar-track {
+	background: transparent;
+}
+.chrome-tabs-bar::-webkit-scrollbar-thumb {
+	background: var(--third-bg);
+	border-radius: 2px;
+}
+.chrome-tabs-container {
+	display: flex;
+	gap: 0.3rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	flex: 1;
+}
+.chrome-tab {
+	color: var(--text-color);
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	background: var(--button-bg);
+	padding: 0.5rem 1rem;
+	width: 245px;
+	min-width: 245px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: 0.2s ease;
+	font-size: 1rem;
+}
+.chrome-tab.active {
+	background-color: var(--button-hover);
+}
+.chrome-tab:hover:not(.active) {
+	background-color: var(--third-bg);
+}
+.chrome-tab-favicon {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	border-radius: 4px;
+}
+.chrome-tab-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.chrome-tab-close {
+	background: none;
+	border: none;
+	color: var(--secondary-text-color);
+	cursor: pointer;
+	padding: 0;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	flex-shrink: 0;
+	transition: 0.2s ease;
+	font-size: 1.2rem;
+}
+.chrome-tab-close:hover {
+	background-color: var(--third-bg);
+	color: var(--text-color);
+}
+.chrome-new-tab {
+	color: var(--text-color);
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	background: var(--button-bg);
+	padding: 0.7rem;
+	cursor: pointer;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: 0.2s ease;
+	font-size: 1.3rem;
+}
+.chrome-new-tab:hover {
+	background-color: var(--button-hover);
+}
+.toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding-top: 0.6rem;
+	padding-bottom: 0.6rem;
+	background: var(--bg);
+}
+.toolbar button {
+	color: var(--text-color);
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	background: var(--button-bg);
+	padding: 0.6rem 1rem;
+	cursor: pointer;
+	transition: 0.2s ease;
+	font-size: 1.1rem;
+	min-width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.toolbar button:hover {
+	background-color: var(--button-hover);
+}
+.address-bar-container {
+	flex: 1;
+	position: relative;
+}
+input.bar {
+	font-family: "Inter";
+	padding: 0.6rem 1rem;
+	border: none;
+	outline: none;
+	color: var(--text-color);
+	border-radius: 8px;
+	width: 100%;
+	background: var(--button-bg);
+	font-size: 1.1rem;
+	transition: 0.2s ease;
+	height: auto;
+	box-sizing: border-box;
+}
+input.bar:focus {
+	background-color: var(--button-hover);
+}
+.suggestions-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin-top: 0.25rem;
+	background: var(--bg);
+	border: 1px solid var(--button-hover);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	max-height: 400px;
+	overflow-y: auto;
+	z-index: 1000;
+	display: none;
+}
+.suggestions-dropdown.visible {
+	display: block;
+}
+.suggestion-item {
+	padding: 0.75rem 1rem;
+	cursor: pointer;
+	transition: 0.15s ease;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	border-bottom: 1px solid var(--button-bg);
+}
+.suggestion-item:last-child {
+	border-bottom: none;
+}
+.suggestion-item:hover,
+.suggestion-item.selected {
+	background: var(--button-bg);
+}
+.suggestion-icon {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	color: var(--secondary-text-color);
+}
+.suggestion-content {
+	flex: 1;
+	min-width: 0;
+}
+.suggestion-title {
+	font-size: 0.9rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.suggestion-subtitle {
+	font-size: 0.75rem;
+	color: var(--secondary-text-color);
+	margin-top: 0.1rem;
+}
+.suggestion-url {
+	font-size: 0.8rem;
+	color: var(--secondary-text-color);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin-top: 0.1rem;
+}
+.suggestion-type {
+	font-size: 0.75rem;
+	color: var(--secondary-text-color);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.iframe-container {
+	flex: 1;
+	position: relative;
+	background: var(--bg);
+}
+.iframe-container iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	border-radius: 12px;
+}
+.iframe-container iframe.hidden {
+	display: none;
+}
+.sortable-ghost {
+	opacity: 0.5;
+}
+.sortable-drag {
+	transform: rotate(2deg);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.version {
+	color: var(--secondary-text-color);
+	font-size: 1rem;
+	margin-left: auto;
+}
+.version b {
+	color: var(--text-color);
+}
+.quick-access {
+	padding: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+.quick-access-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.5rem;
+}
+.quick-link {
+	aspect-ratio: 1;
+	border: none;
+	border-radius: 8px;
+	background: var(--button-bg);
+	cursor: pointer;
+	transition: 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+.quick-link:hover {
+	background-color: var(--button-hover);
+}
+.quick-link img {
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+}
+.context-menu {
+	position: fixed;
+	background: var(--bg);
+	border: 1px solid var(--button-hover);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	z-index: 10001;
+	min-width: 180px;
+	padding: 0.25rem;
+	display: none;
+}
+.context-menu.visible {
+	display: block;
+}
+.context-menu-item {
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: 0.15s ease;
+	font-size: 0.9rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.context-menu-item:hover {
+	background: var(--button-bg);
+}
+.context-menu-separator {
+	height: 1px;
+	background: var(--button-bg);
+	margin: 0.25rem 0;
+}
+.history-panel {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 350px;
+	background: var(--bg);
+	border-left: 1px solid var(--button-bg);
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	transform: translateX(100%);
+	transition: transform 0.3s ease;
+}
+.history-panel.visible {
+	transform: translateX(0);
+}
+.history-header {
+	padding: 1rem;
+	border-bottom: 1px solid var(--button-bg);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.history-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+.history-close {
+	background: none;
+	border: none;
+	color: var(--text-color);
+	cursor: pointer;
+	padding: 0.5rem;
+	border-radius: 6px;
+	transition: 0.15s ease;
+	font-size: 1.2rem;
+}
+.history-close:hover {
+	background: var(--button-bg);
+}
+.history-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0.5rem;
+}
+.history-item {
+	padding: 0.75rem;
+	cursor: pointer;
+	border-radius: 8px;
+	transition: 0.15s ease;
+	margin-bottom: 0.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+.history-item:hover {
+	background: var(--button-bg);
+}
+.history-item-favicon {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	border-radius: 3px;
+}
+.history-item-content {
+	flex: 1;
+	min-width: 0;
+}
+.history-item-title {
+	font-size: 0.9rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin-bottom: 0.2rem;
+}
+.history-item-url {
+	font-size: 0.8rem;
+	color: var(--secondary-text-color);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.history-item-time {
+	font-size: 0.75rem;
+	color: var(--secondary-text-color);
+	flex-shrink: 0;
+}
+p {
+	margin: 0;
+	margin-top: 0.2em;
+}
+</style>
+		<script src="https://cdn.jsdelivr.net/npm/dreamland"></script>
+		<script src="/baremux/index.js"></script>
+		<script src="/scram/scramjet.all.js"></script>
+		<script src="config.js"></script>
+		<script src="/scripts/theme.js"></script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script>
+const CONFIG = {
+	files: {
+		wasm: "/scram/scramjet.wasm.wasm",
+		all: "/scram/scramjet.all.js",
+		sync: "/scram/scramjet.sync.js",
+	},
+	transport: {
+		path: "/epoxy/index.mjs",
+		wsp: localStorage.getItem("proxServer") || "wss://gointospace.app/wisp/",
+	},
+	bareurl:
+		_CONFIG?.bareurl ||
+		`${location.protocol === "https:" ? "https" : "http"}://${location.host}/bare/`,
+	defaults: {
+		url: "https://start.duckduckgo.com/",
+		newpage: "/page/newtab.html",
+		serp: "https://search.brave.com/search?q=",
+	},
+	ui: {
+		favicon:
+			"https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=",
+		sjlogo: "/assets/scramjet.png",
+		quickIconSize: 2048,
+	},
+};
+const { ScramjetController } = $scramjetLoadController();
+const scramjet = new ScramjetController({
+	files: CONFIG.files,
+});
+scramjet.init();
+navigator.serviceWorker.register("./sw.js");
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+connection.setTransport(CONFIG.transport.path, [
+	{
+		wisp: CONFIG.transport.wsp,
+	},
+]);
+const tabs = [];
+const tabGroups = [];
+let activeTabId = 1;
+let nextTabId = 2;
+let nextGroupId = 1;
+let sortableInstances = {};
+let layoutMode = localStorage.getItem("layoutMode") || "arc";
+const history = JSON.parse(localStorage.getItem("browserHistory") || "[]");
+const bookmarks = JSON.parse(localStorage.getItem("browserBookmarks") || "[]");
+function saveHistory() {
+	localStorage.setItem("browserHistory", JSON.stringify(history.slice(-100)));
+}
+function saveBookmarks() {
+	localStorage.setItem("browserBookmarks", JSON.stringify(bookmarks));
+}
+function addToHistory(url, title) {
+	const existing = history.findIndex((h) => h.url === url);
+	if (existing !== -1) {
+		history.splice(existing, 1);
+	}
+	history.push({
+		url,
+		title,
+		timestamp: Date.now(),
+		favicon: getfav(url),
+	});
+	saveHistory();
+}
+function getfav(url) {
+	try {
+		const domain = new URL(url).origin;
+		return `${CONFIG.ui.favicon}${encodeURIComponent(domain)}`;
+	} catch {
+		return `${CONFIG.ui.favicon}${encodeURIComponent(url)}`;
+	}
+}
+function createGroup(name) {
+	const group = {
+		id: nextGroupId++,
+		name: name,
+		collapsed: false,
+		tabs: [],
+	};
+	tabGroups.push(group);
+	return group;
+}
+function newtab(groupId, pinned) {
+	groupId = groupId || null;
+	pinned = pinned || false;
+	const frame = scramjet.createFrame();
+	const tab = {
+		id: nextTabId++,
+		title: "New Tab",
+		url: CONFIG.defaults.url,
+		frame: frame,
+		favicon: getfav(CONFIG.defaults.url),
+		pinned: pinned,
+		groupId: groupId,
+	};
+	frame.frame.src = CONFIG.defaults.newpage;
+	frame.addEventListener("urlchange", (e) => {
+		if (!e.url) return;
+		tab.url = e.url;
+		tab.favicon = getfav(e.url);
+		try {
+			const title =
+				frame.frame.contentWindow?.document?.title || new URL(e.url).hostname;
+			tab.title = title || "...";
+			addToHistory(e.url, tab.title);
+		} catch {
+			tab.title = new URL(e.url).hostname || "...";
+		}
+		updateTab();
+		omniboxUpdate();
+	});
+	tabs.push(tab);
+	if (groupId) {
+		const group = tabGroups.find((g) => g.id === groupId);
+		if (group) group.tabs.push(tab.id);
+	}
+	return tab;
+}
+function currenttab() {
+	return tabs.find((tab) => tab.id === activeTabId);
+}
+function switchtab(tabId) {
+	tabs.forEach((tab) => {
+		tab.frame.frame.classList.add("hidden");
+	});
+	activeTabId = tabId;
+	const activeTab = currenttab();
+	if (activeTab) {
+		activeTab.frame.frame.classList.remove("hidden");
+	}
+	updateTab();
+	omniboxUpdate();
+}
+function deletetab(tabId) {
+	const tabIndex = tabs.findIndex((tab) => tab.id === tabId);
+	if (tabIndex === -1) return;
+	const tab = tabs[tabIndex];
+	if (tab.groupId) {
+		const group = tabGroups.find((g) => g.id === tab.groupId);
+		if (group) {
+			group.tabs = group.tabs.filter((id) => id !== tabId);
+		}
+	}
+	if (tabs.length === 1) {
+		const newTab = newtab();
+		document.getElementById("iframe-container").appendChild(newTab.frame.frame);
+		switchtab(newTab.id);
+	}
+	if (tab.frame.frame.parentNode) {
+		tab.frame.frame.parentNode.removeChild(tab.frame.frame);
+	}
+	tabs.splice(tabIndex, 1);
+	if (activeTabId === tabId && tabs.length > 0) {
+		const newindex = Math.min(tabIndex, tabs.length - 1);
+		activeTabId = tabs[newindex].id;
+		switchtab(activeTabId);
+	} else {
+		updateTab();
+	}
+}
+function pinTab(tabId) {
+	const tab = tabs.find((t) => t.id === tabId);
+	if (tab) {
+		tab.pinned = !tab.pinned;
+		if (tab.pinned && tab.groupId) {
+			const group = tabGroups.find((g) => g.id === tab.groupId);
+			if (group) {
+				group.tabs = group.tabs.filter((id) => id !== tabId);
+			}
+			tab.groupId = null;
+		}
+		updateTab();
+	}
+}
+function toggleLayout() {
+	layoutMode = layoutMode === "arc" ? "chrome" : "arc";
+	localStorage.setItem("layoutMode", layoutMode);
+	const container = document.querySelector(".browser-container");
+	if (layoutMode === "chrome") {
+		container.classList.add("chrome-mode");
+		container.classList.remove("arc-mode");
+	} else {
+		container.classList.add("arc-mode");
+		container.classList.remove("chrome-mode");
+	}
+	updateTab();
+}
+let previewTimeout;
+let previewElement;
+function showTabPreview(tab, element) {
+	clearTimeout(previewTimeout);
+	previewTimeout = setTimeout(() => {
+		if (previewElement) {
+			previewElement.remove();
+		}
+		const preview = document.createElement("div");
+		preview.className = "tab-preview";
+		const titleDiv = document.createElement("div");
+		titleDiv.className = "tab-preview-title";
+		titleDiv.textContent = tab.title;
+		const urlDiv = document.createElement("div");
+		urlDiv.className = "tab-preview-url";
+		urlDiv.textContent = tab.url;
+		preview.appendChild(titleDiv);
+		preview.appendChild(urlDiv);
+		document.body.appendChild(preview);
+		previewElement = preview;
+		const rect = element.getBoundingClientRect();
+		if (layoutMode === "arc") {
+			preview.style.left = `${rect.left - preview.offsetWidth - 10}px`;
+			preview.style.top = `${rect.top}px`;
+		} else {
+			preview.style.left = `${rect.left}px`;
+			preview.style.top = `${rect.bottom + 10}px`;
+		}
+	}, 500);
+}
+function hideTabPreview() {
+	clearTimeout(previewTimeout);
+	if (previewElement) {
+		previewElement.remove();
+		previewElement = null;
+	}
+}
+function updateTab() {
+	const tabsCnt = document.getElementById("tabs-container");
+	const chromeTabsCnt = document.getElementById("chrome-tabs-container");
+	if (!tabsCnt || !chromeTabsCnt) return;
+	tabsCnt.innerHTML = "";
+	chromeTabsCnt.innerHTML = "";
+	Object.values(sortableInstances).forEach((s) => s && s.destroy());
+	sortableInstances = {};
+	if (layoutMode === "arc") {
+		const pinnedTabs = tabs.filter((t) => t.pinned);
+		if (pinnedTabs.length > 0) {
+			const pinnedSection = document.createElement("div");
+			pinnedSection.className = "section-header";
+			pinnedSection.textContent = "Favorites";
+			tabsCnt.appendChild(pinnedSection);
+			const pinnedContainer = document.createElement("div");
+			pinnedContainer.id = "pinned-tabs";
+			tabsCnt.appendChild(pinnedContainer);
+			pinnedTabs.forEach((tab) => {
+				const tabElement = createTabElement(tab);
+				pinnedContainer.appendChild(tabElement);
+			});
+			sortableInstances.pinned = new Sortable(pinnedContainer, {
+				animation: 150,
+				group: "tabs",
+				ghostClass: "sortable-ghost",
+				dragClass: "sortable-drag",
+			});
+		}
+		tabGroups.forEach((group) => {
+			const groupTabs = tabs.filter((t) => t.groupId === group.id);
+			if (groupTabs.length === 0) return;
+			const groupElement = document.createElement("div");
+			groupElement.className = "tab-group";
+			const groupHeader = document.createElement("div");
+			groupHeader.className = "tab-group-header";
+			const toggleSpan = document.createElement("span");
+			toggleSpan.className = `tab-group-toggle ${group.collapsed ? "collapsed" : ""}`;
+			toggleSpan.textContent = "▼";
+			const nameSpan = document.createElement("span");
+			nameSpan.className = "tab-group-name";
+			nameSpan.textContent = group.name;
+			const countSpan = document.createElement("span");
+			countSpan.className = "tab-group-count";
+			countSpan.textContent = groupTabs.length;
+			groupHeader.appendChild(toggleSpan);
+			groupHeader.appendChild(nameSpan);
+			groupHeader.appendChild(countSpan);
+			groupHeader.onclick = () => {
+				group.collapsed = !group.collapsed;
+				updateTab();
+			};
+			const groupTabsContainer = document.createElement("div");
+			groupTabsContainer.className = `tab-group-tabs ${group.collapsed ? "collapsed" : ""}`;
+			groupTabsContainer.id = `group-${group.id}-tabs`;
+			groupTabs.forEach((tab) => {
+				const tabElement = createTabElement(tab);
+				groupTabsContainer.appendChild(tabElement);
+			});
+			groupElement.appendChild(groupHeader);
+			groupElement.appendChild(groupTabsContainer);
+			tabsCnt.appendChild(groupElement);
+			sortableInstances[`group-${group.id}`] = new Sortable(
+				groupTabsContainer,
+				{
+					animation: 150,
+					group: "tabs",
+					ghostClass: "sortable-ghost",
+					dragClass: "sortable-drag",
+				},
+			);
+		});
+		const ungroupedTabs = tabs.filter((t) => !t.pinned && !t.groupId);
+		if (ungroupedTabs.length > 0) {
+			const section = document.createElement("div");
+			section.className = "section-header";
+			section.textContent = "Tabs";
+			tabsCnt.appendChild(section);
+			const ungroupedContainer = document.createElement("div");
+			ungroupedContainer.id = "ungrouped-tabs";
+			tabsCnt.appendChild(ungroupedContainer);
+			ungroupedTabs.forEach((tab) => {
+				const tabElement = createTabElement(tab);
+				ungroupedContainer.appendChild(tabElement);
+			});
+			sortableInstances.ungrouped = new Sortable(ungroupedContainer, {
+				animation: 150,
+				group: "tabs",
+				ghostClass: "sortable-ghost",
+				dragClass: "sortable-drag",
+			});
+		}
+	} else {
+		tabs.forEach((tab) => {
+			const tabElement = createChromeTabElement(tab);
+			chromeTabsCnt.appendChild(tabElement);
+		});
+		sortableInstances.chrome = new Sortable(chromeTabsCnt, {
+			animation: 150,
+			direction: "horizontal",
+			ghostClass: "sortable-ghost",
+			dragClass: "sortable-drag",
+		});
+	}
+}
+function createTabElement(tab) {
+	const tabElement = document.createElement("div");
+	tabElement.className = `tab ${tab.id === activeTabId ? "active" : ""} ${tab.pinned ? "pinned" : ""}`;
+	tabElement.setAttribute("data-tab-id", tab.id);
+	tabElement.onclick = () => switchtab(tab.id);
+	tabElement.onmouseenter = (e) => showTabPreview(tab, tabElement);
+	tabElement.onmouseleave = () => hideTabPreview();
+	tabElement.oncontextmenu = (e) => {
+		e.preventDefault();
+		showContextMenu(e.clientX, e.clientY, tab);
+	};
+	const faviconImg = document.createElement("img");
+	faviconImg.className = "tab-favicon";
+	faviconImg.src = tab.favicon;
+	faviconImg.alt = "";
+	faviconImg.onerror = () => {
+		faviconImg.style.display = "none";
+	};
+	const titleSpan = document.createElement("span");
+	titleSpan.className = "tab-title";
+	titleSpan.textContent = tab.title;
+	const closeButton = document.createElement("button");
+	closeButton.className = "tab-close";
+	closeButton.textContent = "×";
+	closeButton.onclick = (e) => {
+		e.stopPropagation();
+		deletetab(tab.id);
+	};
+	tabElement.appendChild(faviconImg);
+	tabElement.appendChild(titleSpan);
+	tabElement.appendChild(closeButton);
+	return tabElement;
+}
+function createChromeTabElement(tab) {
+	const tabElement = document.createElement("div");
+	tabElement.className = `chrome-tab ${tab.id === activeTabId ? "active" : ""}`;
+	tabElement.setAttribute("data-tab-id", tab.id);
+	tabElement.onclick = () => switchtab(tab.id);
+	tabElement.onmouseenter = (e) => showTabPreview(tab, tabElement);
+	tabElement.onmouseleave = () => hideTabPreview();
+	tabElement.oncontextmenu = (e) => {
+		e.preventDefault();
+		showContextMenu(e.clientX, e.clientY, tab);
+	};
+	const faviconImg = document.createElement("img");
+	faviconImg.className = "chrome-tab-favicon";
+	faviconImg.src = tab.favicon;
+	faviconImg.alt = "";
+	faviconImg.onerror = () => {
+		faviconImg.style.display = "none";
+	};
+	const titleSpan = document.createElement("span");
+	titleSpan.className = "chrome-tab-title";
+	titleSpan.textContent = tab.title;
+	const closeButton = document.createElement("button");
+	closeButton.className = "chrome-tab-close";
+	closeButton.textContent = "×";
+	closeButton.onclick = (e) => {
+		e.stopPropagation();
+		deletetab(tab.id);
+	};
+	tabElement.appendChild(faviconImg);
+	tabElement.appendChild(titleSpan);
+	tabElement.appendChild(closeButton);
+	return tabElement;
+}
+function showContextMenu(x, y, tab) {
+	hideContextMenu();
+	const menu = document.createElement("div");
+	menu.className = "context-menu visible";
+	menu.id = "context-menu";
+	const items = [
+		{
+			label: tab.pinned ? "Unpin Tab" : "Pin Tab",
+			action: () => pinTab(tab.id),
+		},
+		{
+			label: "New Tab in Group",
+			action: () => {
+				const groupName = prompt("Group name:");
+				if (groupName) {
+					const group = createGroup(groupName);
+					tab.groupId = group.id;
+					group.tabs.push(tab.id);
+					updateTab();
+				}
+			},
+		},
+		{
+			separator: true,
+		},
+		{
+			label: "Close Tab",
+			action: () => deletetab(tab.id),
+		},
+	];
+	items.forEach((item) => {
+		if (item.separator) {
+			const sep = document.createElement("div");
+			sep.className = "context-menu-separator";
+			menu.appendChild(sep);
+		} else {
+			const menuItem = document.createElement("div");
+			menuItem.className = "context-menu-item";
+			menuItem.textContent = item.label;
+			menuItem.onclick = () => {
+				item.action();
+				hideContextMenu();
+			};
+			menu.appendChild(menuItem);
+		}
+	});
+	menu.style.left = `${x}px`;
+	menu.style.top = `${y}px`;
+	document.body.appendChild(menu);
+	setTimeout(() => {
+		document.addEventListener("click", hideContextMenu);
+	}, 0);
+}
+function hideContextMenu() {
+	const menu = document.getElementById("context-menu");
+	if (menu) {
+		menu.remove();
+		document.removeEventListener("click", hideContextMenu);
+	}
+}
+function omniboxUpdate() {
+	const addressBar = document.getElementById("address-bar");
+	const activeTab = currenttab();
+	if (addressBar && activeTab) {
+		addressBar.value = activeTab.url;
+	}
+}
+function evaluateExpression(expr) {
+	try {
+		expr = expr
+			.toLowerCase()
+			.replace(/what'?s/gi, "")
+			.replace(/whats/gi, "")
+			.trim();
+		const mathPatterns = [
+			/^[\d\s+\-*/().^]+$/,
+			/(\d+)\s*to\s*the\s*power\s*of\s*(\d+)/i,
+			/sqrt\s*\(?\s*(\d+)\s*\)?/i,
+			/(\d+)\s*%\s*of\s*(\d+)/i,
+		];
+		let processedExpr = expr;
+		processedExpr = processedExpr.replace(
+			/(\d+)\s*to\s*the\s*power\s*of\s*(\d+)/i,
+			(m, base, exp) => `Math.pow(${base},${exp})`,
+		);
+		processedExpr = processedExpr.replace(
+			/sqrt\s*\(?\s*(\d+)\s*\)?/i,
+			(m, num) => `Math.sqrt(${num})`,
+		);
+		processedExpr = processedExpr.replace(
+			/(\d+)\s*%\s*of\s*(\d+)/i,
+			(m, pct, num) => `(${pct}/100)*${num}`,
+		);
+		processedExpr = processedExpr.replace(/\^/g, "**");
+		if (mathPatterns.some((p) => p.test(expr)) || processedExpr !== expr) {
+			const result = eval(processedExpr);
+			if (!isNaN(result) && isFinite(result)) {
+				return {
+					result: result,
+					original: expr,
+				};
+			}
+		}
+		return null;
+	} catch (e) {
+		return null;
+	}
+}
+async function getSuggestions(query) {
+	if (!query || query.trim().length === 0) return [];
+	const lowerQuery = query.toLowerCase();
+	const suggestions = [];
+	const calcResult = evaluateExpression(query);
+	if (calcResult) {
+		suggestions.push({
+			type: "calculator",
+			title: `${calcResult.result}`,
+			subtitle: `= ${calcResult.original}`,
+			url: null,
+			action: () => {
+				document.getElementById("address-bar").value = calcResult.result;
+			},
+		});
+	}
+	const historyMatches = history
+		.slice()
+		.reverse()
+		.filter(
+			(h) =>
+				h.url.toLowerCase().includes(lowerQuery) ||
+				h.title.toLowerCase().includes(lowerQuery),
+		)
+		.slice(0, 3);
+	historyMatches.forEach((h) => {
+		suggestions.push({
+			type: "history",
+			title: h.title,
+			url: h.url,
+			favicon: h.favicon,
+		});
+	});
+	const bookmarkMatches = bookmarks
+		.filter(
+			(b) =>
+				b.url.toLowerCase().includes(lowerQuery) ||
+				b.title.toLowerCase().includes(lowerQuery),
+		)
+		.slice(0, 2);
+	bookmarkMatches.forEach((b) => {
+		suggestions.push({
+			type: "bookmark",
+			title: b.title,
+			url: b.url,
+			favicon: b.favicon,
+		});
+	});
+	try {
+		const response = await fetch(
+			`https://search.brave.com/api/suggest?q=${encodeURIComponent(query)}`,
+		);
+		const data = await response.json();
+		if (data && data[1] && Array.isArray(data[1])) {
+			data[1].slice(0, 5).forEach((suggestion) => {
+				suggestions.push({
+					type: "search",
+					title: suggestion,
+					url: `${CONFIG.defaults.serp}${encodeURIComponent(suggestion)}`,
+				});
+			});
+		}
+	} catch (e) {}
+	return suggestions.slice(0, 8);
+}
+let selectedSuggestionIndex = -1;
+async function showSuggestions(query) {
+	const dropdown = document.getElementById("suggestions-dropdown");
+	const suggestions = await getSuggestions(query);
+	if (suggestions.length === 0) {
+		dropdown.classList.remove("visible");
+		return;
+	}
+	dropdown.innerHTML = "";
+	selectedSuggestionIndex = -1;
+	suggestions.forEach((suggestion, index) => {
+		const item = document.createElement("div");
+		item.className = "suggestion-item";
+		item.setAttribute("data-index", index);
+		const icon = document.createElement("div");
+		icon.className = "suggestion-icon";
+		if (suggestion.type === "calculator") {
+			icon.innerHTML = '<i class="fa-solid fa-calculator"></i>';
+		} else if (suggestion.type === "search") {
+			icon.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
+		} else if (suggestion.favicon) {
+			const img = document.createElement("img");
+			img.src = suggestion.favicon;
+			img.width = 16;
+			img.height = 16;
+			img.onerror = () => {
+				if (suggestion.type === "history") {
+					icon.innerHTML = '<i class="fa-regular fa-clock"></i>';
+				} else {
+					icon.innerHTML = '<i class="fa-solid fa-star"></i>';
+				}
+			};
+			icon.appendChild(img);
+		} else {
+			if (suggestion.type === "history") {
+				icon.innerHTML = '<i class="fa-regular fa-clock"></i>';
+			} else {
+				icon.innerHTML = '<i class="fa-solid fa-star"></i>';
+			}
+		}
+		const content = document.createElement("div");
+		content.className = "suggestion-content";
+		const title = document.createElement("div");
+		title.className = "suggestion-title";
+		title.textContent = suggestion.title;
+		if (suggestion.subtitle) {
+			const subtitle = document.createElement("div");
+			subtitle.className = "suggestion-subtitle";
+			subtitle.textContent = suggestion.subtitle;
+			content.appendChild(subtitle);
+		}
+		const url = document.createElement("div");
+		url.className = "suggestion-url";
+		url.textContent = suggestion.url || "";
+		content.appendChild(title);
+		if (suggestion.url) content.appendChild(url);
+		const type = document.createElement("div");
+		type.className = "suggestion-type";
+		type.textContent = suggestion.type;
+		item.appendChild(icon);
+		item.appendChild(content);
+		item.appendChild(type);
+		item.onclick = () => {
+			if (suggestion.action) {
+				suggestion.action();
+			} else if (suggestion.url) {
+				document.getElementById("address-bar").value = suggestion.url;
+				submit();
+			}
+			dropdown.classList.remove("visible");
+		};
+		dropdown.appendChild(item);
+	});
+	dropdown.classList.add("visible");
+	window.currentSuggestions = suggestions;
+}
+function hideSuggestions() {
+	setTimeout(() => {
+		document.getElementById("suggestions-dropdown").classList.remove("visible");
+	}, 200);
+}
+function navigateSuggestions(direction) {
+	const dropdown = document.getElementById("suggestions-dropdown");
+	const items = dropdown.querySelectorAll(".suggestion-item");
+	if (items.length === 0) return;
+	if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
+		items[selectedSuggestionIndex].classList.remove("selected");
+	}
+	if (direction === "down") {
+		selectedSuggestionIndex = (selectedSuggestionIndex + 1) % items.length;
+	} else if (direction === "up") {
+		selectedSuggestionIndex =
+			selectedSuggestionIndex <= 0
+				? items.length - 1
+				: selectedSuggestionIndex - 1;
+	}
+	if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
+		items[selectedSuggestionIndex].classList.add("selected");
+	}
+	if (
+		window.currentSuggestions &&
+		window.currentSuggestions[selectedSuggestionIndex]
+	) {
+		const suggestion = window.currentSuggestions[selectedSuggestionIndex];
+		if (suggestion.url) {
+			document.getElementById("address-bar").value = suggestion.url;
+		}
+	}
+}
+function submit() {
+	const activeTab = currenttab();
+	const addressBar = document.getElementById("address-bar");
+	if (!activeTab || !addressBar) return;
+	let url = addressBar.value.trim();
+	if (selectedSuggestionIndex >= 0 && window.currentSuggestions) {
+		const suggestion = window.currentSuggestions[selectedSuggestionIndex];
+		if (suggestion.action) {
+			suggestion.action();
+			hideSuggestions();
+			return;
+		} else if (suggestion.url) {
+			url = suggestion.url;
+		}
+	}
+	if (!url.startsWith("http") && !url.includes(".")) {
+		url = CONFIG.defaults.serp + encodeURIComponent(url);
+	} else if (!url.startsWith("http")) {
+		url = `https://${url}`;
+	}
+	activeTab.url = url;
+	activeTab.favicon = getfav(url);
+	hideSuggestions();
+	return activeTab.frame.go(url);
+}
+function toggleHistory() {
+	const panel = document.getElementById("history-panel");
+	panel.classList.toggle("visible");
+	if (panel.classList.contains("visible")) {
+		renderHistory();
+	}
+}
+function renderHistory() {
+	const content = document.getElementById("history-content");
+	content.innerHTML = "";
+	const sortedHistory = history.slice().reverse();
+	sortedHistory.forEach((item) => {
+		const historyItem = document.createElement("div");
+		historyItem.className = "history-item";
+		const favicon = document.createElement("img");
+		favicon.className = "history-item-favicon";
+		favicon.src = item.favicon;
+		favicon.onerror = () => {
+			favicon.style.display = "none";
+		};
+		const itemContent = document.createElement("div");
+		itemContent.className = "history-item-content";
+		const title = document.createElement("div");
+		title.className = "history-item-title";
+		title.textContent = item.title;
+		const url = document.createElement("div");
+		url.className = "history-item-url";
+		url.textContent = item.url;
+		itemContent.appendChild(title);
+		itemContent.appendChild(url);
+		const time = document.createElement("div");
+		time.className = "history-item-time";
+		const now = Date.now();
+		const diff = now - item.timestamp;
+		if (diff < 3600000) {
+			time.textContent = Math.floor(diff / 60000) + "m";
+		} else if (diff < 86400000) {
+			time.textContent = Math.floor(diff / 3600000) + "h";
+		} else {
+			time.textContent = Math.floor(diff / 86400000) + "d";
+		}
+		historyItem.appendChild(favicon);
+		historyItem.appendChild(itemContent);
+		historyItem.appendChild(time);
+		historyItem.onclick = () => {
+			const activeTab = currenttab();
+			if (activeTab) {
+				activeTab.url = item.url;
+				activeTab.favicon = item.favicon;
+				activeTab.frame.go(item.url);
+				toggleHistory();
+			}
+		};
+		document.getElementById("history-content").appendChild(historyItem);
+	});
+}
+window.addEventListener("load", async () => {
+	const root = document.getElementById("app");
+	root.innerHTML =
+		'<div class="browser-container ' +
+		(layoutMode === "chrome" ? "chrome-mode" : "arc-mode") +
+		'"><div class="main-content"><div class="chrome-tabs-bar"><div class="chrome-tabs-container" id="chrome-tabs-container"></div><button class="chrome-new-tab" onclick="const newTab=newtab();document.getElementById(\'iframe-container\').appendChild(newTab.frame.frame);switchtab(newTab.id)">+</button></div><div class="toolbar"><button onclick="currenttab()?.frame.back()"><i class="fa-regular fa-chevron-left"></i></button><button onclick="currenttab()?.frame.forward()"><i class="fa-regular fa-chevron-right"></i></button><button onclick="currenttab()?.frame.reload()"><i class="fa-regular fa-rotate-right"></i></button><div class="address-bar-container"><input class="bar" id="address-bar" autocomplete="off" autocapitalize="off" autocorrect="off"><div class="suggestions-dropdown" id="suggestions-dropdown"></div></div><button onclick="toggleLayout()" title="Toggle Layout"><i class="fa-regular fa-sidebar"></i></button><button onclick="toggleHistory()" title="History"><i class="fa-regular fa-clock-rotate-left"></i></button><button onclick="window.open(scramjet.encodeUrl(currenttab()?.url))"><i class="fa-regular fa-arrow-up-right-from-square"></i></button><p class="version"><b></b></p></div><div class="iframe-container" id="iframe-container"></div><div class="history-panel" id="history-panel"><div class="history-header"><div class="history-title">History</div><button class="history-close" onclick="toggleHistory()">×</button></div><div class="history-content" id="history-content"></div></div></div><div class="sidebar"><div class="quick-access"><div class="quick-access-grid" id="quick-access-grid"></div></div><div class="tabs" id="tabs-container"></div><div class="new-tab-container"><button class="new-tab" id="new-tab-btn"><i class="fa-regular fa-plus"></i><span>New Tab</span></button></div></div></div>';
+	const quickLinks = [
+		{
+			name: "TikTok",
+			url: "https://tiktok.com",
+		},
+		{
+			name: "DuckDuckGo",
+			url: "https://duckduckgo.com",
+		},
+		{
+			name: "YouTube",
+			url: "https://youtube.com",
+		},
+	];
+	const quickAccessGrid = document.getElementById("quick-access-grid");
+	quickLinks.forEach((link) => {
+		const btn = document.createElement("button");
+		btn.className = "quick-link";
+		btn.title = link.name;
+		const favicon = document.createElement("img");
+		favicon.src = getfav(link.url);
+		favicon.alt = link.name;
+		favicon.width = CONFIG.ui.quickIconSize;
+		favicon.height = CONFIG.ui.quickIconSize;
+		favicon.onerror = () => {
+			btn.innerHTML = link.name.charAt(0);
+			btn.style.fontSize = "1.2rem";
+			btn.style.fontWeight = "600";
+		};
+		btn.appendChild(favicon);
+		btn.onclick = () => {
+			const activeTab = currenttab();
+			if (activeTab) {
+				activeTab.url = link.url;
+				activeTab.favicon = getfav(link.url);
+				activeTab.frame.go(link.url);
+			}
+		};
+		quickAccessGrid.appendChild(btn);
+	});
+	document.getElementById("new-tab-btn").onclick = () => {
+		const newTab = newtab();
+		document.getElementById("iframe-container").appendChild(newTab.frame.frame);
+		switchtab(newTab.id);
+	};
+	const addressBar = document.getElementById("address-bar");
+	addressBar.addEventListener("input", (e) => {
+		showSuggestions(e.target.value);
+	});
+	addressBar.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+			submit();
+		} else if (e.key === "ArrowDown") {
+			e.preventDefault();
+			navigateSuggestions("down");
+		} else if (e.key === "ArrowUp") {
+			e.preventDefault();
+			navigateSuggestions("up");
+		} else if (e.key === "Escape") {
+			hideSuggestions();
+		}
+	});
+	addressBar.addEventListener("blur", hideSuggestions);
+	const initialTab = newtab();
+	document
+		.getElementById("iframe-container")
+		.appendChild(initialTab.frame.frame);
+	switchtab(initialTab.id);
+	updateTab();
+	try {
+		function b64(buffer) {
+			let binary = "";
+			const bytes = new Uint8Array(buffer);
+			const len = bytes.byteLength;
+			for (let i = 0; i < len; i++) {
+				binary += String.fromCharCode(bytes[i]);
+			}
+			return btoa(binary);
+		}
+		const arraybuffer = await (await fetch(CONFIG.ui.sjlogo)).arrayBuffer();
+		console.log(
+			"%cb",
+			`background-image: url(data:image/png;base64,${b64(arraybuffer)});color: transparent;padding-left: 200px;padding-bottom: 100px;background-size: contain;background-position: center center;background-repeat: no-repeat;`,
+		);
+	} catch {}
+});
+</script>
+	</body>
+</html>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+    />
+
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/theme.js"></script>
+    <style>
+      :root {
+        --input-bg: var(--secondary-bg);
+        --border-color: var(--third-bg);
+        --user-msg-bg: var(--third-bg);
+        --accent-color: var(--primary);
+        --base-input-height: 48px;
+        --code-bg: rgba(255, 255, 255, 0.08);
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --button-hover: #3c4a5d;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text-color);
+        font-size: 16px;
+        overflow: hidden;
+      }
+      #chat-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 10px;
+      }
+      #chat-history {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-bottom: 40px;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+      .message-wrapper {
+        display: flex;
+        flex-direction: column;
+        margin-top: 15px;
+      }
+      .user-message-wrapper {
+        align-items: flex-end;
+      }
+      .assistant-message-wrapper {
+        align-items: flex-start;
+        width: 100%;
+      }
+      .message {
+        max-width: 90%;
+        line-height: 1.6;
+        word-wrap: break-word;
+      }
+      .user-message {
+        background-color: var(--user-msg-bg);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 18px;
+        white-space: pre-wrap;
+        text-align: right !important;
+      }
+      .assistant-message {
+        padding: 0;
+        min-height: 24px;
+        width: 90%;
+        text-align: left !important;
+      }
+      .assistant-message p {
+        margin-top: 0;
+        margin-bottom: 1em;
+        line-height: 1.6;
+      }
+      .assistant-message p:last-child {
+        margin-bottom: 0;
+      }
+      .assistant-message a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+      .assistant-message a:hover {
+        color: white;
+        text-decoration: underline;
+      }
+
+      .assistant-message h1,
+      .assistant-message h2,
+      .assistant-message h3,
+      .assistant-message h4,
+      .assistant-message h5,
+      .assistant-message h6 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+
+      .assistant-message ul,
+      .assistant-message ol,
+      .assistant-message blockquote,
+      .assistant-message table,
+      .code-block-wrapper {
+        margin-top: 1em;
+        margin-bottom: 1em;
+      }
+
+      .assistant-message hr {
+        border: none;
+        border-top: 1px solid var(--border-color);
+        margin: 2em 0;
+      }
+
+      .assistant-message pre {
+        margin: 0;
+        padding: 1em;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: "Courier Prime", monospace;
+      }
+      .assistant-message table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .assistant-message th,
+      .assistant-message td {
+        border: 1px solid var(--border-color);
+        padding: 8px;
+        text-align: left;
+      }
+      .assistant-message th {
+        background-color: var(--third-bg);
+      }
+      .code-block-wrapper pre {
+        margin: 0;
+        padding: 12px;
+        border-radius: 0 0 8px 8px;
+      }
+      .pulsing-loader {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #fff;
+        margin: 8px 0 8px 4px;
+        animation: pulse 1.5s infinite ease-in-out;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .action-icons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        max-width: 90%;
+      }
+      .action-icons button {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: color 0.2s, background-color 0.2s;
+        width: 32px;
+        height: 32px;
+      }
+      .action-icons button i {
+        font-size: 16px;
+        line-height: 1;
+      }
+      .action-icons button:hover {
+        color: var(--text-color);
+        background-color: var(--button-hover);
+      }
+      .action-icons button.clicked.success {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: var(--success-color);
+      }
+      .action-icons button.clicked.danger {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: var(--danger-color);
+      }
+      #input-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        padding: 15px 0;
+      }
+      #input-container {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px;
+        transition: border-color 0.2s;
+      }
+      #input-container.focused {
+        border-color: var(--accent-color);
+      }
+      #user-input {
+        flex-grow: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-color);
+        resize: none;
+        outline: none;
+        padding: 0;
+        font-size: 1em;
+        font-family: inherit;
+        max-height: 105px;
+        overflow-y: auto;
+      }
+      #send-stop-btn {
+        height: var(--base-input-height);
+        flex-shrink: 0;
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        cursor: pointer;
+        width: var(--base-input-height);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+      }
+      .custom-model-select-wrapper {
+        position: relative;
+        height: var(--base-input-height);
+        flex-shrink: 0;
+      }
+      .custom-model-select-btn {
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 1em;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 200px;
+        justify-content: flex-start;
+      }
+      .custom-model-select-btn .fa-regular {
+        flex-shrink: 0;
+        color: var(--primary);
+        width: 20px;
+        height: 20px;
+        font-size: 16px;
+        text-align: center;
+      }
+      .custom-model-select-btn .chevron-icon {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+      }
+      .custom-model-select-wrapper.open .chevron-icon {
+        transform: rotate(180deg);
+      }
+      .custom-model-dropdown {
+        position: absolute;
+        bottom: calc(100% + 5px);
+        left: 0;
+        width: 100%;
+        background-color: var(--input-bg);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        z-index: 10;
+        display: none;
+      }
+      .custom-model-select-wrapper.open .custom-model-dropdown {
+        display: block;
+      }
+      .custom-model-dropdown ul {
+        list-style: none;
+        margin: 0;
+        padding: 5px;
+      }
+      .custom-model-dropdown li {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .custom-model-dropdown li:hover {
+        background-color: var(--third-bg);
+      }
+      .custom-model-dropdown li .fa-regular {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        font-size: 18px;
+        text-align: center;
+      }
+      .model-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .model-option-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.3;
+        align-items: flex-start;
+      }
+      .model-option-text span {
+        font-size: 0.95em;
+      }
+      .model-option-text small {
+        font-size: 0.8em;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .more-models-container {
+        position: relative;
+      }
+      .more-models-dropdown {
+        position: absolute;
+        bottom: -5px;
+        left: calc(100% + 5px);
+        margin-left: 5px;
+        min-width: 180px;
+        background-color: var(--input-bg);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        display: none;
+        padding: 5px;
+      }
+      .more-models-dropdown ul {
+        display: flex;
+        flex-direction: column-reverse;
+      }
+      .more-models-container:hover .more-models-dropdown {
+        display: block;
+      }
+      .code-block-wrapper {
+        background-color: var(--code-bg);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--third-bg);
+        padding: 4px 10px;
+        font-size: 0.8em;
+      }
+      .code-header button {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        cursor: pointer;
+      }
+      .reasoning-container {
+        max-width: 90%;
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.12s ease-in-out;
+        margin-bottom: 10px;
+      }
+      .reasoning-container.expanded {
+        grid-template-rows: 1fr;
+      }
+      .reasoning-panel {
+        font-size: 0.8em;
+        color: #a2b4d1;
+        white-space: pre-wrap;
+        overflow: hidden;
+        background: none;
+        padding: 0;
+        margin: 0;
+        opacity: 0;
+        transition: opacity 0.12s ease-in-out;
+      }
+      .reasoning-panel.live {
+        margin-bottom: 8px;
+      }
+      .reasoning-container.expanded .reasoning-panel {
+        opacity: 1;
+      }
+      .reasoning-panel.visible {
+        opacity: 1;
+      }
+      .reasoning-toggle {
+        max-width: 90%;
+        background: none;
+        border: none;
+        color: #9ab;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 0;
+        margin-bottom: 8px;
+        font-size: 0.8em;
+      }
+      .reasoning-toggle .fa-chevron-down {
+        transition: transform 0.3s ease-out;
+      }
+      .reasoning-toggle.expanded .fa-chevron-down {
+        transform: rotate(180deg);
+      }
+      .dropdown-divider {
+        height: 1px;
+        background-color: var(--border-color);
+        margin: 4px 8px;
+        padding: 1px !important;
+        cursor: default !important;
+      }
+      .dropdown-divider:hover {
+        background-color: var(--border-color) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-wrapper">
+      <div id="chat-history"></div>
+      <div id="input-bar">
+        <div class="custom-model-select-wrapper">
+          <button
+            class="custom-model-select-btn"
+            id="custom-model-select-btn"
+          ></button>
+          <div class="custom-model-dropdown" id="custom-model-dropdown">
+            <ul>
+              <li data-value="claude-sonnet-4">
+                <div class="model-option">
+                  <i class="fa-regular fa-robot"></i>
+                  <div class="model-option-text">
+                    <span>Default</span>
+                    <small>claude-sonnet</small>
+                  </div>
+                </div>
+              </li>
+              <li data-value="deepseek-r1">
+                <div class="model-option">
+                  <i class="fa-regular fa-brain"></i>
+                  <div class="model-option-text">
+                    <span>Reasoning</span>
+                    <small>deepseek-r1</small>
+                  </div>
+                </div>
+              </li>
+              <li class="more-models-container">
+                <div class="model-option">
+                  <i class="fa-regular fa-layer-group"></i>
+                  <div class="model-option-text">
+                    <span>More Models</span>
+                    <small>gemini, gpt, etc</small>
+                  </div>
+                </div>
+                <i class="fa-regular fa-chevron-right"></i>
+                <div class="more-models-dropdown">
+                  <ul id="more-models-list"></ul>
+                </div>
+              </li>
+
+              <li class="dropdown-divider"></li>
+              <li id="custom-persona-btn" data-value="custom-persona">
+                <div class="model-option">
+                  <i class="fa-regular fa-user-cog"></i>
+                  <div class="model-option-text">
+                    <span>Custom Persona</span>
+                    <small>Define your own AI</small>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <select id="model-select" style="display: none"></select>
+        <div id="input-container">
+          <textarea
+            id="user-input"
+            placeholder="Talk to the AI..."
+            rows="1"
+          ></textarea>
+        </div>
+        <button type="button" id="send-stop-btn" title="Send Message"></button>
+      </div>
+    </div>
+
+    <script>
+
+      const API_URL = "/api/aiv2";
+
+      const MODELS = [
+        "claude-sonnet-4",
+        "deepseek-r1",
+        //"grok-4-fast", does not work anymore
+        "gpt-oss-120b",
+        "gpt-5", // not really but whatever
+        "gemini-2.5-pro",
+        "gemini-2.5-flash",
+      ];
+
+      const userInput = document.getElementById("user-input");
+      const sendStopBtn = document.getElementById("send-stop-btn");
+      const chatHistory = document.getElementById("chat-history");
+      const modelSelect = document.getElementById("model-select");
+      const customSelectBtn = document.getElementById(
+        "custom-model-select-btn"
+      );
+      const customSelectWrapper = document.querySelector(
+        ".custom-model-select-wrapper"
+      );
+      const customDropdown = document.getElementById("custom-model-dropdown");
+      const moreModelsList = document.getElementById("more-models-list");
+      let conversationHistory = [];
+      let isGenerating = false;
+      let abortController = new AbortController();
+      let userHasScrolled = false;
+      let customPersona = null;
+      marked.setOptions({ gfm: true, breaks: true });
+
+      function appendMessage(role, content) {
+        const wrapper = document.createElement("div");
+        wrapper.className = `message-wrapper ${role}-message-wrapper`;
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${role}-message`;
+
+        if (role === "user") {
+          messageDiv.textContent = content;
+          wrapper.appendChild(messageDiv);
+        } else {
+          messageDiv.innerHTML = `<div class="pulsing-loader"></div>`;
+          conversationHistory.push({ role: "assistant", content: "" });
+
+          const reasoningToggle = document.createElement("button");
+          reasoningToggle.className = "reasoning-toggle";
+          reasoningToggle.innerHTML = `<span>Show reasoning</span> <i class="fa-regular fa-chevron-down"></i>`;
+
+          const reasoningContainer = document.createElement("div");
+          reasoningContainer.className = "reasoning-container";
+          const reasoningPanel = document.createElement("div");
+          reasoningPanel.className = "reasoning-panel";
+          reasoningContainer.appendChild(reasoningPanel);
+
+          wrapper.appendChild(reasoningToggle);
+          wrapper.appendChild(reasoningContainer);
+          wrapper.appendChild(messageDiv);
+
+          reasoningToggle.addEventListener("click", () => {
+            reasoningToggle.classList.toggle("expanded");
+            reasoningContainer.classList.toggle("expanded");
+            if (reasoningContainer.classList.contains("expanded")) {
+              reasoningPanel.style.height = "auto";
+            } else {
+              reasoningPanel.style.height = "0";
+            }
+          });
+        }
+        chatHistory.appendChild(wrapper);
+        scrollToBottom();
+        return wrapper;
+      }
+
+      async function streamAndFinalize(wrapperElement) {
+        setSendButtonState(true);
+        abortController = new AbortController();
+
+        const messageElement =
+          wrapperElement.querySelector(".assistant-message");
+        const reasoningContainer = wrapperElement.querySelector(
+          ".reasoning-container"
+        );
+        const reasoningPanel = wrapperElement.querySelector(".reasoning-panel");
+        const reasoningToggle =
+          wrapperElement.querySelector(".reasoning-toggle");
+
+        let fullResponse = "";
+        let fullReasoningText = "";
+        let reasoningFinished = false;
+
+        const recentHistory = conversationHistory.slice(-11, -1);
+        const lastUserMessage = conversationHistory.findLast(
+          (m) => m.role === "user"
+        );
+        const messagesPayload = [...recentHistory, lastUserMessage];
+
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              modelId: modelSelect.value,
+              messages: messagesPayload,
+              customPersona: customPersona,
+            }),
+            signal: abortController.signal,
+          });
+
+          if (!response.ok)
+            throw new Error(`HTTP error! Status: ${response.status}`);
+
+          messageElement.innerHTML = "";
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            fullResponse += decoder.decode(value, { stream: true });
+
+            let finalAnswer = fullResponse;
+            const thinkStart = fullResponse.indexOf("<think>");
+            const thinkEnd = fullResponse.indexOf("</think>");
+
+            if (modelSelect.value === "deepseek-r1" && thinkStart > -1) {
+              let currentReasoning = "";
+              if (thinkEnd > -1) {
+                currentReasoning = fullResponse.substring(
+                  thinkStart + 7,
+                  thinkEnd
+                );
+                finalAnswer = fullResponse.substring(thinkEnd + 8);
+              } else {
+                currentReasoning = fullResponse.substring(thinkStart + 7);
+                finalAnswer = "";
+              }
+
+              fullReasoningText = currentReasoning;
+              const latestChunk =
+                currentReasoning
+                  .split("\n")
+                  .filter((p) => p.trim() !== "")
+                  .pop() || "";
+
+              if (latestChunk && !reasoningFinished) {
+                reasoningPanel.textContent = latestChunk;
+                if (!reasoningPanel.classList.contains("visible")) {
+                  reasoningPanel.classList.add("visible", "live");
+                  reasoningContainer.classList.add("expanded");
+                }
+              }
+
+              if (thinkEnd > -1 && !reasoningFinished) {
+                reasoningFinished = true;
+                reasoningPanel.classList.remove("visible", "live");
+                reasoningContainer.classList.remove("expanded");
+                reasoningToggle.style.display = "inline-flex";
+              }
+            }
+            messageElement.innerHTML = DOMPurify.sanitize(
+              marked.parse(finalAnswer)
+            );
+
+            if (window.callRenderMath) {
+              window.callRenderMath(messageElement);
+            }
+
+            enhanceCodeBlocks(messageElement);
+            scrollToBottom();
+          }
+          if (fullReasoningText.trim() && !reasoningFinished) {
+            reasoningFinished = true;
+            reasoningPanel.classList.remove("visible", "live");
+            reasoningContainer.classList.remove("expanded");
+            reasoningToggle.style.display = "inline-flex";
+          }
+          reasoningPanel.textContent = fullReasoningText;
+          appendActionButtons(wrapperElement, fullResponse);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            messageElement.innerHTML = `<p><strong>Uh oh!</strong> ${error.message}</p>`;
+          }
+        } finally {
+          conversationHistory.findLast((m) => m.role === "assistant").content =
+            fullResponse;
+          setSendButtonState(false);
+        }
+      }
+
+      function appendActionButtons(wrapperElement, textToCopy) {
+        const iconsContainer = document.createElement("div");
+        iconsContainer.className = "action-icons";
+        iconsContainer.innerHTML = `
+                <button title="Copy"><i class="fa-regular fa-copy"></i></button>
+                <button title="Good response (this does nothing)"><i class="fa-regular fa-thumbs-up"></i></button>
+                <button title="Bad response (this does nothing)"><i class="fa-regular fa-thumbs-down"></i></button>`;
+
+        const buttons = iconsContainer.querySelectorAll("button");
+        buttons[0].onclick = () => {
+          navigator.clipboard.writeText(textToCopy.replace(/<\/?think>/g, ""));
+          giveFeedback(buttons[0], "success", "check");
+        };
+        buttons[1].onclick = () => giveFeedback(buttons[1], "success");
+        buttons[2].onclick = () => giveFeedback(buttons[2], "danger");
+
+        wrapperElement.appendChild(iconsContainer);
+        setTimeout(() => (iconsContainer.style.opacity = "1"), 100);
+        scrollToBottom();
+      }
+
+      function giveFeedback(button, type, tempIconName = null) {
+        button.classList.add("clicked", type);
+        if (tempIconName) {
+          const originalIcon = button.innerHTML;
+          button.innerHTML = `<i class="fa-regular fa-${tempIconName}"></i>`;
+          setTimeout(() => {
+            button.classList.remove("clicked", type);
+            button.innerHTML = originalIcon;
+          }, 1500);
+        } else {
+          setTimeout(() => button.classList.remove("clicked", type), 1500);
+        }
+      }
+
+      function enhanceCodeBlocks(container) {
+        container.querySelectorAll("pre").forEach((preBlock) => {
+          if (preBlock.parentElement.classList.contains("code-block-wrapper"))
+            return;
+
+          const codeBlock = preBlock.querySelector("code");
+          if (!codeBlock) return;
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-block-wrapper";
+          preBlock.parentNode.insertBefore(wrapper, preBlock);
+          wrapper.appendChild(preBlock);
+          const header = document.createElement("div");
+          header.className = "code-header";
+          const lang =
+            [...(codeBlock.classList || [])]
+              .find((c) => c.startsWith("language-"))
+              ?.replace("language-", "") || "";
+          header.innerHTML = `<span>${lang}</span><button>Copy</button>`;
+          header.querySelector("button").onclick = () => {
+            navigator.clipboard.writeText(codeBlock.innerText);
+            header.querySelector("button").textContent = "Copied!";
+            setTimeout(
+              () => (header.querySelector("button").textContent = "Copy"),
+              1500
+            );
+          };
+
+          wrapper.insertBefore(header, preBlock);
+        });
+      }
+
+      function submitMessage() {
+        const userMessage = userInput.value.trim();
+        if (!userMessage || isGenerating) return;
+        userHasScrolled = false;
+        conversationHistory.push({ role: "user", content: userMessage });
+        appendMessage("user", userMessage);
+        userInput.value = "";
+        autoResizeTextarea.call(userInput);
+        const aiMessageWrapper = appendMessage("assistant", "");
+        streamAndFinalize(aiMessageWrapper);
+      }
+
+      function setSendButtonState(generating) {
+        isGenerating = generating;
+        sendStopBtn.innerHTML = `<i class="fa-regular ${
+          generating ? "fa-stop" : "fa-paper-plane"
+        }"></i>`;
+        userInput.disabled = generating;
+      }
+
+      function autoResizeTextarea() {
+        this.style.height = "auto";
+        this.style.height = `${this.scrollHeight}px`;
+      }
+
+      function scrollToBottom() {
+        if (userHasScrolled) return;
+        chatHistory.scrollTo({
+          top: chatHistory.scrollHeight,
+          behavior: "auto",
+        });
+      }
+
+      chatHistory.addEventListener("scroll", () => {
+        const isAtBottom =
+          chatHistory.scrollHeight -
+            chatHistory.scrollTop -
+            chatHistory.clientHeight <
+          50;
+        userHasScrolled = !isAtBottom;
+      });
+
+      sendStopBtn.addEventListener("click", () => {
+        if (isGenerating) abortController.abort();
+        else submitMessage();
+      });
+
+      userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          submitMessage();
+        }
+      });
+
+      userInput.addEventListener("input", autoResizeTextarea);
+
+      function initializeModelSelect() {
+        MODELS.forEach((model) => modelSelect.add(new Option(model, model)));
+        const modelDisplayNames = {
+          "gemini-2.5-flash": "gemini-2.5-flash",
+          "gemini-2.5-pro": "gemini-2.5-pro",
+          "grok-4-fast": "grok-4-fast",
+          "gpt-oss-120b": "gpt-oss-120b",
+          "gpt-5": "gpt-4",
+        };
+        const otherModels = MODELS.filter(
+          (m) => m !== "claude-sonnet-4" && m !== "deepseek-r1"
+        );
+        moreModelsList.innerHTML = otherModels
+          .map((m) => `<li data-value="${m}">${modelDisplayNames[m] || m}</li>`)
+          .join("");
+        updateCustomSelectButton(
+          customDropdown.querySelector(`li[data-value="${modelSelect.value}"]`)
+        );
+      }
+
+      function updateCustomSelectButton(selectedLi) {
+        if (!selectedLi) return;
+        const modelOption = selectedLi.querySelector(".model-option");
+        const chevronIconHTML =
+          '<i class="fa-regular fa-chevron-down chevron-icon"></i>';
+        if (modelOption) {
+          const icon = modelOption.querySelector("i");
+          const mainText = modelOption.querySelector(".model-option-text span");
+          if (icon && mainText) {
+            customSelectBtn.innerHTML = `${icon.outerHTML} <span>${mainText.textContent}</span> ${chevronIconHTML}`;
+          } else {
+            customSelectBtn.innerHTML = `${selectedLi.innerHTML} ${chevronIconHTML}`;
+          }
+        } else if (selectedLi.textContent.trim()) {
+          customSelectBtn.innerHTML = `<i class="fa-regular fa-robot"></i> <span>${selectedLi.textContent}</span> ${chevronIconHTML}`;
+        }
+      }
+
+      customSelectBtn.addEventListener("click", () =>
+        customSelectWrapper.classList.toggle("open")
+      );
+      document.addEventListener("click", (e) => {
+        if (!customSelectWrapper.contains(e.target)) {
+          customSelectWrapper.classList.remove("open");
+        }
+      });
+      customDropdown.addEventListener("click", (e) => {
+        const li = e.target.closest("li[data-value]");
+        if (!li) return;
+
+        if (li.id === "custom-persona-btn") {
+          const randomPersonas = [
+            // chatgpt was used.
+            "a pirate who is scared of water",
+            "a knight who is afraid of ducks",
+            "a wizard who keeps forgetting his spells",
+            "a robot trying to understand jokes",
+            "an alien who thinks cows rule the earth",
+            "a detective who solves crimes by accident",
+            "a superhero whose only power is making perfect toast",
+            "a ghost who is scared of the dark",
+            "a dragon who hordes tiny spoons instead of gold",
+            "a vampire who is afraid of papercuts",
+          ];
+          const placeholder =
+            randomPersonas[Math.floor(Math.random() * randomPersonas.length)];
+          const personaInput = prompt("Choose how the AI acts!", placeholder);
+          if (personaInput && personaInput.trim() !== "") {
+            customPersona = personaInput.trim();
+            modelSelect.value = "claude-sonnet-4";
+            updateCustomSelectButton(li);
+            customSelectWrapper.classList.remove("open");
+          }
+          return;
+        }
+
+        customPersona = null;
+        modelSelect.value = li.dataset.value;
+        updateCustomSelectButton(li);
+        customSelectWrapper.classList.remove("open");
+      });
+      initializeModelSelect();
+      setSendButtonState(false);
+      autoResizeTextarea.call(userInput);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/opt.js"></script>
+    <link href="/styles/defaults.css" rel="stylesheet" />
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Inter", Arial, sans-serif;
+        background: transparent;
+        color: white;
+      }
+
+      .content {
+        padding-top: 20px;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        padding-bottom: 60px;
+      }
+
+      .filter-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        width: auto;
+        margin-top: 10px;
+      }
+
+      .search-input {
+        width: 450px;
+        padding: 10px;
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 12px 15px;
+        margin-right: 4px;
+        border: none;
+        font-size: 18px;
+        outline: none;
+        color: rgba(255, 255, 255, 0.8);
+        transition: width 0.2s ease;
+      }
+
+      .search-input:focus {
+        width: 475px;
+      }
+
+      .search-input::placeholder {
+        transition: opacity 0.2s ease;
+        opacity: 1;
+      }
+
+      .search-input:focus::placeholder {
+        opacity: 0;
+      }
+      .game-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 200px);
+        gap: 20px;
+        justify-content: center;
+        padding: 20px;
+        margin-top: 0px;
+      }
+
+      .game {
+        position: relative;
+        width: 200px;
+        aspect-ratio: 2 / 3;
+        background-size: cover;
+        background-position: center;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.15s ease, transform 0.25s ease;
+        text-align: left;
+      }
+
+      .game:hover {
+        transform: scale(1.03);
+      }
+
+      .game:hover .overlay {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(0px);
+      }
+
+      .game:hover .movie-title {
+        font-size: 20px;
+        filter: blur(10px);
+        opacity: 0;
+        font-weight: 700;
+      }
+
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 15px;
+        transition: 0.15s;
+      }
+
+      .overlay .movie-title {
+        margin: 0;
+        font-size: 25px;
+        transition: all 0.15s ease, opacity 0.25s ease;
+      }
+      #selector-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(12px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.27s;
+      }
+      #selector-overlay.active {
+        opacity: 1;
+      }
+      #selector-modal {
+        width: 700px;
+        height: 420px;
+        background: var(--fourth-bg);
+        border-radius: 22px;
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+        position: relative;
+        transform: scale(0.92);
+        opacity: 0;
+        transition: transform 0.27s, opacity 0.27s;
+        border: 2.2px solid rgba(255, 255, 255, 0.15);
+      }
+      #selector-modal.active {
+        transform: scale(1);
+        opacity: 1;
+      }
+      #selector-modal .season-sidebar {
+        width: 40%;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        border-right: 1.1px solid rgba(255, 255, 255, 0.15);
+      }
+      #selector-modal .season-title {
+        font-size: 22px;
+        font-weight: 700;
+        padding: 18px 0 10px 0;
+        text-align: center;
+        display: none;
+      }
+      #selector-modal .season-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      #selector-modal .season-list li {
+        padding: 14px 24px;
+        cursor: pointer;
+        font-size: 17px;
+        font-weight: 600;
+        background: rgba(255,255,255,0.045);
+        transition: background 0.15s;
+        margin-bottom: 1px;
+      }
+      #selector-modal .season-list li.alt {
+        background: rgba(255,255,255,0.055);
+      }
+      #selector-modal .season-list li.selected {
+        background: rgba(255,255,255,0.1);
+      }
+      #selector-modal .episode-section {
+        width: 60%;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        border-left: 1.1px solid rgba(255, 255, 255, 0.15);
+      }
+      #selector-modal .episode-title {
+        font-size: 20px;
+        font-weight: 600;
+        padding: 18px 0 10px 24px;
+        border-bottom: 1px solid #222;
+        display: none;
+      }
+      #selector-modal .episode-list {
+        list-style: none;
+        margin: 0;
+      }
+      #selector-modal .episode-list li {
+        background: rgba(255,255,255,0.045);
+        color: #fff;
+        padding: 14px 24px;
+        margin-bottom: 1px;
+        cursor: pointer;
+        font-size: 17px;
+        font-weight: 500;
+        transition: background 0.15s;
+      }
+      #selector-modal .episode-list li.alt {
+        background: rgba(255,255,255,0.055);
+      }
+      #selector-modal .close-btn {
+        position: absolute;
+        top: 16px;
+        right: 24px;
+        font-size: 28px;
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        display: none;
+      }
+    </style>
+    <style>
+      #particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: -99;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="/scripts/particle.js"></script>
+  </head>
+  <body>
+    <div id="particles-js"></div>
+    <div class="content">
+      <div class="filter-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search TV shows"
+          id="searchInput"
+        />
+      </div>
+      <div class="game-grid" id="gameGrid"></div>
+    </div>
+    <script src="/scripts/secrets.js"></script>
+    <script>
+      const searchInput = document.getElementById("searchInput"),
+        gameGrid = document.getElementById("gameGrid");
+      
+      async function getPopularTV() {
+        const e = await fetch(
+          `https://api.themoviedb.org/3/tv/popular?api_key=${movSec}`
+        );
+        displayTV((await e.json()).results);
+      }
+      
+      async function searchTV(e) {
+        const t = await fetch(
+          `https://api.themoviedb.org/3/search/tv?api_key=${movSec}&query=${encodeURIComponent(
+            e
+          )}`
+        );
+        displayTV((await t.json()).results);
+      }
+      
+      function displayTV(e) {
+        gameGrid.innerHTML = "";
+        e.forEach((show) => {
+          const t = document.createElement("div");
+          t.classList.add("game");
+          t.style.backgroundImage = `url(https://image.tmdb.org/t/p/w500${show.backdrop_path})`;
+          t.innerHTML = `
+            <div class="overlay">
+              <div class="movie-title">${show.name}</div>
+            </div>
+          `;
+          t.addEventListener("click", async () => {
+            const details = await fetch(`https://api.themoviedb.org/3/tv/${show.id}?api_key=${movSec}`);
+            const data = await details.json();
+            showSeasonModal(show, data.seasons);
+          });
+          gameGrid.appendChild(t);
+        });
+      }
+
+      function showSeasonModal(show, seasons) {
+        const oldModal = document.getElementById('selector-overlay');
+        if (oldModal) oldModal.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'selector-overlay';
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('active'), 10);
+        document.body.style.overflow = 'hidden';
+        overlay.onclick = (e) => {
+          if (e.target === overlay) closeModal();
+        };
+        const modal = document.createElement('div');
+        modal.id = 'selector-modal';
+        overlay.appendChild(modal);
+        setTimeout(() => modal.classList.add('active'), 20);
+        const seasonSidebar = document.createElement('div');
+        seasonSidebar.className = 'season-sidebar';
+        modal.appendChild(seasonSidebar);
+        const seasonTitle = document.createElement('div');
+        seasonTitle.className = 'season-title';
+        seasonTitle.textContent = show.name;
+        seasonSidebar.appendChild(seasonTitle);
+        const seasonList = document.createElement('ul');
+        seasonList.className = 'season-list';
+        seasonSidebar.appendChild(seasonList);
+        let seasonAlt = false;
+        seasons.forEach(season => {
+          if (season.season_number === 0) return;
+          const sItem = document.createElement('li');
+          sItem.textContent = `Season ${season.season_number}`;
+          if (seasonAlt) sItem.classList.add('alt');
+          sItem.onclick = async () => {
+            const epRes = await fetch(`https://api.themoviedb.org/3/tv/${show.id}/season/${season.season_number}?api_key=${movSec}`);
+            const epData = await epRes.json();
+            showEpisodes(show, season.season_number, epData.episodes, modal);
+            Array.from(seasonList.children).forEach(li => li.classList.remove('selected'));
+            sItem.classList.add('selected');
+          };
+          seasonList.appendChild(sItem);
+          seasonAlt = !seasonAlt;
+        });
+        const episodeSection = document.createElement('div');
+        episodeSection.className = 'episode-section';
+        modal.appendChild(episodeSection);
+        const episodeTitle = document.createElement('div');
+        episodeTitle.className = 'episode-title';
+        episodeTitle.textContent = 'Select a season';
+        episodeSection.appendChild(episodeTitle);
+        const episodeList = document.createElement('ul');
+        episodeList.className = 'episode-list';
+        episodeSection.appendChild(episodeList);
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '×';
+        closeBtn.className = 'close-btn';
+        closeBtn.onclick = closeModal;
+        modal.appendChild(closeBtn);
+        function closeModal() {
+          overlay.classList.remove('active');
+          modal.classList.remove('active');
+          setTimeout(() => {
+            overlay.remove();
+            document.body.style.overflow = '';
+          }, 250);
+        }
+      }
+      function showEpisodes(show, seasonNum, episodes, modal) {
+        const episodeSection = modal.querySelector('.episode-section');
+        const episodeTitle = episodeSection.querySelector('.episode-title');
+        const episodeList = episodeSection.querySelector('.episode-list');
+        episodeTitle.textContent = `Season ${seasonNum}`;
+        episodeList.innerHTML = '';
+        let epAlt = false;
+        episodes.forEach(ep => {
+          const epItem = document.createElement('li');
+          epItem.textContent = `E${ep.episode_number}: ${ep.name}`;
+          if (epAlt) epItem.classList.add('alt');
+          epItem.onclick = () => {
+            window.location.href = `/mov/tv.html?id=${show.id}&season=${seasonNum}&episode=${ep.episode_number}`;
+          };
+          episodeList.appendChild(epItem);
+          epAlt = !epAlt;
+        });
+      }
+      
+      searchInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          const query = searchInput.value;
+          query ? searchTV(query) : getPopularTV();
+        }
+      });
+      
+      getPopularTV();
+    </script>
+  </body>
+</html>

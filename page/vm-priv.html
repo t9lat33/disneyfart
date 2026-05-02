@@ -1,0 +1,1294 @@
+<!DOCTYPE html><!-- WE'RE BACK BABY! -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VAPOR VMv2</title>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+    <link href="/styles/defaults.css" rel="stylesheet" />
+    <script src="/scripts/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg);
+        color: var(--text-color);
+        padding: 20px;
+        overflow: hidden;
+      }
+
+      .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #main-view {
+        flex: 1;
+        min-height: 0;
+        background-color: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: background-color 0.4s ease;
+        position: relative;
+      }
+
+      body.session-active #main-view {
+        background-color: var(--third-bg);
+      }
+
+      #start-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+        z-index: 1;
+      }
+
+      body.session-active #start-screen {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #hyperbeam-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+      }
+
+      body.session-ready #hyperbeam-container {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #captcha-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 17, 29, 0.7);
+        backdrop-filter: blur(5px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      body.captcha-active #captcha-overlay {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #start-screen-content {
+        max-width: 480px;
+        text-align: left;
+        background: var(--secondary-bg);
+        padding: 24px 28px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      #start-screen-content h2 {
+        font-size: 24px;
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+
+      #start-screen-content h2 .fas {
+        font-size: 22px;
+      }
+
+      #start-screen-content p {
+        color: var(--secondary-text-color);
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      #bootBtn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.4s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        font-weight: 500;
+      }
+
+      #bootBtn:hover:not(:disabled) {
+        filter: brightness(1.1);
+        transform: scale(1.015);
+        box-shadow: 0 0 20px var(--primary);
+      }
+
+      .controls {
+        flex-shrink: 0;
+        max-height: 0;
+        opacity: 0;
+        overflow: visible;
+        transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out,
+          padding-top 0.4s ease-in-out;
+        position: relative;
+      }
+
+      body.session-ready .controls {
+        max-height: 70px;
+        opacity: 1;
+        padding-top: 15px;
+      }
+
+      .session-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+
+      .control-btn {
+        background-color: var(--button-bg);
+        color: var(--text-color);
+        padding: 0 20px;
+        height: 40px;
+        font-size: 15px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .control-btn .fas {
+        font-size: 16px;
+      }
+
+      .control-btn:hover:not(:disabled) {
+        background-color: var(--button-hover);
+      }
+
+      #timer {
+        background-color: var(--button-bg);
+        color: var(--text-color);
+        height: 40px;
+        font-size: 16px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        white-space: nowrap;
+        font-family: "Roboto Mono", monospace;
+        width: 100px;
+        font-weight: 500;
+      }
+
+      #timer .fas {
+        font-size: 15px;
+        color: var(--secondary-text-color);
+      }
+
+      .vm-options {
+        background: var(--third-bg);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .option-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .option-row:not(:last-child) {
+        margin-bottom: 12px;
+      }
+
+      .option-label {
+        font-family: "Inter", sans-serif;
+        color: var(--secondary-text-color);
+        font-weight: 500;
+        font-size: 16.5px;
+      }
+
+      .option-label span {
+        color: var(--text-color);
+        font-weight: 600;
+      }
+
+      .theme-selector {
+        display: flex;
+        background-color: var(--button-bg);
+        border-radius: 6px;
+        padding: 3px;
+      }
+
+      .theme-option {
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--secondary-text-color);
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .theme-option .fas {
+        font-size: 14px;
+      }
+
+      .theme-option.active {
+        background-color: var(--button-hover);
+        color: var(--text-color);
+      }
+
+      .theme-option:not(:active):hover {
+        color: var(--text-color);
+      }
+
+      .custom-slider-container {
+        width: 120px;
+        display: flex;
+        align-items: center;
+      }
+
+      .slider-track {
+        position: relative;
+        width: 100%;
+        height: 4px;
+        background-color: var(--button-bg);
+        border-radius: 2px;
+        cursor: pointer;
+      }
+
+      .slider-thumb {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        background-color: var(--primary);
+        border-radius: 50%;
+        border: 2px solid var(--bg);
+        box-shadow: 0 0 5px var(--primary);
+        cursor: pointer;
+      }
+
+      .custom-select-container {
+        position: relative;
+      }
+
+      .select-trigger {
+        background-color: var(--button-bg);
+        color: var(--text-color);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-family: "Inter", sans-serif;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 110px;
+        transition: background-color 0.2s ease;
+      }
+
+      .select-trigger:hover {
+        background-color: var(--button-hover);
+      }
+
+      .select-trigger .fas {
+        transition: transform 0.2s ease;
+      }
+
+      .custom-select-container.open .select-trigger .fas {
+        transform: rotate(180deg);
+      }
+
+      .select-options {
+        position: absolute;
+        top: 110%;
+        right: 0;
+        background-color: var(--button-hover);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        width: 100%;
+        z-index: 20;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+      }
+
+      .custom-select-container.open .select-options {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .select-option {
+        padding: 10px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .select-option:hover {
+        background-color: var(--primary);
+      }
+
+      #loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(10, 17, 29, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      #loader.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .dropdown-menu {
+        position: fixed;
+        width: 220px;
+        background-color: var(--button-hover);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        z-index: 9999;
+        padding: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+      }
+
+      .dropdown-menu.open {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .dropdown-menu-btn {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .dropdown-menu-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .item-list {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 8px;
+        padding-top: 8px;
+      }
+
+      .list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        word-break: break-all;
+      }
+
+      .list-item:hover {
+        background-color: var(--button-bg);
+      }
+
+      .delete-item-btn {
+        background: none;
+        border: none;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+      }
+
+      .delete-item-btn .fas {
+        font-size: 14px;
+      }
+
+      .delete-item-btn:hover {
+        color: var(--text-color);
+        background-color: rgba(255, 0, 0, 0.4);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+        background: var(--secondary-bg);
+        padding: 24px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 400px;
+        z-index: 10001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .modal-overlay.show .modal {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .modal h3 {
+        margin: 0 0 16px;
+        font-weight: 600;
+      }
+
+      .input-group {
+        margin-bottom: 16px;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 14px;
+        color: var(--secondary-text-color);
+        margin-bottom: 6px;
+      }
+
+      .input-group input {
+        width: 100%;
+        background: var(--button-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+        padding: 10px;
+        border-radius: 5px;
+        font-family: "Inter", sans-serif;
+        font-size: 15px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .modal-btn {
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, filter 0.2s ease;
+      }
+
+      .modal-btn:hover {
+        filter: brightness(1.1);
+      }
+
+      .modal-btn-primary {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .modal-btn-secondary {
+        background-color: var(--button-hover);
+        color: var(--text-color);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div id="main-view">
+        <div id="start-screen">
+          <div id="start-screen-content">
+            <h2><i class="fas fa-bolt"></i>VAPOR VMs</h2>
+            <p>
+              Your private, high-speed browser is just a click away. Launch a
+              secure, disposable VM for any task, anywhere.
+            </p>
+            <div class="vm-options">
+              <div class="option-row">
+                <span class="option-label">Theme</span>
+                <div class="theme-selector">
+                  <div class="theme-option" data-theme="light">
+                    <i class="fas fa-sun"></i>Light
+                  </div>
+                  <div class="theme-option active" data-theme="dark">
+                    <i class="fas fa-moon"></i>Dark
+                  </div>
+                </div>
+              </div>
+              <div class="option-row">
+                <span class="option-label">Region</span>
+                <div class="custom-select-container" id="region-select">
+                  <div class="select-trigger">
+                    <span id="selected-region-text">US (East)</span>
+                    <i class="fas fa-chevron-down"></i>
+                  </div>
+                  <div class="select-options">
+                    <div class="select-option" data-value="NA">US (East)</div>
+                    <div class="select-option" data-value="EU">Europe</div>
+                    <div class="select-option" data-value="AS">Asia</div>
+                  </div>
+                </div>
+              </div>
+              <div class="option-row">
+                <span class="option-label"
+                  >Duration: <span id="duration-display">20 min</span></span
+                >
+                <div class="custom-slider-container">
+                  <div class="slider-track" id="duration-slider">
+                    <div class="slider-thumb" id="duration-thumb"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button id="bootBtn"><i class="fas fa-rocket"></i>Start VM</button>
+          </div>
+        </div>
+
+        <div id="captcha-overlay">
+          <div id="hcaptcha-container"></div>
+        </div>
+
+        <div id="hyperbeam-container"></div>
+        <div id="loader">
+          <div class="spinner"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="session-controls">
+          <div class="control-group">
+            <div id="timer">
+              <i class="fas fa-clock"></i><span id="timer-text">20:00</span>
+            </div>
+            <button id="bookmarksBtn" class="control-btn">
+              <i class="fas fa-bookmark"></i>Bookmarks
+            </button>
+            <button id="groupsBtn" class="control-btn">
+              <i class="fas fa-layer-group"></i>Groups
+            </button>
+          </div>
+          <button id="deleteBtn" class="control-btn">
+            <i class="fas fa-power-off"></i>End Session
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="bookmark-modal" class="modal-overlay">
+      <div class="modal">
+        <h3>New Bookmark</h3>
+        <div class="input-group">
+          <label for="bookmark-name-input">Name</label>
+          <input
+            type="text"
+            id="bookmark-name-input"
+            placeholder="e.g., YouTube"
+          />
+        </div>
+        <div class="input-group">
+          <label for="bookmark-url-input">URL</label>
+          <input
+            type="url"
+            id="bookmark-url-input"
+            placeholder="https://youtube.com"
+          />
+        </div>
+        <div class="modal-actions">
+          <button
+            id="cancel-bookmark-btn"
+            class="modal-btn modal-btn-secondary"
+          >
+            Cancel
+          </button>
+          <button id="save-bookmark-btn" class="modal-btn modal-btn-primary">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="group-modal" class="modal-overlay">
+      <div class="modal">
+        <h3>Save Tab Group</h3>
+        <div class="input-group">
+          <label for="group-name-input">Group Name</label>
+          <input
+            type="text"
+            id="group-name-input"
+            placeholder="e.g., Daily News Reading"
+          />
+        </div>
+        <div class="modal-actions">
+          <button id="cancel-group-btn" class="modal-btn modal-btn-secondary">
+            Cancel
+          </button>
+          <button id="save-group-btn" class="modal-btn modal-btn-primary">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="bookmarks-dropdown" class="dropdown-menu">
+      <button id="new-bookmark-btn" class="dropdown-menu-btn">
+        <i class="fas fa-plus"></i>New Bookmark
+      </button>
+      <div id="bookmarks-list" class="item-list"></div>
+    </div>
+
+    <div id="groups-dropdown" class="dropdown-menu">
+      <button id="save-tabs-btn" class="dropdown-menu-btn">
+        <i class="fas fa-save"></i>Save Active Tabs
+      </button>
+      <div id="groups-list" class="item-list"></div>
+    </div>
+
+    <script type="module">
+      import Hyperbeam from "https://vapor.my/v0/vm/index.js";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        let clientId = localStorage.getItem("vapor_client_id");
+        if (!clientId) {
+          clientId = crypto.randomUUID();
+          localStorage.setItem("vapor_client_id", clientId);
+        }
+
+        // ==========================================================
+        // FINGERPRINT.JS INITIALIZATION
+        // ==========================================================
+        let visitorId = null; // This will hold our unique user fingerprint
+
+        const initializeFingerprint = async () => {
+          try {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+            visitorId = result.visitorId;
+            console.log("User Fingerprint ID:", visitorId); // For your debugging
+          } catch (error) {
+            console.error("Fingerprint generation failed:", error);
+          }
+        };
+
+        // Generate the fingerprint as soon as the page loads
+        initializeFingerprint();
+        // ==========================================================
+        // END OF FINGERPRINT.JS CODE
+        // ==========================================================
+
+        const bootBtn = document.getElementById("bootBtn");
+        const deleteBtn = document.getElementById("deleteBtn");
+        const hbContainer = document.getElementById("hyperbeam-container");
+        const hcaptchaContainer = document.getElementById("hcaptcha-container");
+        const timerText = document.getElementById("timer-text");
+        const loader = document.getElementById("loader");
+        const themeSelector = document.querySelector(".theme-selector");
+        const regionSelect = document.getElementById("region-select");
+        const selectedRegionText = document.getElementById(
+          "selected-region-text"
+        );
+        const durationSlider = document.getElementById("duration-slider");
+        const durationThumb = document.getElementById("duration-thumb");
+        const durationDisplay = document.getElementById("duration-display");
+
+        const bookmarksBtn = document.getElementById("bookmarksBtn");
+        const bookmarksDropdown = document.getElementById("bookmarks-dropdown");
+        const bookmarksList = document.getElementById("bookmarks-list");
+        const newBookmarkBtn = document.getElementById("new-bookmark-btn");
+
+        const groupsBtn = document.getElementById("groupsBtn");
+        const groupsDropdown = document.getElementById("groups-dropdown");
+        const groupsList = document.getElementById("groups-list");
+        const saveTabsBtn = document.getElementById("save-tabs-btn");
+
+        const bookmarkModal = document.getElementById("bookmark-modal");
+        const bookmarkNameInput = document.getElementById(
+          "bookmark-name-input"
+        );
+        const bookmarkUrlInput = document.getElementById("bookmark-url-input");
+        const cancelBookmarkBtn = document.getElementById(
+          "cancel-bookmark-btn"
+        );
+        const saveBookmarkBtn = document.getElementById("save-bookmark-btn");
+
+        const groupModal = document.getElementById("group-modal");
+        const groupNameInput = document.getElementById("group-name-input");
+        const cancelGroupBtn = document.getElementById("cancel-group-btn");
+        const saveGroupBtn = document.getElementById("save-group-btn");
+
+        let currentSessionId = null,
+          hbInstance = null,
+          countdownInterval = null,
+          visibilityTimeout = null,
+          hcaptchaWidgetId = null;
+        let bookmarks = [],
+          groups = [];
+        let isDarkMode = true,
+          selectedRegion = "NA",
+          selectedDuration = 20;
+        const durationSteps = [5, 10, 15, 20];
+
+        const API_BASE_URL = "/api/vm";
+
+        const setSliderPosition = (value) => {
+          const index = durationSteps.indexOf(value);
+          const percentage = (index / (durationSteps.length - 1)) * 100;
+          durationThumb.style.left = `${percentage}%`;
+          durationDisplay.textContent = `${value} min`;
+          selectedDuration = value;
+        };
+
+        const handleSliderInteraction = (event) => {
+          const rect = durationSlider.getBoundingClientRect();
+          const x = (event.clientX || event.touches[0].clientX) - rect.left;
+          const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+          const stepIndex = Math.round(
+            percentage / (100 / (durationSteps.length - 1))
+          );
+          const value = durationSteps[stepIndex];
+          setSliderPosition(value);
+        };
+
+        let isDragging = false;
+        durationSlider.addEventListener("mousedown", (e) => {
+          isDragging = true;
+          handleSliderInteraction(e);
+        });
+        document.addEventListener("mousemove", (e) => {
+          if (isDragging) handleSliderInteraction(e);
+        });
+        document.addEventListener("mouseup", () => {
+          isDragging = false;
+        });
+        durationSlider.addEventListener("touchstart", (e) => {
+          isDragging = true;
+          handleSliderInteraction(e);
+        });
+        document.addEventListener("touchmove", (e) => {
+          if (isDragging) handleSliderInteraction(e);
+        });
+        document.addEventListener("touchend", () => {
+          isDragging = false;
+        });
+
+        setSliderPosition(20);
+
+        const startSession = () => {
+          bootBtn.disabled = true;
+          document.body.classList.add("session-active");
+          document.body.classList.add("captcha-active");
+          renderCaptcha();
+        };
+
+        const renderCaptcha = () => {
+          if (hcaptchaWidgetId) hcaptcha.reset(hcaptchaWidgetId);
+
+          hcaptchaWidgetId = hcaptcha.render(hcaptchaContainer, {
+            sitekey: "8dc8e51c-65e0-4c6a-a920-1b76363a5bd0",
+            callback: handleCaptchaSuccess,
+            "error-callback": handleCaptchaError,
+            "close-callback": handleCaptchaClose,
+          });
+        };
+
+        const handleCaptchaSuccess = async (token) => {
+          document.body.classList.remove("captcha-active");
+          loader.classList.add("show");
+
+          // Safety check to ensure fingerprint has been generated before sending request.
+          if (!visitorId) {
+            await initializeFingerprint();
+            if (!visitorId) {
+              alert("Error: Could not verify your browser. Please refresh and try again.");
+              loader.classList.remove("show");
+              resetUI(true);
+              return;
+            }
+          }
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/verify-and-create`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                isDark: isDarkMode,
+                region: selectedRegion,
+                token: token,
+                duration: selectedDuration,
+                clientId: clientId,
+                visitorId: visitorId, // <-- THE ADDED LINE FOR RATE LIMITING
+              }),
+            });
+            const data = await response.json();
+            if (!response.ok)
+              throw new Error(data.error || "Too many people are using the VM! Try again in a bit :)");
+
+            currentSessionId = data.session_id;
+
+            hbContainer.innerHTML = "";
+            hbInstance = await Hyperbeam(hbContainer, data.embed_url, {
+              adminToken: data.admin_token,
+            });
+
+            loader.classList.remove("show");
+            document.body.classList.add("session-ready");
+            startTimer(data.duration);
+          } catch (error) {
+            console.error("Session Creation Error:", error);
+            alert(`Error: ${error.message}`);
+            await resetUI(true);
+          }
+        };
+
+        const handleCaptchaError = (e) => {
+          console.error("hCaptcha Error:", e);
+          alert("CAPTCHA challenge failed. Please try again.");
+          resetUI(true);
+        };
+
+        const handleCaptchaClose = () => {
+          if (!currentSessionId) {
+            resetUI(true);
+          }
+        };
+
+        const endSession = async () => {
+          if (!currentSessionId) return;
+          const sessionIdToDelete = currentSessionId;
+          currentSessionId = null;
+          if (countdownInterval) clearInterval(countdownInterval);
+          if (visibilityTimeout) clearTimeout(visibilityTimeout);
+
+          loader.classList.add("show");
+
+          setTimeout(async () => {
+            if (hbInstance) {
+              await hbInstance.destroy();
+              hbInstance = null;
+            }
+            fetch(`${API_BASE_URL}/delete-session`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                sessionId: sessionIdToDelete,
+                clientId: clientId,
+              }),
+            });
+            await resetUI();
+          }, 600);
+        };
+
+        const resetUI = async (immediate = false) => {
+          document.body.classList.remove(
+            "session-active",
+            "captcha-active",
+            "session-ready"
+          );
+          if (hcaptchaWidgetId) hcaptcha.reset(hcaptchaWidgetId);
+          hbContainer.innerHTML = "";
+          timerText.textContent = "20:00";
+          bootBtn.disabled = false;
+          setSliderPosition(20);
+
+          if (immediate) {
+            loader.classList.remove("show");
+          } else {
+            setTimeout(() => {
+              loader.classList.remove("show");
+            }, 500);
+          }
+        };
+
+        const startTimer = (durationInSeconds) => {
+          let secondsLeft = durationInSeconds;
+          const updateTimer = () => {
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            timerText.textContent =
+              String(minutes).padStart(2, "0") +
+              ":" +
+              String(seconds).padStart(2, "0");
+          };
+          updateTimer();
+          countdownInterval = setInterval(() => {
+            secondsLeft--;
+            updateTimer();
+            if (secondsLeft < 0) {
+              clearInterval(countdownInterval);
+              endSession();
+            }
+          }, 1000);
+        };
+
+        bootBtn.addEventListener("click", startSession);
+        deleteBtn.addEventListener("click", endSession);
+
+        const createListItem = (item, index, type) => {
+          const el = document.createElement("div");
+          el.className = "list-item";
+          el.dataset.id = index;
+          el.dataset.type = type;
+
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = item.name;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "delete-item-btn";
+          deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+
+          el.appendChild(nameSpan);
+          el.appendChild(deleteBtn);
+          return el;
+        };
+
+        const renderData = () => {
+          bookmarksList.innerHTML = "";
+          bookmarks.forEach((bm, i) =>
+            bookmarksList.appendChild(createListItem(bm, i, "bookmark"))
+          );
+
+          groupsList.innerHTML = "";
+          groups.forEach((gr, i) =>
+            groupsList.appendChild(createListItem(gr, i, "group"))
+          );
+        };
+
+        const loadData = () => {
+          try {
+            bookmarks = JSON.parse(
+              localStorage.getItem("vapor_bookmarks") || "[]"
+            );
+          } catch (e) {
+            bookmarks = [];
+          }
+          try {
+            groups = JSON.parse(localStorage.getItem("vapor_groups") || "[]");
+          } catch (e) {
+            groups = [];
+          }
+          renderData();
+        };
+
+        const saveBookmarks = () => {
+          localStorage.setItem("vapor_bookmarks", JSON.stringify(bookmarks));
+          renderData();
+        };
+        const saveGroups = () => {
+          localStorage.setItem("vapor_groups", JSON.stringify(groups));
+          renderData();
+        };
+
+        themeSelector.addEventListener("click", (e) => {
+          const option = e.target.closest(".theme-option");
+          if (option && !option.classList.contains("active")) {
+            themeSelector.querySelector(".active").classList.remove("active");
+            option.classList.add("active");
+            isDarkMode = option.dataset.theme === "dark";
+          }
+        });
+
+        regionSelect.addEventListener("click", (e) => {
+          const trigger = e.target.closest(".select-trigger");
+          if (trigger) regionSelect.classList.toggle("open");
+
+          const option = e.target.closest(".select-option");
+          if (option) {
+            selectedRegion = option.dataset.value;
+            selectedRegionText.textContent = option.textContent;
+            regionSelect.classList.remove("open");
+          }
+        });
+
+        const positionDropdown = (dropdown, button) => {
+          const rect = button.getBoundingClientRect();
+          dropdown.style.left = `${rect.left}px`;
+          dropdown.style.top = `${rect.top - dropdown.offsetHeight - 8}px`;
+        };
+
+        bookmarksBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (document.body.classList.contains("session-ready")) {
+            positionDropdown(bookmarksDropdown, bookmarksBtn);
+            bookmarksDropdown.classList.toggle("open");
+          }
+        });
+
+        groupsBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (document.body.classList.contains("session-ready")) {
+            positionDropdown(groupsDropdown, groupsBtn);
+            groupsDropdown.classList.toggle("open");
+          }
+        });
+
+        newBookmarkBtn.addEventListener("click", () => {
+          bookmarkModal.classList.add("show");
+          bookmarksDropdown.classList.remove("open");
+        });
+
+        cancelBookmarkBtn.addEventListener("click", () =>
+          bookmarkModal.classList.remove("show")
+        );
+
+        saveBookmarkBtn.addEventListener("click", () => {
+          const name = bookmarkNameInput.value.trim();
+          const url = bookmarkUrlInput.value.trim();
+          if (name && url) {
+            bookmarks.push({
+              name,
+              url: url.startsWith("http") ? url : "https://" + url,
+            });
+            saveBookmarks();
+            bookmarkModal.classList.remove("show");
+            bookmarkNameInput.value = "";
+            bookmarkUrlInput.value = "";
+          }
+        });
+
+        saveTabsBtn.addEventListener("click", () => {
+          groupModal.classList.add("show");
+          groupsDropdown.classList.remove("open");
+        });
+
+        cancelGroupBtn.addEventListener("click", () =>
+          groupModal.classList.remove("show")
+        );
+
+        saveGroupBtn.addEventListener("click", async () => {
+          const name = groupNameInput.value.trim();
+          if (name && hbInstance) {
+            const tabs = await hbInstance.tabs.query({});
+            groups.push({
+              name,
+              tabs: tabs.map((t) => ({
+                url: t.url,
+                active: t.active,
+              })),
+            });
+            saveGroups();
+            groupModal.classList.remove("show");
+            groupNameInput.value = "";
+          }
+        });
+
+        document.addEventListener("click", async (e) => {
+          if (!regionSelect.contains(e.target))
+            regionSelect.classList.remove("open");
+          if (
+            !bookmarksBtn.contains(e.target) &&
+            !bookmarksDropdown.contains(e.target)
+          )
+            bookmarksDropdown.classList.remove("open");
+          if (
+            !groupsBtn.contains(e.target) &&
+            !groupsDropdown.contains(e.target)
+          )
+            groupsDropdown.classList.remove("open");
+
+          const deleteBtn = e.target.closest(".delete-item-btn");
+          const listItem = e.target.closest(".list-item");
+
+          if (deleteBtn) {
+            e.stopPropagation();
+            const itemToDelete = deleteBtn.parentElement;
+            const { id, type } = itemToDelete.dataset;
+
+            if (type === "bookmark") {
+              bookmarks.splice(id, 1);
+              saveBookmarks();
+            } else if (type === "group") {
+              groups.splice(id, 1);
+              saveGroups();
+            }
+          } else if (listItem) {
+            const { id, type } = listItem.dataset;
+            if (!hbInstance) return;
+
+            if (type === "bookmark") {
+              hbInstance.tabs.create({
+                url: bookmarks[id].url,
+                active: true,
+              });
+              bookmarksDropdown.classList.remove("open");
+            } else if (type === "group") {
+              const group = groups[id];
+              const currentTabs = await hbInstance.tabs.query({});
+
+              const tabsToRemove = currentTabs.slice(1);
+              await Promise.all(
+                tabsToRemove.map((t) => hbInstance.tabs.remove(t.id))
+              );
+
+              if (group.tabs.length > 0) {
+                await hbInstance.tabs.update(currentTabs[0].id, {
+                  url: group.tabs[0].url,
+                });
+                await Promise.all(
+                  group.tabs.slice(1).map((t) =>
+                    hbInstance.tabs.create({
+                      url: t.url,
+                      active: t.active,
+                    })
+                  )
+                );
+              } else if (currentTabs.length > 0) {
+                await hbInstance.tabs.update(currentTabs[0].id, {
+                  url: "about:blank",
+                });
+              }
+
+              groupsDropdown.classList.remove("open");
+            }
+          }
+        });
+
+        window.addEventListener("beforeunload", () => {
+          if (currentSessionId) {
+            navigator.sendBeacon(
+              `${API_BASE_URL}/delete-on-unload`,
+              JSON.stringify({
+                sessionId: currentSessionId,
+                clientId: clientId,
+              })
+            );
+          }
+        });
+
+        window.addEventListener("visibilitychange", () => {
+          if (!currentSessionId) return;
+          if (document.hidden) {
+            visibilityTimeout = setTimeout(endSession, 30000);
+          } else if (visibilityTimeout) {
+            clearTimeout(visibilityTimeout);
+          }
+        });
+
+        window.addEventListener("resize", () => {
+          if (bookmarksDropdown.classList.contains("open"))
+            positionDropdown(bookmarksDropdown, bookmarksBtn);
+          if (groupsDropdown.classList.contains("open"))
+            positionDropdown(groupsDropdown, groupsBtn);
+        });
+
+        loadData();
+      });
+    </script>
+  </body>
+</html>

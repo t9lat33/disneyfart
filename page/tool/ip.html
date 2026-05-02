@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Is My IP?</title>
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/theme.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-color);
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        #ip-address {
+            background: var(--fourth-bg);
+            padding: 2rem 4rem;
+            border-radius: 12px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            font-family: 'Space Mono', monospace;
+            min-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <style>#rightad {
+        position: fixed;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10000;
+    }
+  </style>
+      <iframe 
+    src="/ads/160x600.html" 
+    width="160" 
+    height="600"
+    sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+    scrolling="no"
+    style="border:0;" 
+    referrerpolicy="no-referrer"
+    id="rightad">
+  </iframe>
+    <div class="container">
+        <h1>Your Public IP Address is:</h1>
+        <div id="ip-address">Loading...</div>
+    </div>
+    <script>
+        const ipAddressEl = document.getElementById('ip-address');
+
+        async function getIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                ipAddressEl.textContent = data.ip;
+            } catch (error) {
+                ipAddressEl.textContent = 'Could not fetch IP';
+                console.error('Error fetching IP:', error);
+            }
+        }
+        
+        window.addEventListener('load', getIP);
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html><!--vaporyt v2-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="/styles/defaults.css" />
+<script src="/scripts/opt.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:transparent; font-family:'Inter',Arial,sans-serif; color:var(--text-color);}
+  body { display:flex; flex-direction:column; align-items:center; padding:30px 20px 50px 20px; min-height:100vh; overflow-y:auto; }
+
+  .search-container { width:475px; max-width:100%; display:flex; flex-direction:column; align-items:center; margin-bottom:24px; position: relative; }
+  .search-input { width:100%; padding:12px 15px; border-radius:15px; background-color: rgba(255 255 255 / 0.15); border:none; font-size:18px; color: rgba(255 255 255 / 0.8); outline:none; backdrop-filter: blur(10px); }
+  .search-input:focus::placeholder { opacity:0; }
+
+  .buttons-row { margin-top:12px; display:flex; gap:12px; width:100%; }
+  .api-button {
+    flex:1; padding:12px 15px; border-radius:15px;
+    background-color: rgba(255 255 255 / 0.15); border:none;
+    font-size:18px; color: rgba(255 255 255 / 0.8);
+    backdrop-filter: blur(10px); cursor:pointer; font-weight:500; user-select:none;
+    display:flex; align-items:center; justify-content:flex-start;
+  }
+  .api-button:hover { background-color: rgba(255 255 255 / 0.25); }
+  .api-button i { margin-right:12px; width: 24px; text-align: center; }
+  .api-button span { flex: 1; text-align: center; }
+
+  #optionsDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    width: calc(50% - 6px);
+    padding: 15px;
+    border-radius:15px;
+    background-color: rgba(100 100 100 / 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+  .options-label { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: -8px; }
+  .options-input, .options-select {
+    width: 100%; padding: 8px 10px; border-radius: 8px;
+    background-color: rgba(0 0 0 / 0.2); border: 1px solid rgba(255 255 255 / 0.1);
+    font-size: 16px; color: rgba(255 255 255 / 0.8); outline: none;
+  }
+  .hidden { display: none !important; }
+
+  .results { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:1000px; width:100%; align-items:start; }
+  @media (max-width:900px) { .results { grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:520px) { .results { grid-template-columns:repeat(1,1fr); } .search-container { width:100%; padding:0 8px; } }
+
+  .video-card {
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    gap: 4px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .video-card.loading { pointer-events: none; }
+
+  .video-thumb-wrapper {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+    min-height: 0;
+  }
+
+  .video-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .video-title,
+  .video-meta {
+    margin: 0;
+    padding: 0 10px; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+    padding-top: 6px;
+  }
+
+  .video-meta {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.2;
+    padding-bottom: 10px;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s ease-in-out infinite;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+  }
+
+  .video-card.loading .spinner {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .overlay { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .overlay.hidden { display:none; }
+  
+  .overlay-backdrop { position:absolute; inset:0; backdrop-filter:blur(20px); background-color:rgba(0,0,0,0.6); }
+  .overlay-inner { position:relative; z-index:10; width:80vw; max-width:900px; max-height:90vh; display:flex; flex-direction:column; background:#111827; border-radius:12px; overflow:hidden; }
+  .player-wrapper { width:100%; aspect-ratio:16/9; overflow:hidden; background:none; border-radius:8px; }
+  .player-wrapper iframe, .player-wrapper video { width:100%; height:100%; border:0; display:block; background:none; }
+  .overlay .video-title { font-weight:600; font-size:1.3rem; margin:8px 16px 0 16px; }
+  .overlay .video-meta { font-size:0.9rem; color:rgba(255,255,255,0.7); margin:0 16px 16px 16px; overflow:auto; }
+</style>
+
+</head>
+<body>
+  <style>#rightad {
+    position: fixed;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10000;
+}
+</style>
+  <iframe 
+src="/ads/160x600.html" 
+width="160" 
+height="600"
+sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+scrolling="no"
+style="border:0;" 
+referrerpolicy="no-referrer"
+id="rightad">
+</iframe>
+
+<div class="search-container" id="searchContainer">
+  <input type="search" class="search-input" id="searchInput" placeholder="Search YouTube videos..." autocomplete="off" spellcheck="false">
+  <div class="buttons-row">
+    <button class="api-button" id="modeToggle"><i class="fa-solid fa-code"></i><span>Embed</span></button>
+    <button class="api-button" id="optionsBtn"><i class="fa-solid fa-cog"></i><span>Options</span></button>
+  </div>
+  <div id="optionsDropdown" class="hidden">
+    <label class="options-label" for="scrapeStrategySelect">Scrape Priority</label>
+    <select id="scrapeStrategySelect" class="options-select">
+      <option value="alpha-beta" selected>Alpha, then Beta</option>
+      <option value="alpha">Alpha Only</option>
+      <option value="beta">Beta Only</option>
+    </select>
+    <label class="options-label" for="embedHostInput">Embed Host</label>
+    <input type="text" id="embedHostInput" class="options-input" value="www.youtube-nocookie.com">
+  </div>
+</div>
+
+<div class="results" id="results">
+  <small style="text-align:center;">VAPORyt is in beta!<br>Report bugs in the Discord.</small>
+</div>
+
+<div class="overlay hidden" id="overlay" aria-hidden="true">
+  <div class="overlay-backdrop"></div>
+  <div class="overlay-inner" role="dialog" aria-modal="true">
+    <div class="player-wrapper" id="playerWrapper"></div>
+    <div class="video-title" id="overlayTitle"></div>
+    <div class="video-meta" id="overlayMeta"></div>
+  </div>
+</div>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const resultsDiv = document.getElementById('results');
+const overlay = document.getElementById('overlay');
+const overlayBackdrop = overlay.querySelector('.overlay-backdrop');
+const playerWrapper = document.getElementById('playerWrapper');
+const overlayTitle = document.getElementById('overlayTitle');
+const overlayMeta = document.getElementById('overlayMeta');
+const modeToggle = document.getElementById('modeToggle');
+
+const searchContainer = document.getElementById('searchContainer');
+const optionsBtn = document.getElementById('optionsBtn');
+const optionsDropdown = document.getElementById('optionsDropdown');
+const scrapeStrategySelect = document.getElementById('scrapeStrategySelect');
+const embedHostInput = document.getElementById('embedHostInput');
+
+let mode = "embed";
+modeToggle.addEventListener('click', () => {
+  if(mode==="embed"){
+    mode="scrape";
+    modeToggle.innerHTML='<i class="fa-solid fa-database"></i><span>Scrape</span>';
+  } else {
+    mode="embed";
+    modeToggle.innerHTML='<i class="fa-solid fa-code"></i><span>Embed</span>';
+  }
+});
+
+optionsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  optionsDropdown.classList.toggle('hidden');
+});
+document.addEventListener('click', (e) => {
+  if (!searchContainer.contains(e.target)) {
+    optionsDropdown.classList.add('hidden');
+  }
+});
+
+async function searchVideos(query,page=1){
+  if(!query||!query.trim()) return [];
+  const maxResults=15, startIndex=(page-1)*maxResults;
+  try {
+    const res = await fetch(`/api/ytSearch?q=${encodeURIComponent(query)}&max=${maxResults}&start=${startIndex}`);
+    if(!res.ok) throw new Error('Search failed');
+    const data = await res.json(); return data.results||[];
+  } catch(e){ console.warn(e); return []; }
+}
+
+function formatViews(num){ if(!num||num===0) return '0'; const units=[{value:1e9,suffix:'B'},{value:1e6,suffix:'M'},{value:1e3,suffix:'K'}]; for(const u of units) if(num>=u.value) return (num/u.value).toFixed(1).replace(/\.0$/,'')+u.suffix; return num.toString(); }
+
+async function fetchScrapedVideoSources(videoId){
+  const strategy = scrapeStrategySelect.value;
+  let endpoints = [];
+  if (strategy === 'alpha-beta') endpoints = ["clipto", "vidfly"];
+  else if (strategy === 'alpha') endpoints = ["clipto"];
+  else if (strategy === 'beta') endpoints = ["vidfly"];
+  
+  const sources = [];
+  for(const ep of endpoints){
+    try{
+      const res=await fetch(`/api/vyt/${ep}/${videoId}`);
+      if(!res.ok) continue;
+      const data=await res.json();
+      if(data&&data.vlink&&data.vlink.includes("googlevideo")) {
+          sources.push(data.vlink);
+      }
+    } catch(e){ console.warn(`Endpoint ${ep} failed for ${videoId}`, e); }
+  }
+  return sources;
+}
+
+function createVideoCard(video){
+  const card=document.createElement('div'); card.className='video-card'; card.tabIndex=0;
+  
+  const thumbWrapper=document.createElement('div'); thumbWrapper.className='video-thumb-wrapper';
+  const thumb=document.createElement('img'); thumb.className='video-thumb'; thumb.src=video.thumbnail; thumb.alt=video.title||'thumbnail'; thumb.loading='lazy';
+  const spinner=document.createElement('div'); spinner.className='spinner';
+  thumbWrapper.append(spinner, thumb);
+
+  const title=document.createElement('div'); title.className='video-title'; title.textContent=video.title||'Untitled';
+  const meta=document.createElement('div'); meta.className='video-meta'; meta.textContent=`${video.author||'Unknown'} • ${formatViews(video.views)} views`;
+  
+  card.append(thumbWrapper,title,meta);
+
+  card.addEventListener('click', async ()=>{
+    playerWrapper.innerHTML='';
+    overlayTitle.textContent = video.title||'';
+    overlayMeta.textContent = `${video.author||''} • ${formatViews(video.views)} views`;
+    
+    if(mode === "embed"){
+        overlay.classList.remove('hidden');
+        document.body.style.overflow='hidden';
+        const embedHost = embedHostInput.value.trim() || 'www.youtube-nocookie.com';
+        const iframe=document.createElement('iframe');
+        iframe.src=`https://${embedHost}/embed/${video.videoId}?rel=0&autoplay=1`;
+        iframe.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+        iframe.allowFullscreen=true;
+        playerWrapper.appendChild(iframe);
+
+    } else {
+        card.classList.add('loading');
+        
+        const sources = await fetchScrapedVideoSources(video.videoId);
+        card.classList.remove('loading');
+
+        if (sources.length > 0) {
+            overlay.classList.remove('hidden');
+            document.body.style.overflow='hidden';
+            playerWrapper.innerHTML = `<video controls autoplay playsinline src="${sources[0]}"></video>`;
+        } else {
+            alert('scraped sources failed to load :(');
+        }
+    }
+  });
+
+  card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); card.click(); } });
+
+  return card;
+}
+
+async function handleSearch(query){
+  resultsDiv.innerHTML='';
+  const videos=await searchVideos(query);
+  if(!videos||videos.length===0){ resultsDiv.textContent='No results found.'; return; }
+  const frag=document.createDocumentFragment();
+  for(const v of videos) frag.appendChild(createVideoCard(v));
+  resultsDiv.appendChild(frag);
+}
+
+searchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); handleSearch(searchInput.value.trim()); } });
+
+overlayBackdrop.addEventListener('click', ()=>{
+  overlay.classList.add('hidden');
+  playerWrapper.innerHTML='';
+  overlayTitle.textContent='';
+  overlayMeta.textContent='';
+  document.body.style.overflow='';
+});
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !overlay.classList.contains('hidden')) overlayBackdrop.click(); });
+</script>
+
+</body>
+</html>

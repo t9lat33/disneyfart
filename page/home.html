@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: var(--bg);
+            color: rgba(255, 255, 255, 0.8);
+            font-family: "Inter", sans-serif;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            bottom: -15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 70%;
+            background: radial-gradient(ellipse at bottom,
+                    var(--primary),
+                    transparent 60%);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: -15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 70%;
+            background: radial-gradient(ellipse at top,
+                    var(--primary),
+                    transparent 60%);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-container {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            /* Keeps content above the glow */
+        }
+
+        .content {
+            text-align: left;
+            opacity: 0;
+            transform: translateX(20px);
+            animation: zoomL 0.6s forwards 0.2s;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 75px;
+            pointer-events: none;
+        }
+
+        h1 span {
+            font-weight: 1000;
+            color: var(--text-color);
+        }
+
+        h1 span.title {
+            font-weight: 700;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    transparent 20%,
+                    var(--gradient-end) 80%,
+                    var(--gradient-start) 100%);
+            background-size: 400% 100%;
+            background-position: -100% 0;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientSlide 2s ease-in-out forwards;
+        }
+
+        #subtitle {
+            display: flex;
+            justify-content: flex-end;
+            align-items: baseline;
+            color: #aaa;
+            font-weight: 700;
+            font-size: 36px;
+            margin-top: 10px;
+            gap: 0.25em;
+        }
+
+        #subtitle-changing {
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-align: left;
+            transition: width 0.4s ease-in-out, opacity 0.2s ease-in-out;
+        }
+
+        #subtitle-measure {
+            position: absolute;
+            visibility: hidden;
+            height: auto;
+            width: auto;
+            white-space: nowrap;
+        }
+
+
+        @keyframes gradientSlide {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 100% 0%;
+            }
+        }
+
+        .logo-container {
+            position: relative;
+            width: 300px;
+            transform: translateY(-15px);
+            opacity: 0;
+            animation: zoomR 0.8s forwards;
+        }
+
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary);
+            mask-image: url('/_a/logo.png');
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            mask-position: center;
+            -webkit-mask-image: url('/_a/logo.png');
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+        }
+
+        .logo-container .logo-img {
+            width: 100%;
+            display: block;
+            mix-blend-mode: luminosity;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0;
+            animation: fadeIn 1.5s ease forwards 0.5s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomR {
+            0% {
+                transform: translateX(100%) scale(1);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes zoomL {
+            0% {
+                opacity: 0;
+                transform: translateX(-25px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        #adboxtop {
+            position: fixed;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 12px;
+            z-index: 10000;
+            opacity: 0;
+            transition: top 0.35s ease, opacity 0.35s ease;
+        }
+
+        #adboxbottom {
+            position: fixed;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 12px;
+            z-index: 10000;
+            opacity: 0;
+            transition: bottom 0.35s ease, opacity 0.35s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="particles-js"></div>
+
+    <iframe src="/ads/728x90.html" width="728" height="90"
+        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        scrolling="no" style="border: 0" referrerpolicy="no-referrer" id="adboxtop"></iframe>
+
+    <div class="content-container">
+        <div class="content">
+            <h1>
+                <span class="title">VAPOR</span> <span>v3</span>
+            </h1>
+            <div id="subtitle">
+                <span id="subtitle-static">is for</span>
+                <span id="subtitle-changing"></span>
+                <span id="subtitle-measure"></span>
+            </div>
+        </div>
+
+        <div class="logo-container">
+            <img src="/_a/logo.png" alt="Logo" class="logo-img" />
+        </div>
+    </div>
+
+    <iframe src="/ads/728x90.html" width="728" height="90"
+        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        scrolling="no" style="border: 0" referrerpolicy="no-referrer" id="adboxbottom"></iframe>
+
+    <script>
+        // Particles.js init
+        particlesJS("particles-js", {
+            particles: {
+                number: {
+                    value: 250,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: "#ffffff"
+                },
+                shape: {
+                    type: "circle",
+                    stroke: {
+                        width: 0,
+                        color: "#000000"
+                    },
+                    polygon: {
+                        nb_sides: 5
+                    }
+                },
+                opacity: {
+                    value: 0.5,
+                    random: true
+                },
+                size: {
+                    value: 1,
+                    random: true
+                },
+                line_linked: {
+                    enable: false
+                },
+                move: {
+                    enable: true,
+                    speed: 1.5,
+                    direction: "right",
+                    random: true,
+                    straight: true,
+                    out_mode: "out"
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: {
+                        enable: false
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: "push"
+                    },
+                    resize: true
+                },
+                modes: {
+                    push: {
+                        particles_nb: 25
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        window.addEventListener("load", () => {
+            const topAd = document.getElementById("adboxtop");
+            setTimeout(() => {
+                topAd.style.top = "12px";
+                topAd.style.opacity = "1";
+            }, 500);
+            const bottomAd = document.getElementById("adboxbottom");
+            setTimeout(() => {
+                bottomAd.style.bottom = "12px";
+                bottomAd.style.opacity = "1";
+            }, 500);
+        });
+
+
+
+
+        // DO NOT MODIFY W/O TECHNOS PERMISSION!!!
+        const phrases = [
+            "gaming",
+            "watching",
+            "chatting",
+            "browsing",
+            "listening",
+            "creating",
+            "exploring",
+            "winning",
+            "connecting",
+            "you"
+        ];
+
+
+
+
+        let index = 0;
+        const subtitleChangingEl = document.getElementById("subtitle-changing");
+        const subtitleMeasureEl = document.getElementById("subtitle-measure");
+
+        function initializeSubtitle() {
+            const initialPhrase = phrases[index];
+            subtitleChangingEl.textContent = initialPhrase;
+            subtitleMeasureEl.textContent = initialPhrase;
+            subtitleChangingEl.style.width = subtitleMeasureEl.offsetWidth + 2 + "px";
+            index = (index + 1) % phrases.length;
+        }
+
+        function updateSubtitle() {
+            subtitleChangingEl.style.opacity = "0";
+            const nextPhrase = phrases[index];
+            subtitleMeasureEl.textContent = nextPhrase;
+            const nextWidth = subtitleMeasureEl.offsetWidth + 2;
+            subtitleChangingEl.style.width = nextWidth + "px";
+            setTimeout(() => {
+                subtitleChangingEl.textContent = nextPhrase;
+                subtitleChangingEl.style.opacity = "1";
+            }, 200);
+
+            index = (index + 1) % phrases.length;
+        }
+
+        initializeSubtitle();
+        setInterval(updateSubtitle, 3000);
+    </script>
+    <script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-fb7ae694.js"></script>
+</body>
+
+</html>

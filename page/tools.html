@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/opt.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Inter", Arial, sans-serif;
+        background: transparent;
+        color: white;
+      }
+
+      .content {
+        padding-top: 20px;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        padding-bottom: 60px;
+      }
+
+      .tool-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        transition: 0.15s ease;
+        max-width: 930px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .tool {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        height: 100px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.15s ease, transform 0.25s ease;
+        text-align: center;
+        font-size: 60px;
+      }
+
+      .tool:hover {
+        transform: scale(1.02);
+      }
+
+      .tool:hover .overlay {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(0px);
+      }
+
+      .tool:hover h2 {
+        font-size: 35px;
+        filter: blur(10px);
+        opacity: 0;
+      }
+
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 15px;
+        transition: 0.15s;
+      }
+
+      .overlay h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 400;
+        text-align: center;
+        transition: all 0.15s ease, opacity 0.25s ease;
+      }
+
+      .progress-container {
+        width: 200px;
+        margin: 0 auto;
+        margin-top: 10px;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: #49517c;
+        transition: 0.15s ease;
+      }
+      .progress-text {
+        margin-top: 5px;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      iframe {
+          position: fixed;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10000;
+      }
+      small {
+        color: rgba(255,255,255,0.85);
+        text-align: center;
+      }
+    </style>
+    <style>
+      #particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: -99;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="/scripts/particle.js"></script>
+  </head>
+  <body>
+    <div id="particles-js"></div>
+    <iframe 
+  src="/ads/160x600.html" 
+  width="160" 
+  height="600"
+  sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+  scrolling="no"
+  style="border:0;" 
+  referrerpolicy="no-referrer">
+</iframe>
+   <div class="content">
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">-/-</div>
+      </div>
+      <small>Tools are under development.<br>Any suggestions? Join our Discord!</small>
+      <div class="tool-container" id="toolContainer" style="opacity: 0"></div>
+    </div>
+    <script>
+      let tools = [];
+      let progressBarFill = document.getElementById("progressBarFill");
+      let progressText = document.getElementById("progressText");
+      let progressContainer = document.getElementById("progressContainer");
+      let toolContainer = document.getElementById("toolContainer");
+
+      function encodeBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
+      function formatToolTitle(title) {
+        return title
+          .replace(/-/g, " ")
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      }
+
+      async function loadTools() {
+        const response = await fetch("/_a/tools.json");
+        const data = await response.json();
+        tools = data.sort((a, b) => a.name.localeCompare(b.name));
+
+        progressText.textContent = `0/${tools.length}`;
+
+        for (let i = 0; i < tools.length; i++) {
+          progressText.textContent = `${i + 1}/${tools.length}`;
+          progressBarFill.style.width = `${((i + 1) / tools.length) * 100}%`;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        progressContainer.style.display = "none";
+        toolContainer.style.opacity = "1";
+
+        renderTools();
+      }
+
+      function renderTools() {
+        const container = document.getElementById("toolContainer");
+        container.innerHTML = "";
+
+        tools.forEach((tool) => {
+          const displayTool = tool.name;
+          const backgroundUrl = tool.img;
+          const url = tool.url;
+
+          const toolDiv = document.createElement("div");
+          toolDiv.classList.add("tool");
+          toolDiv.style.backgroundImage = `url(${backgroundUrl})`;
+
+          toolDiv.addEventListener("click", () => {
+            const toolUrl = url;
+
+            fetch(toolUrl, { method: "HEAD" })
+              .then((response) => {
+                if (response.ok) {
+                  window.location.href = toolUrl;
+                } else {
+                  window.location.href = url;
+                }
+              })
+              .catch(() => {
+                window.location.href = url;
+              });
+          });
+
+          const overlay = document.createElement("div");
+          overlay.classList.add("overlay");
+
+          const title = document.createElement("h2");
+          title.textContent = formatToolTitle(displayTool);
+
+          overlay.appendChild(title);
+          toolDiv.appendChild(overlay);
+          container.appendChild(toolDiv);
+        });
+      }
+
+      loadTools();
+    </script>
+        <!--partner_script--><script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-fb7ae694.js"></script>
+
+  </body>
+</html>

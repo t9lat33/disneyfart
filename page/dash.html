@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles/defaults.css" />
+    <script src="/scripts/theme.js"></script>
+    
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Inter", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text-color);
+        overflow: hidden;
+      }
+      /*vanta fail too lazy to fix*/
+      #vanta-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -99;
+      }
+
+      .dashboard-container {
+        width: 50%;
+        height: 100%;
+        margin: 0 auto;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--secondary-bg);
+        transform: scale(1.05);
+        transform-origin: top center;
+      }
+      .dashboard-container::-webkit-scrollbar { width: 8px; }
+      .dashboard-container::-webkit-scrollbar-track { background: var(--secondary-bg); }
+      .dashboard-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+      .sections-wrapper {
+        padding: 40px 20px;
+        column-count: 2;
+        column-gap: 20px;
+      }
+
+      .card {
+        background-color: var(--secondary-bg);
+        border-radius: 12px;
+        padding: 20px;
+        height: auto;
+        opacity: 0;
+        animation: fadeInOnly 0.4s ease forwards;
+        margin-bottom: 20px;
+        break-inside: avoid-column;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      @keyframes fadeInOnly {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      .card-label {
+        margin: 0;
+        text-transform: uppercase;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card-label > i { font-size: 12px; }
+
+      .list-container {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .scrollable-list {
+        max-height: 126px;
+        overflow-y: auto;
+        padding-right: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--secondary-bg);
+      }
+      .scrollable-list::-webkit-scrollbar { width: 4px; }
+      .scrollable-list::-webkit-scrollbar-track { background: transparent; }
+      .scrollable-list::-webkit-scrollbar-thumb { background: var(--third-bg); border-radius: 2px; }
+
+      .game-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        background-color: var(--button-bg);
+        color: var(--text-color);
+        font-family: "Inter", sans-serif;
+        font-size: 15px;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      }
+      .quick-actions-card .game-button { padding: 12px 8px; }
+      .game-button:hover { background-color: var(--button-hover); }
+      .game-button img.icon { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+      .quick-actions-card .game-button i.icon { width: 32px; flex-shrink: 0; text-align: center; font-size: 16px; color: var(--primary); }
+      
+      .empty-list-text, .tip-text {
+        color: var(--secondary-text-color);
+        font-size: 14px;
+        font-style: italic;
+        padding: 10px 0;
+        margin-top: 10px;
+      }
+
+      .online-users-card .count {
+        font-family: "SF Mono", "Consolas", "Roboto Mono", monospace;
+        font-size: 52px;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 10px 0 0 0;
+        line-height: 1;
+        transition: color 0.2s ease;
+      }
+      .count.user-join { animation: user-join-anim 0.4s ease-out; }
+      .count.user-leave { animation: user-leave-anim 0.4s ease-out; }
+      @keyframes user-join-anim {
+        0% { color: var(--text-color); }
+        50% { color: #4CAF50; }
+        100% { color: var(--primary); }
+      }
+      @keyframes user-leave-anim {
+        0% { color: var(--text-color); }
+        50% { color: #F44336; }
+        100% { color: var(--primary); }
+      }
+      
+      .dice-container {
+        margin: 10px auto 0;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 1000px;
+        cursor: pointer;
+      }
+      .diceWrap {
+        width: 50px;
+        height: 50px;
+        position: relative;
+      }
+      .diceWrap::before {
+        position: absolute;
+        content: "";
+        width: 70%;
+        height: 10%;
+        top: 120%;
+        left: 15%;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 100%;
+        filter: blur(5px);
+      }
+      .dice {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        transform-style: preserve-3d;
+        transition: transform 0.5s cubic-bezier(0.42, 1.57, 0.62, 0.86);
+        animation: calm-drift 30s linear infinite;
+      }
+      .dice.throw {
+        animation: throw-and-settle 1.5s cubic-bezier(0.2, 0.8, 0.5, 1);
+        transition: none;
+      }
+      .diceFace {
+        --dice-bg: #f6f3f0;
+        --dot-color-1: var(--bg);
+        --dot-color-2: var(--bg);
+        box-sizing: border-box;
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-color: var(--dice-bg);
+        border: 1px solid #fff;
+        border-radius: 8px;
+        transform-style: preserve-3d;
+      }
+      .diceFace::before {
+        position: absolute;
+        content: "";
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        transform: translateZ(-1px);
+      }
+      .diceFace::after {
+        position: absolute;
+        content: "";
+        width: 10px;
+        height: 10px;
+        top: 50%;
+        left: 50%;
+        margin: -5px 0 0 -5px;
+        background-color: var(--dot-color-2);
+        border-radius: 100%;
+        transform: translateZ(1px);
+      }
+      .diceFace.front { transform: translateZ(25px); }
+      .diceFace.front::after { background-color: var(--dot-color-1); }
+      .diceFace.up { transform: rotateX(90deg) translateZ(25px); }
+      .diceFace.up::after { margin: -15px 0 0 -15px; box-shadow: 20px 20px var(--dot-color-2); }
+      .diceFace.left { transform: rotateY(-90deg) translateZ(25px); }
+      .diceFace.left::after { margin: -20px 0 0 -20px; box-shadow: 15px 15px var(--dot-color-2), 30px 30px var(--dot-color-2); }
+      .diceFace.right { transform: rotateY(90deg) translateZ(25px); }
+      .diceFace.right::after { margin: -15px 0 0 -15px; background-color: var(--dot-color-1); box-shadow: 20px 0px var(--dot-color-1), 0px 20px var(--dot-color-1), 20px 20px var(--dot-color-1); }
+      .diceFace.bottom { transform: rotateX(-90deg) translateZ(25px); }
+      .diceFace.bottom::after { margin: -18px 0 0 -18px; box-shadow: 13px 13px var(--dot-color-2), 26px 26px var(--dot-color-2), 26px 0px var(--dot-color-2), 0px 26px var(--dot-color-2); }
+      .diceFace.back { transform: rotateX(180deg) translateZ(25px); }
+      .diceFace.back::after { margin: -20px 0 0 -15px; box-shadow: 20px 0px var(--dot-color-2), 0px 15px var(--dot-color-2), 20px 15px var(--dot-color-2), 0px 30px var(--dot-color-2), 20px 30px var(--dot-color-2); }
+      
+      @keyframes calm-drift {
+        from { transform: rotate3d(1, -1, 0, 0deg); }
+        to { transform: rotate3d(1, -1, 0, 360deg); }
+      }
+      @keyframes throw-and-settle {
+        0% {
+          transform: rotateX(0deg) rotateY(0deg);
+        }
+        100% {
+          transform: rotateX(1080deg) rotateY(720deg) rotateX(-90deg);
+        }
+      }
+
+      .status-indicator { width: 10px; height: 10px; border-radius: 50%; position: relative; }
+      .status-indicator::after { content: ''; position: absolute; inset: 0; border-radius: 50%; animation: pulse 1.5s infinite; background-color: inherit; }
+      .status-indicator.ok { background-color: #4CAF50; }
+      .status-indicator.degraded { background-color: #FFC107; }
+      .status-indicator.outage { background-color: #F44336; }
+      @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+      
+      .text-item { display: flex; flex-direction: column; }
+      .text-item .name { font-weight: 600; font-size: 15px; }
+      .text-item .desc { font-size: 14px; color: var(--secondary-text-color); }
+      .text-item .date { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-top: 4px; }
+      .text-list-container { gap: 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="vanta-bg"></div>
+
+    <div class="dashboard-container">
+      <div class="sections-wrapper" id="sections-wrapper">
+      </div>
+    </div>
+
+    <div id="card-templates" style="display: none;">
+      <div class="card online-users-card">
+        <p class="card-label"><i class="fa-solid fa-users"></i> Online Users</p>
+        <p class="count" id="online-users-count">...</p>
+      </div>
+       <div class="card top-games-card">
+        <p class="card-label"><i class="fa-solid fa-trophy"></i> Top Games</p>
+        <div class="list-container" id="top-games-list"></div>
+      </div>
+       <div class="card favorites-card">
+          <p class="card-label"><i class="fa-solid fa-star"></i> Your Favorites</p>
+          <div class="list-container" id="favorites-list"></div>
+      </div>
+      <div class="card recent-games-card">
+          <p class="card-label"><i class="fa-solid fa-clock-rotate-left"></i> Recently Played</p>
+          <div class="list-container" id="recently-played-list"></div>
+      </div>
+       <div class="card updates-card">
+          <p class="card-label"><i class="fa-solid fa-bullhorn"></i> Updates</p>
+          <div class="list-container text-list-container" id="updates-list"></div>
+      </div>
+      <div class="card tips-card">
+        <p class="card-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Tips / Facts</p>
+        <p class="tip-text" id="tip-of-the-day"></p>
+      </div>
+      <div class="card random-game-card">
+        <p class="card-label"><i class="fa-solid fa-shuffle"></i> Random Game</p>
+        <div class="dice-container" id="dice-container">
+          <div class="diceWrap">
+            <div class="dice" id="dice">
+              <div class="diceFace front"></div>
+              <div class="diceFace up"></div>
+              <div class="diceFace left"></div>
+              <div class="diceFace right"></div>
+              <div class="diceFace bottom"></div>
+              <div class="diceFace back"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card status-card">
+        <p class="card-label"><span id="status-indicator" class="status-indicator"></span> Status</p>
+        <div class="list-container text-list-container" id="status-list"></div>
+      </div>
+      <div class="card quick-actions-card">
+          <p class="card-label"><i class="fa-solid fa-bolt"></i> Quick Actions</p>
+          <div class="list-container" id="quick-actions-list"></div>
+      </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const secondaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-bg').trim();
+        VANTA.FOG({
+          el: "#vanta-bg",
+          mouseControls: false,
+          touchControls: false,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          highlightColor: secondaryBgColor,
+          midtoneColor: secondaryBgColor,
+          lowlightColor: secondaryBgColor,
+          baseColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
+          blurFactor: 0.4,
+          speed: 1.0,
+          zoom: 0.8
+        });
+
+        const htmlURL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
+        const coverURL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
+
+        const cardTemplates = document.getElementById('card-templates');
+        const sectionsWrapper = document.getElementById('sections-wrapper');
+        
+        // TO DEVS:::
+
+        // please take time to organize these in a clean and balanced order :)
+        const cardOrder = [
+            'online-users-card', 
+            'updates-card', 
+            'top-games-card', 
+            'favorites-card',
+            'tips-card', 
+            'recent-games-card', 
+            'random-game-card', 
+            'status-card', 
+            'quick-actions-card'
+        ];
+
+        cardOrder.forEach((cardClassName, index) => {
+            const card = cardTemplates.querySelector(`.${cardClassName}`);
+            if (card) {
+                card.style.animationDelay = `${(index + 1) * 0.1}s`;
+                sectionsWrapper.appendChild(card);
+            }
+        });
+
+        function getParentFrame() { return window.parent.document.getElementById('frame'); }
+        function navigateParentFrame(url) { const frame = getParentFrame(); if (frame) frame.src = url; }
+        function getFromStorage(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; } }
+
+        const userCountElement = document.getElementById("online-users-count");
+        let currentUserCount = 0;
+
+        function handleUserCountUpdate(newCount) {
+            if (newCount > currentUserCount) {
+                userCountElement.classList.remove('user-leave');
+                userCountElement.classList.add('user-join');
+            } else if (newCount < currentUserCount) {
+                userCountElement.classList.remove('user-join');
+                userCountElement.classList.add('user-leave');
+            }
+            currentUserCount = newCount;
+            userCountElement.textContent = newCount;
+            
+            userCountElement.addEventListener('animationend', () => {
+                userCountElement.classList.remove('user-join', 'user-leave');
+            }, { once: true });
+        }
+        
+        if (window.parent && window.parent.vaporsock) {
+            currentUserCount = window.parent.vaporsock.onlineusers;
+            userCountElement.textContent = currentUserCount;
+            window.parent.addEventListener('vaporsock:update', (event) => {
+                handleUserCountUpdate(event.detail.onlineUsers);
+            });
+        } else {
+            userCountElement.textContent = "N/A";
+        }
+
+        let allGamesCache = null;
+        async function getAllGames() {
+          if (allGamesCache) return allGamesCache;
+          try {
+            const response = await fetch('/_a/zones.json');
+            allGamesCache = await response.json();
+            return allGamesCache;
+          } catch (e) { return []; }
+        }
+
+        function createGameButton(game) {
+            const button = document.createElement('button');
+            button.className = 'game-button';
+            const coverSrc = game.cover ? game.cover.replace("{COVER_URL}", coverURL) : '/_a/logo.png';
+            button.innerHTML = `<img src="${coverSrc}" class="icon" alt=""><span class="game-name">${game.name}</span>`;
+            button.onclick = () => {
+                let url = game.direct ? `/page/gameframe.html?url=${encodeURIComponent(game.url)}&name=${encodeURIComponent(game.name)}&direct=true` : `/page/gameframe.html?url=${encodeURIComponent(game.url.replace("{HTML_URL}", htmlURL))}&name=${encodeURIComponent(game.name)}`;
+                navigateParentFrame(url);
+            };
+            return button;
+        }
+
+        const topGamesList = document.getElementById("top-games-list");
+        async function fetchAndDisplayTopGames(allGames) {
+            const featuredGames = allGames.filter(g => g.featured).slice(0, 4);
+            topGamesList.innerHTML = '';
+            if (featuredGames.length === 0) { topGamesList.innerHTML = `<p class="empty-list-text">No top games found.</p>`; return; }
+            featuredGames.forEach(game => topGamesList.appendChild(createGameButton(game)));
+        }
+
+        const favoritesList = document.getElementById("favorites-list");
+        function displayFavorites(allGames) {
+            const favoriteNames = getFromStorage('favoriteGames');
+            favoritesList.innerHTML = '';
+            if (favoriteNames.length === 0) { favoritesList.innerHTML = `<p class="empty-list-text">You haven't favorited any games yet.</p>`; return; }
+            if (favoriteNames.length > 3) { favoritesList.classList.add('scrollable-list'); }
+            const favoriteGameObjects = allGames.filter(game => favoriteNames.includes(game.name));
+            favoriteGameObjects.forEach(game => favoritesList.appendChild(createGameButton(game)));
+        }
+
+        const recentlyPlayedList = document.getElementById("recently-played-list");
+        function displayRecentlyPlayed(allGames) {
+            const recentGameInfo = getFromStorage('recentlyPlayed').slice(0, 4);
+            recentlyPlayedList.innerHTML = '';
+            if (recentGameInfo.length === 0) { recentlyPlayedList.innerHTML = `<p class="empty-list-text">No recently played games.</p>`; return; }
+            recentGameInfo.forEach(game => recentlyPlayedList.appendChild(createGameButton(game)));
+        }
+        
+        function getVAPORsAge() {
+            const startDate = new Date('2025-02-14');
+            const now = new Date();
+            if (now < startDate) return "not yet born!";
+
+            let years = now.getFullYear() - startDate.getFullYear();
+            let months = now.getMonth() - startDate.getMonth();
+            let days = now.getDate() - startDate.getDate();
+
+            if (days < 0) {
+                months--;
+                days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            if (years >= 1) return `${years} year${years > 1 ? 's' : ''} old!`;
+            
+            const weeks = Math.floor(days / 7);
+            const resultParts = [];
+            if (months > 0) resultParts.push(`${months} month${months > 1 ? 's' : ''}`);
+            if (weeks > 0) resultParts.push(`${weeks} week${weeks > 1 ? 's' : ''}`);
+
+            if (resultParts.length > 0) return `${resultParts.join(' and ')} old!`;
+
+            const remainingDays = days % 7;
+            if (remainingDays > 0) return `${remainingDays} day${remainingDays > 1 ? 's' : ''} old!`;
+            
+            return "just born!";
+        }
+
+        function displayTipOfTheDay() {
+          const tips = [
+            "🤍 Your favorite games are saved locally to your browser.",
+            "🔄 CTRL+SHIFT+ALT+R can refresh the gamelist.",
+            "💭 Did you know: VAPOR used to run on a potato! (500MB of RAM)",
+            `⏳ VAPOR is currently ${getVAPORsAge()}`,
+            "🤔 Check the status card for any ongoing platform issues or maintenance.",
+            "💿 Thanks so much to Evicly for the powerful server!",
+            "🎲 The dice will pick a completely random game from the entire library!",
+            "🐛 The Discord is the best place to report bugs and suggest games.",
+          ];
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+            document.getElementById('tip-of-the-day').textContent = tips[dayOfYear % tips.length];
+        }
+
+        const quickActionsList = document.getElementById("quick-actions-list");
+        function displayQuickActions() {
+            const actions = [ { name: 'Settings', icon: 'fa-solid fa-gear', url: '/page/options.html' }, { name: 'Our Discord', icon: 'fa-brands fa-discord', url: 'https://dsc.gg/vaporr', external: true }, { name: 'Partners', icon: 'fa-solid fa-handshake', url: '/page/partners.html' } ];
+            quickActionsList.innerHTML = '';
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.className = 'game-button';
+                button.innerHTML = `<i class="${action.icon} icon"></i><span>${action.name}</span>`;
+                button.onclick = () => {
+                  if (action.external) { window.open(action.url, '_blank'); } 
+                  else { navigateParentFrame(action.url); }
+                };
+                quickActionsList.appendChild(button);
+            });
+        }
+
+        const diceContainer = document.getElementById('dice-container');
+        const dice = document.getElementById('dice');
+        
+        diceContainer.addEventListener('click', async () => {
+            if (dice.classList.contains('throw')) return;
+            const allGames = await getAllGames();
+            if (allGames.length === 0) return;
+            dice.style.animation = 'none';
+            void dice.offsetWidth;
+            dice.classList.add('throw');
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * allGames.length);
+                const randomGame = allGames[randomIndex];
+                createGameButton(randomGame).click();
+                
+                dice.classList.remove('throw');
+                dice.style.animation = '';
+            }, 1700);
+        });
+        
+        const statusList = document.getElementById("status-list");
+        const statusIndicator = document.getElementById("status-indicator");
+        async function fetchAndDisplayStatus() {
+          try {
+            const response = await fetch('/_a/status.json');
+            const statusData = await response.json();
+            const outages = statusData.current_outages || [];
+            statusList.innerHTML = '';
+            statusIndicator.className = 'status-indicator';
+            if (outages.length === 0) {
+              statusIndicator.classList.add('ok');
+              statusList.innerHTML = `<p class="empty-list-text">No outages.</p>`;
+            } else {
+              if (outages.length === 1) statusIndicator.classList.add('degraded');
+              if (outages.length >= 2) statusIndicator.classList.add('outage');
+              outages.forEach(outage => {
+                const item = document.createElement('div');
+                item.className = 'text-item';
+                item.innerHTML = `<span class="name">${outage.name}</span><span class="desc">${outage.description}</span><span class="date">${outage.date}</span>`;
+                statusList.appendChild(item);
+              });
+            }
+          } catch(error) { statusList.innerHTML = `<p class="empty-list-text">Could not load status.</p>`; }
+        }
+
+        const updatesList = document.getElementById("updates-list");
+        async function fetchAndDisplayUpdates() {
+          try {
+            const response = await fetch('/_a/updates.json');
+            const updates = await response.json();
+            updatesList.innerHTML = '';
+            if (!updates || updates.length === 0) { updatesList.innerHTML = `<p class="empty-list-text">No recent updates.</p>`; return; }
+            updates.slice(0, 3).forEach(update => {
+              const item = document.createElement('div');
+              item.className = 'text-item';
+              item.innerHTML = `<span class="name">${update.name}</span><span class="desc">${update.description}</span><span class="date">${update.date}</span>`;
+              updatesList.appendChild(item);
+            });
+          } catch(error) { updatesList.innerHTML = `<p class="empty-list-text">Could not load updates.</p>`; }
+        }
+        
+        async function initializeDashboard() {
+            const allGames = await getAllGames();
+            displayTipOfTheDay();
+            fetchAndDisplayTopGames(allGames);
+            displayFavorites(allGames);
+            displayRecentlyPlayed(allGames);
+            displayQuickActions();
+            fetchAndDisplayStatus();
+            fetchAndDisplayUpdates();
+        }
+
+        initializeDashboard();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-fb7ae694.js"></script>
+  </body>
+</html>

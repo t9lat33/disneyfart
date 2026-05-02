@@ -1,0 +1,25 @@
+:root {
+  --bg: #000000;
+  --secondary-bg: #014800;
+  --third-bg: #002f05;
+  --fourth-bg: #001900;
+  --primary: #045000;
+  --secondary: #022f00;
+  --text-color: #00ff00;
+  --secondary-text-color: #00ff00;
+  --button-bg: #000000;
+  --button-hover: #000000;
+  --gradient-start: #00ff00;
+  --gradient-end: #00ff00;
+}
+
+* {
+  font-family: "Courier Prime", monospace;
+  text-shadow: 0 0 5px #00ff00;
+  color: #00ff00;
+}
+
+button:hover {
+  border: 3px solid #00ff00;
+  box-shadow: 0 0 10px #00ff00, 0 0 10px #00ff00 inset;
+}

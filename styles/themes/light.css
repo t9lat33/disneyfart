@@ -1,0 +1,14 @@
+:root {
+  --bg: #d5dce8;
+  --secondary-bg: #a4b8db;
+  --third-bg: #7d93ba;
+  --fourth-bg: #5e7091;
+  --primary: #a4b8db;
+  --secondary: #7d93ba;
+  --text-color: #444f60;
+  --secondary-text-color: #a4b8db;
+  --button-bg: #7d93ba;
+  --button-hover: #a4b8db;
+  --gradient-start: #8aeee9;
+  --gradient-end: #6366f1;
+}

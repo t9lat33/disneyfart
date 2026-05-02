@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>loadinggggg</title>
+  <link href="/styles/defaults.css" rel="stylesheet" />
+  <script src="/scripts/theme.js"></script>
+  <style>
+    * { font-family: "Inter"; }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: var(--bg); }
+    iframe { border: none; height: 100%; width: 100%; display: none; opacity: 0; transition: opacity .4s ease; }
+
+    #loading-container {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--text-color);
+      font-family: sans-serif;
+    }
+
+    .lds-ripple, .lds-ripple div { box-sizing: border-box; }
+    .lds-ripple { display: inline-block; position: relative; width: 80px; height: 80px; }
+    .lds-ripple div {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0; margin: auto;
+      border: 4px solid currentColor;
+      border-radius: 50%;
+      box-sizing: border-box;
+      transform: scale(0);
+      opacity: 0;
+      animation: lds-ripple 1.4s cubic-bezier(0,0.2,0.8,1) infinite;
+    }
+    .lds-ripple div:nth-child(2) { animation-delay: -0.7s; }
+
+    @keyframes lds-ripple {
+      0% { transform: scale(0); opacity: 0; }
+      6% { transform: scale(.02); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    #loading-message { font-size: 20px; margin-top: 12px; opacity: 0; transform: translateY(10px); }
+
+    .fade-slide-in { animation: fadeSlideIn .28s forwards; }
+    .fade-slide-out { animation: fadeSlideOut .18s forwards; }
+
+    @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(10px); } }
+
+    .fade-out { animation: loaderFadeOut .4s forwards; }
+    @keyframes loaderFadeOut { from { opacity: 1; } to { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div id="loading-container">
+    <div class="lds-ripple"><div></div><div></div></div>
+    <div id="loading-message">Fetching…</div>
+  </div>
+  <iframe id="game-content-frame"></iframe>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const iframe = document.getElementById('game-content-frame');
+      const loadingContainer = document.getElementById('loading-container');
+      const loadingMessage = document.getElementById('loading-message');
+      const params = new URLSearchParams(window.location.search);
+      const gameUrl = params.get('url');
+      const gameName = params.get('name');
+      const isDirectLoad = params.get('direct') === 'true';
+      if (gameName) document.title = gameName;
+
+      function animateTextChange(text) {
+        loadingMessage.classList.remove('fade-slide-in');
+        loadingMessage.classList.add('fade-slide-out');
+        const onEnd = () => {
+          loadingMessage.textContent = text;
+          loadingMessage.classList.remove('fade-slide-out');
+          loadingMessage.classList.add('fade-slide-in');
+          loadingMessage.removeEventListener('animationend', onEnd);
+        };
+        loadingMessage.addEventListener('animationend', onEnd);
+      }
+
+      setTimeout(() => {
+        loadingContainer.style.display = 'block';
+        loadingMessage.classList.add('fade-slide-in');
+      }, 180);
+
+      if (!gameUrl) {
+        animateTextChange('No URL');
+        return;
+      }
+
+      let ready = false;
+      let waited = false;
+      const minDelayValue = 1000;
+      const maxDelayValue = 1400;
+      const minDelay = minDelayValue + Math.random() * (maxDelayValue - minDelayValue);
+      const switchTextTimeout = setTimeout(() => animateTextChange('Still fetching…'), 2000);
+      setTimeout(() => { waited = true; if (ready) showGame(); }, minDelay);
+
+      function finish() {
+        ready = true;
+        clearTimeout(switchTextTimeout);
+        if (waited) showGame();
+      }
+
+      function showGame() {
+        loadingContainer.classList.add('fade-out');
+        const onEnd = () => {
+          loadingContainer.style.display = 'none';
+          iframe.style.display = 'block';
+          requestAnimationFrame(() => { iframe.style.opacity = 1; });
+          loadingContainer.removeEventListener('animationend', onEnd);
+        };
+        loadingContainer.addEventListener('animationend', onEnd);
+      }
+
+      if (isDirectLoad) {
+        iframe.src = gameUrl;
+        iframe.onload = finish;
+        iframe.onerror = () => animateTextChange('Load error.');
+      } else {
+        fetch(gameUrl).then(r => { 
+          if (!r.ok) throw new Error('HTTP ' + r.status); 
+          return r.text(); 
+        }).then(html => {
+          iframe.srcdoc = html;
+          finish();
+        }).catch(() => {
+          clearTimeout(switchTextTimeout);
+          animateTextChange('Load error.');
+        });
+      }
+    });
+  </script>
+  <style>
+    #adboxtop {
+        position: fixed;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 12px;
+        z-index: 10000;
+        opacity: 0;
+        transition: top 0.35s ease, opacity 0.35s ease;
+      }
+
+      #adboxbottom {
+        position: fixed;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 12px;
+        z-index: 10000;
+        opacity: 0;
+        transition: bottom 0.35s ease, opacity 0.35s ease;
+      }
+  </style>
+  <iframe
+  src="/ads/728x90.html"
+  width="728"
+  height="90"
+  sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+  scrolling="no"
+  style="border: 0"
+  referrerpolicy="no-referrer"
+  id="adboxtop">
+</iframe>
+<iframe
+      src="/ads/728x90.html"
+      width="728"
+      height="90"
+      sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+      scrolling="no"
+      style="border: 0"
+      referrerpolicy="no-referrer"
+      id="adboxbottom">
+    </iframe>
+  <script>
+    window.addEventListener("load", () => {
+        const topAd = document.getElementById("adboxtop");
+        const bottomAd = document.getElementById("adboxbottom");
+
+        setTimeout(() => {
+          topAd.style.top = "12px";
+          topAd.style.opacity = "1";
+        }, 10);
+
+        setTimeout(() => {
+          bottomAd.style.bottom = "12px";
+          bottomAd.style.opacity = "1";
+        }, 10);
+      });
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-fb7ae694.js"></script>
+</body>
+</html>
