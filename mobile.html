@@ -496,6 +496,7 @@
       .video-area { position: sticky; top: 0; z-index: 2; }
     }
   </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -687,6 +688,7 @@
     id => `https://vidsrc.cc/v2/embed/movie/${id}`,
   ];
   const TV_SOURCES = [
+    (id,s,e) => `https://vidfast.pro/embed/tv/${id}/${s}/${e}`,
     (id,s,e) => `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}`,
     (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`,
     (id,s,e) => `https://vidsrc.icu/embed/tv/${id}/${s}/${e}`,
