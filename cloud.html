@@ -17,10 +17,11 @@
     }
 
     img {
-      width: 200px;
+      width: 150px;
       height: 200px;
       object-fit: cover;
       border-radius: 15px;
+      
     }
     img:hover{
             transform: translateY(-3px);
@@ -54,6 +55,7 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
+  
 
     #tooltip.show {
       opacity: 1;
@@ -62,15 +64,20 @@
 </head>
 <body>
 
-  <span id="tooltip"></span>  
+  <span id="tooltip"></span>  <!-- MOVED TO TOP -->
 
   <div class="container">
-    <h1>Continue to GeForce NOW</h1>
+    <h1>Select Cloud Game</h1>
     <div class="images">
-      <a href="embed.html" target="_blank">
-        <img src="geforce.png" alt="Geforce NOW">
+    <div class="gtext">
+      <a href="gtavc.html">
+        <img src="https://t9os.space/gtavc.png" alt="GTA: Vice City">
       </a>
-  
+      </div>
+        <a href="/scramjet/https://play.geforcenow.com/games?game-id=46bfab06-d864-465d-9e56-2d9e45cdee0a&lang=en_US&asset-id=01_dc9cca79-eee4-4f80-bab3-607190a7706a">
+        <img src="https://t9os.space/fortnite.png" alt="Fortnite">
+      </a>
+    
     </div>
   </div>
 
