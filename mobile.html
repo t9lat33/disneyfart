@@ -681,7 +681,7 @@
   ];
 
   const MOVIE_SOURCES = [
-    id => `https://vidsrc.xyz/embed/movie?tmdb=${id}`,
+    id =>       `https://vidfast.pro/embed/movie/${id}`,
     id => `https://player.autoembed.cc/embed/movie/${id}`,
     id => `https://vidsrc.icu/embed/movie/${id}`,
     id => `https://vidsrc.cc/v2/embed/movie/${id}`,
@@ -693,7 +693,7 @@
     (id,s,e) => `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`,
   ];
 
-  const SOURCE_NAMES = ['VidSrc', 'AutoEmbed', 'VidSrc ICU', 'VidSrc CC'];
+  const SOURCE_NAMES = [ 'VidFast', 'VidSrc', 'AutoEmbed', 'VidSrc ICU', 'VidSrc CC'];
 
   let allContent = {};
   let currentRating = 'all';
