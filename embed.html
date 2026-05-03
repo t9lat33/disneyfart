@@ -3,225 +3,128 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>T9 Browser</title>
+<title>Loading...</title>
 
 <script src="/scram/scramjet.all.js"></script>
 <script src="/register-sw.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:sans-serif;overflow:hidden}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
 
-/* TOP BAR */
-#topbar{
-height:50px;
-background:#111;
-display:flex;
-align-items:center;
-gap:10px;
-padding:0 10px;
-border-bottom:1px solid #222;
-}
-
-button{
-background:#222;
-border:none;
-color:#fff;
-padding:6px 10px;
-border-radius:6px;
-cursor:pointer;
-}
-
-button:hover{background:#333}
-
-#url{
-flex:1;
-height:32px;
-border:none;
-outline:none;
-background:#000;
-color:#fff;
-padding:0 10px;
-border-radius:6px;
-}
-
-/* FRAME */
-#frame{
-position:fixed;
-top:50px;
-left:0;
-width:100%;
-height:calc(100% - 50px);
-border:none;
-}
-
-/* LOADING */
 #loading{
-position:fixed;
-inset:0;
-background:#000;
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
-flex-direction:column;
-gap:20px;
+position:fixed;inset:0;
+display:flex;align-items:center;justify-content:center;
+flex-direction:column;gap:20px;
+background:#000;z-index:9999;
 }
 
 .bar{
-width:300px;
-height:6px;
-background:#222;
-border-radius:999px;
+width:300px;height:8px;
+background:#222;border-radius:999px;
 overflow:hidden;
 }
 
 .fill{
-height:100%;
-width:0%;
+height:100%;width:0%;
 background:#fff;
 transition:0.3s;
 }
 
 #error{
-position:fixed;
-inset:0;
 display:none;
-align-items:center;
-justify-content:center;
-background:#000;
-color:#e55;
-text-align:center;
-padding:20px;
+position:fixed;inset:0;
+align-items:center;justify-content:center;
+background:#000;color:#e55;
+font-family:sans-serif;
+text-align:center;padding:20px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
-<button onclick="goBack()">←</button>
-<button onclick="goForward()">→</button>
-<button onclick="reload()">⟳</button>
-<input id="url" placeholder="Enter URL..." />
-<button onclick="go()">Go</button>
-</div>
-
 <div id="loading">
 <div class="bar"><div class="fill" id="fill"></div></div>
-<span style="color:#888">Loading...</span>
+<span style="color:#888;font-family:sans-serif">Loading...</span>
 </div>
 
 <div id="error"></div>
 
 <script>
-let ctrl, frame;
 const fill = document.getElementById("fill");
-const urlInput = document.getElementById("url");
 
-function setProgress(v){
+function progress(v){
     fill.style.width = v + "%";
 }
 
-function normalizeUrl(input){
+(async () => {
     try {
-        return new URL(input).href;
-    } catch {
-        return "https://www.google.com/search?q=" + encodeURIComponent(input);
-    }
-}
+        const targetUrl = new URLSearchParams(location.search).get("url");
+        if (!targetUrl) throw new Error("No URL provided");
 
-function proxify(url){
-    return "/scramjet/" + encodeURIComponent(url);
-}
+        progress(20);
 
-async function init(){
-    try{
-        setProgress(10);
+        // Set tab title + favicon
+        try {
+            const u = new URL(targetUrl);
+            document.title = u.hostname;
 
+            let icon = document.querySelector("link[rel='icon']");
+            if (!icon) {
+                icon = document.createElement("link");
+                icon.rel = "icon";
+                document.head.appendChild(icon);
+            }
+            icon.href = `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
+        } catch {}
+
+        progress(40);
+
+        // Init Scramjet ONLY (no BareMux)
         const { ScramjetController } = $scramjetLoadController();
 
-        ctrl = new ScramjetController({
-            files:{
-                wasm:"/scram/scramjet.wasm.wasm",
-                all:"/scram/scramjet.all.js",
-                sync:"/scram/scramjet.sync.js",
-            }
+        const ctrl = new ScramjetController({
+            files: {
+                wasm: "/scram/scramjet.wasm.wasm",
+                all: "/scram/scramjet.all.js",
+                sync: "/scram/scramjet.sync.js",
+            },
         });
 
         await ctrl.init();
-        setProgress(50);
+        progress(70);
 
         await registerSW();
-        setProgress(70);
+        progress(85);
 
-        frame = ctrl.createFrame();
-        frame.frame.id = "frame";
+        const frame = ctrl.createFrame();
+        frame.frame.style.cssText =
+            "position:fixed;inset:0;width:100%;height:100%;border:none;";
         document.body.appendChild(frame.frame);
 
         frame.frame.onload = () => {
-            setProgress(100);
-            setTimeout(()=> {
-                document.getElementById("loading").style.display="none";
-            },200);
+            progress(100);
+            setTimeout(() => {
+                document.getElementById("loading").style.display = "none";
+            }, 200);
 
-            try{
+            try {
                 const t = frame.frame.contentDocument?.title;
-                if(t) document.title = t;
-            }catch{}
+                if (t) document.title = t;
+            } catch {}
         };
 
-        // auto load from ?url=
-        const param = new URLSearchParams(location.search).get("url");
-        if(param){
-            urlInput.value = param;
-            go();
-        } else {
-            document.getElementById("loading").style.display="none";
-        }
+        // 🔥 IMPORTANT FIX
+        frame.go("/scramjet/" + encodeURIComponent(targetUrl));
 
-    }catch(e){
-        showError(e.message);
+    } catch (err) {
+        document.getElementById("loading").style.display = "none";
+        const e = document.getElementById("error");
+        e.style.display = "flex";
+        e.textContent = "Error: " + err.message;
     }
-}
-
-function go(){
-    const raw = urlInput.value.trim();
-    if(!raw) return;
-
-    const finalUrl = normalizeUrl(raw);
-    urlInput.value = finalUrl;
-
-    document.getElementById("loading").style.display="flex";
-    setProgress(30);
-
-    try{
-        frame.go(proxify(finalUrl));
-    }catch(e){
-        showError(e.message);
-    }
-}
-
-function goBack(){
-    try{ frame.frame.contentWindow.history.back(); }catch{}
-}
-
-function goForward(){
-    try{ frame.frame.contentWindow.history.forward(); }catch{}
-}
-
-function reload(){
-    try{ frame.frame.contentWindow.location.reload(); }catch{}
-}
-
-function showError(msg){
-    document.getElementById("loading").style.display="none";
-    const e = document.getElementById("error");
-    e.style.display="flex";
-    e.textContent="Error: " + msg;
-}
-
-init();
+})();
 </script>
 
 </body>
