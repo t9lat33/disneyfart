@@ -174,7 +174,6 @@
       font-size: 1.1rem;
       font-weight: 600;
       letter-spacing: 2px;
-      background: rgba(0,0,0,0.3);
       cursor: pointer;
       transition: 0.2s;
       border-radius: 2px;
@@ -451,17 +450,10 @@
       scroll-behavior: smooth; 
       scrollbar-width: none;
       -ms-overflow-style: none;
-      /* Prevent scroll wheel from affecting horizontal scroll */
       overscroll-behavior-x: contain;
     }
 
     .slider-row::-webkit-scrollbar { display: none; }
-
-    /* Prevent horizontal scroll on wheel */
-    .slider-row {
-      overscroll-behavior-x: contain;
-      scroll-snap-type: none;
-    }
 
     /* Slide buttons */
     .slide-btn {
@@ -489,7 +481,7 @@
     .slider-container:hover .slide-btn { opacity: 1; }
     .slide-btn:hover { background: rgba(20, 20, 20, 0.95); }
 
-    /* Movie cards with proper hover expansion */
+    /* Movie cards */
     .card {
       flex: 0 0 calc(16.666% - 5px);
       min-width: 180px;
@@ -634,6 +626,25 @@
 
     .modal-body { padding: 20px 35px 35px; }
 
+    /* Source chips in modal */
+    .source-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .source-chip {
+      padding: 8px 18px; border-radius: 20px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: #ccc; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: 'Barlow', sans-serif;
+    }
+    .source-chip.active { background: var(--netflix-red); border-color: var(--netflix-red); color: #fff; }
+    .source-chip:hover:not(.active) { background: rgba(255,255,255,0.15); }
+
+    .modal-select {
+      width: 100%; margin: 8px 0; padding: 10px 12px;
+      background: #2a2a2a; color: white;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+      font-size: 0.9rem; font-family: 'Barlow', sans-serif; outline: none; cursor: pointer;
+    }
+    .modal-select option { background: #222; }
+
     .loading { display: flex; justify-content: center; padding: 40px; }
 
     .spinner { 
@@ -744,10 +755,8 @@
     </div>
   </div>
 
-  <!-- CONTENT CATEGORIES (13+ categories) -->
-  <div class="content" id="contentContainer">
-    <!-- Categories will be dynamically populated -->
-  </div>
+  <!-- CONTENT CATEGORIES -->
+  <div class="content" id="contentContainer"></div>
   
   <div class="loading" id="loadingIndicator">
     <div class="spinner"></div>
@@ -759,438 +768,420 @@
   <div class="modal-content">
     <div class="modal-video-wrap">
       <button class="modal-close" id="closeModal">✕</button>
-      <iframe id="modalIframe" allowfullscreen></iframe>
+      <iframe id="modalIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
     </div>
     <div class="modal-body">
-      <h2 id="modalTitle">Title</h2>
-      <select id="sourceSelect" style="margin: 12px 0; padding:8px; background:#333; color:white; border:1px solid #555; width:100%;"></select>
-      <select id="seasonSelect" style="display:none; margin:8px 0; padding:8px; background:#333; color:white;"></select>
-      <select id="episodeSelect" style="display:none; margin:8px 0; padding:8px; background:#333; color:white;"></select>
+      <h2 id="modalTitle" style="margin-bottom:4px;"></h2>
+      <div id="modalControls"></div>
     </div>
   </div>
 </div>
 
 <script>
-  (function(){
-    "use strict";
+(function(){
+  "use strict";
 
-    // Show profile gate after intro animation
-    setTimeout(() => {
-      document.getElementById('profileGate').classList.add('visible');
-    }, 2600);
+  // How long the modal show transition takes before setting iframe src
+  const MODAL_TRANSITION_MS = 50; // modal uses display:flex so no visibility transition needed, just a tick
 
-    // ---------- CATEGORY DEFINITIONS (13+ categories) ----------
-    const CATEGORIES = [
-      { name: "Trending Now", type: "trending", endpoint: "trending/all/week" },
-      { name: "Popular Movies", type: "movie", endpoint: "movie/popular" },
-      { name: "Top Rated Movies", type: "movie", endpoint: "movie/top_rated" },
-      { name: "Upcoming Movies", type: "movie", endpoint: "movie/upcoming" },
-      { name: "Now Playing", type: "movie", endpoint: "movie/now_playing" },
-      { name: "Popular TV Shows", type: "tv", endpoint: "tv/popular" },
-      { name: "Top Rated TV", type: "tv", endpoint: "tv/top_rated" },
-      { name: "On The Air", type: "tv", endpoint: "tv/on_the_air" },
-      { name: "Airing Today", type: "tv", endpoint: "tv/airing_today" },
-      { name: "Action Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=28" },
-      { name: "Comedy Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=35" },
-      { name: "Horror Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=27" },
-      { name: "Sci-Fi Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=878" },
-      { name: "Romance Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=10749" },
-      { name: "Documentaries", type: "movie", endpoint: "discover/movie", params: "&with_genres=99" },
-      { name: "Family Movies", type: "movie", endpoint: "discover/movie", params: "&with_genres=10751" }
-    ];
+  // ---------- SOURCES — proper functions so IDs are always substituted ----------
+  const MOVIE_SOURCES = [
+    { name: 'VidFast',     url: id => `https://vidfast.pro/movie/${id}` },
+    { name: 'VidSrc',      url: id => `https://vidsrc.xyz/embed/movie?tmdb=${id}` },
+    { name: 'AutoEmbed',   url: id => `https://player.autoembed.cc/embed/movie/${id}` },
+    { name: 'VidSrc ICU',  url: id => `https://vidsrc.icu/embed/movie/${id}` },
+    { name: 'VidSrc CC',   url: id => `https://vidsrc.cc/v2/embed/movie/${id}` },
+  ];
 
-    // ---------- PROFILE GATE ----------
-    const profileGate = document.getElementById('profileGate');
-    const disclaimerOverlay = document.getElementById('disclaimerOverlay');
-    const appMain = document.getElementById('appMain');
-    const userNameSpan = document.getElementById('displayUserName');
-    
-    document.querySelectorAll('.profile-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        const profileName = card.querySelector('.profile-name').textContent;
-        userNameSpan.textContent = profileName;
-        profileGate.classList.remove('visible');
-        profileGate.classList.add('hidden');
-        disclaimerOverlay.classList.remove('hidden');
-      });
+  const TV_SOURCES = [
+    { name: 'VidFast',     url: (id,s,e) => `https://vidfast.pro/tv/${id}/${s}/${e}` },
+    { name: 'VidSrc',      url: (id,s,e) => `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
+    { name: 'AutoEmbed',   url: (id,s,e) => `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}` },
+    { name: 'VidSrc ICU',  url: (id,s,e) => `https://vidsrc.icu/embed/tv/${id}/${s}/${e}` },
+    { name: 'VidSrc CC',   url: (id,s,e) => `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}` },
+  ];
+
+  // ---------- CATEGORY DEFINITIONS ----------
+  const CATEGORIES = [
+    { name: "Trending Now",       type: "trending", endpoint: "trending/all/week" },
+    { name: "Popular Movies",     type: "movie",    endpoint: "movie/popular" },
+    { name: "Top Rated Movies",   type: "movie",    endpoint: "movie/top_rated" },
+    { name: "Upcoming Movies",    type: "movie",    endpoint: "movie/upcoming" },
+    { name: "Now Playing",        type: "movie",    endpoint: "movie/now_playing" },
+    { name: "Popular TV Shows",   type: "tv",       endpoint: "tv/popular" },
+    { name: "Top Rated TV",       type: "tv",       endpoint: "tv/top_rated" },
+    { name: "On The Air",         type: "tv",       endpoint: "tv/on_the_air" },
+    { name: "Airing Today",       type: "tv",       endpoint: "tv/airing_today" },
+    { name: "Action Movies",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=28" },
+    { name: "Comedy Movies",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=35" },
+    { name: "Horror Movies",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=27" },
+    { name: "Sci-Fi Movies",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=878" },
+    { name: "Romance Movies",     type: "movie",    endpoint: "discover/movie", params: "&with_genres=10749" },
+    { name: "Documentaries",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=99" },
+    { name: "Family Movies",      type: "movie",    endpoint: "discover/movie", params: "&with_genres=10751" }
+  ];
+
+  // ---------- PROFILE GATE ----------
+  const profileGate      = document.getElementById('profileGate');
+  const disclaimerOverlay = document.getElementById('disclaimerOverlay');
+  const appMain          = document.getElementById('appMain');
+  const userNameSpan     = document.getElementById('displayUserName');
+
+  setTimeout(() => profileGate.classList.add('visible'), 2600);
+
+  document.querySelectorAll('.profile-card').forEach(card => {
+    card.addEventListener('click', () => {
+      userNameSpan.textContent = card.querySelector('.profile-name').textContent;
+      profileGate.classList.remove('visible');
+      profileGate.classList.add('hidden');
+      disclaimerOverlay.classList.remove('hidden');
     });
+  });
 
-    document.getElementById('agreeBtn').addEventListener('click', () => {
-      disclaimerOverlay.classList.add('hidden');
-      appMain.classList.add('visible');
-      if (!window._appInitialized) {
-        window._appInitialized = true;
-        initApp();
+  document.getElementById('agreeBtn').addEventListener('click', () => {
+    disclaimerOverlay.classList.add('hidden');
+    appMain.classList.add('visible');
+    if (!window._appInitialized) {
+      window._appInitialized = true;
+      initApp();
+    }
+  });
+
+  // ---------- APP ----------
+  const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
+  const BASE    = 'https://api.themoviedb.org/3';
+  const POSTER  = p => p ? `https://image.tmdb.org/t/p/w500${p}` : '';
+
+  let allContent    = {};
+  let currentRating = 'all';
+  let heroCurrent   = null;
+
+  const modal        = document.getElementById('modal');
+  const modalIframe  = document.getElementById('modalIframe');
+  const modalControls = document.getElementById('modalControls');
+
+  // Rating filter chips
+  document.querySelectorAll('.rating-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.rating-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentRating = chip.dataset.rating;
+      filterAllContent();
+    });
+  });
+
+  function filterItemsByRating(items) {
+    if (currentRating === 'all') return items;
+    return items.filter(item => {
+      const cert = (item._cert || '').toUpperCase();
+      if (currentRating === 'G')     return ['G','TV-G','TV-Y'].includes(cert);
+      if (currentRating === 'PG')    return ['PG','TV-PG','TV-Y7'].includes(cert);
+      if (currentRating === 'PG-13') return ['PG-13','TV-14'].includes(cert);
+      if (currentRating === 'R')     return cert === 'R';
+      if (currentRating === 'TV-MA') return cert === 'TV-MA';
+      return true;
+    });
+  }
+
+  function filterAllContent() {
+    Object.keys(allContent).forEach(categoryName => {
+      const section = document.querySelector(`[data-category="${categoryName}"]`);
+      if (!section) return;
+      const row = section.querySelector('.slider-row');
+      row.innerHTML = '';
+      filterItemsByRating(allContent[categoryName]).forEach(item => row.appendChild(makeCard(item)));
+    });
+  }
+
+  async function fetchCategory(category) {
+    let url = `${BASE}/${category.endpoint}?api_key=${API_KEY}&language=en-US&page=1`;
+    if (category.params) url += category.params;
+    const res  = await fetch(url);
+    const data = await res.json();
+    return (data.results || [])
+      .map(item => ({ ...item, media_type: category.type === 'trending' ? item.media_type : category.type }))
+      .filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'))
+      .slice(0, 18);
+  }
+
+  async function getCert(id, type) {
+    try {
+      const url = type === 'tv'
+        ? `${BASE}/tv/${id}/content_ratings?api_key=${API_KEY}`
+        : `${BASE}/movie/${id}/release_dates?api_key=${API_KEY}`;
+      const d = await (await fetch(url)).json();
+      if (type === 'tv') {
+        const us = (d.results || []).find(r => r.iso_3166_1 === 'US');
+        return us?.rating || null;
+      } else {
+        const us = (d.results || []).find(r => r.iso_3166_1 === 'US');
+        return us?.release_dates?.find(dd => dd.certification)?.certification || null;
       }
-    });
+    } catch { return null; }
+  }
 
-    // ---------- APP LOGIC ----------
-    const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
-    const BASE = 'https://api.themoviedb.org/3';
-    const POSTER = (p) => p ? `https://image.tmdb.org/t/p/w500${p}` : 'https://via.placeholder.com/300x450/181818/E50914?text=T9';
-    
-    let allContent = {};
-    let currentRating = 'all';
-    let heroCurrent = null;
-    const modal = document.getElementById('modal');
-    const modalIframe = document.getElementById('modalIframe');
-    const sourceSelect = document.getElementById('sourceSelect');
-    const seasonSelect = document.getElementById('seasonSelect');
-    const episodeSelect = document.getElementById('episodeSelect');
+  async function annotateItems(items) {
+    return Promise.all(items.map(async it => ({ ...it, _cert: await getCert(it.id, it.media_type) })));
+  }
 
-    const tvSources = [
-      'https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}',
-      'https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}',
-      'https://vidsrc.icu/embed/tv/${id}/${season}/${episode}',
-      'https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}',
-    ];
-    
-    // vidfast.pro added as default (first) movie source
-    const movieSources = [
-      'https://vidfast.pro/embed/movie/${id}',
-      'https://vidsrc.xyz/embed/movie?tmdb=${id}',
-      'https://player.autoembed.cc/embed/movie/${id}',
-      'https://vidsrc.icu/embed/movie/${id}',
-      'https://vidsrc.cc/v2/embed/movie/${id}',
-    ];
+  function makeCard(item) {
+    const matchPct = item.vote_average ? Math.round(item.vote_average * 10) : '—';
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class="card-img-wrap">
+        <img src="${POSTER(item.poster_path)}" loading="lazy" alt="${item.title || item.name}"
+          onerror="this.style.background='#2a2a2a'">
+      </div>
+      <div class="card-panel">
+        <div class="card-panel-title">${item.title || item.name}</div>
+        <div class="card-panel-row">
+          <button class="card-play-btn" title="Watch">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="card-add-btn" title="Add to List">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="card-match">${matchPct}% Match</span>
+          <span class="card-cert">${item._cert || 'NR'}</span>
+        </div>
+      </div>`;
 
-    // Fix for scroll wheel on rows - prevent horizontal scrolling with wheel
-    document.addEventListener('wheel', (e) => {
-      const sliderRow = e.target.closest('.slider-row');
-      if (sliderRow && e.deltaX === 0) {
-        e.preventDefault();
-        sliderRow.scrollLeft += e.deltaY;
-      }
-    }, { passive: false });
+    div.addEventListener('click', e => { if (!e.target.closest('button')) openModal(item); });
+    div.querySelector('.card-play-btn').addEventListener('click', e => { e.stopPropagation(); openModal(item); });
+    return div;
+  }
 
-    // Rating filter chips
-    document.querySelectorAll('.rating-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.rating-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        currentRating = chip.dataset.rating;
-        filterAllContent();
-      });
-    });
+  function createCategorySection(category, items) {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+    section.setAttribute('data-category', category.name);
+    section.innerHTML = `
+      <div class="section-header">
+        <span class="section-title">${category.name}</span>
+        <span class="section-explore">Explore All <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg></span>
+      </div>
+      <div class="slider-container">
+        <button class="slide-btn slide-btn-left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="slider-row"></div>
+        <button class="slide-btn slide-btn-right">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>`;
 
-    function filterAllContent() {
-      Object.keys(allContent).forEach(categoryName => {
-        const section = document.querySelector(`[data-category="${categoryName}"]`);
-        if (section) {
-          const row = section.querySelector('.slider-row');
-          const items = allContent[categoryName];
-          const filtered = filterItemsByRating(items);
-          row.innerHTML = '';
-          filtered.forEach(item => row.appendChild(makeCard(item)));
-        }
-      });
-    }
+    const row = section.querySelector('.slider-row');
+    items.forEach(item => row.appendChild(makeCard(item)));
 
-    function filterItemsByRating(items) {
-      if (currentRating === 'all') return items;
-      
-      return items.filter(item => {
-        const cert = (item._cert || '').toUpperCase();
-        if (currentRating === 'G') return cert === 'G' || cert === 'TV-G' || cert === 'TV-Y';
-        if (currentRating === 'PG') return cert === 'PG' || cert === 'TV-PG' || cert === 'TV-Y7';
-        if (currentRating === 'PG-13') return cert === 'PG-13' || cert === 'TV-14';
-        if (currentRating === 'R') return cert === 'R';
-        if (currentRating === 'TV-MA') return cert === 'TV-MA';
-        return true;
-      });
-    }
+    section.querySelector('.slide-btn-left').addEventListener('click',  () => row.scrollBy({ left: -row.offsetWidth * 0.75, behavior: 'smooth' }));
+    section.querySelector('.slide-btn-right').addEventListener('click', () => row.scrollBy({ left:  row.offsetWidth * 0.75, behavior: 'smooth' }));
 
-    async function fetchCategory(category) {
-      let url = `${BASE}/${category.endpoint}?api_key=${API_KEY}&language=en-US&page=1`;
-      if (category.params) url += category.params;
-      
-      const res = await fetch(url);
-      const data = await res.json();
-      let items = data.results || [];
-      
-      items = items.map(item => ({
-        ...item,
-        media_type: category.type === 'trending' ? item.media_type : category.type
-      })).filter(item => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'));
-      
-      return items.slice(0, 18);
-    }
+    return section;
+  }
 
-    async function getCert(id, type) {
+  async function initApp() {
+    const loadingIndicator  = document.getElementById('loadingIndicator');
+    const contentContainer  = document.getElementById('contentContainer');
+    loadingIndicator.style.display = 'flex';
+
+    for (const category of CATEGORIES) {
       try {
-        const url = type === 'tv' ? `${BASE}/tv/${id}/content_ratings?api_key=${API_KEY}` : `${BASE}/movie/${id}/release_dates?api_key=${API_KEY}`;
-        const d = await (await fetch(url)).json();
-        if (type === 'tv') {
-          const us = (d.results || []).find(r => r.iso_3166_1 === 'US');
-          return us?.rating || null;
-        } else {
-          const us = (d.results || []).find(r => r.iso_3166_1 === 'US');
-          return us?.release_dates?.find(dd => dd.certification)?.certification || null;
+        const items           = await fetchCategory(category);
+        const annotatedItems  = await annotateItems(items);
+        allContent[category.name] = annotatedItems;
+        contentContainer.appendChild(createCategorySection(category, annotatedItems));
+
+        if (category.name === 'Trending Now' && annotatedItems.length) {
+          heroCurrent = annotatedItems[0];
+          updateHero(heroCurrent);
+          let heroIndex = 0;
+          setInterval(() => {
+            const arr = allContent['Trending Now'] || [];
+            if (!arr.length) return;
+            heroIndex = (heroIndex + 1) % Math.min(arr.length, 8);
+            heroCurrent = arr[heroIndex];
+            updateHero(heroCurrent);
+          }, 8000);
         }
-      } catch { return null; }
+      } catch(e) { console.warn('Error loading category:', category.name, e); }
+    }
+    loadingIndicator.style.display = 'none';
+  }
+
+  function updateHero(item) {
+    document.getElementById('heroBg').style.backgroundImage =
+      `url(https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path})`;
+    document.getElementById('heroTitle').textContent = item.title || item.name;
+    document.getElementById('heroCert').textContent  = item._cert || 'NR';
+    document.getElementById('heroYear').textContent  = (item.release_date || item.first_air_date || '').slice(0, 4);
+    document.getElementById('heroDesc').textContent  = (item.overview || '').slice(0, 180) + '…';
+    heroCurrent = item;
+  }
+
+  document.getElementById('heroPlayBtn').addEventListener('click', () => heroCurrent && openModal(heroCurrent));
+  document.getElementById('heroInfoBtn').addEventListener('click', () => heroCurrent && openModal(heroCurrent));
+
+  // ---- MODAL ----
+  async function openModal(item) {
+    // Show modal first (it uses display:flex, no visibility transition)
+    modal.classList.add('show');
+    modalIframe.src = 'about:blank';
+    document.getElementById('modalTitle').textContent = item.title || item.name;
+    modalControls.innerHTML = '<div style="color:#888;padding:8px 0">Loading…</div>';
+
+    // Small tick so the browser paints the modal before we load the iframe
+    await new Promise(r => setTimeout(r, MODAL_TRANSITION_MS));
+
+    if (item.media_type === 'tv') {
+      await buildTvModal(item);
+    } else {
+      buildMovieModal(item);
+    }
+  }
+
+  function buildMovieModal(item) {
+    let curIdx = 0;
+
+    function setSource(idx) {
+      curIdx = idx;
+      modalIframe.src = MOVIE_SOURCES[idx].url(item.id);
+      modalControls.querySelectorAll('.source-chip').forEach((c, i) => c.classList.toggle('active', i === idx));
     }
 
-    async function annotateItems(items) {
-      const res = [];
-      for (let it of items) {
-        const cert = await getCert(it.id, it.media_type);
-        res.push({ ...it, _cert: cert });
+    const chips = MOVIE_SOURCES.map((src, i) =>
+      `<button class="source-chip${i === 0 ? ' active' : ''}" data-idx="${i}">${src.name}</button>`
+    ).join('');
+
+    modalControls.innerHTML = `<div class="source-chips">${chips}</div>`;
+    modalControls.querySelectorAll('.source-chip').forEach(btn => {
+      btn.addEventListener('click', () => setSource(parseInt(btn.dataset.idx)));
+    });
+
+    setSource(0);
+  }
+
+  async function buildTvModal(item) {
+    const res    = await fetch(`${BASE}/tv/${item.id}?api_key=${API_KEY}`);
+    const data   = await res.json();
+    const seasons = (data.seasons || []).filter(s => s.season_number > 0);
+
+    let curSeason = seasons[0]?.season_number || 1;
+    let curEp     = 1;
+    let curSrc    = 0;
+
+    function updateIframe() {
+      modalIframe.src = TV_SOURCES[curSrc].url(item.id, curSeason, curEp);
+    }
+
+    async function loadEpisodes(sNum) {
+      const r = await fetch(`${BASE}/tv/${item.id}/season/${sNum}?api_key=${API_KEY}`);
+      const d = await r.json();
+      return d.episodes || [];
+    }
+
+    async function render() {
+      const episodes = await loadEpisodes(curSeason);
+      curEp = episodes[0]?.episode_number || 1;
+      updateIframe();
+
+      const sourceChips = TV_SOURCES.map((src, i) =>
+        `<button class="source-chip${i === 0 ? ' active' : ''}" data-idx="${i}">${src.name}</button>`
+      ).join('');
+
+      const seasonOpts = seasons.map(s =>
+        `<option value="${s.season_number}" ${s.season_number === curSeason ? 'selected' : ''}>${s.name}</option>`
+      ).join('');
+
+      const epOpts = episodes.map(ep =>
+        `<option value="${ep.episode_number}">Ep ${ep.episode_number}: ${ep.name}</option>`
+      ).join('');
+
+      modalControls.innerHTML = `
+        <select class="modal-select" id="seasonSel">${seasonOpts}</select>
+        <select class="modal-select" id="episodeSel">${epOpts}</select>
+        <div class="source-chips">${sourceChips}</div>`;
+
+      document.getElementById('seasonSel').addEventListener('change', async function() {
+        curSeason = parseInt(this.value); await render();
+      });
+      document.getElementById('episodeSel').addEventListener('change', function() {
+        curEp = parseInt(this.value); updateIframe();
+      });
+      modalControls.querySelectorAll('.source-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          curSrc = parseInt(btn.dataset.idx);
+          modalControls.querySelectorAll('.source-chip').forEach((c, i) => c.classList.toggle('active', i === curSrc));
+          updateIframe();
+        });
+      });
+    }
+
+    await render();
+  }
+
+  document.getElementById('closeModal').addEventListener('click', () => {
+    modal.classList.remove('show');
+    modalIframe.src = 'about:blank';
+  });
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) {
+      modal.classList.remove('show');
+      modalIframe.src = 'about:blank';
+    }
+  });
+
+  // ---- SEARCH ----
+  let searchTimer;
+  document.getElementById('searchInput').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(async () => {
+      const q = e.target.value.trim();
+      const contentContainer = document.getElementById('contentContainer');
+
+      if (!q) {
+        contentContainer.innerHTML = '';
+        CATEGORIES.forEach(cat => {
+          if (allContent[cat.name])
+            contentContainer.appendChild(createCategorySection(cat, allContent[cat.name]));
+        });
+        return;
       }
-      return res;
-    }
 
-    function makeCard(item) {
-      const matchPct = item.vote_average ? Math.round(item.vote_average * 10) : '—';
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `
-        <div class="card-img-wrap">
-          <img src="${POSTER(item.poster_path)}" loading="lazy" alt="${item.title || item.name}" onerror="this.src='https://via.placeholder.com/300x450/181818/E50914?text=T9'">
-        </div>
-        <div class="card-panel">
-          <div class="card-panel-title">${item.title || item.name}</div>
-          <div class="card-panel-row">
-            <button class="card-play-btn" title="Watch">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-            <button class="card-add-btn" title="Add to List">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-            <span class="card-match">${matchPct}% Match</span>
-            <span class="card-cert">${item._cert || 'NR'}</span>
-          </div>
-        </div>
-      `;
-      
-      div.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) openModal(item);
-      });
-      
-      div.querySelector('.card-play-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        openModal(item);
-      });
-      
-      return div;
-    }
+      const res  = await fetch(`${BASE}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const items = (data.results || []).filter(r => r.media_type === 'movie' || r.media_type === 'tv').slice(0, 18);
+      const ann  = await annotateItems(items);
 
-    function createCategorySection(category, items) {
-      const section = document.createElement('div');
-      section.className = 'category-section';
-      section.setAttribute('data-category', category.name);
-      
-      section.innerHTML = `
+      contentContainer.innerHTML = '';
+      const sec = document.createElement('div');
+      sec.className = 'category-section';
+      sec.innerHTML = `
         <div class="section-header">
-          <span class="section-title">${category.name}</span>
-          <span class="section-explore">Explore All <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg></span>
+          <span class="section-title">Results for "${q}"</span>
         </div>
         <div class="slider-container">
-          <button class="slide-btn slide-btn-left" data-dir="left">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <div class="slider-row"></div>
-          <button class="slide-btn slide-btn-right" data-dir="right">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-      `;
-      
-      const row = section.querySelector('.slider-row');
-      items.forEach(item => row.appendChild(makeCard(item)));
-      
-      const leftBtn = section.querySelector('.slide-btn-left');
-      const rightBtn = section.querySelector('.slide-btn-right');
-      
-      leftBtn.addEventListener('click', () => {
-        row.scrollBy({ left: -row.offsetWidth * 0.75, behavior: 'smooth' });
-      });
-      
-      rightBtn.addEventListener('click', () => {
-        row.scrollBy({ left: row.offsetWidth * 0.75, behavior: 'smooth' });
-      });
-      
-      return section;
-    }
+          <div class="slider-row" style="flex-wrap:wrap;"></div>
+        </div>`;
+      const row = sec.querySelector('.slider-row');
+      ann.forEach(item => row.appendChild(makeCard(item)));
+      contentContainer.appendChild(sec);
+    }, 400);
+  });
 
-    async function initApp() {
-      const loadingIndicator = document.getElementById('loadingIndicator');
-      const contentContainer = document.getElementById('contentContainer');
-      loadingIndicator.style.display = 'flex';
-      
-      try {
-        for (const category of CATEGORIES) {
-          const items = await fetchCategory(category);
-          const annotatedItems = await annotateItems(items);
-          allContent[category.name] = annotatedItems;
-          
-          const section = createCategorySection(category, annotatedItems);
-          contentContainer.appendChild(section);
-          
-          if (category.name === "Trending Now" && annotatedItems.length > 0) {
-            heroCurrent = annotatedItems[0];
-            updateHero(heroCurrent);
-            
-            let heroIndex = 0;
-            setInterval(() => {
-              const trendingItems = allContent["Trending Now"] || [];
-              if (trendingItems.length > 0) {
-                heroIndex = (heroIndex + 1) % Math.min(trendingItems.length, 8);
-                heroCurrent = trendingItems[heroIndex];
-                updateHero(heroCurrent);
-              }
-            }, 8000);
-          }
-        }
-      } catch (e) {
-        console.warn('Error loading content:', e);
-      } finally {
-        loadingIndicator.style.display = 'none';
-      }
-    }
+  // ---- SCROLL: sticky nav ----
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
 
-    function updateHero(item) {
-      document.getElementById('heroBg').style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path})`;
-      document.getElementById('heroTitle').textContent = item.title || item.name;
-      document.getElementById('heroCert').textContent = item._cert || 'NR';
-      document.getElementById('heroYear').textContent = (item.release_date || item.first_air_date || '').slice(0, 4);
-      document.getElementById('heroDesc').textContent = (item.overview || '').slice(0, 180) + '…';
-      heroCurrent = item;
-    }
+  // ---- WHEEL: horizontal scroll on rows ----
+  document.addEventListener('wheel', e => {
+    const row = e.target.closest('.slider-row');
+    if (row && e.deltaX === 0) { e.preventDefault(); row.scrollLeft += e.deltaY; }
+  }, { passive: false });
 
-    document.getElementById('heroPlayBtn').addEventListener('click', () => heroCurrent && openModal(heroCurrent));
-    document.getElementById('heroInfoBtn').addEventListener('click', () => heroCurrent && openModal(heroCurrent));
-
-    async function openModal(item) {
-      modal.classList.add('show');
-      document.getElementById('modalTitle').textContent = item.title || item.name;
-      sourceSelect.innerHTML = '';
-      seasonSelect.style.display = 'none';
-      episodeSelect.style.display = 'none';
-      
-      if (item.media_type === 'tv') {
-        const res = await fetch(`${BASE}/tv/${item.id}?api_key=${API_KEY}`);
-        const data = await res.json();
-        
-        seasonSelect.innerHTML = '';
-        (data.seasons || []).forEach(s => {
-          if (s.season_number > 0) {
-            const opt = document.createElement('option');
-            opt.value = s.season_number;
-            opt.textContent = s.name;
-            seasonSelect.appendChild(opt);
-          }
-        });
-        
-        if (seasonSelect.options.length) {
-          seasonSelect.style.display = 'block';
-          
-          const loadEpisodes = async () => {
-            const sNum = seasonSelect.value;
-            const epRes = await fetch(`${BASE}/tv/${item.id}/season/${sNum}?api_key=${API_KEY}`);
-            const epData = await epRes.json();
-            
-            episodeSelect.innerHTML = '';
-            (epData.episodes || []).forEach(ep => {
-              const opt = document.createElement('option');
-              opt.value = ep.episode_number;
-              opt.textContent = `Ep ${ep.episode_number}: ${ep.name}`;
-              episodeSelect.appendChild(opt);
-            });
-            
-            if (episodeSelect.options.length) {
-              episodeSelect.style.display = 'block';
-              updateTvSources(item.id, sNum, episodeSelect.value);
-            }
-          };
-          
-          seasonSelect.onchange = loadEpisodes;
-          episodeSelect.onchange = () => updateTvSources(item.id, seasonSelect.value, episodeSelect.value);
-          
-          await loadEpisodes();
-        }
-      } else {
-        movieSources.forEach(tpl => {
-          const url = tpl.replace('${id}', item.id);
-          const opt = document.createElement('option');
-          opt.value = url;
-          try { opt.textContent = new URL(url).hostname.replace('www.', ''); } catch { opt.textContent = 'Server'; }
-          sourceSelect.appendChild(opt);
-        });
-        modalIframe.src = sourceSelect.value;
-        sourceSelect.onchange = () => modalIframe.src = sourceSelect.value;
-      }
-    }
-    
-    function updateTvSources(id, season, episode) {
-      sourceSelect.innerHTML = '';
-      tvSources.forEach(tpl => {
-        let url = tpl.replace('${id}', id).replace('${season}', season).replace('${episode}', episode);
-        const opt = document.createElement('option');
-        opt.value = url;
-        try { opt.textContent = new URL(url).hostname.replace('www.', ''); } catch { opt.textContent = 'Server'; }
-        sourceSelect.appendChild(opt);
-      });
-      modalIframe.src = sourceSelect.value;
-      sourceSelect.onchange = () => modalIframe.src = sourceSelect.value;
-    }
-
-    document.getElementById('closeModal').onclick = () => {
-      modal.classList.remove('show');
-      modalIframe.src = '';
-    };
-    
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('show');
-        modalIframe.src = '';
-      }
-    });
-
-    let searchTimer;
-    document.getElementById('searchInput').addEventListener('input', e => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(async () => {
-        const q = e.target.value.trim();
-        const contentContainer = document.getElementById('contentContainer');
-        
-        if (!q) {
-          contentContainer.innerHTML = '';
-          Object.keys(allContent).forEach(categoryName => {
-            const section = createCategorySection(
-              CATEGORIES.find(c => c.name === categoryName),
-              allContent[categoryName]
-            );
-            contentContainer.appendChild(section);
-          });
-          return;
-        }
-        
-        const res = await fetch(`${BASE}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        const items = (data.results || []).filter(r => r.media_type === 'movie' || r.media_type === 'tv');
-        const ann = await annotateItems(items.slice(0, 18));
-        
-        contentContainer.innerHTML = '';
-        const searchSection = document.createElement('div');
-        searchSection.className = 'category-section';
-        searchSection.innerHTML = `
-          <div class="section-header">
-            <span class="section-title">Search Results for "${q}"</span>
-          </div>
-          <div class="slider-container">
-            <div class="slider-row" style="flex-wrap: wrap;"></div>
-          </div>
-        `;
-        const row = searchSection.querySelector('.slider-row');
-        ann.forEach(item => row.appendChild(makeCard(item)));
-        contentContainer.appendChild(searchSection);
-      }, 400);
-    });
-
-    window.onscroll = () => {
-      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
-    };
-  })();
+})();
 </script>
 </body>
 </html>

@@ -663,6 +663,9 @@
   const IMG = p => p ? `https://image.tmdb.org/t/p/w500${p}` : '';
   const ORIG = p => p ? `https://image.tmdb.org/t/p/original${p}` : '';
 
+  // How long the player modal CSS transition takes (ms) — must match .player-modal transition
+  const MODAL_TRANSITION_MS = 350;
+
   const CATEGORIES = [
     { name:"Trending Now",    type:"trending", ep:"trending/all/week" },
     { name:"Popular Movies",  type:"movie",    ep:"movie/popular" },
@@ -893,12 +896,19 @@
   const playerBody  = document.getElementById('playerBody');
 
   async function openPlayer(item) {
+    // Clear any previous src immediately so old content doesn't flash
+    playerFrame.src = 'about:blank';
+
     playerModal.classList.add('show');
     playerModal.scrollTop = 0;
     document.body.style.overflow = 'hidden';
     playerTitle.textContent = item.title||item.name;
-    playerFrame.src = '';
     playerBody.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+
+    // Wait for the modal visibility transition to fully complete before loading
+    // the iframe — browsers won't load iframes inside visibility:hidden elements,
+    // which caused the first-open blank screen bug.
+    await new Promise(r => setTimeout(r, MODAL_TRANSITION_MS));
 
     if (item.media_type === 'tv') {
       await buildTvPlayer(item);
@@ -1067,7 +1077,7 @@
 
   document.getElementById('playerClose').addEventListener('click', () => {
     playerModal.classList.remove('show');
-    playerFrame.src = '';
+    playerFrame.src = 'about:blank';
     document.body.style.overflow = '';
   });
 
