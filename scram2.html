@@ -1082,10 +1082,6 @@
                                 <div class="logo">
                                     <i class="fas fa-bolt"></i> T9 SURF
                                 </div>
-                                <div class="quick-access">
-                                    <div class="quick-access-label">Quick Access</div>
-                                    <div class="quick-grid" id="quick-grid"></div>
-                                </div>
                             </div>
                             <div class="tabs-section" id="tabs-container"></div>
                             <button class="new-tab-btn" id="new-tab-sidebar">
@@ -1128,32 +1124,6 @@
                         <div class="history-list" id="history-list"></div>
                     </div>
                 `;
-
-                // Quick Links
-                const quickGrid = document.getElementById('quick-grid');
-                const quickLinks = [
-                    { name: 'YouTube', url: 'https://youtube.com', icon: 'fa-youtube' },
-                    { name: 'DuckDuckGo', url: 'https://duckduckgo.com', icon: 'fa-feather' },
-                    { name: 'TikTok', url: 'https://tiktok.com', icon: 'fa-music' },
-                    { name: 'GitHub', url: 'https://github.com', icon: 'fa-code' },
-                    { name: 'Reddit', url: 'https://reddit.com', icon: 'fa-reddit' },
-                    { name: 'Twitter', url: 'https://twitter.com', icon: 'fa-x' },
-                ];
-
-                quickLinks.forEach(link => {
-                    const btn = document.createElement('div');
-                    btn.className = 'quick-link';
-                    btn.title = link.name;
-                    const img = document.createElement('img');
-                    img.src = getFavicon(link.url);
-                    img.alt = link.name;
-                    img.onerror = () => {
-                        btn.innerHTML = `<i class="fab ${link.icon} quick-link-icon"></i>`;
-                    };
-                    btn.appendChild(img);
-                    btn.addEventListener('click', () => navigateTo(link.url));
-                    quickGrid.appendChild(btn);
-                });
 
                 // Event Listeners
                 document.getElementById('new-tab-sidebar').addEventListener('click', () => {
@@ -1205,4 +1175,4 @@
         })();
     </script>
 </body>
-</html> 
+</html>
