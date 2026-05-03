@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
     <head>
@@ -91,11 +90,10 @@
                     document.getElementById("loading").style.display = "none";
                     document.getElementById("error").style.display = "flex";
                     document.getElementById("error").textContent =
-                        "No URL provided. Use testp.html?url=https://example.com";
+                        "No URL provided. Use embed.html?url=https://example.com";
                     return;
                 }
 
-                // Set tab title to domain while loading, update after frame loads
                 try {
                     document.title = new URL(targetUrl).hostname;
                 } catch(e) {}
@@ -130,9 +128,7 @@
 
                     setProgress(65);
                     const bmConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-                    const wispUrl =
-                        (location.protocol === "https:" ? "wss://" : "ws://") +
-                        location.host + "/wisp/";
+                    const wispUrl = "wss://wisp.mercurywork.shop/";
                     await bmConnection.setTransport("/libcurl/index.mjs", [
                         { websocket: wispUrl },
                     ]);
@@ -148,7 +144,6 @@
 
                     function onFrameLoaded() {
                         setProgress(100);
-                        // Try to get real page title from frame
                         try {
                             const frameTitle = frame.frame.contentDocument?.title;
                             if (frameTitle) document.title = frameTitle;
