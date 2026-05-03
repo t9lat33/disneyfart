@@ -34,21 +34,13 @@
                 height: 100%;
                 width: 0%;
                 border-radius: 999px;
-                background: linear-gradient(
-                    90deg,
-                    #e8404a 0%,
-                    #f07080 40%,
-                    #ffd0d8 80%,
-                    #e8404a 100%
-                );
-                background-size: 200% 100%;
-                animation: shimmer 1.8s ease-in-out infinite;
+                background: #ffffff;
                 transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            @keyframes shimmer {
-                0%   { background-position: 200% center; }
-                100% { background-position: -200% center; }
+            @keyframes spin {
+                0%   { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
 
             #error {
@@ -68,11 +60,16 @@
     </head>
     <body>
         <div id="loading">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:24px;">
+                <img
+                    src="https://t9os.space/newlogo.png"
+                    alt="T9 OS Logo"
+                    style="width:80px;height:80px;animation:spin 1.5s linear infinite;"
+                />
                 <div class="loading-bar">
-                    <img style="width:30px;" src="newlogo.png">
+                    <div class="progress" id="progress-fill"></div>
                 </div>
-                <span style="color:rgba(255,255,255,0.4);font-family:sans-serif;font-size:16px;letter-spacing:0.05em;">Loading.... Please be patient</span>
+                <span style="color:rgba(255,255,255,0.4);font-family:sans-serif;font-size:16px;letter-spacing:0.05em;">Loading... Please be patient</span>
             </div>
         </div>
         <div id="error"></div>
@@ -94,6 +91,7 @@
                     return;
                 }
 
+                // Set tab title to domain while loading, update after frame loads
                 try {
                     document.title = new URL(targetUrl).hostname;
                 } catch(e) {}
@@ -128,7 +126,9 @@
 
                     setProgress(65);
                     const bmConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
-                    const wispUrl = "wss://wisp.mercurywork.shop/";
+                    const wispUrl =
+                        (location.protocol === "https:" ? "wss://" : "ws://") +
+                        location.host + "/wisp/";
                     await bmConnection.setTransport("/libcurl/index.mjs", [
                         { websocket: wispUrl },
                     ]);
@@ -144,6 +144,7 @@
 
                     function onFrameLoaded() {
                         setProgress(100);
+                        // Try to get real page title from frame
                         try {
                             const frameTitle = frame.frame.contentDocument?.title;
                             if (frameTitle) document.title = frameTitle;
@@ -165,6 +166,5 @@
                 }
             })();
         </script>
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"58184eb9f6e5462b93ef66749fa6bb8e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
+    </body>
 </html>
