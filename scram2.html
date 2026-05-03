@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T9 | Browser</title>
+    <title>T9 | SURF</title>
     <link rel="stylesheet" href="/styles/defaults.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -686,7 +686,6 @@
 
     <script>
         (function() {
-            // ============ CONFIGURATION ============
             const CONFIG = {
                 files: {
                     wasm: "/scram/scramjet.wasm.wasm",
@@ -709,7 +708,6 @@
                 }
             };
 
-            // ============ INITIALIZE SCRAMJET ============
             const { ScramjetController } = (typeof $scramjetLoadController === 'function' ? 
                 $scramjetLoadController() : { ScramjetController: class {} });
             
@@ -726,7 +724,6 @@
                 connection.setTransport(CONFIG.transport.path, [{ wisp: CONFIG.transport.wsp }]);
             }
 
-            // ============ STATE ============
             let tabs = [];
             let activeTabId = null;
             let nextTabId = 1;
@@ -858,7 +855,6 @@
                 }
             }
 
-            // ============ RENDERING ============
             function render() {
                 renderSidebar();
                 renderTopTabs();
@@ -940,7 +936,6 @@
                 return div.innerHTML;
             }
 
-            // ============ SUGGESTIONS ============
             async function showSuggestions(query) {
                 const dropdown = document.getElementById('suggestions-dropdown');
                 if (!query || query.trim().length < 1) {
@@ -984,7 +979,6 @@
                 if (dropdown) dropdown.classList.remove('visible');
             }
 
-            // ============ CONTEXT MENU ============
             function showContextMenu(x, y, tab) {
                 hideContextMenu();
                 const menu = document.createElement('div');
@@ -1027,7 +1021,6 @@
                 if (menu) menu.remove();
             }
 
-            // ============ HISTORY PANEL ============
             function toggleHistoryPanel() {
                 const panel = document.getElementById('history-panel');
                 if (panel.classList.contains('visible')) {
@@ -1071,7 +1064,6 @@
                 return Math.floor(diff / 86400000) + 'd ago';
             }
 
-            // ============ INITIALIZATION ============
             window.addEventListener('load', () => {
                 const app = document.getElementById('app');
                 app.innerHTML = `
@@ -1080,12 +1072,9 @@
                         <div class="sidebar">
                             <div class="sidebar-header">
                                 <div class="logo">
-                                    <i class="fas fa-bolt"></i> T9 Browser
+                                    <i class="fas fa-bolt"></i> T9 SURF
                                 </div>
-                                <div class="quick-access">
-                                    <div class="quick-access-label">Quick Access</div>
-                                    <div class="quick-grid" id="quick-grid"></div>
-                                </div>
+                               
                             </div>
                             <div class="tabs-section" id="tabs-container"></div>
                             <button class="new-tab-btn" id="new-tab-sidebar">
@@ -1111,7 +1100,7 @@
                                     <div class="suggestions-dropdown" id="suggestions-dropdown"></div>
                                 </div>
                                 <button class="nav-btn" id="btn-history" title="History"><i class="fas fa-clock-rotate-left"></i></button>
-                                <span class="version-badge">T9 v2.0</span>
+                                <span class="version-badge">T9 SURF</span>
                             </div>
 
                             <!-- Iframe Container -->
@@ -1155,7 +1144,6 @@
                     quickGrid.appendChild(btn);
                 });
 
-                // Event Listeners
                 document.getElementById('new-tab-sidebar').addEventListener('click', () => {
                     const tab = createTab();
                     document.getElementById('iframe-container').appendChild(tab.frame.frame);
@@ -1196,7 +1184,6 @@
                     setTimeout(hideSuggestions, 150);
                 });
 
-                // Start first tab
                 const firstTab = createTab();
                 const iframeContainer = document.getElementById('iframe-container');
                 iframeContainer.appendChild(firstTab.frame.frame);
