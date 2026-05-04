@@ -1445,6 +1445,62 @@ background: linear-gradient(
 </style>
 
 </div>
+<div class="notify">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">UPDATES</div>
+    <div class="desc">Check for latest updates</div>
+  </div>
+
+</div>
+
+
+
+<style>
+
+.notify{
+background-color:black;
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:5%;
+}
+.notify:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
+
+.ntext{
+display:flex;
+flex-direction:column;
+}
+
+.ntitle{
+font-size:13px;
+font-weight:bold;
+}
+
+.desc{
+font-size:10px;
+opacity:0.7;
+}
+
+
+</style>
 
 
 <button onclick="t9()" style="position: fixed; bottom:0; right:0; padding:10px 20px; opacity: 0;"></button>
