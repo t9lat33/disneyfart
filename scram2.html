@@ -695,7 +695,7 @@
                 },
                 transport: {
                     path: "/epoxy/index.mjs",
-                    wsp: localStorage.getItem("proxServer") || "http://wisp.proxyium.com/wisp/",
+                    wsp: localStorage.getItem("proxServer") || "wss://gointospace.app/wisp/",
                 },
                 bareurl: (typeof _CONFIG !== 'undefined' && _CONFIG?.bareurl) || 
                         `${location.protocol === "https:" ? "https" : "http"}://${location.host}/bare/`,
