@@ -567,6 +567,7 @@ backdrop-filter: blur(7px);
 
   }
     #updateDiv {
+      display:none;
     margin-top: 20px;
     padding: 10px;
  background: linear-gradient(160deg,
@@ -1445,7 +1446,7 @@ background: linear-gradient(
 </style>
 
 </div>
-<div class="notify">
+<div onclick="update()" class="notify">
 
   <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
     <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
@@ -1463,7 +1464,7 @@ background: linear-gradient(
 <style>
 
 .notify{
-background-color:rgba(0, 0, 0, 0.779);
+background-color:rgba(0, 0, 0, 0.61);
 width:170px;
 height:auto;
 color:white;
@@ -2631,6 +2632,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
 <script>
   function hidden2(){
     const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function update(){
+    const div = document.getElementById('updateDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
