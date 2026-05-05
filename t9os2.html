@@ -1311,51 +1311,12 @@ requestAnimationFrame(updateFPS);
 <div id="t9Div">
   <button class="close-btn2" onclick="document.getElementById('t9Div').style.display = 'none';">●</button>
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Games </h3>
+<div style="border-bottom: 1px solid rgba(255, 255, 255, 0.458); margin-top: 28px;"></div>
 
 
   &nbsp;&nbsp;&nbsp;&nbsp; 
   
- <h1 style="text-align: center;">welcome to my secret corner</h1>
- <h2 style="text-align: center;">btw how did u find my secret corner?</h2>
-<h3 style="text-align: center;" id="count">0 people online</h2>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, onDisconnect, set }
-from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "chat2-a86b2.firebaseapp.com",
-  databaseURL: "https://chat2-a86b2-default-rtdb.firebaseio.com",
-  projectId: "chat2-a86b2"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const connectionsRef = ref(db, "connections");
-const connectedRef = ref(db, ".info/connected");
-
-onValue(connectedRef, (snap) => {
-  if (snap.val()) {
-    const myConnection = push(connectionsRef);
-    set(myConnection, true);
-    onDisconnect(myConnection).remove();
-  }
-});
-
-onValue(connectionsRef, (snapshot) => {
-  const data = snapshot.val();
-  const count = data ? Object.keys(data).length : 0;
-  document.getElementById("count").innerText =
-    count + " people online";
-});
-</script>
-
-
-<img style="width:75px; height:50px;" src="cat.gif">
-<img style="width:100px; height:75px;" src="please.png">
 
 
 
