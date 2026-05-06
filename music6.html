@@ -131,6 +131,8 @@
 </div>
 
 <script>
+const API = 'https://broad-sea-cc62.t9osta.workers.dev';
+
 let audio = null;
 let isPlaying = false;
 let queue = [];
@@ -150,53 +152,13 @@ function esc(s) {
   return div.innerHTML;
 }
 
-// Use a CORS proxy to fetch YouTube data
-const PROXY = 'https://api.allorigins.win/raw?url=';
-
-async function searchYouTube(query) {
-  const url = `${PROXY}${encodeURIComponent(`https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' music')}`)}`;
-  const res = await fetch(url);
-  const html = await res.text();
-  
-  const tracks = [];
-  const regex = /\/watch\?v=([a-zA-Z0-9_-]{11})/g;
-  const seen = new Set();
-  let match;
-  
-  while ((match = regex.exec(html)) !== null && tracks.length < 30) {
-    if (!seen.has(match[1])) {
-      seen.add(match[1]);
-      tracks.push({
-        type: 'stream',
-        title: 'Loading title...',
-        videoId: match[1],
-        url: `/watch?v=${match[1]}`,
-        uploaderName: 'YouTube',
-        duration: 0,
-        thumbnail: `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg`
-      });
-    }
-  }
-
-  // Fetch titles using oEmbed API (no API key needed)
-  await Promise.all(tracks.map(async (t, i) => {
-    try {
-      const oembedRes = await fetch(`${PROXY}${encodeURIComponent(`https://www.youtube.com/oembed?url=https://youtube.com/watch?v=${t.videoId}&format=json`)}`);
-      const data = await oembedRes.json();
-      tracks[i].title = data.title;
-      tracks[i].uploaderName = data.author_name;
-    } catch(e) {}
-  }));
-
-  return tracks;
-}
-
 async function loadTrending() {
   const el = document.getElementById('content');
   el.innerHTML = '<div class="state-view"><div class="spinner"></div><span>Loading trending...</span></div>';
   try {
-    const tracks = await searchYouTube('trending music 2025');
-    renderCards(tracks, el, '🔥 Trending Now');
+    const res = await fetch(`${API}/trending`);
+    const tracks = await res.json();
+    renderCards(tracks.slice(0, 24), el, '🔥 Trending Now');
   } catch(e) {
     el.innerHTML = '<div class="state-view"><span>Failed to load</span><button class="retry-btn" onclick="loadTrending()">Retry</button></div>';
   }
@@ -207,12 +169,14 @@ async function search(q) {
   if (!q.trim()) return loadTrending();
   el.innerHTML = '<div class="state-view"><div class="spinner"></div><span>Searching...</span></div>';
   try {
-    const tracks = await searchYouTube(q);
+    const res = await fetch(`${API}/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    const tracks = data.items || [];
     if (!tracks.length) {
       el.innerHTML = `<div class="state-view"><span>No results for "${esc(q)}"</span></div>`;
       return;
     }
-    renderTrackList(tracks, el, `Results for "${esc(q)}"`);
+    renderTrackList(tracks.slice(0, 30), el, `Results for "${esc(q)}"`);
   } catch(e) {
     el.innerHTML = `<div class="state-view"><span>Search failed</span><button class="retry-btn" onclick="search('${esc(q)}')">Retry</button></div>`;
   }
@@ -271,8 +235,7 @@ function markActiveRow() {
 }
 
 async function playTrack(track, idx) {
-  const videoId = track.videoId;
-  if (!videoId) return;
+  if (!track.videoId) return;
 
   queueIndex = idx;
   markActiveRow();
@@ -284,53 +247,44 @@ async function playTrack(track, idx) {
 
   if (audio) { audio.pause(); audio.src = ''; }
 
-  // Try multiple audio sources
-  const sources = [
-    `https://inv.nadeko.net/latest_version?id=${videoId}&itag=140`,
-    `https://vid.puffyan.us/latest_version?id=${videoId}&itag=140`,
-    `https://yewtu.be/latest_version?id=${videoId}&itag=140`,
-  ];
+  try {
+    const res = await fetch(`${API}/stream/${track.videoId}`);
+    const data = await res.json();
+    
+    if (!data.url) throw new Error('No stream URL');
+    
+    audio = new Audio(data.url);
+    audio.volume = isMuted ? 0 : volume;
 
-  audio = new Audio();
-  audio.volume = isMuted ? 0 : volume;
+    audio.oncanplay = () => {
+      document.getElementById('playerArtist').textContent = track.uploaderName || 'Unknown';
+      audio.play();
+      isPlaying = true;
+      document.getElementById('playBtn').textContent = '⏸';
+    };
 
-  // Try sources sequentially
-  let loaded = false;
-  for (const src of sources) {
-    if (loaded) break;
-    try {
-      audio.src = src;
-      await new Promise((resolve) => {
-        audio.oncanplay = () => {
-          loaded = true;
-          document.getElementById('playerArtist').textContent = track.uploaderName || 'Unknown';
-          audio.play();
-          isPlaying = true;
-          document.getElementById('playBtn').textContent = '⏸';
-          resolve();
-        };
-        audio.onerror = () => resolve();
-        setTimeout(() => resolve(), 3000);
-      });
-    } catch(e) {}
+    audio.onerror = () => {
+      document.getElementById('playerArtist').textContent = 'Playback error';
+      if (queueIndex < queue.length - 1) playTrack(queue[queueIndex+1], queueIndex+1);
+    };
+
+    audio.ontimeupdate = () => {
+      if (!audio.duration) return;
+      document.getElementById('progFill').style.width = (audio.currentTime / audio.duration * 100) + '%';
+      document.getElementById('curTime').textContent = fmt(audio.currentTime);
+      document.getElementById('totalTime').textContent = fmt(audio.duration);
+    };
+
+    audio.onended = () => {
+      isPlaying = false;
+      document.getElementById('playBtn').textContent = '▶';
+      if (queueIndex < queue.length - 1) playTrack(queue[queueIndex+1], queueIndex+1);
+    };
+
+    audio.load();
+  } catch(e) {
+    document.getElementById('playerArtist').textContent = 'Failed to load';
   }
-
-  if (!loaded) {
-    document.getElementById('playerArtist').textContent = 'Cannot play this track';
-  }
-
-  audio.ontimeupdate = () => {
-    if (!audio.duration) return;
-    document.getElementById('progFill').style.width = (audio.currentTime / audio.duration * 100) + '%';
-    document.getElementById('curTime').textContent = fmt(audio.currentTime);
-    document.getElementById('totalTime').textContent = fmt(audio.duration);
-  };
-
-  audio.onended = () => {
-    isPlaying = false;
-    document.getElementById('playBtn').textContent = '▶';
-    if (queueIndex < queue.length - 1) playTrack(queue[queueIndex+1], queueIndex+1);
-  };
 }
 
 document.getElementById('playBtn').onclick = () => {
