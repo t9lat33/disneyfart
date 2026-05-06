@@ -1320,7 +1320,7 @@ requestAnimationFrame(updateFPS);
   align-items: center;
   justify-content: center;
 ">
-  <button class="close-btn2" onclick="document.getElementById('t9Div').style.display = 'none';" style="position:absolute; left:10px;">●</button>
+  <button class="close-btn" onclick="document.getElementById('t9Div').style.display = 'none';" style="position:absolute; left:10px;">●</button>
   <h3 style="color:white; margin:0; font-size:15px;">Apps</h3>
 </div>
 
@@ -1335,26 +1335,30 @@ requestAnimationFrame(updateFPS);
   gap: 12px;
 ">
 
-  <div class="app-icon" onclick="hidden3()">
+  <div class="app-icon" onclick="closeT9(); hidden3()">
     <img src="arcade.png" />
     <span>Games</span>
   </div>
 
-  <div class="app-icon" onclick="music()">
+  <div class="app-icon" onclick="closeT9(); music()">
     <img src="spotify.png">
     <span>Music</span>
   </div>
 
-  <div class="app-icon" onclick="movie()">
+  <div class="app-icon" onclick="closeT9(); movie()">
     <img src="netflix2.png">
     <span>Movies</span>
   </div>
 
-    <div class="app-icon" onclick="movie()">
-    <img src="netflix2.png">
+    <div class="app-icon" onclick="closeT9(); settings()">
+    <img src="settings.png">
     <span>Settings</span>
   </div>
-
+<script>
+  function closeT9() {
+    document.getElementById('t9Div').style.display = 'none';
+  }
+</script>
 </div>
 
 <style>
