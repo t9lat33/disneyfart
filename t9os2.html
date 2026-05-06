@@ -518,7 +518,7 @@ border: 1px solid rgb(51, 51, 51);
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
-      top:185px;
+      top:205px;
       animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
 
@@ -547,8 +547,8 @@ box-shadow: 2px #141414;
     z-index: 1000;
     border-radius:12px; 
     opacity:85%; 
-    width:99%;
-    height: 85%; 
+    width:71%;
+    height: 70%; 
     overflow-x: hidden;
     overflow-y: auto;
     animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -1351,7 +1351,7 @@ requestAnimationFrame(updateFPS);
   </div>
 
     <div class="app-icon" onclick="closeT9(); settings()">
-    <img src="settings.png">
+    <img src="setting.png">
     <span>Settings</span>
   </div>
 <script>
@@ -2080,10 +2080,22 @@ document.getElementById('day').textContent = day;
 
 
 <div id="settingsDiv">
+  <div style="
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  background: rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+">
   <button class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+    <h3 style="color:white; margin:0; font-size:15px;">Settings</h3>
 
-  <h1 class="seth">Settings</h1>
 
+</div>
   
    <label class="label" for="background-select">Select Background:</label>
 <select id="background-select">
@@ -2127,13 +2139,60 @@ document.getElementById('day').textContent = day;
 <input type="file" id="background-upload" accept="image/*,video/*">
 
 
+   <label class="label" for="preset">Select Tab Cloak:</label>
+
+ <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
+    <option value="default">Default (T9 OS)</option>
+    <option value="google">Google</option>
+    <option value="classroom">Google Classroom</option>
+    <option value="vocab">Vocabulary.com</option>
+  </select>
+</div> 
+
+
   
 <h2 style="text-align: center;">Appearances</h2>
 
-    <label class="label" for="picker">Select theme:</label>
-        <input type="color" id="picker" value="#333333">
+   <label class="label" for="background-select">Select Background:</label>
+<select id="background-select">
+  <option value="minecraftCozy2.mp4">Default</option>
+                      <option value="abstract.png">T9 Abstract</option>
+                                            <option value="stars3.png">blue space</option>
+                                                                        <option value="silver2.gif">Silver Surfer Live</option>
+                            <option value="silver.jpeg">Silver Surfer</option>
+                          <option value="naruto.png">Naruto</option>
+                  <option value="red.jpg">Red Abstract</option>
+                  <option value="halloween.png">halloween</option>
 
-    <a   id="reset" class="round-btn">Reset theme</a>
+                  <option value="purplecity2.png">T9 OS city</option>
+
+                <option value="toyota.jpg">Toyota GR supra</option>
+
+              <option value="car.jpeg">Hennessey Venom F5 car</option>
+
+            <option value="goku.jpg">Goku</option>
+
+          <option value="ocean.png">Moonlit Voyage</option>
+
+          <option value="vibes.gif">Synthwave sunset</option>
+
+        <option value="deadpool.gif">Deadpool</option>
+
+  <option value="city.jpg">City</option>
+  <option value="sunset.jpg">Sunset</option>
+  <option value="mountains.jpg">Mountains</option>
+  <option value="tree.jpg">Tropical trees</option>
+  <option value="space.jpg">Space</option>
+    <option value="psky.jpg">Purple sky</option>
+    <option value="abstract.jpg">Abstract</option>
+    <option value="cyberpunk.gif">Cyberpunk</option>
+    <option value="luffy.gif">Luffy Straw hat</option>
+    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
+      <option value="pbWaves.jpg">Purple Blue Abstract</option>
+
+</select>
+
+<input type="file" id="background-upload" accept="image/*,video/*">
 
 
         <script>
