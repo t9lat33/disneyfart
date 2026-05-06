@@ -46,7 +46,6 @@
             align-items: center;
             gap: 8px;
         }
-        .logo svg { width: 28px; height: 28px; fill: #fff; }
 
         .nav-item, .playlist-item {
             display: flex;
@@ -65,7 +64,6 @@
             transition: 0.2s;
         }
         .nav-item:hover, .nav-item.active { color: #fff; }
-        .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
         .playlist-item:hover { color: #fff; }
         .playlist-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -89,14 +87,17 @@
             max-width: 400px;
             position: relative;
         }
-        .search-container svg {
+        .search-icon {
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
             width: 18px;
             height: 18px;
-            fill: var(--text-secondary);
+            fill: none;
+            stroke: var(--text-secondary);
+            stroke-width: 2;
+            pointer-events: none;
         }
         .search-input {
             width: 100%;
@@ -111,16 +112,20 @@
         .search-input:focus { box-shadow: 0 0 0 2px #fff; }
         .search-input::placeholder { color: var(--text-secondary); }
 
-        .instance-selector {
-            padding: 6px 10px;
-            border-radius: 4px;
-            background: var(--bg-highlight);
-            color: #fff;
-            border: 1px solid #444;
+        .instance-badge {
             font-size: 11px;
-            cursor: pointer;
-            outline: none;
+            color: var(--text-secondary);
+            background: var(--bg-highlight);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            white-space: nowrap;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        .instance-badge.ok { border-color: var(--accent); color: var(--accent); }
+        .instance-badge.err { border-color: #ff6b6b; color: #ff6b6b; }
 
         .content-area {
             flex: 1;
@@ -216,10 +221,7 @@
             font-size: 14px;
         }
         .track-row:hover { background: rgba(255,255,255,0.08); }
-        .track-num { color: var(--text-secondary); text-align: center; }
-        .track-row:hover .track-num { display: none; }
-        .track-play { display: none; text-align: center; }
-        .track-row:hover .track-play { display: block; }
+        .track-num { color: var(--text-secondary); text-align: center; font-size: 13px; }
         .track-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
         .track-thumb {
             width: 40px;
@@ -255,7 +257,6 @@
             object-fit: cover;
             flex-shrink: 0;
             background: #333;
-            cursor: pointer;
         }
         .player-info { min-width: 0; }
         .player-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -269,10 +270,11 @@
             cursor: pointer;
             color: var(--text-secondary);
             padding: 4px;
+            font-size: 18px;
             transition: 0.2s;
+            line-height: 1;
         }
         .ctrl-btn:hover { color: #fff; }
-        .ctrl-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
         .play-btn {
             width: 34px;
@@ -284,8 +286,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 16px;
+            line-height: 1;
         }
-        .play-btn svg { width: 16px; height: 16px; fill: #000; }
 
         .progress-row { display: flex; align-items: center; gap: 8px; width: 100%; }
         .time { font-size: 10px; color: var(--text-secondary); min-width: 35px; text-align: center; }
@@ -296,6 +299,7 @@
             border-radius: 2px;
             cursor: pointer;
             position: relative;
+            transition: height 0.1s;
         }
         .prog-bar:hover { height: 6px; }
         .prog-fill {
@@ -303,6 +307,7 @@
             background: #fff;
             border-radius: 2px;
             width: 0%;
+            transition: width 0.5s linear;
         }
         .prog-bar:hover .prog-fill { background: var(--accent); }
 
@@ -313,6 +318,7 @@
             background: rgba(255,255,255,0.2);
             border-radius: 2px;
             cursor: pointer;
+            transition: height 0.1s;
         }
         .vol-bar:hover { height: 6px; }
         .vol-fill { height: 100%; background: #fff; border-radius: 2px; width: 70%; }
@@ -326,15 +332,16 @@
             color: var(--text-secondary);
             font-size: 14px;
         }
-        .error-msg { color: #ff6b6b; flex-direction: column; gap: 12px; text-align: center; }
-        .error-msg button, .retry-btn {
+        .error-msg { color: #ff6b6b; flex-direction: column; gap: 12px; text-align: center; padding: 24px; }
+        .error-msg p { color: var(--text-secondary); font-size: 13px; max-width: 400px; line-height: 1.5; }
+        .retry-btn, .error-msg button {
             background: var(--accent);
             color: #000;
             border: none;
             padding: 8px 20px;
             border-radius: 20px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
         }
         .spinner {
@@ -345,12 +352,45 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
+            flex-shrink: 0;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .buffering-indicator {
+            display: none;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #555;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .buffering-indicator.active { display: inline-block; }
 
         .content-area::-webkit-scrollbar { width: 10px; }
         .content-area::-webkit-scrollbar-track { background: transparent; }
         .content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 5px; }
+
+        .playing-indicator {
+            display: inline-flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 14px;
+        }
+        .playing-indicator span {
+            display: block;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 1px;
+            animation: eq 1s ease-in-out infinite;
+        }
+        .playing-indicator span:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .playing-indicator span:nth-child(2) { height: 10px; animation-delay: 0.2s; }
+        .playing-indicator span:nth-child(3) { height: 8px; animation-delay: 0.1s; }
+        @keyframes eq {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
@@ -363,18 +403,9 @@
 <body>
     <div class="app-container">
         <div class="sidebar">
-            <div class="logo">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12"/><circle cx="12" cy="12" r="5" fill="#000"/></svg>
-                Spoti-Pipe
-            </div>
-            <button class="nav-item active" data-page="home">
-                <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
-                Home
-            </button>
-            <button class="nav-item" data-page="search">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>
-                Search
-            </button>
+            <div class="logo">🎵 Spoti-Pipe</div>
+            <button class="nav-item active" data-page="home">🏠 Home</button>
+            <button class="nav-item" data-page="search">🔍 Search</button>
             <div style="margin-top:auto;padding-top:20px;border-top:1px solid #222;">
                 <p style="font-size:11px;color:var(--text-secondary);padding:0 12px;margin-bottom:8px;">QUICK PLAYLISTS</p>
                 <button class="playlist-item" data-search="trending music 2024">🔥 Trending</button>
@@ -388,15 +419,13 @@
         <div class="main-content">
             <div class="top-bar">
                 <div class="search-container">
-                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>
+                    <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
                     <input type="text" class="search-input" placeholder="Search songs, artists..." id="searchInput">
                 </div>
-                <select class="instance-selector" id="instanceSelect" title="API Server">
-                    <option value="">Auto-select server</option>
-                </select>
+                <div class="instance-badge" id="instanceBadge">Connecting...</div>
             </div>
             <div class="content-area" id="contentArea">
-                <div class="loading"><div class="spinner"></div>Loading...</div>
+                <div class="loading"><div class="spinner"></div>Connecting to music server...</div>
             </div>
         </div>
     </div>
@@ -414,6 +443,7 @@
                 <button class="ctrl-btn" id="prevBtn" title="Previous">⏮</button>
                 <button class="play-btn" id="playBtn">▶</button>
                 <button class="ctrl-btn" id="nextBtn" title="Next">⏭</button>
+                <div class="buffering-indicator" id="bufferingIndicator"></div>
             </div>
             <div class="progress-row">
                 <span class="time" id="curTime">0:00</span>
@@ -429,39 +459,50 @@
 
     <script>
     (function() {
-        // ---- CONFIGURATION ----
-        // These are Piped API instances. More at: https://github.com/TeamPiped/Piped/wiki/Instances
-        const PIPED_INSTANCES = [
-            'https://pipedapi.kavin.rocks',
-            'https://pipedapi.tokhmi.xyz',
-            'https://pipedapi.moomoo.me',
-            'https://pipedapi.syncpundit.io',
-            'https://piped-api.garudalinux.org',
-            'https://pipedapi.adminforge.de',
-            'https://pipedapi.leptons.xyz',
-            'https://api.piped.video',
-            'https://pipedapi.in.projectsegfau.lt',
-            'https://pipedapi.smnz.de',
-            'https://pipedapi.private.coffee',
+        // =============================================
+        // MULTI-BACKEND: Invidious (primary) + Piped (fallback)
+        // Both wrapped with CORS proxy if direct fails
+        // =============================================
+
+        // Invidious instances — these support CORS and return streamable URLs directly
+        const INVIDIOUS_INSTANCES = [
+            'https://yewtu.be',
+            'https://invidious.privacydev.net',
+            'https://inv.riverside.rocks',
+            'https://invidious.nerdvpn.de',
+            'https://invidious.fdn.fr',
+            'https://invidious.io.lol',
+            'https://vid.puffyan.us',
+            'https://invidious.kavin.rocks',
         ];
 
-        // Image proxy (some instances also proxy images on the same domain)
-        // We'll try to use the same instance for images, falling back to direct
-        const IMAGE_PROXIES = [
-            'https://proxy.piped.private.coffee',
-            'https://pipedproxy.kavin.rocks',
+        // Piped API instances (fallback)
+        const PIPED_INSTANCES = [
+            'https://pipedapi.kavin.rocks',
+            'https://pipedapi.adminforge.de',
+            'https://pipedapi.private.coffee',
+            'https://api.piped.video',
+        ];
+
+        // CORS proxies to wrap around API calls when direct access fails
+        const CORS_PROXIES = [
+            'https://corsproxy.io/?url=',
+            'https://api.allorigins.win/raw?url=',
+            '',  // no proxy (direct)
         ];
 
         // ---- STATE ----
-        let currentInstance = null;
+        let backend = null;  // { type: 'invidious'|'piped', base: string, proxy: string }
         let audio = null;
         let isPlaying = false;
+        let isBuffering = false;
         let queue = [];
         let queueIndex = -1;
         let volume = 0.7;
         let isMuted = false;
+        let currentVideoId = null;
 
-        // ---- HELPERS ----
+        // ---- UTILS ----
         function formatTime(s) {
             if (!s || isNaN(s) || s < 0) return '0:00';
             const m = Math.floor(s / 60);
@@ -469,139 +510,199 @@
             return `${m}:${sec.toString().padStart(2, '0')}`;
         }
 
-        function getStreamUrl(videoId) {
-            // Piped audio stream endpoint
-            return `${currentInstance}/latest_version?id=${videoId}&itag=140`;
+        function proxyUrl(url, proxy) {
+            if (!proxy) return url;
+            return proxy + encodeURIComponent(url);
         }
 
-        function getImageUrl(thumbnailUrl) {
-            if (!thumbnailUrl) return '';
-            // Try to proxy through piped if it's a youtube image
-            if (thumbnailUrl.includes('i.ytimg.com') || thumbnailUrl.includes('yt3.ggpht.com')) {
-                // Strip protocol for protocol-relative
-                const clean = thumbnailUrl.replace(/^https?:/, '');
-                // Use first image proxy
-                return `${IMAGE_PROXIES[0]}${clean}`;
+        function setBadge(text, state) {
+            const b = document.getElementById('instanceBadge');
+            b.textContent = text;
+            b.className = 'instance-badge' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
+        }
+
+        function setBuffering(active) {
+            isBuffering = active;
+            const ind = document.getElementById('bufferingIndicator');
+            if (active) ind.classList.add('active');
+            else ind.classList.remove('active');
+        }
+
+        // ---- BACKEND DETECTION ----
+        async function tryFetch(url, timeout = 5000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeout);
+            try {
+                const r = await fetch(url, { signal: controller.signal });
+                clearTimeout(timer);
+                if (!r.ok) return null;
+                const data = await r.json();
+                return data;
+            } catch(e) {
+                clearTimeout(timer);
+                return null;
             }
-            return thumbnailUrl;
+        }
+
+        async function findBackend() {
+            setBadge('Connecting...', '');
+
+            // Test Invidious instances with each CORS proxy combo
+            for (const proxy of CORS_PROXIES) {
+                for (const base of INVIDIOUS_INSTANCES) {
+                    const url = proxyUrl(`${base}/api/v1/trending?type=music&region=US&fields=videoId,title,author,authorId,lengthSeconds,videoThumbnails`, proxy);
+                    const data = await tryFetch(url, 5000);
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        console.log('✅ Invidious backend:', base, proxy ? `(proxy: ${proxy})` : '(direct)');
+                        return { type: 'invidious', base, proxy };
+                    }
+                }
+            }
+
+            // Fallback: try Piped
+            for (const proxy of CORS_PROXIES) {
+                for (const base of PIPED_INSTANCES) {
+                    const url = proxyUrl(`${base}/trending?region=US`, proxy);
+                    const data = await tryFetch(url, 5000);
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        console.log('✅ Piped backend:', base, proxy ? `(proxy: ${proxy})` : '(direct)');
+                        return { type: 'piped', base, proxy };
+                    }
+                }
+            }
+
+            throw new Error('No music servers reachable');
+        }
+
+        async function apiFetch(path) {
+            if (!backend) backend = await findBackend();
+            const url = proxyUrl(`${backend.base}${path}`, backend.proxy);
+            const data = await tryFetch(url, 8000);
+            if (!data) {
+                // Try re-detecting backend
+                backend = null;
+                backend = await findBackend();
+                const url2 = proxyUrl(`${backend.base}${path}`, backend.proxy);
+                const data2 = await tryFetch(url2, 8000);
+                if (!data2) throw new Error('Failed to fetch data');
+                return data2;
+            }
+            return data;
+        }
+
+        // ---- AUDIO STREAM ----
+        async function getStreamUrl(videoId) {
+            if (backend.type === 'invidious') {
+                // Invidious /api/v1/videos/{id} returns adaptiveFormats with direct URLs
+                try {
+                    const url = proxyUrl(`${backend.base}/api/v1/videos/${videoId}?fields=adaptiveFormats,formatStreams`, backend.proxy);
+                    const data = await tryFetch(url, 8000);
+                    if (data) {
+                        // Find audio-only format (itag 140 = m4a 128kbps, 251 = webm/opus)
+                        const formats = data.adaptiveFormats || [];
+                        const audio140 = formats.find(f => f.itag === '140' || f.itag === 140);
+                        const audioOpus = formats.find(f => f.itag === '251' || f.itag === 251);
+                        const audioAny = formats.find(f => f.type && f.type.startsWith('audio/'));
+                        const chosen = audio140 || audioOpus || audioAny;
+                        if (chosen && chosen.url) return chosen.url;
+
+                        // Fall back to format streams (lower quality but more compatible)
+                        const streams = data.formatStreams || [];
+                        if (streams.length > 0) return streams[0].url;
+                    }
+                } catch(e) { console.warn('Invidious stream fetch failed:', e); }
+
+                // Fallback: use Invidious's legacy endpoint
+                return `${backend.base}/latest_version?id=${videoId}&itag=140`;
+            }
+
+            // Piped backend
+            return `${backend.base}/latest_version?id=${videoId}&itag=140`;
+        }
+
+        // ---- THUMBNAIL ----
+        function getThumbnail(item) {
+            if (backend && backend.type === 'invidious') {
+                // Invidious returns videoThumbnails array
+                if (item.videoThumbnails && item.videoThumbnails.length > 0) {
+                    // Prefer medium quality
+                    const med = item.videoThumbnails.find(t => t.quality === 'medium' || t.quality === 'mqdefault');
+                    const any = item.videoThumbnails[item.videoThumbnails.length - 1];
+                    return (med || any).url;
+                }
+                if (item.thumbnail) return item.thumbnail;
+                return `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`;
+            }
+            // Piped
+            return item.thumbnail || '';
         }
 
         function getVideoId(item) {
+            if (item.videoId) return item.videoId;
             if (item.url) {
-                const url = new URL(item.url);
-                return url.searchParams.get('v') || '';
+                try {
+                    return new URL(item.url, 'https://youtube.com').searchParams.get('v') || '';
+                } catch(e) { return ''; }
             }
             return item.id || '';
         }
 
-        // ---- API ----
-        async function testInstance(url) {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 4000);
-            try {
-                const resp = await fetch(`${url}/trending?region=US`, { signal: controller.signal });
-                clearTimeout(timeout);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (Array.isArray(data) && data.length > 0) return true;
-                }
-            } catch(e) { /* ignore */ }
-            return false;
+        function getTitle(item) {
+            return item.title || 'Unknown';
         }
 
-        async function findBestInstance() {
-            // Test instances in parallel (first 5 at a time for speed)
-            for (let i = 0; i < PIPED_INSTANCES.length; i += 5) {
-                const batch = PIPED_INSTANCES.slice(i, i + 5);
-                const results = await Promise.all(batch.map(async url => {
-                    const ok = await testInstance(url);
-                    return ok ? url : null;
-                }));
-                const working = results.find(r => r !== null);
-                if (working) return working;
-            }
-            throw new Error('No Piped instances are reachable');
+        function getArtist(item) {
+            return item.author || item.uploaderName || item.uploader || 'Unknown';
         }
 
-        async function apiFetch(endpoint) {
-            if (!currentInstance) {
-                currentInstance = await findBestInstance();
-            }
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 8000);
-            try {
-                const resp = await fetch(`${currentInstance}${endpoint}`, { signal: controller.signal });
-                clearTimeout(timeout);
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                return await resp.json();
-            } catch(e) {
-                console.warn('API fetch failed:', e.message);
-                // Try finding new instance and retry once
-                currentInstance = null;
-                currentInstance = await findBestInstance();
-                const resp = await fetch(`${currentInstance}${endpoint}`);
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                return await resp.json();
-            }
+        function getDuration(item) {
+            return item.lengthSeconds || item.duration || 0;
         }
 
-        // ---- UI: Load Content ----
+        function normalizeTrack(item) {
+            return {
+                videoId: getVideoId(item),
+                title: getTitle(item),
+                artist: getArtist(item),
+                thumbnail: getThumbnail(item),
+                duration: getDuration(item),
+            };
+        }
+
+        // ---- FALLBACK THUMBNAIL ----
+        const BLANK_THUMB = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="170" height="170"><rect fill="%23333" width="170" height="170"/><text x="50%25" y="50%25" text-anchor="middle" fill="%23666" dy=".3em" font-size="40">🎵</text></svg>`;
+        const BLANK_THUMB_SM = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect fill="%23333" width="40" height="40"/></svg>`;
+
+        // ---- CONTENT LOADING ----
         async function loadTrending() {
             const area = document.getElementById('contentArea');
-            area.innerHTML = '<div class="loading"><div class="spinner"></div>Loading trending...</div>';
+            area.innerHTML = '<div class="loading"><div class="spinner"></div>Loading trending music...</div>';
             try {
-                const data = await apiFetch('/trending?region=US');
-                const tracks = data.filter(item => item.type === 'stream').slice(0, 24);
-                if (tracks.length === 0) throw new Error('No tracks found');
+                let tracks = [];
+                if (!backend) backend = await findBackend();
 
-                const tracksJson = JSON.stringify(tracks.map(t => ({
-                    title: t.title,
-                    videoId: getVideoId(t),
-                    thumbnail: t.thumbnail,
-                    artist: t.uploaderName || t.uploader || 'Unknown',
-                    duration: t.duration || 0
-                })));
+                if (backend.type === 'invidious') {
+                    const data = await apiFetch('/api/v1/trending?type=music&region=US');
+                    tracks = (Array.isArray(data) ? data : []).slice(0, 24).map(normalizeTrack);
+                } else {
+                    const data = await apiFetch('/trending?region=US');
+                    tracks = (Array.isArray(data) ? data : []).filter(i => i.type === 'stream').slice(0, 24).map(normalizeTrack);
+                }
 
-                area.innerHTML = `
-                    <h2 class="section-title">🔥 Trending Now</h2>
-                    <div class="card-grid">
-                        ${tracks.map((t, i) => {
-                            const vid = getVideoId(t);
-                            const title = t.title || 'Unknown';
-                            const artist = t.uploaderName || t.uploader || 'Unknown';
-                            const thumb = getImageUrl(t.thumbnail);
-                            return `
-                            <div class="card" data-idx="${i}">
-                                <div class="card-img-wrap">
-                                    <img class="card-img" src="${thumb}" alt="" loading="lazy"
-                                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22170%22 height=%22170%22><rect fill=%22%23333%22 width=%22170%22 height=%22170%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 dy=%22.3em%22 font-size=%2240%22>🎵</text></svg>'">
-                                    <div class="play-overlay"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="black"/></svg></div>
-                                </div>
-                                <div class="card-title" title="${title}">${title}</div>
-                                <div class="card-subtitle">${artist}</div>
-                            </div>`;
-                        }).join('')}
-                    </div>
-                `;
+                if (tracks.length === 0) throw new Error('No tracks returned');
 
-                // Store track data
-                area.dataset.tracks = tracksJson;
+                const hostname = new URL(backend.base).hostname;
+                setBadge(`✓ ${hostname}`, 'ok');
 
-                // Click handlers
-                area.querySelectorAll('.card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        const allTracks = JSON.parse(area.dataset.tracks);
-                        const idx = parseInt(card.dataset.idx);
-                        queue = allTracks;
-                        playTrack(allTracks[idx], idx);
-                    });
-                });
-
+                renderCards(area, '🔥 Trending Now', tracks);
             } catch(e) {
+                console.error('Trending failed:', e);
+                setBadge('Error', 'err');
                 area.innerHTML = `<div class="error-msg">
-                    <h3>Couldn't load trending</h3>
+                    <h3>Couldn't load trending music</h3>
                     <p>${e.message}</p>
-                    <button onclick="App.loadTrending()">Retry</button>
+                    <p>All music servers may be blocked on this network. Try searching for something specific, or use a VPN.</p>
+                    <button onclick="App.init()">🔄 Retry</button>
                 </div>`;
             }
         }
@@ -609,62 +710,26 @@
         async function search(query) {
             const area = document.getElementById('contentArea');
             if (!query || !query.trim()) return loadTrending();
-
             area.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
+
             try {
-                const data = await apiFetch(`/search?q=${encodeURIComponent(query)}&filter=videos`);
-                const results = (data.items || []).filter(item => item.type === 'stream').slice(0, 30);
-                
-                if (results.length === 0) {
-                    area.innerHTML = `<h2 class="section-title" style="text-align:center;">No results for "${query}"</h2>`;
+                let tracks = [];
+                if (!backend) backend = await findBackend();
+
+                if (backend.type === 'invidious') {
+                    const data = await apiFetch(`/api/v1/search?q=${encodeURIComponent(query)}&type=video&sort_by=relevance`);
+                    tracks = (data || []).filter(i => i.type === 'video').slice(0, 30).map(normalizeTrack);
+                } else {
+                    const data = await apiFetch(`/search?q=${encodeURIComponent(query)}&filter=videos`);
+                    tracks = ((data && data.items) || []).filter(i => i.type === 'stream').slice(0, 30).map(normalizeTrack);
+                }
+
+                if (tracks.length === 0) {
+                    area.innerHTML = `<h2 class="section-title" style="text-align:center;padding-top:40px;">No results for "${query}"</h2>`;
                     return;
                 }
 
-                const tracksJson = JSON.stringify(results.map(t => ({
-                    title: t.title,
-                    videoId: getVideoId(t),
-                    thumbnail: t.thumbnail,
-                    artist: t.uploaderName || t.uploader || 'Unknown',
-                    duration: t.duration || 0
-                })));
-
-                area.innerHTML = `
-                    <h2 class="section-title">Results for "${query}"</h2>
-                    <div class="track-list">
-                        ${results.map((t, i) => {
-                            const title = t.title || 'Unknown';
-                            const artist = t.uploaderName || t.uploader || 'Unknown';
-                            const dur = formatTime(t.duration);
-                            const thumb = getImageUrl(t.thumbnail);
-                            return `
-                            <div class="track-row" data-idx="${i}">
-                                <span class="track-num">${i+1}</span>
-                                <span class="track-play" style="display:none">▶</span>
-                                <div class="track-info">
-                                    <img class="track-thumb" src="${thumb}" loading="lazy"
-                                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><rect fill=%22%23333%22 width=%2240%22 height=%2240%22/></svg>'">
-                                    <div class="track-details">
-                                        <div class="track-name">${title}</div>
-                                        <div class="track-artist">${artist}</div>
-                                    </div>
-                                </div>
-                                <span class="track-dur">${dur}</span>
-                            </div>`;
-                        }).join('')}
-                    </div>
-                `;
-
-                area.dataset.tracks = tracksJson;
-
-                area.querySelectorAll('.track-row').forEach(row => {
-                    row.addEventListener('click', () => {
-                        const allTracks = JSON.parse(area.dataset.tracks);
-                        const idx = parseInt(row.dataset.idx);
-                        queue = allTracks;
-                        playTrack(allTracks[idx], idx);
-                    });
-                });
-
+                renderList(area, `Results for "${query}"`, tracks);
             } catch(e) {
                 area.innerHTML = `<div class="error-msg">
                     <h3>Search failed</h3>
@@ -674,87 +739,160 @@
             }
         }
 
+        function renderCards(area, title, tracks) {
+            area.innerHTML = `
+                <h2 class="section-title">${title}</h2>
+                <div class="card-grid">
+                    ${tracks.map((t, i) => `
+                        <div class="card" data-idx="${i}">
+                            <div class="card-img-wrap">
+                                <img class="card-img" src="${t.thumbnail}" alt="" loading="lazy"
+                                     onerror="this.src='${BLANK_THUMB}'">
+                                <div class="play-overlay">
+                                    <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="black"/></svg>
+                                </div>
+                            </div>
+                            <div class="card-title" title="${escHtml(t.title)}">${escHtml(t.title)}</div>
+                            <div class="card-subtitle">${escHtml(t.artist)}</div>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            area.dataset.tracks = JSON.stringify(tracks);
+            area.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const all = JSON.parse(area.dataset.tracks);
+                    const idx = parseInt(card.dataset.idx);
+                    queue = all;
+                    playTrack(all[idx], idx);
+                });
+            });
+        }
+
+        function renderList(area, title, tracks) {
+            area.innerHTML = `
+                <h2 class="section-title">${title}</h2>
+                <div class="track-list">
+                    ${tracks.map((t, i) => `
+                        <div class="track-row" data-idx="${i}">
+                            <span class="track-num">${i + 1}</span>
+                            <div class="track-info">
+                                <img class="track-thumb" src="${t.thumbnail}" loading="lazy"
+                                     onerror="this.src='${BLANK_THUMB_SM}'">
+                                <div class="track-details">
+                                    <div class="track-name">${escHtml(t.title)}</div>
+                                    <div class="track-artist">${escHtml(t.artist)}</div>
+                                </div>
+                            </div>
+                            <span class="track-dur">${formatTime(t.duration)}</span>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            area.dataset.tracks = JSON.stringify(tracks);
+            area.querySelectorAll('.track-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const all = JSON.parse(area.dataset.tracks);
+                    const idx = parseInt(row.dataset.idx);
+                    queue = all;
+                    playTrack(all[idx], idx);
+                });
+            });
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         // ---- AUDIO PLAYBACK ----
-        function playTrack(track, idx) {
-            if (!track || !track.videoId) {
-                console.error('Invalid track:', track);
-                return;
-            }
+        async function playTrack(track, idx) {
+            if (!track || !track.videoId) return;
             queueIndex = idx;
+            currentVideoId = track.videoId;
+
             const playerBar = document.getElementById('playerBar');
 
             // Cleanup old audio
             if (audio) {
                 audio.pause();
-                audio.remove();
+                audio.src = '';
                 audio = null;
             }
 
-            // Update UI
-            document.getElementById('playerImg').src = getImageUrl(track.thumbnail);
+            // Update UI immediately
+            document.getElementById('playerImg').src = track.thumbnail || '';
             document.getElementById('playerTitle').textContent = track.title || 'Unknown';
-            document.getElementById('playerArtist').textContent = track.artist || 'Unknown';
+            document.getElementById('playerArtist').textContent = '⏳ Loading stream...';
             document.getElementById('totalTime').textContent = formatTime(track.duration);
             document.getElementById('curTime').textContent = '0:00';
             document.getElementById('progFill').style.width = '0%';
             playerBar.classList.remove('hidden');
+            setBuffering(true);
 
-            // Create audio element
-            const streamUrl = getStreamUrl(track.videoId);
-            console.log('Loading stream:', streamUrl);
-            
-            audio = new Audio();
-            audio.crossOrigin = 'anonymous';
-            audio.preload = 'auto';
-            audio.volume = isMuted ? 0 : volume;
+            try {
+                const streamUrl = await getStreamUrl(track.videoId);
+                console.log('Stream URL:', streamUrl.substring(0, 80) + '...');
 
-            audio.addEventListener('canplay', () => {
-                console.log('Audio can play');
-                audio.play().then(() => {
-                    isPlaying = true;
-                    updatePlayBtn();
-                }).catch(err => {
-                    console.warn('Autoplay blocked:', err);
-                    document.getElementById('playerArtist').textContent = 'Click play to start';
+                // Make sure this is still the right track
+                if (currentVideoId !== track.videoId) return;
+
+                audio = new Audio();
+                audio.volume = isMuted ? 0 : volume;
+                audio.crossOrigin = 'anonymous';
+
+                audio.addEventListener('canplay', () => {
+                    setBuffering(false);
+                    document.getElementById('playerArtist').textContent = track.artist || 'Unknown';
+                    audio.play().then(() => {
+                        isPlaying = true;
+                        updatePlayBtn();
+                    }).catch(() => {
+                        document.getElementById('playerArtist').textContent = '▶ Click play to start';
+                    });
                 });
-            });
 
-            audio.addEventListener('timeupdate', () => {
-                if (audio.duration) {
-                    const pct = (audio.currentTime / audio.duration) * 100;
-                    document.getElementById('progFill').style.width = pct + '%';
-                    document.getElementById('curTime').textContent = formatTime(audio.currentTime);
-                }
-            });
+                audio.addEventListener('waiting', () => setBuffering(true));
+                audio.addEventListener('playing', () => setBuffering(false));
 
-            audio.addEventListener('ended', () => {
-                if (queueIndex < queue.length - 1) {
-                    playTrack(queue[queueIndex + 1], queueIndex + 1);
-                } else {
+                audio.addEventListener('timeupdate', () => {
+                    if (audio.duration) {
+                        const pct = (audio.currentTime / audio.duration) * 100;
+                        document.getElementById('progFill').style.width = pct + '%';
+                        document.getElementById('curTime').textContent = formatTime(audio.currentTime);
+                    }
+                });
+
+                audio.addEventListener('ended', () => {
                     isPlaying = false;
                     updatePlayBtn();
-                }
-            });
-
-            audio.addEventListener('error', (e) => {
-                console.error('Audio error:', audio?.error);
-                const err = audio?.error;
-                let msg = 'Error playing';
-                if (err) {
-                    switch(err.code) {
-                        case MediaError.MEDIA_ERR_NETWORK: msg = 'Network error'; break;
-                        case MediaError.MEDIA_ERR_DECODE: msg = 'Cannot decode audio'; break;
-                        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED: msg = 'Format not supported'; break;
-                        case MediaError.MEDIA_ERR_ABORTED: msg = 'Playback aborted'; break;
+                    if (queueIndex < queue.length - 1) {
+                        playTrack(queue[queueIndex + 1], queueIndex + 1);
                     }
-                }
-                document.getElementById('playerArtist').textContent = msg + ' - try another track';
-                isPlaying = false;
-                updatePlayBtn();
-            });
+                });
 
-            audio.src = streamUrl;
-            audio.load();
+                audio.addEventListener('error', (e) => {
+                    setBuffering(false);
+                    isPlaying = false;
+                    updatePlayBtn();
+                    const err = audio?.error;
+                    let msg = '⚠ Playback error';
+                    if (err) {
+                        if (err.code === MediaError.MEDIA_ERR_NETWORK) msg = '⚠ Network error — try next track';
+                        else if (err.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) msg = '⚠ Format not supported';
+                    }
+                    document.getElementById('playerArtist').textContent = msg;
+                    console.error('Audio error code:', err?.code, err?.message);
+                });
+
+                audio.src = streamUrl;
+                audio.load();
+
+            } catch(e) {
+                setBuffering(false);
+                document.getElementById('playerArtist').textContent = '⚠ Could not load stream';
+                console.error('Stream load error:', e);
+            }
         }
 
         function updatePlayBtn() {
@@ -766,20 +904,17 @@
             if (isPlaying) {
                 audio.pause();
                 isPlaying = false;
+                updatePlayBtn();
             } else {
                 audio.play().then(() => {
                     isPlaying = true;
-                }).catch(() => {
-                    isPlaying = false;
-                });
+                    updatePlayBtn();
+                }).catch(console.warn);
             }
-            updatePlayBtn();
         }
 
         function playNext() {
-            if (queue.length > 0 && queueIndex < queue.length - 1) {
-                playTrack(queue[queueIndex + 1], queueIndex + 1);
-            }
+            if (queueIndex < queue.length - 1) playTrack(queue[queueIndex + 1], queueIndex + 1);
         }
 
         function playPrev() {
@@ -790,64 +925,44 @@
             }
         }
 
-        // ---- INITIALIZATION ----
+        // ---- INIT ----
         async function init() {
-            const sel = document.getElementById('instanceSelect');
-            PIPED_INSTANCES.forEach(url => {
-                const opt = document.createElement('option');
-                opt.value = url;
-                opt.textContent = new URL(url).hostname;
-                sel.appendChild(opt);
-            });
-
-            sel.addEventListener('change', () => {
-                if (sel.value) {
-                    currentInstance = sel.value;
-                    console.log('Switched to:', currentInstance);
-                    loadTrending();
-                } else {
-                    currentInstance = null;
-                    init();
-                }
-            });
-
+            setBadge('Connecting...', '');
+            document.getElementById('contentArea').innerHTML = '<div class="loading"><div class="spinner"></div>Finding best music server...</div>';
             try {
-                currentInstance = await findBestInstance();
-                console.log('Using instance:', currentInstance);
-                // Update selector
-                const matchingOpt = Array.from(sel.options).find(o => o.value === currentInstance);
-                if (matchingOpt) matchingOpt.selected = true;
+                backend = null;
+                backend = await findBackend();
+                const hostname = new URL(backend.base).hostname;
+                setBadge(`✓ ${hostname}`, 'ok');
+                loadTrending();
             } catch(e) {
-                console.error('No instances available:', e);
+                setBadge('Offline', 'err');
                 document.getElementById('contentArea').innerHTML = `
                     <div class="error-msg">
-                        <h3>No servers available</h3>
-                        <p>All Piped API instances are unreachable.</p>
-                        <p style="font-size:12px;opacity:0.7;">Check your internet, disable adblockers for this page, or try a VPN.</p>
-                        <button onclick="location.reload()">🔄 Reload</button>
+                        <h3>All music servers are unreachable 😞</h3>
+                        <p>This is usually caused by a school/work network firewall or an ad blocker blocking the API requests.</p>
+                        <p><strong>Things to try:</strong><br>
+                        • Disable your ad blocker for this page<br>
+                        • Connect to a different Wi-Fi or use mobile data<br>
+                        • Use a VPN</p>
+                        <button onclick="App.init()">🔄 Try Again</button>
                     </div>`;
-                return;
             }
-
-            loadTrending();
         }
 
-        // ---- EVENT LISTENERS ----
+        // ---- EVENTS ----
         document.getElementById('playBtn').addEventListener('click', togglePlay);
         document.getElementById('nextBtn').addEventListener('click', playNext);
         document.getElementById('prevBtn').addEventListener('click', playPrev);
 
-        // Progress bar click
         document.getElementById('progBar').addEventListener('click', (e) => {
             if (!audio || !audio.duration) return;
-            const rect = e.target.getBoundingClientRect();
-            const pct = (e.clientX - rect.left) / rect.width;
-            audio.currentTime = pct * audio.duration;
+            const rect = document.getElementById('progBar').getBoundingClientRect();
+            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
         });
 
-        // Volume
         document.getElementById('volBar').addEventListener('click', (e) => {
-            const rect = e.target.getBoundingClientRect();
+            const rect = document.getElementById('volBar').getBoundingClientRect();
             volume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             document.getElementById('volFill').style.width = (volume * 100) + '%';
             if (audio) audio.volume = isMuted ? 0 : volume;
@@ -860,32 +975,28 @@
             if (audio) audio.volume = isMuted ? 0 : volume;
         });
 
-        // Search
         document.getElementById('searchInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                const q = e.target.value;
+                const q = e.target.value.trim();
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.querySelector('[data-page="search"]').classList.add('active');
                 search(q);
             }
         });
 
-        // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 item.classList.add('active');
-                const page = item.dataset.page;
-                if (page === 'home') {
+                if (item.dataset.page === 'home') {
                     document.getElementById('searchInput').value = '';
                     loadTrending();
-                } else if (page === 'search') {
+                } else {
                     document.getElementById('searchInput').focus();
                 }
             });
         });
 
-        // Quick playlists
         document.querySelectorAll('.playlist-item').forEach(item => {
             item.addEventListener('click', () => {
                 const q = item.dataset.search;
@@ -898,7 +1009,6 @@
             });
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT') return;
             switch(e.code) {
@@ -910,10 +1020,7 @@
             }
         });
 
-        // Expose to global scope for retry buttons
-        window.App = { loadTrending, search };
-
-        // Start
+        window.App = { init, loadTrending, search };
         init();
     })();
     </script>
