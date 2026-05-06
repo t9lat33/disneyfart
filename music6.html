@@ -33,10 +33,8 @@
       overflow: hidden;
     }
 
-    /* ─── Layout ─── */
     .app { display: flex; flex: 1; overflow: hidden; }
 
-    /* ─── Sidebar ─── */
     .sidebar {
       width: 220px;
       background: var(--bg2);
@@ -60,7 +58,6 @@
       color: var(--text);
       border-bottom: 1px solid var(--line);
     }
-
     .logo-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
@@ -85,6 +82,7 @@
       text-align: left;
       transition: color 0.15s;
       letter-spacing: 0.1px;
+      position: relative;
     }
     .nav-item svg { flex-shrink: 0; opacity: 0.6; transition: opacity 0.15s; }
     .nav-item:hover { color: var(--text); }
@@ -100,7 +98,6 @@
       background: var(--accent);
       border-radius: 0 2px 2px 0;
     }
-    .nav-item { position: relative; }
 
     .playlist-section { padding: 20px 0; flex: 1; overflow-y: auto; }
     .playlist-section::-webkit-scrollbar { display: none; }
@@ -134,7 +131,6 @@
     .pl-item:hover { color: var(--text); }
     .pl-icon { font-size: 14px; flex-shrink: 0; }
 
-    /* ─── Main ─── */
     .main {
       flex: 1;
       display: flex;
@@ -222,7 +218,6 @@
       color: var(--text);
     }
 
-    /* ─── Card Grid ─── */
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -242,6 +237,7 @@
       width: 100%;
       position: relative;
       overflow: hidden;
+      border: none;
     }
     .card:hover {
       background: var(--bg3);
@@ -295,7 +291,6 @@
       overflow: hidden;
     }
 
-    /* ─── Track List ─── */
     .track-list { display: flex; flex-direction: column; gap: 2px; }
 
     .track-row {
@@ -344,7 +339,6 @@
     .track-artist { font-size: 11.5px; color: var(--muted2); margin-top: 2px; }
     .track-dur { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-    /* ─── Loading / Error ─── */
     .state-view {
       display: flex;
       flex-direction: column;
@@ -376,7 +370,6 @@
     }
     .retry-btn:hover { background: var(--bg3); }
 
-    /* ─── Player ─── */
     .player {
       height: var(--player-h);
       min-height: var(--player-h);
@@ -470,7 +463,6 @@
     .vol-fill { height: 100%; background: var(--muted2); border-radius: 2px; width: 70%; }
     .vol-track:hover .vol-fill { background: var(--text); }
 
-    /* ─── Toast ─── */
     .toast {
       position: fixed;
       bottom: calc(var(--player-h) + 16px);
@@ -500,7 +492,6 @@
 <body>
 
 <div class="app">
-  <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo"><div class="logo-dot"></div>Spoti-Pipe</div>
     <div class="nav-section">
@@ -527,7 +518,6 @@
     </div>
   </div>
 
-  <!-- Main -->
   <div class="main">
     <div class="topbar">
       <div class="search-wrap">
@@ -542,7 +532,6 @@
   </div>
 </div>
 
-<!-- Player -->
 <div class="player hidden" id="player">
   <div class="now-playing">
     <img class="player-thumb" id="playerThumb" src="" alt="">
@@ -610,7 +599,6 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ─── Trending ───
 async function loadTrending() {
   const el = document.getElementById('content');
   el.innerHTML = `<div class="state-view"><div class="spinner"></div><span class="state-msg">Loading trending music…</span></div>`;
@@ -625,7 +613,6 @@ async function loadTrending() {
   }
 }
 
-// ─── Search ───
 async function search(q) {
   const el = document.getElementById('content');
   if (!q.trim()) return loadTrending();
@@ -645,7 +632,6 @@ async function search(q) {
   }
 }
 
-// ─── Render helpers ───
 function renderCards(tracks, el, title) {
   el.innerHTML = `<h2 class="page-title">${title}</h2><div class="card-grid">
     ${tracks.map((t,i) => `
@@ -697,10 +683,10 @@ function markActiveRow() {
   });
 }
 
-// ─── Play ───
 async function playTrack(track, idx) {
-  if (!track?.url) return;
-  const videoId = track.url.split('v=')[1];
+  if (!track?.videoId && !track?.url) return;
+  
+  const videoId = track.videoId || (track.url ? track.url.split('v=')[1] : null);
   if (!videoId) return;
 
   queueIndex = idx;
@@ -716,23 +702,30 @@ async function playTrack(track, idx) {
 
   if (audio) { audio.pause(); audio.src = ''; }
 
-  let streamUrl;
-  try {
-    const res = await fetch(`${API}/stream/${videoId}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.url) throw new Error('No stream URL');
-    streamUrl = data.url;
-  } catch(e) {
-    document.getElementById('playerArtist').textContent = 'Failed to load';
-    showToast('Could not load track — skipping');
-    setTimeout(() => {
-      if (queueIndex < queue.length - 1) playTrack(queue[queueIndex+1], queueIndex+1);
-    }, 1500);
-    return;
+  const sources = [
+    `https://pipedapi.kavin.rocks/streams/${videoId}`,
+    `https://pipedapi.adminforge.de/streams/${videoId}`,
+  ];
+
+  let audioUrl = null;
+  for (const src of sources) {
+    try {
+      const res = await fetch(src);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.audioStreams?.[0]?.url) {
+          audioUrl = data.audioStreams[0].url;
+          break;
+        }
+      }
+    } catch(e) { continue; }
   }
 
-  audio = new Audio(streamUrl);
+  if (!audioUrl) {
+    audioUrl = `https://inv.nadeko.net/latest_version?id=${videoId}&itag=140`;
+  }
+
+  audio = new Audio(audioUrl);
   audio.volume = isMuted ? 0 : volume;
 
   audio.oncanplay = () => {
@@ -744,7 +737,7 @@ async function playTrack(track, idx) {
 
   audio.onerror = () => {
     document.getElementById('playerArtist').textContent = 'Playback error';
-    showToast('Playback error — skipping');
+    showToast('Skipping unavailable track');
     setTimeout(() => {
       if (queueIndex < queue.length - 1) playTrack(queue[queueIndex+1], queueIndex+1);
     }, 1500);
@@ -767,12 +760,6 @@ async function playTrack(track, idx) {
 }
 
 function setPlayIcon(playing) {
-  document.getElementById('playIcon').setAttribute('points', playing
-    ? '6 19 6 5 M10 5 10 19' : '5 3 19 12 5 21 5 3');
-  document.getElementById('playIcon').setAttribute('fill', playing ? 'none' : 'currentColor');
-  document.getElementById('playIcon').setAttribute('stroke', playing ? 'currentColor' : 'none');
-  document.getElementById('playIcon').setAttribute('stroke-width', playing ? '2.5' : '0');
-  // Simpler: swap the whole SVG path
   const icon = document.getElementById('playIcon');
   if (playing) {
     icon.innerHTML = `<line x1="6" y1="4" x2="6" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
@@ -784,7 +771,6 @@ function setPlayIcon(playing) {
   }
 }
 
-// ─── Controls ───
 document.getElementById('playBtn').onclick = () => {
   if (!audio) return;
   if (isPlaying) { audio.pause(); setPlayIcon(false); }
@@ -820,7 +806,6 @@ document.getElementById('muteBtn').onclick = () => {
   if (audio) audio.volume = isMuted ? 0 : volume;
 };
 
-// ─── Nav ───
 document.getElementById('searchInput').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
