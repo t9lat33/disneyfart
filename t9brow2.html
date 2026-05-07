@@ -678,36 +678,72 @@ svg { display: block; }
 //      overrides window.open inside the sandboxed frame
 // ══════════════════════════════════════════════════════════
 
-// Channel the UV service worker uses to forward popup URLs
+// ── Token map: token string → tabId (for about:blank popup pattern) ──
+const _pendingTokens = new Map();
+
+function safeHostname(url) {
+  try { return new URL(url).hostname; } catch { return url.slice(0, 40); }
+}
+
+let _toastTimer = null;
+function showPopupToast(msg) {
+  const toast = document.getElementById('popup-toast');
+  const txt   = document.getElementById('popup-toast-text');
+  txt.textContent = msg || 'Popup captured → new tab';
+  toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// BroadcastChannel — receives { url, token? } from injected frame scripts
 let popupChannel;
 try {
   popupChannel = new BroadcastChannel('t9_popup_channel');
   popupChannel.onmessage = e => {
-    const url = e.data && e.data.url;
-    if (url !== undefined) interceptedOpen(url, true);
+    const { url, token } = e.data || {};
+
+    if (token && _pendingTokens.has(token)) {
+      // Follow-up: site set .location.href on the fake window — navigate the shell tab
+      const tabId = _pendingTokens.get(token);
+      _pendingTokens.delete(token);
+      if (url && url !== 'about:blank' && url !== '') {
+        navigateTab(tabId, url);
+        showPopupToast('Popup → new tab: ' + safeHostname(url));
+      }
+      return;
+    }
+
+    if (token && url === 'about:blank') {
+      // Initial about:blank open — create a shell tab and remember the token
+      const tabId = _createShellTab();
+      _pendingTokens.set(token, tabId);
+      // Auto-expire token after 30s in case site never navigates it
+      setTimeout(() => _pendingTokens.delete(token), 30000);
+      return;
+    }
+
+    // Normal popup with a real URL
+    if (url) interceptedOpen(url, true);
   };
 } catch (_) {}
 
-// Also catch any window.open that bubbles to the top frame
+// Top-frame window.open override (catches UV-proxied pages that bubble up)
 const _nativeOpen = window.open.bind(window);
 window.open = function(url, target, features) {
   const isBlank = !url || url === 'about:blank' || url === '';
-
   if (isBlank) {
-    // Site will write content or navigate this window after opening.
-    // Create a pending tab now and return a fake window whose .location.href
-    // setter will navigate the tab once the site sets it.
-    const pendingId = idCounter++;
-    createTabShell(pendingId);
-    return makeFakeWindow(pendingId, '');
+    // Create shell tab, return a fake window whose .location setter navigates it
+    const tabId = _createShellTab();
+    return _makeFakeWindow(tabId);
   }
-
   interceptedOpen(url, true);
-  return makeFakeWindow(null, url);
+  return _makeFakeWindow(null);
 };
 
-// Create a tab shell without navigating anywhere (for about:blank popup pattern)
-function createTabShell(id) {
+// Create a blank shell tab and return its id
+function _createShellTab() {
+  const id = idCounter++;
+
   const frame = document.createElement("iframe");
   frame.className = "frame";
   frame.dataset.id = id;
@@ -722,7 +758,6 @@ function createTabShell(id) {
     <img class="tab-favicon" />
     <span class="tab-label">Opening…</span>
     <span class="tab-close">✕</span>`;
-
   el.addEventListener("click", e => {
     if (e.target.classList.contains("tab-close")) closeTab(id);
     else activateTab(id);
@@ -731,18 +766,18 @@ function createTabShell(id) {
   tabstrip.insertBefore(el, newTabBtn);
   tabs.push({ id, frame, el, history: [], index: -1, isPopup: true });
   activateTab(id);
-  // idCounter already incremented by caller
-  if (id >= idCounter) idCounter = id + 1;
+  return id;
 }
 
-// Returns a fake window object. If tabId is set, location writes navigate that tab.
-function makeFakeWindow(tabId, initialUrl) {
-  let _href = initialUrl || 'about:blank';
+// Fake window object — if tabId is set, .location writes navigate that tab directly
+function _makeFakeWindow(tabId) {
+  let _href = 'about:blank';
   const loc = {
     get href() { return _href; },
     set href(val) {
       _href = val;
-      if (tabId !== null) {
+      if (!val || val === 'about:blank') return;
+      if (tabId !== null && tabId !== undefined) {
         navigateTab(tabId, val);
         showPopupToast('Popup → new tab: ' + safeHostname(val));
       } else {
@@ -754,19 +789,18 @@ function makeFakeWindow(tabId, initialUrl) {
   };
   return {
     closed: false,
-    focus() {},
-    blur()  {},
-    close() { if (tabId !== null) closeTab(tabId); },
+    focus() {}, blur() {},
+    close() { if (tabId !== null && tabId !== undefined) closeTab(tabId); },
     location: loc,
-    document: { write() {}, writeln() {}, close() {} }
+    document: {
+      write()   {},
+      writeln() {},
+      close()   {}
+    }
   };
 }
 
-function safeHostname(url) {
-  try { return new URL(url).hostname; } catch { return url.slice(0, 40); }
-}
-
-// Navigate a specific tab by id (used by fake window .location)
+// Navigate a specific tab by id
 async function navigateTab(id, raw) {
   const t = tabs.find(t => t.id === id);
   if (!t) return;
@@ -790,31 +824,18 @@ async function navigateTab(id, raw) {
   };
 }
 
-let _toastTimer = null;
-function showPopupToast(msg) {
-  const toast = document.getElementById('popup-toast');
-  const txt   = document.getElementById('popup-toast-text');
-  txt.textContent = msg || 'Popup captured → new tab';
-  toast.classList.add('show');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
 function interceptedOpen(rawUrl, showToast = true) {
   if (!rawUrl || rawUrl === 'about:blank' || rawUrl === '') {
-    const pendingId = idCounter++;
-    createTabShell(pendingId);
+    _createShellTab();
     return;
   }
-  // Decode UV-encoded URLs if needed
   let url = rawUrl;
   try {
     if (rawUrl.includes(__uv$config.prefix)) {
       url = __uv$config.decodeUrl(rawUrl.replace(new RegExp('^.*' + __uv$config.prefix.replace(/\//g,'\\/')), ''));
     }
   } catch (_) {}
-
-  createTab(url, true /* isPopup */);
+  createTab(url, true);
   if (showToast) showPopupToast('Popup → new tab: ' + safeHostname(url));
 }
 
@@ -873,45 +894,64 @@ const INJECT_SCRIPT = `
 (function() {
   'use strict';
 
-  function postPopup(url) {
+  // Generate a unique token for each popup so the parent can match
+  // the initial about:blank open to the later .location.href = 'real-url' call
+  function uid() {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function post(msg) {
     try {
       const bc = new BroadcastChannel('t9_popup_channel');
-      bc.postMessage({ url: url || 'about:blank' });
+      bc.postMessage(msg);
       bc.close();
     } catch(e) {}
   }
 
-  // Fake window returned for about:blank opens — watches for location changes
-  function makeFakeWin(initialUrl) {
-    let _href = initialUrl || 'about:blank';
+  function makeFakeWin(token) {
+    let _href = 'about:blank';
     const loc = {
       get href() { return _href; },
-      set href(val) { _href = val; postPopup(val); },
-      replace: function(v) { postPopup(v); },
-      assign:  function(v) { postPopup(v); }
+      set href(val) {
+        _href = val;
+        if (val && val !== 'about:blank' && val !== '') {
+          // Send the real URL paired with the token so parent navigates the right shell tab
+          post({ url: val, token: token });
+        }
+      },
+      replace: function(v) { this.href = v; },
+      assign:  function(v) { this.href = v; }
     };
     return {
       closed: false,
       focus: function(){}, blur: function(){}, close: function(){},
       location: loc,
-      document: { write: function(){}, writeln: function(){}, close: function(){} }
+      document: {
+        write:   function(){},
+        writeln: function(){},
+        close:   function(){}
+      }
     };
   }
 
   const _open = window.open;
   window.open = function(url, target, features) {
+    const token = uid();
     const isBlank = !url || url === 'about:blank' || url === '';
+
     if (isBlank) {
-      // Post blank signal; parent will create a shell tab.
-      // Return fake window so the site can later set .location.href
-      postPopup('about:blank');
-      return makeFakeWin('about:blank');
+      // Tell parent to create a shell tab keyed to this token
+      post({ url: 'about:blank', token: token });
+      // Return fake window — when site sets .location.href the token fires again
+      return makeFakeWin(token);
     }
-    postPopup(url);
-    return makeFakeWin(url);
+
+    // Real URL — post it directly (no token needed, parent opens a full tab)
+    post({ url: url });
+    return makeFakeWin(token);
   };
 
-  // Intercept target=_blank anchor clicks
+  // Intercept target=_blank / target=new anchor clicks
   document.addEventListener('click', function(e) {
     const a = e.target.closest('a[target="_blank"], a[target="new"]');
     if (!a) return;
@@ -919,7 +959,7 @@ const INJECT_SCRIPT = `
     if (!href || href.startsWith('javascript:') || href === '#') return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    postPopup(href);
+    post({ url: href });
   }, true);
 })();
 `;
