@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>T9 Browser</title>
+
+<script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
+<script src="/baremux/index.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:      #080809;
+  --chrome:  #0e0e10;
+  --lift:    #141416;
+  --line:    #1e1e22;
+  --line2:   #2a2a30;
+  --muted:   #4a4a58;
+  --sub:     #7a7a90;
+  --txt:     #e8e8f0;
+  --bright:  #ffffff;
+  --accent:  #5b8df6;
+  --accent2: #a78bfa;
+  --green:   #34d48a;
+  --red:     #f05b5b;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Geist', system-ui, sans-serif;
+  --h-tab:   36px;
+  --h-nav:   52px;
+  --chrome-h: calc(var(--h-tab) + var(--h-nav));
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #080809;
+  overflow: hidden;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  color: var(--txt);
+}
+
+/* ════════════════════════════════
+   BACKGROUND LAYER
+════════════════════════════════ */
+#bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  display: none;
+  pointer-events: none;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.30);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════
+   CHROME SHELL
+════════════════════════════════ */
+#shell {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(8,8,9,0.72);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* ════════════════════════════════
+   TAB STRIP
+════════════════════════════════ */
+#tabstrip {
+  height: var(--h-tab);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 10px;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--line);
+}
+#tabstrip::-webkit-scrollbar { display: none; }
+
+.tab {
+  height: 28px;
+  min-width: 120px;
+  max-width: 200px;
+  padding: 0 10px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--sub);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+.tab:hover { color: var(--txt); background: var(--lift); }
+.tab.active {
+  background: var(--lift);
+  border-color: var(--line2);
+  color: var(--bright);
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 1px;
+  background: var(--lift);
+}
+
+/* Popup indicator badge */
+.tab-popup-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  background: rgba(91,141,246,0.18);
+  color: var(--accent);
+  font-size: 8px;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  letter-spacing: 0;
+}
+
+.tab-favicon {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: none;
+}
+.tab-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab-close {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+  line-height: 1;
+}
+.tab-close:hover { color: var(--red); background: rgba(240,91,91,0.12); }
+
+#btn-newtab {
+  height: 24px; width: 24px;
+  margin-bottom: 3px;
+  margin-left: 4px;
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--sub);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+#btn-newtab:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ════════════════════════════════
+   NAVBAR
+════════════════════════════════ */
+#navbar {
+  height: var(--h-nav);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.nav-icon {
+  width: 30px; height: 30px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sub);
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.nav-icon:hover:not(:disabled) { background: var(--lift); color: var(--txt); }
+.nav-icon:disabled { opacity: 0.28; cursor: default; }
+
+/* ── URL BAR ── */
+#urlbar {
+  flex: 1;
+  height: 34px;
+  background: var(--lift);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#urlbar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,141,246,0.14);
+}
+
+#url-scheme {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+#url-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--txt);
+  letter-spacing: 0.01em;
+}
+#url-input::placeholder { color: var(--muted); }
+#url-input:focus::placeholder { color: var(--sub); }
+
+#url-go {
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 2px;
+  transition: color 0.15s;
+}
+#url-go:hover { color: var(--accent); }
+
+.sep {
+  width: 1px; height: 18px;
+  background: var(--line2);
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════
+   VIEWPORT
+════════════════════════════════ */
+.frame {
+  position: fixed;
+  top: 88px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(100vh - 88px);
+  border: none;
+  display: none;
+}
+.frame.active { display: block; }
+
+/* ════════════════════════════════
+   NEW TAB PAGE
+════════════════════════════════ */
+#ntp {
+  position: fixed;
+  top: 88px;
+  left: 0; right: 0; bottom: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  overflow: hidden;
+  background: transparent;
+}
+#ntp.show { display: flex; }
+
+#ntp::before, #ntp::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  animation: drift 12s ease-in-out infinite alternate;
+}
+#ntp::before {
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, rgba(91,141,246,0.09) 0%, transparent 70%);
+  top: 15%; left: 10%;
+}
+#ntp::after {
+  width: 400px; height: 280px;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.07) 0%, transparent 70%);
+  bottom: 20%; right: 10%;
+  animation-delay: -6s;
+}
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 20px) scale(1.08); }
+}
+
+.ntp-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.ntp-title {
+  font-family: var(--mono);
+  font-size: clamp(62px, 9vw, 110px);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  position: relative;
+  background: linear-gradient(135deg,
+    #ffffff 0%,
+    #c8d8ff 30%,
+    #a78bfa 60%,
+    #7c6bf5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 40px rgba(167,139,250,0.35));
+  animation: title-breathe 5s ease-in-out infinite alternate;
+}
+@keyframes title-breathe {
+  from { filter: drop-shadow(0 0 30px rgba(167,139,250,0.28)); }
+  to   { filter: drop-shadow(0 0 55px rgba(91,141,246,0.45)); }
+}
+
+.ntp-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  pointer-events: none;
+}
+
+.ntp-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── SEARCH ── */
+.ntp-search {
+  width: min(500px, 82vw);
+  height: 46px;
+  background: rgba(20,20,22,0.8);
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+}
+.ntp-search:focus-within {
+  border-color: rgba(167,139,250,0.5);
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.1), 0 0 20px rgba(167,139,250,0.08);
+}
+.ntp-search svg { flex-shrink: 0; }
+.ntp-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--txt);
+}
+.ntp-search input::placeholder { color: var(--muted); }
+
+/* ── SHORTCUTS ── */
+.ntp-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background: rgba(20,20,22,0.7);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sub);
+  transition: all 0.18s;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+.shortcut:hover {
+  border-color: rgba(167,139,250,0.35);
+  color: var(--txt);
+  background: rgba(167,139,250,0.07);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.shortcut img {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+}
+
+/* ── POPUP TOAST ── */
+#popup-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--lift);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--sub);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#popup-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+#popup-toast .toast-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+svg { display: block; }
+</style>
+</head>
+<body>
+
+<video id="bg-video" autoplay loop muted playsinline></video>
+
+<script>
+(function () {
+  const body  = document.body;
+  const video = document.getElementById('bg-video');
+
+  const DB_NAME    = 'BackgroundStorage';
+  const STORE_NAME = 'media';
+  let   _db        = null;
+
+  function openDB() {
+    return new Promise((res, rej) => {
+      if (_db) { res(_db); return; }
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onerror      = () => rej(req.error);
+      req.onsuccess    = () => { _db = req.result; res(_db); };
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME))
+          db.createObjectStore(STORE_NAME);
+      };
+    });
+  }
+
+  async function idbGet(key) {
+    const db  = await openDB();
+    return new Promise((res, rej) => {
+      const tx  = db.transaction([STORE_NAME], 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(key);
+      req.onsuccess = () => res(req.result);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+
+  function applyBg(src, type) {
+    video.pause();
+    video.removeAttribute('src');
+    video.style.display = 'none';
+    body.style.backgroundImage  = 'none';
+    body.style.backgroundSize   = '';
+    body.style.backgroundPosition = '';
+    body.style.backgroundRepeat   = '';
+
+    if (type === 'video' && src) {
+      video.src = src;
+      video.style.display = 'block';
+      video.load();
+      video.play().catch(() => {});
+    } else if (type === 'image' && src) {
+      body.style.backgroundImage    = `url(${src})`;
+      body.style.backgroundSize     = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundRepeat   = 'no-repeat';
+    }
+  }
+
+  async function loadBg() {
+    const savedType  = localStorage.getItem('backgroundType') || 'video';
+    const hasVideo   = localStorage.getItem('hasVideoInIndexedDB') === 'true';
+    const hasLargeImg= localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
+    const savedSrc   = localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
+
+    try {
+      if (savedType === 'video') {
+        if (hasVideo) {
+          const data = await idbGet('savedVideo');
+          if (data?.data) {
+            const blob = new Blob([data.data], { type: data.type || 'video/mp4' });
+            applyBg(URL.createObjectURL(blob), 'video');
+            return;
+          }
+        }
+        applyBg(savedSrc, 'video');
+      } else {
+        if (hasLargeImg) {
+          const data = await idbGet('savedImage');
+          if (data?.data) {
+            const blob = new Blob([data.data], { type: data.type || 'image/jpeg' });
+            applyBg(URL.createObjectURL(blob), 'image');
+            return;
+          }
+        }
+        if (savedSrc) applyBg(savedSrc, 'image');
+      }
+    } catch (err) {
+      console.warn('[T9 Surf] Background load error:', err);
+      applyBg(savedSrc, savedType);
+    }
+  }
+
+  try {
+    const bc = new BroadcastChannel('t9_bg_channel');
+    bc.onmessage = () => loadBg();
+  } catch (_) {}
+
+  window.addEventListener('storage', e => {
+    if (['backgroundType','selectedBackground','hasVideoInIndexedDB','hasLargeImageInIndexedDB'].includes(e.key)) {
+      loadBg();
+    }
+  });
+
+  loadBg();
+})();
+</script>
+
+<div id="shell">
+  <!-- TAB STRIP -->
+  <div id="tabstrip">
+    <button id="btn-newtab" title="New tab">+</button>
+  </div>
+
+  <!-- NAVBAR -->
+  <div id="navbar">
+    <button class="nav-icon" id="btn-back" disabled title="Back">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="nav-icon" id="btn-forward" disabled title="Forward">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="nav-icon" id="btn-reload" title="Reload">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M12 2.5A5.5 5.5 0 1 1 7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M12 2.5V5.5H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <form id="urlform" style="flex:1;display:flex;">
+      <div id="urlbar">
+        <span id="url-scheme">T9</span>
+        <input id="url-input" type="text" placeholder="Search or go to URL" autocomplete="off" spellcheck="false" />
+        <span id="url-go">↵</span>
+      </div>
+    </form>
+
+    <div class="sep"></div>
+
+    <button class="nav-icon" id="btn-popout" title="Open externally">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M8 1h4v4M12 1l-6 6M6 3H2.5A1.5 1.5 0 0 0 1 4.5v6A1.5 1.5 0 0 0 2.5 12h6A1.5 1.5 0 0 0 10 10.5V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- NEW TAB PAGE -->
+<div id="ntp" class="show">
+  <div class="ntp-hero">
+    <div class="ntp-title" data-text="T9 SURF">T9 SURF</div>
+    <div class="ntp-sub">Your private gateway</div>
+  </div>
+
+  <div class="ntp-search">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <circle cx="6.5" cy="6.5" r="5" stroke="#7a7a90" stroke-width="1.4"/>
+      <path d="M10.5 10.5L13.5 13.5" stroke="#7a7a90" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+    <input id="ntp-input" type="text" placeholder="Search or enter URL…" autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div class="ntp-shortcuts"></div>
+</div>
+
+<!-- Popup intercepted toast -->
+<div id="popup-toast">
+  <div class="toast-dot"></div>
+  <span id="popup-toast-text">Popup captured → new tab</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  POPUP INTERCEPTION
+//  Websites inside iframes call window.open() or set
+//  target="_blank". Since the proxy runs inside /uv/service/
+//  those calls normally escape to a real browser tab.
+//  We intercept them here via:
+//   1. A BroadcastChannel the UV service worker can message us on
+//   2. Overriding window.open on the top frame so that any
+//      same-origin UV-proxied page that still manages to bubble
+//      up gets caught
+//   3. Injecting a script blob into every iframe we create that
+//      overrides window.open inside the sandboxed frame
+// ══════════════════════════════════════════════════════════
+
+// Channel the UV service worker uses to forward popup URLs
+let popupChannel;
+try {
+  popupChannel = new BroadcastChannel('t9_popup_channel');
+  popupChannel.onmessage = e => {
+    const url = e.data && e.data.url;
+    if (url) interceptedOpen(url, true);
+  };
+} catch (_) {}
+
+// Also catch any window.open that bubbles to the top frame
+const _nativeOpen = window.open.bind(window);
+window.open = function(url, target, features) {
+  if (url && url !== 'about:blank' && url !== '') {
+    interceptedOpen(url, true);
+    // Return a fake window object so scripts don't crash
+    return { closed: false, focus: () => {}, close: () => {}, location: { href: url } };
+  }
+  return _nativeOpen(url, target, features);
+};
+
+let _toastTimer = null;
+function showPopupToast(msg) {
+  const toast = document.getElementById('popup-toast');
+  const txt   = document.getElementById('popup-toast-text');
+  txt.textContent = msg || 'Popup captured → new tab';
+  toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function interceptedOpen(rawUrl, showToast = true) {
+  // Decode UV-encoded URLs if needed
+  let url = rawUrl;
+  try {
+    if (rawUrl.includes(__uv$config.prefix)) {
+      url = __uv$config.decodeUrl(rawUrl.replace(new RegExp('^.*' + __uv$config.prefix.replace(/\//g,'\\/')), ''));
+    }
+  } catch (_) {}
+
+  createTab(url, true /* isPopup */);
+  if (showToast) showPopupToast('Popup → new tab: ' + (new URL(url).hostname));
+}
+
+// ══════════════════════════════════════════════════════════
+//  SERVICE WORKER
+// ══════════════════════════════════════════════════════════
+let swReady = false;
+const swReadyPromise = (async () => {
+  if (!navigator.serviceWorker) return;
+  try {
+    const reg = await navigator.serviceWorker.register("/uv/sw.js", { scope: "/uv/service/" });
+    if (reg.active && !reg.installing && !reg.waiting) { swReady = true; return; }
+    await new Promise(resolve => {
+      const sw = reg.installing || reg.waiting || reg.active;
+      if (!sw || sw.state === "activated") { resolve(); return; }
+      sw.addEventListener("statechange", function handler() {
+        if (sw.state === "activated") { sw.removeEventListener("statechange", handler); resolve(); }
+      });
+      navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true });
+      setTimeout(resolve, 6000);
+    });
+    swReady = true;
+  } catch (err) {
+    console.warn("[T9 Surf] SW registration failed:", err);
+    swReady = true;
+  }
+})();
+
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+connection.setTransport("/libcurl/index.mjs", [{ websocket: "wss://wisp.rhw.one/" }]);
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let tabs = [], activeId = null, idCounter = 0;
+
+const tabstrip  = document.getElementById("tabstrip");
+const newTabBtn = document.getElementById("btn-newtab");
+const urlInput  = document.getElementById("url-input");
+const urlScheme = document.getElementById("url-scheme");
+const ntp       = document.getElementById("ntp");
+const ntpInput  = document.getElementById("ntp-input");
+const btnBack   = document.getElementById("btn-back");
+const btnFwd    = document.getElementById("btn-forward");
+const btnReload = document.getElementById("btn-reload");
+const btnPopout = document.getElementById("btn-popout");
+const urlForm   = document.getElementById("urlform");
+
+// ══════════════════════════════════════════════════════════
+//  POPUP-INTERCEPTION SCRIPT
+//  Injected as a blob URL into every iframe via srcdoc trick.
+//  The UV service worker handles most; this catches edge cases
+//  where the page tries to open before UV rewrites the JS.
+// ══════════════════════════════════════════════════════════
+const INJECT_SCRIPT = `
+(function() {
+  'use strict';
+  const _open = window.open;
+  window.open = function(url, target, features) {
+    if (url && url !== 'about:blank') {
+      try {
+        const bc = new BroadcastChannel('t9_popup_channel');
+        bc.postMessage({ url: url });
+        bc.close();
+      } catch(e) {}
+      return { closed: false, focus: function(){}, close: function(){}, location: { href: url } };
+    }
+    return _open ? _open.call(window, url, target, features) : null;
+  };
+
+  // Also intercept target=_blank anchor clicks
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('a[target="_blank"], a[target="new"]');
+    if (!a) return;
+    const href = a.href;
+    if (!href || href.startsWith('javascript:') || href === '#') return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    try {
+      const bc = new BroadcastChannel('t9_popup_channel');
+      bc.postMessage({ url: href });
+      bc.close();
+    } catch(_) {}
+  }, true);
+})();
+`;
+
+// ══════════════════════════════════════════════════════════
+//  TAB MANAGEMENT
+// ══════════════════════════════════════════════════════════
+function getTab(id = activeId) { return tabs.find(t => t.id === id); }
+
+function createTab(url = "", isPopup = false) {
+  const id = idCounter++;
+
+  const frame = document.createElement("iframe");
+  frame.className = "frame";
+  frame.dataset.id = id;
+  frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads");
+  document.body.appendChild(frame);
+
+  const el = document.createElement("div");
+  el.className = "tab";
+  el.dataset.id = id;
+  el.innerHTML = `
+    ${isPopup ? '<span class="tab-popup-badge" title="Opened by popup">↗</span>' : ''}
+    <img class="tab-favicon" />
+    <span class="tab-label">New Tab</span>
+    <span class="tab-close">✕</span>`;
+
+  el.addEventListener("click", e => {
+    if (e.target.classList.contains("tab-close")) closeTab(id);
+    else activateTab(id);
+  });
+
+  tabstrip.insertBefore(el, newTabBtn);
+  tabs.push({ id, frame, el, history: [], index: -1, isPopup });
+  activateTab(id);
+  if (url) navigate(url);
+}
+
+function activateTab(id) {
+  activeId = id;
+  tabs.forEach(t => {
+    t.frame.classList.toggle("active", t.id === id);
+    t.el.classList.toggle("active", t.id === id);
+  });
+  syncNav();
+
+  const t = getTab(id);
+  if (t && t.index < 0) {
+    setTimeout(() => urlInput.focus(), 50);
+  }
+}
+
+function closeTab(id) {
+  if (tabs.length === 1) { createTab(); return; }
+  const i = tabs.findIndex(t => t.id === id);
+  const t = tabs[i];
+  t.frame.remove();
+  t.el.remove();
+  tabs.splice(i, 1);
+  activateTab(tabs[Math.max(0, i - 1)].id);
+}
+
+function syncNav() {
+  const t = getTab();
+  if (!t) return;
+
+  const url = t.index >= 0 ? t.history[t.index] : "";
+  urlInput.value = url;
+
+  if (url.startsWith("https://")) {
+    urlScheme.textContent = "https";
+    urlScheme.style.color = "var(--green)";
+  } else if (url.startsWith("http://")) {
+    urlScheme.textContent = "http";
+    urlScheme.style.color = "var(--red)";
+  } else {
+    urlScheme.textContent = "T9";
+    urlScheme.style.color = "var(--muted)";
+  }
+
+  btnBack.disabled = t.index <= 0;
+  btnFwd.disabled  = t.index >= t.history.length - 1;
+  ntp.classList.toggle("show", t.index < 0);
+}
+
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+function normalize(raw) {
+  raw = raw.trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^[\w-]+(\.[\w-]+)+/.test(raw) && !raw.includes(" ")) return "https://" + raw;
+  return "https://search.brave.com/search?q=" + encodeURIComponent(raw);
+}
+
+async function navigate(raw, push = true) {
+  const t = getTab();
+  if (!t || !raw) return;
+
+  const url = normalize(raw);
+  if (!url) return;
+
+  if (push) {
+    t.history = t.history.slice(0, t.index + 1);
+    t.history.push(url);
+    t.index++;
+  }
+
+  ntp.classList.remove("show");
+  urlInput.value = url;
+  syncNav();
+
+  t.el.querySelector(".tab-label").textContent = "Loading…";
+
+  await swReadyPromise;
+
+  const proxiedUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
+  t.frame.src = proxiedUrl;
+
+  t.frame.onload = () => {
+    // Attempt to inject popup-interception script into the frame
+    try {
+      const doc = t.frame.contentDocument;
+      if (doc) {
+        const s = doc.createElement('script');
+        s.textContent = INJECT_SCRIPT;
+        (doc.head || doc.documentElement || doc.body).appendChild(s);
+      }
+    } catch (_) {
+      // Cross-origin — UV service worker handles it via BroadcastChannel
+    }
+
+    try {
+      const doc   = t.frame.contentDocument;
+      const title = (doc && doc.title) ? doc.title : new URL(url).hostname;
+      t.el.querySelector(".tab-label").textContent = title;
+      const fav = t.el.querySelector(".tab-favicon");
+      fav.src = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`;
+      fav.style.display = "inline";
+    } catch {
+      t.el.querySelector(".tab-label").textContent = new URL(url).hostname;
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  CONTROLS
+// ══════════════════════════════════════════════════════════
+btnBack.onclick = () => {
+  const t = getTab();
+  if (!t || t.index <= 0) return;
+  t.index--;
+  navigate(t.history[t.index], false);
+};
+
+btnFwd.onclick = () => {
+  const t = getTab();
+  if (!t || t.index >= t.history.length - 1) return;
+  t.index++;
+  navigate(t.history[t.index], false);
+};
+
+btnReload.onclick = () => {
+  const t = getTab();
+  if (t && t.index >= 0) t.frame.src = t.frame.src;
+};
+
+btnPopout.onclick = () => {
+  const t = getTab();
+  if (t && t.index >= 0) _nativeOpen(t.history[t.index], "_blank");
+};
+
+urlForm.onsubmit = e => {
+  e.preventDefault();
+  navigate(urlInput.value);
+  urlInput.blur();
+};
+
+urlInput.addEventListener("focus", () => urlInput.select());
+
+newTabBtn.onclick = () => createTab();
+
+ntpInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && ntpInput.value.trim()) {
+    navigate(ntpInput.value.trim());
+    ntpInput.value = "";
+  }
+});
+
+ntpInput.addEventListener("input", () => {
+  urlInput.value = ntpInput.value;
+});
+
+document.querySelectorAll(".shortcut[data-url]").forEach(s => {
+  s.addEventListener("click", () => navigate(s.dataset.url));
+});
+
+document.addEventListener("keydown", e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key === "t") { e.preventDefault(); createTab(); }
+  if (mod && e.key === "w") { e.preventDefault(); if (activeId != null) closeTab(activeId); }
+  if (mod && e.key === "l") { e.preventDefault(); urlInput.focus(); urlInput.select(); }
+  if (mod && e.key === "r") { e.preventDefault(); btnReload.onclick(); }
+});
+
+// Boot
+createTab();
+</script>
+</body>
+</html>
