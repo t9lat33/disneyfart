@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Game Hub</title>
+<style>
+:root{--p:#8fdcff;--a2:#a78bfa;--bg:#0a0a0f;--sur:rgba(255,255,255,0.06);--bor:rgba(255,255,255,0.09);--mut:rgba(255,255,255,0.5);--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,sans-serif;background:var(--bg);color:#fff;overflow-x:hidden}
+body::-webkit-scrollbar{width:4px}body::-webkit-scrollbar-thumb{background:var(--p);border-radius:2px}
+header{position:sticky;top:0;z-index:500;background:#0d0d14;border-bottom:1px solid var(--bor);padding:8px 14px}
+.hi{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.logo{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--p),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+input,select{padding:7px 11px;border:1px solid var(--bor);border-radius:var(--r);background:#12121c;color:#fff;font-size:13px;outline:none}
+input{flex:1;min-width:160px}input:focus{border-color:var(--p)}input::placeholder{color:var(--mut)}
+select option{background:#12121c}
+#favBtn{padding:7px 12px;border:1px solid rgba(251,191,36,0.4);border-radius:var(--r);background:rgba(251,191,36,0.08);color:#fbbf24;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.gc{color:var(--mut);font-size:12px;white-space:nowrap}
+main{max-width:1400px;margin:0 auto;padding:20px 14px 40px}
+.sec{margin-bottom:32px}
+.sh{display:flex;align-items:center;gap:9px;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--bor)}
+.si{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.st{font-size:1rem;font-weight:700}
+.sct{margin-left:auto;color:var(--mut);font-size:11px;background:var(--sur);padding:2px 9px;border-radius:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.card{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;cursor:pointer;border:1px solid var(--bor);background:var(--sur);transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--p);box-shadow:0 6px 20px rgba(140,220,255,0.1)}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.ct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;text-align:center;padding:8px;opacity:0;transition:opacity .15s;background:rgba(0,0,0,0.72);z-index:2}
+.card:hover .ct{opacity:1}
+.cf{position:absolute;top:5px;right:5px;z-index:5;background:rgba(0,0,0,0.55);border:none;color:var(--mut);font-size:13px;width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;line-height:1}
+.card:hover .cf,.cf.on{opacity:1}.cf.on{color:#fbbf24}
+.sba{position:absolute;top:5px;left:5px;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;z-index:3}
+.bgn{background:rgba(140,220,255,0.18);color:#8fdcff}.bgt{background:rgba(255,107,107,0.18);color:#ff6b6b}
+.bgh{background:rgba(167,139,250,0.18);color:#a78bfa}.bgno{background:rgba(74,222,128,0.18);color:#4ade80}
+.bgs{background:rgba(251,191,36,0.18);color:#fbbf24}
+.cn{color:#8fdcff}.ct2{color:#ff6b6b}.ch{color:#a78bfa}.cno{color:#4ade80}.cs{color:#fbbf24}
+.ibn{background:rgba(140,220,255,0.1)}.ibt{background:rgba(255,107,107,0.1)}.ibh{background:rgba(167,139,250,0.1)}.ibno{background:rgba(74,222,128,0.1)}.ibs{background:rgba(251,191,36,0.1)}
+.ld{display:flex;align-items:center;justify-content:center;gap:10px;padding:30px;color:var(--mut);font-size:13px}
+.sp{width:24px;height:24px;border:2px solid rgba(140,220,255,0.15);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.em{color:#ff6b6b;text-align:center;padding:16px;font-size:13px}
+#fp{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:8000;display:none;align-items:flex-start;justify-content:flex-end}
+.fd{width:min(380px,100vw);height:100%;background:#0d0d14;border-left:1px solid var(--bor);display:flex;flex-direction:column;animation:sli .18s ease}
+@keyframes sli{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.fh{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--bor)}
+.fh h2{font-size:.95rem;font-weight:700;color:#fbbf24}.fhc{background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer}
+.fl{overflow-y:auto;flex:1;padding:10px;display:flex;flex-direction:column;gap:7px}
+.fi{display:flex;align-items:center;gap:9px;padding:9px;border-radius:9px;background:var(--sur);border:1px solid var(--bor);cursor:pointer;transition:border-color .12s}
+.fi:hover{border-color:var(--p)}.fi img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:var(--bg)}
+.fin{flex:1;min-width:0}.fn{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fs2{font-size:10px;color:var(--mut);margin-top:1px}
+.fr{background:none;border:none;color:var(--mut);font-size:16px;cursor:pointer;padding:4px;line-height:1}.fr:hover{color:#ff6b6b}
+.fe{color:var(--mut);text-align:center;padding:30px 16px;font-size:13px}
+#tt{position:fixed;background:rgba(8,8,18,0.96);color:#fff;padding:5px 11px;border-radius:6px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .12s;z-index:99999;white-space:nowrap;border:1px solid var(--bor);max-width:200px;overflow:hidden;text-overflow:ellipsis}
+#tt.on{opacity:1}
+
+/* Fullscreen game overlay */
+#gameOverlay{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column}
+#gameOverlay.active{display:flex}
+#gameHeader{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#0d0d14;border-bottom:1px solid var(--bor);flex-shrink:0}
+#gameTitle{font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:12px}
+#gameClose{background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);color:#ff6b6b;padding:6px 14px;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s}
+#gameClose:hover{background:rgba(255,107,107,0.25)}
+#gameFrame{flex:1;width:100%;border:none;height:100%;background:#000}
+#gameLoader{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px;pointer-events:none}
+#gameLoader .sp{width:36px;height:36px;border-width:3px}
+#gameLoader span{color:var(--mut);font-size:13px}
+
+@media(max-width:768px){.cards{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}input{order:3;width:100%;min-width:unset}}
+@media(max-width:480px){.cards{grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}}
+</style>
+</head>
+<body>
+<span id="tt"></span>
+
+<div id="gameOverlay">
+  <div id="gameHeader">
+    <span id="gameTitle">Game</span>
+    <button id="gameClose" onclick="closeGame()">✕ Close</button>
+  </div>
+  <div style="position:relative;flex:1;">
+    <iframe id="gameFrame" allow="autoplay;fullscreen;gamepad;camera;microphone;accelerometer;gyroscope" allowfullscreen></iframe>
+    <div id="gameLoader">
+      <div class="sp"></div>
+      <span id="gameLoaderText">Loading game...</span>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="hi">
+    <div class="logo"></div>
+    <input type="text" id="sb" placeholder="Search games..." oninput="filterAll()">
+    <select id="so" onchange="sortAll()"><option value="name">A–Z</option><option value="source">Source</option></select>
+    <select id="fs" onchange="filterAll()">
+      <option value="all">All</option>
+      <option value="gnmath">GN-Math</option>
+      <option value="t9">T9</option>
+      <option value="hydra">Hydra</option>
+      <option value="noah">Noah's</option>
+      <option value="seabean">Sea Bean</option>
+      <option value="favorites">⭐ Favorites</option>
+    </select>
+    <button id="favBtn" onclick="openFP()">⭐ <span id="fc2">0</span></button>
+    <span class="gc" id="totalc">Loading...</span>
+  </div>
+</header>
+<main>
+  <div class="sec" id="sec-gnmath">
+    <div class="sh"><div class="si ibn">🌐</div><span class="st cn">GN-Math Games</span><span class="sct" id="c-gnmath">0</span></div>
+    <div id="cn-gnmath" class="cards"><div class="ld"><div class="sp"></div>Loading...</div></div>
+  </div>
+  <div class="sec" id="sec-t9">
+    <div class="sh"><div class="si ibt">🔥</div><span class="st ct2">T9 Games</span><span class="sct" id="c-t9">0</span></div>
+    <div id="cn-t9" class="cards"><div class="ld"><div class="sp"></div>Loading...</div></div>
+  </div>
+  <div class="sec" id="sec-hydra">
+    <div class="sh"><div class="si ibh">⚡</div><span class="st ch">Hydra Network</span><span class="sct" id="c-hydra">0</span></div>
+    <div id="cn-hydra" class="cards"><div class="ld"><div class="sp"></div>Loading...</div></div>
+  </div>
+  <div class="sec" id="sec-noah">
+    <div class="sh"><div class="si ibno">📚</div><span class="st cno">Noah's Tutoring</span><span class="sct" id="c-noah">0</span></div>
+    <div id="cn-noah" class="cards"><div class="ld"><div class="sp"></div>Loading...</div></div>
+  </div>
+  <div class="sec" id="sec-seabean">
+    <div class="sh"><div class="si ibs">🌊</div><span class="st cs">Sea Bean Games</span><span class="sct" id="c-seabean">0</span></div>
+    <div id="cn-seabean" class="cards"><div class="ld"><div class="sp"></div>Loading...</div></div>
+  </div>
+</main>
+
+<div id="fp" onclick="if(event.target===this)closeFP()">
+  <div class="fd">
+    <div class="fh"><h2>⭐ Favorites</h2><button class="fhc" onclick="closeFP()">✕</button></div>
+    <div class="fl" id="fl"></div>
+  </div>
+</div>
+
+<script>
+const GN_SOURCES=[
+  {key:'gnmath',zonesurls:["https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json"],shaFmt:s=>`https://cdn.jsdelivr.net/gh/gn-math/assets@${s}/zones.json`,shaAPI:"https://api.github.com/repos/gn-math/assets/commits",coverURL:"https://cdn.jsdelivr.net/gh/gn-math/covers@main",htmlURL:"https://cdn.jsdelivr.net/gh/gn-math/html@main"},
+  {key:'freebuisness',zonesurls:["https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json"],shaFmt:s=>`https://cdn.jsdelivr.net/gh/freebuisness/assets@${s}/zones.json`,shaAPI:"https://api.github.com/repos/freebuisness/assets/commits",coverURL:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main",htmlURL:"https://cdn.jsdelivr.net/gh/freebuisness/html@main"}
+];
+const HB=["https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main/","https://raw.githubusercontent.com/Hydra-Network/hydra-assets/main/","https://raw.githack.com/Hydra-Network/hydra-assets/main/"];
+const NOAH_BASE="https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master";
+const SEA_JSON="https://cdn.jsdelivr.net/gh/sea-bean-unblocked/for-a-friedn-@main/1.json";
+const SEA_SRC={"{HTML_URL1}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-1@main/","{HTML_URL2}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-2@main/","{HTML_URL3}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-3@main/","{COVER_URL1}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-1@main/","{COVER_URL2}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-2@main/","{COVER_URL3}":"https://cdn.jsdelivr.net/gh/sea-bean-unblocked/Folder-3@main/"};
+const BESTSAB_API="https://cdn.jsdelivr.net/gh/bestsabplayerox/assets@main/zones.json";
+const BESTSAB_COVER="https://cdn.jsdelivr.net/gh/bestsabplayerox/covers@main/";
+const BESTSAB_HTML="https://cdn.jsdelivr.net/gh/bestsabplayerox/html@master/";
+
+const T9=[
+  {name:"Bendy and the Ink Machine",href:"/bendy.html",img:"bendy.png"},{name:"People Playground",href:"/people.html",img:"people.png"},{name:"Infinite Craft",href:"/ic.html",img:"ic.png"},{name:"Fortzone Battle Royale",href:"/fortzone.html",img:"fortzone.png"},{name:"Sonic the Hedgehog 3",href:"/sonic3.html",img:"sonic3.png"},{name:"Super Smash Flash",href:"/supersf.html",img:"supersf.png"},{name:"Karlson",href:"/karlson.html",img:"karlson.png"},{name:"Learn 2 Fly",href:"/l2f.html",img:"l2f.png"},{name:"Osu",href:"/osu.html",img:"osu.png"},{name:"Half Life",href:"/halflife.html",img:"halfl.png"},{name:"Doom",href:"/doom.html",img:"doom.png"},{name:"Scary Teacher 3D",href:"/scaryteach.html",img:"scarytach.png"},{name:"Level Devil",href:"/leveld.html",img:"leveld.png"},{name:"Station Saturn",href:"/station.html",img:"station.png"},{name:"Celeste",href:"/celeste.html",img:"celeste.png"},{name:"Terraria",href:"/terraria.html",img:"terraria.png"},{name:"Gorilla Tag",href:"/gtag.html",img:"gtag.png"},{name:"Hollow Knight",href:"/hallowknite.html",img:"hallowknight.png"},{name:"Stumble Guys",href:"/stumble.html",img:"stumble.png"},{name:"Roblo-X",href:"/test33.html",img:"r2.png"},{name:"Bad Parenting",href:"/badparenting.html",img:"badparenting.png"},{name:"Space Waves",href:"/spacewaves.html",img:"spacewaves.png"},{name:"Jelly Drift",href:"/jellydrift.html",img:"jellydrift.png"},{name:"Monster Trucks",href:"/monstertrucks.html",img:"monstertrucks.png"},{name:"Amanda the Adventurer",href:"/amanda.html",img:"amanda.png"},{name:"FIFA 11",href:"/fifa11.html",img:"fifa11.png"},{name:"FIFA 10",href:"/fifa10.html",img:"fifa10.png"},{name:"Sky Riders",href:"skyriders.html",img:"skyrider.png"},{name:"Undertale Yellow",href:"undertale.html",img:"undertale.png"},{name:"Papa's Cheeseria",href:"papacheese.html",img:"papacheese.png"},{name:"Papa's Pizzeria",href:"papapiza.html",img:"papapiza.png"},{name:"World's Hardest Game",href:"hard.html",img:"hard.png"},{name:"WorldBox",href:"worldbox.html",img:"worldbox.png"},{name:"BuildNow GG",href:"buildnow.html",img:"buildnow.png"},{name:"GTA Vice City",href:"gtavc.html",img:"gtavc.png"},{name:"Territorial.io",href:"territorial.html",img:"territorial.png"},{name:"99 Nights in the Forest",href:"99nights.html",img:"99nights.png"},{name:"Soccer Bros",href:"soccerbros.html",img:"soccerbros.png"},{name:"Getaway Shootout",href:"getawayshoot.html",img:"getawayshoot.png"},{name:"Plants vs Zombies",href:"plantvszomb.html",img:"plantvszomb.png"},{name:"That's Not My Neighbor",href:"notneighbor.html",img:"notneighbor.png"},{name:"Gladihoppers",href:"gladihopper.html",img:"gladihopper.png"},{name:"Super Mario 64",href:"mario64.html",img:"mario64.png"},{name:"Kindergarten 3",href:"/k3.html",img:"k3.png"},{name:"Kindergarten 2",href:"/k2.html",img:"k2.png"},{name:"Kindergarten",href:"/k1.html",img:"k.png"},{name:"Bacon May Die",href:"/bacon.html",img:"bacon.png"},{name:"Tombmask",href:"/tombmask.html",img:"tombmask.png"},{name:"Cuphead",href:"/cuphead.html",img:"cuphead.png"},{name:"Buckshot Roulette",href:"/buckshot.html",img:"buckshot.png"},{name:"Geometry Dash Lite",href:"/geodash.html",img:"geom.png"},{name:"Tanuki Sunset",href:"/tanuki.html",img:"tanuki.png"},{name:"BitPlanes",href:"/bitplane.html",img:"bitplane.png"},{name:"10 Minutes Till Dawn",href:"/10min.html",img:"10min.png"},{name:"Ragdoll Hit",href:"/ragdollhit.html",img:"ragdollhit.png"},{name:"Ragdoll Archers",href:"/ragdollarch.html",img:"ragdollarch.png"},{name:"Melon Sandbox",href:"/melon.html",img:"melon.png"},{name:"Pokemon Emerald",href:"/pokemonem.html",img:"pokemonem.png"},{name:"Doodle Jump",href:"/doodle.html",img:"doodle.png"},{name:"Rooftop Snipers 2",href:"/rooftop2.html",img:"rooftop2.png"},{name:"Shell Shockers",href:"/shell.html",img:"shell.png"},{name:"Clash Royale",href:"/clash.html",img:"clash.png"},{name:"Solar Smash",href:"/solarsmash.html",img:"solar.png"},{name:"Soccer Random",href:"/soccer-random.html",img:"soccer-random.png"},{name:"Sniper Shot",href:"/sniper.html",img:"sniper.png"},{name:"Wheelie Bike 2",href:"/wheelie.html",img:"wheelie.png"},{name:"Block Blast",href:"/block.html",img:"blockblast.png"},{name:"Crazy Cars",href:"/crazycars.html",img:"crazycars.png"},{name:"SlowRoads",href:"/slowroad.html",img:"slow.png"},{name:"Hotline Miami",href:"/miami.html",img:"miami.png"},{name:"Baseball Bros",href:"/baseball.html",img:"baseball.png"},{name:"Basketball Bros",href:"/basketbros.html",img:"basketbros.png"},{name:"Football Bros",href:"/football.html",img:"footballbros.png"},{name:"Jelly Truck",href:"/jellytruck.html",img:"jellytruck.png"},{name:"ULTRAKILL",href:"/ultrakill.html",img:"ultrakill.png"},{name:"Friday Night Funkin",href:"/friday.html",img:"FNF.gif"},{name:"Moto X3M Spooky",href:"/spookymoto.html",img:"spookyland.png"},{name:"Elastic Man",href:"/elastic.html",img:"elastic.png"},{name:"Draw Joust",href:"/drawjoust.html",img:"joust.png"},{name:"Crossy Road",href:"/crossy.html",img:"crossy.jpg"},{name:"Cluster Rush",href:"/truck.html",img:"clusterrush.png"},{name:"Gun Spin",href:"/gunspin.html",img:"gunspin.png"},{name:"Escape Road 2",href:"/escape2.html",img:"escape2.png"},{name:"Cookie Clicker",href:"/cookie.html",img:"cookie.png"},{name:"Crazy Kitty 3D",href:"/crazykitty.html",img:"kitty.png"},{name:"Fruit Ninja",href:"/ninjanf.html",img:"fninja.jpg"},{name:"Among Us",href:"/usservice.html",img:"among.webp"},{name:"Smash Kartz",href:"/kartz.html",img:"smash.png"},{name:"Run",href:"/run.html",img:"run.png"},{name:"Run 2",href:"/run2.html",img:"run2.png"},{name:"Minecraft",href:"/minecraft.html",img:"mine2.png"},{name:"Grow a Garden",href:"/garden.html",img:"garden.png"},{name:"Dinosaur Game",href:"/dino.html",img:"dino.png"},{name:"2048",href:"/2048.html",img:"2048.png"},{name:"Baldi",href:"/baldi.html",img:"baldi.png"},{name:"Slope",href:"/slope.html",img:"slope1.png"},{name:"FNAF",href:"/fnaf.html",img:"fnaf.png"},{name:"Run 3",href:"/run3.html",img:"run3.png"},{name:"Temple Run",href:"/temple.html",img:"temple.png"},{name:"Tetris",href:"/tetris.html",img:"tetris.png"},{name:"Stickman Hook",href:"/stickhook.html",img:"stickhook.png"},{name:"Core Ball",href:"/core.html",img:"core.png"},{name:"Stack Block",href:"/stack/index.html",img:"stack.png"},{name:"Just Flip",href:"/flip.html",img:"flip.png"},{name:"GTA",href:"/gta5.html",img:"gta6.png"},{name:"Incredibox",href:"/box.html",img:"https://cdn2.steamgriddb.com/thumb/c442b40dabc7f4bda930bef2b5d100fc.jpg"},{name:"Football Legends",href:"/soccer.html",img:"football.png"},{name:"Short Life",href:"/shortlife.html",img:"shortlife.png"},{name:"Moto Maniac",href:"/manic.html",img:"manic.png"},{name:"Slope 2",href:"/slope2.html",img:"slope2.png"},{name:"Aqua Thrill",href:"/thrill.html",img:"thrill.png"},{name:"Short Ride",href:"/shortride.html",img:"shortlife.png"},{name:"Stair Race 3D",href:"/stair.html",img:"stair.png"},{name:"Vex 4",href:"/vex.html",img:"vex4.png"},{name:"Secrets of Hallowland",href:"/hallow.html",img:"https://i.ibb.co/dmBbf5s/Screenshot-2024-04-10-7-06-13-PM.png"},{name:"Tap Goal",href:"/tapgoal.html",img:"tap.webp"},{name:"Snow Rider",href:"/snowrider.html",img:"/img/snow.png"},{name:"Rocket Soccer",href:"/rocketsoccer.html",img:"img/soccer.png"},{name:"Superhot",href:"/superhot.html",img:"/img/superhot.png"},{name:"Funny Shooter 2",href:"/funnyshooter.html",img:"funny.png"},{name:"Ice Dodo",href:"/icedodo.html",img:"ice.jpg"},{name:"Eggy Car",href:"/eggy-car-main/eggy-car-main/frame.html",img:"eggy.jpg"},{name:"Hole.io",href:"/holeio.html",img:"holeio.png"},{name:"Drive Mad",href:"/dmad.html",img:"dmad.png"},{name:"CubeShot",href:"/cubeshot.html",img:"cubeshot.png"},{name:"1v1 LOL",href:"/1v1.html",img:"1v1.jpg"},{name:"BitLife",href:"/bitlifeService.html",img:"bitlife.png"},{name:"Jetpack Joyride",href:"/jet.html",img:"jet.png"},{name:"OvO",href:"/ovo.html",img:"ovo.png"},{name:"Granny",href:"/granny.html",img:"granny.png"},{name:"Grand Vegas",href:"/grandvegas.html",img:"grandvegas.png"},{name:"Polytrack",href:"/polytrack.html",img:"polytrack.png"},{name:"Subway Surfers",href:"/subwayhw.html",img:"subwayHW.png"},{name:"Basketball Legends",href:"/basket.html",img:"basketL.png"},{name:"Timeshooter 3",href:"/timeshooter3.html",img:"timeshooter.png"},{name:"Money Roll",href:"/moneyroll.html",img:"moneyroll.png"},{name:"Backrooms",href:"/backrooms.html",img:"backrooms.png"},{name:"FNAF 2",href:"/fnaf2.html",img:"fnaf2.png"},{name:"Retro Bowl",href:"/bowl.html",img:"bowl.png"},{name:"Uno",href:"/uno.html",img:"uno.png"},{name:"Burgeria",href:"/burgeria.html",img:"burgeria.png"},{name:"Pou",href:"/pou.html",img:"pou.png"},{name:"Johnny Trigger",href:"/johnny.html",img:"johnny.png"},{name:"Bob the Robber 2",href:"/robber.html",img:"robber2.png"},{name:"Wordle",href:"/wordle.html",img:"wordle.png"},{name:"Only Up",href:"/onlyup.html",img:"onlyup.png"},{name:"Tiny Fishing",href:"/tinyfishing.html",img:"fishing.png"},{name:"Goball",href:"/goball.html",img:"goball.png"},{name:"Helix",href:"/helix.html",img:"helix.png"},{name:"House of Hazards",href:"/hohazards.html",img:"hohazards.png"},{name:"President Simulator",href:"/president.html",img:"president.png"},{name:"Pokemon Red",href:"/pokemon.html",img:"pokemon.png"},{name:"Granny 2",href:"/granny2.html",img:"granny2.png"},{name:"Drift Hunter",href:"/hunter.html",img:"hunter.png"},{name:"Just Fall",href:"/just.html",img:"just.png"},{name:"Pacman",href:"/pacman.html",img:"pacman.png"},{name:"Knife Hit",href:"/knife.html",img:"knife.png"},{name:"The Man From The Window",href:"/window.html",img:"window.png"},{name:"Capybara Clicker",href:"/capybara.html",img:"capybara.png"},{name:"Baldi Field Trip",href:"/balditrip.html",img:"balditrip.png"},{name:"Basket Random",href:"/basketrandom.html",img:"basketrandom.png"},{name:"Death Run 3D",href:"/deathrun.html",img:"deathrun.png"},{name:"Axe Random",href:"/axe.html",img:"axe.png"},{name:"Moto X3M",href:"/motox3m.html",img:"moto.png"},{name:"Drift Boss",href:"/driftboss.html",img:"driftboss.png"},{name:"Mr Bullet",href:"/bullet.html",img:"bullet.png"},{name:"Draw Climber",href:"/draw.html",img:"draw.png"},{name:"Snowball.io",href:"/snowball.html",img:"snow.png"},{name:"Stickman Duel Battle",href:"/duel.html",img:"duel.png"},{name:"Pixel Gun 3D",href:"/pixel.html",img:"pixel.png"},{name:"Duck Life",href:"/duck.html",img:"duck.png"},{name:"Riddle School",href:"/riddle.html",img:"riddle.png"},{name:"Riddle School 2",href:"/riddle2.html",img:"riddle2.png"},{name:"Riddle School 3",href:"/riddle3.html",img:"riddle3.png"},{name:"Barry Prison",href:"/barry.html",img:"barry.png"},{name:"Steal a Brainrot",href:"/brainrot.html",img:"brainrot.png"},{name:"Battle Golf",href:"/golf.html",img:"golf.png"},{name:"A Small World Cup",href:"/worldcup.html",img:"worldcup.png"},{name:"Snake.io",href:"/snakeio.html",img:"snakeio.png"},{name:"Speed Stars",href:"/speedstars.html",img:"speedstars.png"}
+];
+
+const NOAH_TITLES=["Alien Hominid","Customer Support","The Deadseat","Fireboy & Watergirl","Pizza Tower","Bloons TD 1","Bloons TD 2","Bloons TD 3","Bloons TD 4","Bloons TD 5","Geometry Dash","Friday Night Funkin","Plants vs Zombies","Subway Surfers","Temple Run 2","Happy Wheels","Granny","Slope","Cookie Clicker","FNAF","FNAF 2","FNAF 3","FNAF 4","Undertale","Deltarune","Binding of Isaac","Portal","Doom","Minecraft","Terraria","Earn to Die","Earn to Die 2","Bart Blast","Bendy and the Ink Machine","Gacha Life","Among Us","Yandere Simulator","Quake III","Angry Birds","Candy Crush","Flappy Bird","Super Mario 64","Half Life","Jetpack Joyride","Slime Rancher","Cup Head","Rocket League","Street Fighter II","Fallout","Hollow Knight","Celeste","Hotline Miami","Getting Over It","Doki Doki Literature Club","Baldi's Basics","Granny 3","Granny 2","Kindergarten","Kindergarten 2","Kindergarten 3","Raft","Slender","Buckshot Roulette","WebFishing","ULTRAKILL","That's Not My Neighbor","Super Smash Flash 2","Idle Breakout","Gun Mayhem","Gun Mayhem 2","Big Tower Tiny Square","Pokemon Firered","Pokemon Emerald","8Ball Pool","OvO","Fruit Ninja","Run 3","Vex 8","Stickman Hook","World's Hardest Game","Impossible Quiz","Impossible Quiz 2","Crossy Road","Paper.io 2","Snow Rider 3D","Getaway Shootout","Backrooms","Zombocalypse 2","Happy Room","Blocky Snakes","Plinko","Stacktris","Rio Rex","Bloxorz","Wheelie Bike 2","Boxing Live 2","Level Devil","Hole.io","Rooftop Snipers 2","Jelly Truck","Running Fred","Apple Shooter","Crazy Cattle 3D","Ultimate Car Driving","Twitch Tetris","Recoil","They're Coming","Escape Road","Raft Wars 2","Blumgi Rocket","Stake Mines","Idle Mining Empire","Solar Smash","FNAF: World","FNAF: Sister Location","FNAF: Pizza Sim","Tomodachi Life","Deepest Sword","Smashy Kart","A Dance of Fire and Ice","Baseball Bros","Bad Piggies","Street Fighter III","Tony Hawks Pro Skater","Madness Interactive","Lego Star Wars","Lego Batman 2","Learn to Fly 3","Ace Attorney","Peggle","Kart Bros","Call of Duty 4","Call of Duty: World at War","Doom 2","Doom 3","Ice Dodo","Daggerfall","Basketball Stars","Google Feud","Sonic.EXE","Spelunky Classic","SwordFight!!","Burrito Bison","Tanuki Sunset","Oneshot","Bacon May Die","Heretic","Grand Theft Auto Vice City","Pixel Gun 3D","Slendy Tubbies","Minesweeper Classic","Minesweeper Plus","Final Fantasy VII","Five Nights at Winstons","Orange Roulette","Midnight Shift","Goblin Goopmaxxing","Gorilla Tag","Dungeons & Degenerate Gamblers","Buster Jam","Stick War Legacy","A Difficult Game About Climbing","Half Life: Opposing Force","BitPlanes","Tag","Gobble","Stickman Fight Ragdoll","Stickman Destruction","Speed Stars","VS Rewrite","Kirby Soft & Wet","Johnny Trigger","Real Flight Simulator","The Man From The Window","Time Shooter","Time Shooter 2","Time Shooter 3","Beeswarm Simulator","Scrap Divers","Papers","Please","People Playground","Survivor.io","Toss The Turtle","Karlson","Doodle Jump","Fear & Hunger","OMORI","Superhot","Iron Lung","Super Monkey Ball","Antonblast","Class of '09","Hamtaro","Earthbound","Deltarune Ch. 3 & 4","Untitled Goose Game","Five Nights at Candy's","Dad 'n Me","Silent Hill","Peaks of Yore","Cloverpit","Littlest Pet Shop","Boxing Random","Volley Random","Basket Random","Soccer Random","Christmas Massacre","Raldi's Crackhouse","Dimension Incident","Fear Assessment","Roulette Hero","Road of Fury","Shift at Midnight","Baby Sniper","Endoparasitic","Brotato","TileTopia","Needy Streamer Overload","Deltatraveler"];
+
+let allGames=[],favs=new Set();
+const FK='ugh-favs-v1';
+function loadFavs(){try{const r=localStorage.getItem(FK);if(r)favs=new Set(JSON.parse(r));}catch{}}
+function saveFavs(){try{localStorage.setItem(FK,JSON.stringify([...favs]));}catch{}}
+function gk(g){return g.source+':'+g.id}
+function isFav(g){return favs.has(gk(g))}
+
+const E=id=>document.getElementById(id);
+function showTT(e,t){const el=E('tt');el.textContent=t;el.classList.add('on');el.style.left=Math.min(e.clientX+14,window.innerWidth-210)+'px';el.style.top=(e.clientY+12)+'px';}
+function hideTT(){E('tt').classList.remove('on')}
+
+function mkCard(g){
+  const d=document.createElement('div');
+  d.className='card';d.dataset.name=g.name.toLowerCase();d.dataset.source=g.source;d.dataset.gk=gk(g);
+  const bm={gnmath:'bgn',t9:'bgt',hydra:'bgh',noah:'bgno',seabean:'bgs'};
+  const lm={gnmath:'GN',t9:'T9',hydra:'H',noah:'Noah',seabean:'Sea'};
+  const fav=isFav(g);
+  d.innerHTML=`<span class="sba ${bm[g.source]||'bgn'}">${lm[g.source]||'?'}</span><img src="${g.cover||''}" alt="${g.name}" loading="lazy" onerror="this.style.display='none'"><div class="ct">${g.name}</div><button class="cf${fav?' on':''}">${fav?'★':'☆'}</button>`;
+  d.querySelector('.cf').onclick=e=>{e.stopPropagation();toggleFav(g,d);};
+  d.onclick=()=>openGame(g);
+  d.onmouseenter=e=>showTT(e,g.name);d.onmousemove=e=>showTT(e,g.name);d.onmouseleave=hideTT;
+  return d;
+}
+
+function toggleFav(g,card){
+  const k=gk(g);favs.has(k)?favs.delete(k):favs.add(k);saveFavs();
+  const btn=card&&card.querySelector('.cf');
+  if(btn){btn.textContent=favs.has(k)?'★':'☆';btn.classList.toggle('on',favs.has(k));}
+  E('fc2').textContent=favs.size;
+}
+
+function render(cid,games){
+  const c=E(cid);c.innerHTML='';
+  if(!games.length){c.innerHTML='<div class="em">No games found.</div>';return;}
+  const f=document.createDocumentFragment();
+  games.forEach(g=>f.appendChild(mkCard(g)));
+  c.appendChild(f);
+}
+function updCounts(){
+  let tot=0;
+  ['gnmath','t9','hydra','noah','seabean'].forEach(s=>{
+    const n=allGames.filter(g=>g.source===s).length;E('c-'+s).textContent=n;tot+=n;
+  });
+  E('totalc').textContent=tot+' games';
+}
+
+// ── LOADERS ──
+async function loadGN(){
+  const games=[];
+  for(const src of GN_SOURCES){
+    try{
+      let url=src.zonesurls[0];
+      try{const sha=(await(await fetch(src.shaAPI+'?t='+Date.now())).json())[0]?.sha;if(sha)url=src.shaFmt(sha);}catch{}
+      const data=await(await fetch(url+'?t='+Date.now())).json();
+      data.forEach(z=>games.push({id:String(z.id),name:z.name,cover:(z.cover||'').replace('{COVER_URL}',src.coverURL).replace('{HTML_URL}',src.htmlURL),url:(z.url||'').replace('{COVER_URL}',src.coverURL).replace('{HTML_URL}',src.htmlURL),source:'gnmath'}));
+    }catch(e){console.error('GN:',e);}
+  }
+  return games;
+}
+async function loadHydra(){
+  for(const base of HB){
+    try{
+      const data=await(await fetch(base+'gmes.json?t='+Date.now())).json();
+      if(!Array.isArray(data))continue;
+      const seen=new Set(),games=[];
+      data.forEach(g=>{
+        const k=(g.file_name||'').toLowerCase().trim();if(!k||seen.has(k))return;seen.add(k);
+        const th=(g.thumb||'').replace(/^\/+/,'');
+        games.push({id:k,name:g.title||g.file_name,cover:th?(HB[0]+th):'',url:base+'gmes/'+g.file_name,source:'hydra'});
+      });
+      return games;
+    }catch(e){console.error('Hydra:',e);}
+  }
+  return[];
+}
+async function loadNoah(){
+  const games=[];
+  try{
+    const data=await(await fetch(BESTSAB_API+'?t='+Date.now())).json();
+    data.forEach((g,i)=>games.push({id:'bs'+i,name:g.name||'Unknown',cover:(g.cover||'').replace('{COVER_URL}',BESTSAB_COVER).replace('{HTML_URL}',BESTSAB_HTML),url:(g.url||'').replace('{HTML_URL}',BESTSAB_HTML),source:'noah'}));
+  }catch(e){console.error('BestSab:',e);}
+  NOAH_TITLES.forEach((t,i)=>games.push({id:'noah'+i,name:t,cover:`${NOAH_BASE}/images/${(i%400)+1}.jpg`,url:`${NOAH_BASE}/games/${(i%400)+1}.html`,source:'noah'}));
+  return games;
+}
+async function loadSea(){
+  const games=[];
+  try{
+    const data=await(await fetch(SEA_JSON+'?t='+Date.now())).json();
+    data.forEach(e=>{
+      let name=e.name||'';if(name.toLowerCase().startsWith('cl'))name=name.slice(2);
+      let url=e.url||'',cover=e.cover||'';
+      for(const[ph,v]of Object.entries(SEA_SRC)){url=url.replace(ph,v);cover=cover.replace(ph,v);}
+      games.push({id:String(e.id||name),name,cover,url,source:'seabean'});
+    });
+  }catch(e){console.error('Sea:',e);}
+  return games;
+}
+function loadT9G(){
+  return T9.map((g,i)=>({id:'t9'+i,name:g.name,cover:g.img,url:g.href,source:'t9',ext:g.href.startsWith('http')}));
+}
+
+// ── GAME LAUNCHER (IFRAME-BASED) ──
+function openGame(g){
+  const overlay = E('gameOverlay');
+  const frame = E('gameFrame');
+  const title = E('gameTitle');
+  const loader = E('gameLoader');
+  const loaderText = E('gameLoaderText');
+  
+  // Pure external URL → new tab
+  if(g.ext || (g.url && g.url.startsWith('http') && !g.url.includes('jsdelivr') && !g.url.includes('githack') && !g.url.includes('githubusercontent'))){
+    window.open(g.url, '_blank');
+    return;
+  }
+  
+  // T9 relative paths → navigate in iframe using current origin
+  if(g.source === 't9'){
+    frame.src = g.url;
+    title.textContent = g.name;
+    overlay.classList.add('active');
+    loader.style.display = 'flex';
+    loaderText.textContent = 'Loading ' + g.name + '...';
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+  
+  // CDN games → fetch HTML and load via blob URL in iframe (executes scripts properly)
+  overlay.classList.add('active');
+  title.textContent = g.name;
+  loader.style.display = 'flex';
+  loaderText.textContent = 'Loading ' + g.name + '...';
+  document.body.style.overflow = 'hidden';
+  
+  // Build candidate URLs
+  let urls = [g.url];
+  if(g.source === 'hydra'){
+    const file = g.url.split('gmes/').pop();
+    urls = HB.map(b => b + 'gmes/' + file);
+  }
+  
+  // Try each URL
+  tryLoadGame(urls, 0, frame, loader, g.name);
+}
+
+async function tryLoadGame(urls, index, frame, loader, gameName){
+  if(index >= urls.length){
+    loader.style.display = 'none';
+    frame.src = 'about:blank';
+    alert('Could not load ' + gameName + '. Try opening it in a new tab manually.');
+    return;
+  }
+  
+  try{
+    const res = await fetch(urls[index]);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    
+    // Create blob URL from the HTML content
+    const blob = new Blob([html], {type: 'text/html'});
+    const blobUrl = URL.createObjectURL(blob);
+    
+    // Store the URL for cleanup
+    frame._blobUrl = blobUrl;
+    
+    frame.src = blobUrl;
+  }catch(e){
+    console.error('Failed URL:', urls[index], e);
+    tryLoadGame(urls, index + 1, frame, loader, gameName);
+  }
+}
+
+function closeGame(){
+  const overlay = E('gameOverlay');
+  const frame = E('gameFrame');
+  const loader = E('gameLoader');
+  
+  // Clean up blob URL
+  if(frame._blobUrl){
+    URL.revokeObjectURL(frame._blobUrl);
+    delete frame._blobUrl;
+  }
+  
+  frame.src = 'about:blank';
+  overlay.classList.remove('active');
+  loader.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Hide loader when iframe loads
+E('gameFrame').addEventListener('load', function(){
+  E('gameLoader').style.display = 'none';
+});
+
+// Error handling for iframe
+E('gameFrame').addEventListener('error', function(){
+  E('gameLoader').style.display = 'none';
+  alert('Failed to load the game. The resource might be unavailable.');
+});
+
+// ── FILTER / SORT ──
+function filterAll(){
+  const q=E('sb').value.toLowerCase(),sec=E('fs').value;
+  document.querySelectorAll('.card').forEach(c=>{
+    const ms=c.dataset.name.includes(q);
+    const mv=sec==='all'?true:sec==='favorites'?favs.has(c.dataset.gk):c.dataset.source===sec;
+    c.style.display=(ms&&mv)?'':'none';
+  });
+  ['gnmath','t9','hydra','noah','seabean'].forEach(s=>{
+    const el=E('sec-'+s);if(!el)return;
+    if(sec!=='all'&&sec!==s&&sec!=='favorites'){el.style.display='none';return;}
+    el.style.display=el.querySelectorAll('.card:not([style*="display: none"])').length?'':'none';
+  });
+}
+function sortAll(){
+  const by=E('so').value;
+  ['cn-gnmath','cn-t9','cn-hydra','cn-noah','cn-seabean'].forEach(cid=>{
+    const c=E(cid);const cards=[...c.querySelectorAll('.card')];
+    cards.sort((a,b)=>a.dataset[by==='name'?'name':'source'].localeCompare(b.dataset[by==='name'?'name':'source']));
+    cards.forEach(x=>c.appendChild(x));
+  });
+}
+
+// ── FAV PANEL ──
+function openFP(){renderFP();E('fp').style.display='flex';document.body.style.overflow='hidden';}
+function closeFP(){E('fp').style.display='none';document.body.style.overflow='';}
+function renderFP(){
+  const list=E('fl');list.innerHTML='';
+  const fg=allGames.filter(g=>favs.has(gk(g)));
+  if(!fg.length){list.innerHTML='<div class="fe">No favorites yet.<br>Click ☆ on any card!</div>';return;}
+  fg.forEach(g=>{
+    const d=document.createElement('div');d.className='fi';
+    d.innerHTML=`<img src="${g.cover||''}" alt="${g.name}" onerror="this.style.display='none'"><div class="fin"><div class="fn">${g.name}</div><div class="fs2">${g.source==='noah'?"Noah's":g.source.toUpperCase()}</div></div><button class="fr">✕</button>`;
+    d.querySelector('.fr').onclick=e=>{
+      e.stopPropagation();favs.delete(gk(g));saveFavs();E('fc2').textContent=favs.size;
+      const c=document.querySelector(`.card[data-gk="${gk(g)}"]`);
+      if(c){const b=c.querySelector('.cf');b.textContent='☆';b.classList.remove('on');}renderFP();
+    };
+    d.onclick=()=>{closeFP();openGame(g);};list.appendChild(d);
+  });
+}
+
+async function init(){
+  loadFavs();E('fc2').textContent=favs.size;
+  const[gn,t9g,hy,no,sea]=await Promise.all([loadGN(),Promise.resolve(loadT9G()),loadHydra(),loadNoah(),loadSea()]);
+  allGames=[...gn,...t9g,...hy,...no,...sea];
+  render('cn-gnmath',gn);render('cn-t9',t9g);render('cn-hydra',hy);render('cn-noah',no);render('cn-seabean',sea);
+  updCounts();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(E('gameOverlay').classList.contains('active')){
+      closeGame();
+    }else if(E('fp').style.display==='flex'){
+      closeFP();
+    }
+  }
+});
+
+init();
+</script>
+</body>
+</html>
