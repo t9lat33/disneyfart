@@ -684,20 +684,111 @@ try {
   popupChannel = new BroadcastChannel('t9_popup_channel');
   popupChannel.onmessage = e => {
     const url = e.data && e.data.url;
-    if (url) interceptedOpen(url, true);
+    if (url !== undefined) interceptedOpen(url, true);
   };
 } catch (_) {}
 
 // Also catch any window.open that bubbles to the top frame
 const _nativeOpen = window.open.bind(window);
 window.open = function(url, target, features) {
-  if (url && url !== 'about:blank' && url !== '') {
-    interceptedOpen(url, true);
-    // Return a fake window object so scripts don't crash
-    return { closed: false, focus: () => {}, close: () => {}, location: { href: url } };
+  const isBlank = !url || url === 'about:blank' || url === '';
+
+  if (isBlank) {
+    // Site will write content or navigate this window after opening.
+    // Create a pending tab now and return a fake window whose .location.href
+    // setter will navigate the tab once the site sets it.
+    const pendingId = idCounter++;
+    createTabShell(pendingId);
+    return makeFakeWindow(pendingId, '');
   }
-  return _nativeOpen(url, target, features);
+
+  interceptedOpen(url, true);
+  return makeFakeWindow(null, url);
 };
+
+// Create a tab shell without navigating anywhere (for about:blank popup pattern)
+function createTabShell(id) {
+  const frame = document.createElement("iframe");
+  frame.className = "frame";
+  frame.dataset.id = id;
+  frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads");
+  document.body.appendChild(frame);
+
+  const el = document.createElement("div");
+  el.className = "tab";
+  el.dataset.id = id;
+  el.innerHTML = `
+    <span class="tab-popup-badge" title="Opened by popup">↗</span>
+    <img class="tab-favicon" />
+    <span class="tab-label">Opening…</span>
+    <span class="tab-close">✕</span>`;
+
+  el.addEventListener("click", e => {
+    if (e.target.classList.contains("tab-close")) closeTab(id);
+    else activateTab(id);
+  });
+
+  tabstrip.insertBefore(el, newTabBtn);
+  tabs.push({ id, frame, el, history: [], index: -1, isPopup: true });
+  activateTab(id);
+  // idCounter already incremented by caller
+  if (id >= idCounter) idCounter = id + 1;
+}
+
+// Returns a fake window object. If tabId is set, location writes navigate that tab.
+function makeFakeWindow(tabId, initialUrl) {
+  let _href = initialUrl || 'about:blank';
+  const loc = {
+    get href() { return _href; },
+    set href(val) {
+      _href = val;
+      if (tabId !== null) {
+        navigateTab(tabId, val);
+        showPopupToast('Popup → new tab: ' + safeHostname(val));
+      } else {
+        interceptedOpen(val, true);
+      }
+    },
+    replace(val) { this.href = val; },
+    assign(val)  { this.href = val; }
+  };
+  return {
+    closed: false,
+    focus() {},
+    blur()  {},
+    close() { if (tabId !== null) closeTab(tabId); },
+    location: loc,
+    document: { write() {}, writeln() {}, close() {} }
+  };
+}
+
+function safeHostname(url) {
+  try { return new URL(url).hostname; } catch { return url.slice(0, 40); }
+}
+
+// Navigate a specific tab by id (used by fake window .location)
+async function navigateTab(id, raw) {
+  const t = tabs.find(t => t.id === id);
+  if (!t) return;
+  const url = normalize(raw);
+  if (!url) return;
+  t.history = t.history.slice(0, t.index + 1);
+  t.history.push(url);
+  t.index++;
+  if (activeId === id) syncNav();
+  t.el.querySelector('.tab-label').textContent = 'Loading…';
+  await swReadyPromise;
+  t.frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+  t.frame.onload = () => {
+    try {
+      const title = t.frame.contentDocument?.title || safeHostname(url);
+      t.el.querySelector('.tab-label').textContent = title;
+      const fav = t.el.querySelector('.tab-favicon');
+      fav.src = `https://www.google.com/s2/favicons?domain=${safeHostname(url)}&sz=32`;
+      fav.style.display = 'inline';
+    } catch { t.el.querySelector('.tab-label').textContent = safeHostname(url); }
+  };
+}
 
 let _toastTimer = null;
 function showPopupToast(msg) {
@@ -710,6 +801,11 @@ function showPopupToast(msg) {
 }
 
 function interceptedOpen(rawUrl, showToast = true) {
+  if (!rawUrl || rawUrl === 'about:blank' || rawUrl === '') {
+    const pendingId = idCounter++;
+    createTabShell(pendingId);
+    return;
+  }
   // Decode UV-encoded URLs if needed
   let url = rawUrl;
   try {
@@ -719,7 +815,7 @@ function interceptedOpen(rawUrl, showToast = true) {
   } catch (_) {}
 
   createTab(url, true /* isPopup */);
-  if (showToast) showPopupToast('Popup → new tab: ' + (new URL(url).hostname));
+  if (showToast) showPopupToast('Popup → new tab: ' + safeHostname(url));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -776,20 +872,46 @@ const urlForm   = document.getElementById("urlform");
 const INJECT_SCRIPT = `
 (function() {
   'use strict';
+
+  function postPopup(url) {
+    try {
+      const bc = new BroadcastChannel('t9_popup_channel');
+      bc.postMessage({ url: url || 'about:blank' });
+      bc.close();
+    } catch(e) {}
+  }
+
+  // Fake window returned for about:blank opens — watches for location changes
+  function makeFakeWin(initialUrl) {
+    let _href = initialUrl || 'about:blank';
+    const loc = {
+      get href() { return _href; },
+      set href(val) { _href = val; postPopup(val); },
+      replace: function(v) { postPopup(v); },
+      assign:  function(v) { postPopup(v); }
+    };
+    return {
+      closed: false,
+      focus: function(){}, blur: function(){}, close: function(){},
+      location: loc,
+      document: { write: function(){}, writeln: function(){}, close: function(){} }
+    };
+  }
+
   const _open = window.open;
   window.open = function(url, target, features) {
-    if (url && url !== 'about:blank') {
-      try {
-        const bc = new BroadcastChannel('t9_popup_channel');
-        bc.postMessage({ url: url });
-        bc.close();
-      } catch(e) {}
-      return { closed: false, focus: function(){}, close: function(){}, location: { href: url } };
+    const isBlank = !url || url === 'about:blank' || url === '';
+    if (isBlank) {
+      // Post blank signal; parent will create a shell tab.
+      // Return fake window so the site can later set .location.href
+      postPopup('about:blank');
+      return makeFakeWin('about:blank');
     }
-    return _open ? _open.call(window, url, target, features) : null;
+    postPopup(url);
+    return makeFakeWin(url);
   };
 
-  // Also intercept target=_blank anchor clicks
+  // Intercept target=_blank anchor clicks
   document.addEventListener('click', function(e) {
     const a = e.target.closest('a[target="_blank"], a[target="new"]');
     if (!a) return;
@@ -797,11 +919,7 @@ const INJECT_SCRIPT = `
     if (!href || href.startsWith('javascript:') || href === '#') return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    try {
-      const bc = new BroadcastChannel('t9_popup_channel');
-      bc.postMessage({ url: href });
-      bc.close();
-    } catch(_) {}
+    postPopup(href);
   }, true);
 })();
 `;
