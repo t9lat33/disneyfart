@@ -1,0 +1,72 @@
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Rajdhani:wght@400;600;700&display=swap');
+  .boot-wrap {
+    height:100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:100%;
+    left:0;
+    overflow: hidden;
+    position: fixed;
+    top:0;
+    bottom:0;
+  }
+  .scanlines {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
+    pointer-events: none;
+  }
+  .boot-content {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px; z-index: 1; text-align: center; padding: 2rem;
+  }
+  .boot-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 54px; font-weight: 900;
+    color: #fff;
+    letter-spacing: 12px;
+    text-shadow: 0 0 30px rgba(255,255,255,0.15);
+    margin: 0;
+  }
+  .boot-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .boot-btn {
+    margin-top: 28px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 14px 42px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .boot-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.6); }
+  .boot-hint {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+</style>
+<div class="boot-wrap">
+  <div class="scanlines"></div>
+  <div class="boot-content">
+    <h1 class="boot-logo">CINE-CLOUD</h1>
+    <button onclick="window.location.href='embed4.html'" class="boot-btn">Enter CINE CLOUD</button>
+  </div>
+</div>
