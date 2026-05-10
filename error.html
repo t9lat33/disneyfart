@@ -177,7 +177,7 @@
   <div style="position:relative;flex:1;">
     <iframe id="gameFrame" allow="autoplay; fullscreen; gamepad; camera; microphone; accelerometer; gyroscope" allowfullscreen loading="lazy"></iframe>
     <div id="gameLoader"><div class="sp"></div><span style="color:var(--mut);font-size:13px">Loading…</span></div>
-    <div id="gameErrMsg">⚠️ Could not load this game.<br><span style="color:var(--mut);font-size:11px;margin-top:6px;display:block">Try opening it in a new tab.</span><br><button id="openExtBtn" style="margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid var(--bor);background:var(--sur);color:#fff;cursor:pointer;font-size:12px;">Open in New Tab</button></div>
+    <div id="gameErrMsg"><span id="gameErrIcon">⚠️</span> <span id="gameErrText">Could not load this game.</span><br><span id="gameErrSub" style="color:var(--mut);font-size:11px;margin-top:6px;display:block">Try opening it in a new tab.</span><br><button id="openExtBtn" style="margin-top:8px;padding:6px 14px;border-radius:8px;border:1px solid var(--bor);background:var(--sur);color:#fff;cursor:pointer;font-size:12px;">Open in New Tab</button></div>
   </div>
 </div>
 
@@ -458,10 +458,19 @@
         On redirect error or fetch failure, fall back to setting iframe.src directly.
         If all fail, show the error panel with "Open in New Tab" option.
   ── */
-  function showGameError(url) {
+  function showGameError(url, reason) {
     gameLoader.style.display='none';
     gameErrMsg.style.display='block';
     currentGameUrl=url;
+    if(reason==='uv') {
+      document.getElementById('gameErrIcon').textContent='🔒';
+      document.getElementById('gameErrText').textContent='This game requires a proxy server (Ultraviolet/bare-mux).';
+      document.getElementById('gameErrSub').textContent='It cannot run without the bare-server infrastructure.';
+    } else {
+      document.getElementById('gameErrIcon').textContent='⚠️';
+      document.getElementById('gameErrText').textContent='Could not load this game.';
+      document.getElementById('gameErrSub').textContent='Try opening it in a new tab.';
+    }
   }
 
   function hideGameError() {
@@ -545,6 +554,13 @@
         throw new Error('file not found on @main either');
       }
 
+      // Detect Ultraviolet / bare-mux proxy games — they need a bare-server that
+      // isn't available here and will spam the console endlessly if loaded.
+      if(isUVGame(html)) {
+        showGameError(url, 'uv');
+        return;
+      }
+
       const blob=new Blob([html],{type:'text/html'});
       const blobUrl=URL.createObjectURL(blob);
       if(gameFrame._blobUrl) URL.revokeObjectURL(gameFrame._blobUrl);
@@ -554,6 +570,15 @@
       clearTimeout(timer);
       tryLoadGame(urls, index+1, name, fallbackUrl);
     }
+  }
+
+  // Returns true if the HTML uses Ultraviolet / bare-mux proxy infrastructure.
+  // These games require a running bare-server + SharedWorker and won't work
+  // in a standalone context — loading them just spams the console forever.
+  function isUVGame(html) {
+    const UV_MARKERS = ['bare-mux', 'ultraviolet', '__uv$config', 'uv.bundle', 'uv.handler', 'uv.sw.js', 'scramjet'];
+    const head = html.slice(0, 4000).toLowerCase(); // only scan the top of the file
+    return UV_MARKERS.some(m => head.includes(m));
   }
 
   function closeGame() {
