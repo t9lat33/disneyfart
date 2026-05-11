@@ -380,30 +380,37 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     transform: scale(1) translateY(0);
   }
 }
-    #aiDiv {
- display: none;
-    margin-top: 20px;
+#aiDiv {
+    display: none;
     padding: 10px;
- background: linear-gradient(160deg,
+
+    background: linear-gradient(
+        160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
-      );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+    );
+
+    border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
-    inset: 0;
-    margin:auto;
+
     position: fixed;
     z-index: 1000;
-    border-radius:6px; 
-    width:40%;
-    height: 67%; 
-    right:50px;
+
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border-radius: 6px;
+    width: 40%;
+    height: 67%;
+
     overflow-x: hidden;
     overflow-y: auto;
-box-shadow: 2px #141414;
-animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
-  }
+    box-shadow: 0 0 20px #141414;
+
+    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+}
    #terminalDiv {
     display: none;
     margin-top: 20px;
