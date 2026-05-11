@@ -390,26 +390,40 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
         rgba(10,10,10,0.65)
     );
 
-    border: 1px solid rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0,0,0,0.5);
     color: white;
 
     position: fixed;
     z-index: 1000;
 
-    right: 50px;
-    top: 50%;
-    transform: translateY(-50%);
-
-    border-radius: 6px;
     width: 40%;
     height: 67%;
+
+    right: 50px;
+    top: 50%;
+
+    border-radius: 6px;
 
     overflow-x: hidden;
     overflow-y: auto;
 
     box-shadow: 0 0 20px #141414;
 
+    transform: translateY(-50%);
+
     animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+@keyframes osOpenReal {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
 }
    #terminalDiv {
     display: none;
