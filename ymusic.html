@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIBE — Music Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: rgba(255,255,255,0.07);
+    --accent: #c8ff00;
+    --accent2: #ff3cac;
+    --text: #f0f0f0;
+    --muted: #555;
+    --muted2: #888;
+  }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* Ambient background glow */
+  #ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: background 2s ease;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    grid-template-rows: 1fr 100px;
+    height: 100vh;
+    gap: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    grid-row: 1 / 2;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    overflow: hidden;
+  }
+
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--accent);
+    padding: 0 20px 28px;
+    letter-spacing: -1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo span { color: var(--accent2); }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,255,0,0.04); }
+  .nav-item svg { flex-shrink: 0; }
+
+  .sidebar-section {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 20px 20px 8px;
+    text-transform: uppercase;
+  }
+
+  .playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 11px;
+    color: var(--muted2);
+  }
+  .playlist-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .playlist-item.active { color: var(--accent); }
+  .playlist-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    grid-row: 1 / 2;
+    overflow-y: auto;
+    padding: 32px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface2) transparent;
+  }
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  .main-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .main-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .main-title span { color: var(--accent); }
+  .main-sub {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 6px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    width: 260px;
+    transition: border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    width: 100%;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar svg { color: var(--muted); flex-shrink: 0; }
+
+  /* Track list */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .track-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    group: true;
+  }
+  .track-card:hover {
+    border-color: rgba(200,255,0,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .track-card.playing {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(200,255,0,0.12);
+  }
+
+  .track-thumb {
+    aspect-ratio: 1;
+    overflow: hidden;
+    position: relative;
+    background: #1a1a1a;
+  }
+  .track-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  .track-card:hover .track-thumb img { transform: scale(1.05); }
+
+  .track-play-btn {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    width: 32px; height: 32px;
+    background: var(--accent);
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.2s;
+  }
+  .track-card:hover .track-play-btn { opacity: 1; transform: translateY(0); }
+  .track-card.playing .track-play-btn { opacity: 1; transform: translateY(0); background: var(--accent2); }
+
+  .playing-bars {
+    position: absolute;
+    top: 8px; left: 8px;
+    display: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+    padding: 2px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+  }
+  .track-card.playing .playing-bars { display: flex; }
+  .bar {
+    width: 3px;
+    background: var(--accent);
+    border-radius: 1px;
+    animation: barAnim 0.6s ease-in-out infinite alternate;
+  }
+  .bar:nth-child(1) { animation-delay: 0s; }
+  .bar:nth-child(2) { animation-delay: 0.15s; }
+  .bar:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes barAnim {
+    from { height: 3px; }
+    to { height: 12px; }
+  }
+
+  .track-info {
+    padding: 10px 12px;
+  }
+  .track-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .track-artist {
+    font-size: 10px;
+    color: var(--muted2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-duration {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    grid-row: 1 / 2;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .now-playing-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 24px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .now-playing-panel::-webkit-scrollbar { display: none; }
+
+  .np-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    align-self: flex-start;
+  }
+
+  .np-art {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface2);
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+  .np-art img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: opacity 0.4s;
+  }
+
+  .np-track-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  .np-artist {
+    font-size: 11px;
+    color: var(--muted2);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  /* Progress */
+  .np-progress-wrap {
+    width: 100%;
+    margin-bottom: 6px;
+  }
+  .np-progress-track {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .np-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s linear;
+    pointer-events: none;
+  }
+  .np-progress-thumb {
+    position: absolute;
+    top: 50%; right: -5px;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: none;
+  }
+  .np-progress-track:hover .np-progress-thumb { display: block; }
+
+  .np-times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* Controls */
+  .np-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .ctrl-btn {
+    background: none;
+    border: none;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+  .ctrl-btn:hover { color: var(--text); }
+  .ctrl-btn.active { color: var(--accent); }
+
+  .play-btn-big {
+    width: 48px; height: 48px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .play-btn-big:hover { transform: scale(1.08); background: #d4ff1a; }
+  .play-btn-big:active { transform: scale(0.96); }
+
+  /* Volume */
+  .np-volume {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .vol-slider {
+    flex: 1;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .vol-fill {
+    height: 100%;
+    background: var(--muted2);
+    border-radius: 2px;
+    width: 80%;
+    pointer-events: none;
+  }
+
+  /* Queue */
+  .queue-section {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .queue-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 24px 12px;
+  }
+  .queue-list {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface2) transparent;
+  }
+  .queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 24px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .queue-item:hover { background: rgba(255,255,255,0.03); }
+  .queue-item.active { background: rgba(200,255,0,0.04); }
+  .queue-item img {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .queue-item-info { flex: 1; min-width: 0; }
+  .queue-item-name {
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .queue-item-artist {
+    font-size: 9px;
+    color: var(--muted2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .queue-num {
+    font-size: 9px;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 14px;
+    text-align: right;
+  }
+  .queue-item.active .queue-num { color: var(--accent); }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    grid-column: 1 / 4;
+    grid-row: 2 / 3;
+    background: rgba(8,8,8,0.97);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 20px;
+    backdrop-filter: blur(20px);
+    height: 100px;
+  }
+
+  .bb-track {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 240px;
+    flex-shrink: 0;
+  }
+  .bb-thumb {
+    width: 52px; height: 52px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .bb-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .bb-name {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bb-artist { font-size: 10px; color: var(--muted2); }
+  .bb-like {
+    background: none; border: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+  .bb-like:hover { color: var(--accent2); }
+  .bb-like.liked { color: var(--accent2); }
+
+  .bb-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bb-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .bb-btn {
+    background: none; border: none;
+    color: var(--muted2); cursor: pointer;
+    transition: color 0.15s;
+    display: flex;
+  }
+  .bb-btn:hover { color: var(--text); }
+  .bb-btn.active { color: var(--accent); }
+  .bb-play {
+    width: 38px; height: 38px;
+    background: var(--text);
+    color: #000;
+    border: none; border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .bb-play:hover { transform: scale(1.06); }
+
+  .bb-progress {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .bb-prog-track {
+    flex: 1;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bb-prog-track:hover { height: 5px; }
+  .bb-prog-fill {
+    height: 100%;
+    background: var(--text);
+    border-radius: 2px;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.3s linear, background 0.3s;
+  }
+  .bb-prog-track:hover .bb-prog-fill { background: var(--accent); }
+
+  .bb-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 200px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+  .bb-vol-track {
+    width: 80px;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bb-vol-fill {
+    height: 100%;
+    background: var(--text);
+    border-radius: 2px;
+    width: 80%;
+    pointer-events: none;
+  }
+
+  /* YT hidden */
+  #yt-container {
+    position: fixed;
+    left: -9999px; top: -9999px;
+    width: 320px; height: 180px;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Animations */
+  .track-card { animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scrollbar track list */
+  .main { scrollbar-width: thin; scrollbar-color: #222 transparent; }
+
+  /* States */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: 1fr 100px; }
+    .sidebar, .right-panel { display: none; }
+    .main { grid-column: 1; }
+    .bottom-bar { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="ambient"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">VI<span>BE</span></div>
+
+    <div class="nav-item active">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></svg>
+      Home
+    </div>
+    <div class="nav-item">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></svg>
+      Discover
+    </div>
+    <div class="nav-item">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64Zm8,72H160a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm72,48H40a8,8,0,0,0,0,16h72a8,8,0,0,0,0-16Zm135.66-57.7a8,8,0,0,1-10,5.36L208,122.75V192a32.05,32.05,0,1,1-16-27.69V112a8,8,0,0,1,10.3-7.66l40,12A8,8,0,0,1,247.66,126.3ZM192,192a16,16,0,1,0-16,16A16,16,0,0,0,192,192Z"/></svg>
+      Library
+    </div>
+    <div class="nav-item">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40Z"/></svg>
+      Liked
+    </div>
+
+    <div class="sidebar-section">Playlists</div>
+    <div class="playlist-item active">
+      <div class="playlist-dot" style="background:#c8ff00"></div>
+      Late Night Drive
+    </div>
+    <div class="playlist-item">
+      <div class="playlist-dot" style="background:#ff3cac"></div>
+      Workout Fuel
+    </div>
+    <div class="playlist-item">
+      <div class="playlist-dot" style="background:#00cfff"></div>
+      Chill Sunday
+    </div>
+    <div class="playlist-item">
+      <div class="playlist-dot" style="background:#ff8c00"></div>
+      Focus Mode
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">GOOD<br><span>VIBES</span></div>
+        <div class="main-sub">// search any youtube track below</div>
+      </div>
+      <div class="search-bar">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></svg>
+        <input type="text" id="search-input" placeholder="Search tracks..." />
+      </div>
+    </div>
+
+    <div class="section-label">Now Trending</div>
+    <div class="tracks-grid" id="tracks-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="search-results-section" style="display:none">
+      <div class="section-label">Search Results</div>
+      <div class="tracks-grid" id="search-grid"></div>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="now-playing-panel">
+      <div class="np-label">Now Playing</div>
+
+      <div class="np-art">
+        <img id="np-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="">
+      </div>
+
+      <div class="np-track-name" id="np-name">Select a track</div>
+      <div class="np-artist" id="np-artist">—</div>
+
+      <div class="np-progress-wrap">
+        <div class="np-progress-track" id="np-prog-track">
+          <div class="np-progress-fill" id="np-prog-fill"></div>
+          <div class="np-progress-thumb" id="np-prog-thumb"></div>
+        </div>
+      </div>
+      <div class="np-times">
+        <span id="np-cur">0:00</span>
+        <span id="np-dur">0:00</span>
+      </div>
+
+      <div class="np-controls">
+        <button class="ctrl-btn" id="np-shuffle" title="Shuffle">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M237.66,178.34a8,8,0,0,1,0,11.32l-24,24A8,8,0,0,1,200,208V192a72.15,72.15,0,0,1-57.65-30.14l-41.72-58.4A56.1,56.1,0,0,0,55.06,80H32a8,8,0,0,1,0-16H55.06a72.12,72.12,0,0,1,58.59,30.15l41.72,58.4A56.08,56.08,0,0,0,200,176V160a8,8,0,0,1,13.66-5.66ZM143,107a8,8,0,0,0,11.16-1.86l1.2-1.67A56.08,56.08,0,0,1,200,80V96a8,8,0,0,0,13.66,5.66l24-24a8,8,0,0,0,0-11.32l-24-24A8,8,0,0,0,200,48V64a72.15,72.15,0,0,0-57.65,30.14l-1.2,1.67A8,8,0,0,0,143,107Zm-30,42a8,8,0,0,0-11.16,1.86l-1.2,1.67A56.1,56.1,0,0,1,55.06,176H32a8,8,0,0,0,0,16H55.06a72.12,72.12,0,0,0,58.59-30.15l1.2-1.67A8,8,0,0,0,113,149Z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="np-prev">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M208,47.88V208.12a16,16,0,0,1-24.43,13.43L64,146.77V216a8,8,0,0,1-16,0V40a8,8,0,0,1,16,0v69.23L183.57,34.45A15.95,15.95,0,0,1,208,47.88Z"/></svg>
+        </button>
+        <button class="play-btn-big" id="np-play">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256" id="np-play-icon"><path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="np-next">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M208,40V216a8,8,0,0,1-16,0V146.77L72.43,221.55A15.95,15.95,0,0,1,48,208.12V47.88A15.95,15.95,0,0,1,72.43,34.45L192,109.23V40a8,8,0,0,1,16,0Z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="np-repeat" title="Repeat">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M24,128A72.08,72.08,0,0,1,96,56H204.69L194.34,45.66a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L204.69,72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H51.31l10.35-10.34a8,8,0,0,0-11.32-11.32l-24,24a8,8,0,0,0,0,11.32l24,24a8,8,0,0,0,11.32-11.32L51.31,200H160a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z"/></svg>
+        </button>
+      </div>
+
+      <div class="np-volume">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Z"/></svg>
+        <div class="vol-slider" id="np-vol-slider">
+          <div class="vol-fill" id="np-vol-fill"></div>
+        </div>
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 256 256"><path d="M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z"/></svg>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="queue-section">
+      <div class="queue-label">Up Next</div>
+      <div class="queue-list" id="queue-list"></div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bb-track">
+      <div class="bb-thumb"><img id="bb-img" src="" alt=""></div>
+      <div style="flex:1;min-width:0">
+        <div class="bb-name" id="bb-name">—</div>
+        <div class="bb-artist" id="bb-artist">Select a track to play</div>
+      </div>
+      <button class="bb-like" id="bb-like">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102A46.06,46.06,0,0,1,78,56c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,155.61,146.24,204.15,128,214.8Z"/></svg>
+      </button>
+    </div>
+
+    <div class="bb-center">
+      <div class="bb-ctrl">
+        <button class="bb-btn" id="bb-shuffle">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M237.66,178.34a8,8,0,0,1,0,11.32l-24,24A8,8,0,0,1,200,208V192a72.15,72.15,0,0,1-57.65-30.14l-41.72-58.4A56.1,56.1,0,0,0,55.06,80H32a8,8,0,0,1,0-16H55.06a72.12,72.12,0,0,1,58.59,30.15l41.72,58.4A56.08,56.08,0,0,0,200,176V160a8,8,0,0,1,13.66-5.66ZM143,107a8,8,0,0,0,11.16-1.86l1.2-1.67A56.08,56.08,0,0,1,200,80V96a8,8,0,0,0,13.66,5.66l24-24a8,8,0,0,0,0-11.32l-24-24A8,8,0,0,0,200,48V64a72.15,72.15,0,0,0-57.65,30.14l-1.2,1.67A8,8,0,0,0,143,107Zm-30,42a8,8,0,0,0-11.16,1.86l-1.2,1.67A56.1,56.1,0,0,1,55.06,176H32a8,8,0,0,0,0,16H55.06a72.12,72.12,0,0,0,58.59-30.15l1.2-1.67A8,8,0,0,0,113,149Z"/></svg>
+        </button>
+        <button class="bb-btn" id="bb-prev">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M208,47.88V208.12a16,16,0,0,1-24.43,13.43L64,146.77V216a8,8,0,0,1-16,0V40a8,8,0,0,1,16,0v69.23L183.57,34.45A15.95,15.95,0,0,1,208,47.88Z"/></svg>
+        </button>
+        <button class="bb-play" id="bb-play">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256" id="bb-play-icon"><path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/></svg>
+        </button>
+        <button class="bb-btn" id="bb-next">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M208,40V216a8,8,0,0,1-16,0V146.77L72.43,221.55A15.95,15.95,0,0,1,48,208.12V47.88A15.95,15.95,0,0,1,72.43,34.45L192,109.23V40a8,8,0,0,1,16,0Z"/></svg>
+        </button>
+        <button class="bb-btn" id="bb-repeat">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M24,128A72.08,72.08,0,0,1,96,56H204.69L194.34,45.66a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L204.69,72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H51.31l10.35-10.34a8,8,0,0,0-11.32-11.32l-24,24a8,8,0,0,0,0,11.32l24,24a8,8,0,0,0,11.32-11.32L51.31,200H160a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z"/></svg>
+        </button>
+      </div>
+      <div class="bb-progress">
+        <span id="bb-cur">0:00</span>
+        <div class="bb-prog-track" id="bb-prog-track">
+          <div class="bb-prog-fill" id="bb-prog-fill"></div>
+        </div>
+        <span id="bb-dur">0:00</span>
+      </div>
+    </div>
+
+    <div class="bb-right">
+      <svg width="14" height="14" fill="currentColor" color="#555" viewBox="0 0 256 256"><path d="M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Z"/></svg>
+      <div class="bb-vol-track" id="bb-vol-track">
+        <div class="bb-vol-fill" id="bb-vol-fill"></div>
+      </div>
+      <svg width="14" height="14" fill="currentColor" color="#555" viewBox="0 0 256 256"><path d="M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden YouTube player container -->
+<div id="yt-container"><div id="yt-player"></div></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DEFAULT_TRACKS = [
+  { id: 'QbGl25l9q_4', title: 'Unnecessary', artist: 'Dave Blunts', duration: '5:27' },
+  { id: 'SsJ5ZBuhwIo', title: 'The Cup', artist: 'Dave Blunts', duration: '3:12' },
+  { id: '0PinJNTOcSc', title: '10 PERCS', artist: 'Dave Blunts', duration: '2:58' },
+  { id: 'Uasha5RsitA', title: 'Bigger', artist: 'Dave Blunts', duration: '4:01' },
+  { id: 'U4xCoROx5zA', title: 'First Day Out The Hospital', artist: 'Dave Blunts', duration: '3:44' },
+  { id: 'VfKYL9EUKq0', title: 'Hey Curtis', artist: 'Dave Blunts', duration: '3:21' },
+  { id: 'CoHuso58DUc', title: "Check On My N****S", artist: 'Dave Blunts', duration: '2:48' },
+  { id: 'jNQXAC9IVRw', title: 'Me at the zoo', artist: 'jawed', duration: '0:19' },
+  { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up', artist: 'Rick Astley', duration: '3:33' },
+  { id: 'kJQP7kiw5Fk', title: 'Despacito', artist: 'Luis Fonsi', duration: '4:41' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let player = null;
+let ytReady = false;
+let queue = [...DEFAULT_TRACKS];
+let currentIdx = -1;
+let isPlaying = false;
+let shuffle = false;
+let repeat = false;
+let volume = 80;
+let liked = new Set();
+let progressInterval = null;
+
+// ── YT IFRAME API ─────────────────────────────────────────────────────────────
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  player = new YT.Player('yt-player', {
+    width: '320', height: '180',
+    playerVars: {
+      autoplay: 0, controls: 0, disablekb: 1, fs: 0,
+      iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0
+    },
+    events: {
+      onStateChange: onPlayerStateChange,
+      onReady: () => { setVolume(volume); }
+    }
+  });
+};
+
+function onPlayerStateChange(e) {
+  const S = YT.PlayerState;
+  if (e.data === S.PLAYING) {
+    isPlaying = true;
+    updatePlayIcons(true);
+    startProgress();
+    updateNowPlayingDuration();
+  } else if (e.data === S.PAUSED) {
+    isPlaying = false;
+    updatePlayIcons(false);
+    stopProgress();
+  } else if (e.data === S.ENDED) {
+    isPlaying = false;
+    stopProgress();
+    if (repeat) { playTrack(currentIdx); }
+    else { nextTrack(); }
+  } else if (e.data === S.BUFFERING) {
+    // buffering
+  }
+}
+
+// ── THUMBNAIL ─────────────────────────────────────────────────────────────────
+function thumb(id) {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
+// ── RENDER TRACKS ─────────────────────────────────────────────────────────────
+function renderTracks(tracks, container) {
+  container.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const idx = queue.indexOf(t);
+    const card = document.createElement('div');
+    card.className = 'track-card' + (currentIdx === idx ? ' playing' : '');
+    card.innerHTML = `
+      <div class="track-thumb">
+        <img src="${thumb(t.id)}" alt="${t.title}" loading="lazy" onerror="this.style.opacity=0.3">
+        <div class="playing-bars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="track-play-btn">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 256 256">
+            ${currentIdx === idx && isPlaying
+              ? '<path d="M216,48a16,16,0,0,0-16,16V192a16,16,0,0,0,32,0V64A16,16,0,0,0,216,48Zm-112,0A16,16,0,0,0,88,64V192a16,16,0,0,0,32,0V64A16,16,0,0,0,104,48Z"/>'
+              : '<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/>'}
+          </svg>
+        </div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${t.title}</div>
+        <div class="track-artist">${t.artist}</div>
+        <div class="track-duration">${t.duration || ''}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      if (currentIdx === idx) { togglePlay(); }
+      else { playTrack(idx); }
+    });
+    container.appendChild(card);
+  });
+}
+
+function renderQueue() {
+  const ql = document.getElementById('queue-list');
+  ql.innerHTML = '';
+  const next = queue.slice(currentIdx + 1, currentIdx + 6);
+  if (next.length === 0) {
+    ql.innerHTML = '<div style="padding:12px 24px;font-size:10px;color:var(--muted)">Queue is empty</div>';
+    return;
+  }
+  next.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'queue-item';
+    el.innerHTML = `
+      <span class="queue-num">${i + 1}</span>
+      <img src="${thumb(t.id)}" alt="" onerror="this.style.opacity=0.2">
+      <div class="queue-item-info">
+        <div class="queue-item-name">${t.title}</div>
+        <div class="queue-item-artist">${t.artist}</div>
+      </div>
+    `;
+    const actualIdx = currentIdx + 1 + i;
+    el.addEventListener('click', () => playTrack(actualIdx));
+    ql.appendChild(el);
+  });
+}
+
+// ── PLAYBACK ─────────────────────────────────────────────────────────────────
+function playTrack(idx) {
+  if (!ytReady || !player) return;
+  if (idx < 0 || idx >= queue.length) return;
+  currentIdx = idx;
+  const t = queue[idx];
+
+  player.loadVideoById(t.id);
+  isPlaying = true;
+
+  // Update UI
+  document.getElementById('np-img').src = thumb(t.id);
+  document.getElementById('np-name').textContent = t.title;
+  document.getElementById('np-artist').textContent = t.artist;
+  document.getElementById('bb-img').src = thumb(t.id);
+  document.getElementById('bb-name').textContent = t.title;
+  document.getElementById('bb-artist').textContent = t.artist;
+
+  updateAmbient(t.id);
+  renderTracks(queue, document.getElementById('tracks-grid'));
+  renderQueue();
+  updateLikeBtn();
+  document.title = `${t.title} — VIBE`;
+}
+
+function togglePlay() {
+  if (!player || currentIdx === -1) return;
+  if (isPlaying) { player.pauseVideo(); }
+  else { player.playVideo(); }
+}
+
+function nextTrack() {
+  if (shuffle) {
+    let r;
+    do { r = Math.floor(Math.random() * queue.length); } while (r === currentIdx && queue.length > 1);
+    playTrack(r);
+  } else {
+    playTrack((currentIdx + 1) % queue.length);
+  }
+}
+
+function prevTrack() {
+  if (player && player.getCurrentTime() > 3) {
+    player.seekTo(0); return;
+  }
+  if (shuffle) { playTrack(Math.floor(Math.random() * queue.length)); }
+  else { playTrack((currentIdx - 1 + queue.length) % queue.length); }
+}
+
+function setVolume(v) {
+  volume = Math.max(0, Math.min(100, v));
+  if (player && ytReady) player.setVolume(volume);
+  document.getElementById('np-vol-fill').style.width = volume + '%';
+  document.getElementById('bb-vol-fill').style.width = volume + '%';
+}
+
+// ── PROGRESS ─────────────────────────────────────────────────────────────────
+function startProgress() {
+  stopProgress();
+  progressInterval = setInterval(updateProgress, 500);
+}
+function stopProgress() {
+  if (progressInterval) clearInterval(progressInterval);
+}
+function updateProgress() {
+  if (!player || !ytReady) return;
+  try {
+    const cur = player.getCurrentTime() || 0;
+    const dur = player.getDuration() || 0;
+    const pct = dur > 0 ? (cur / dur * 100) : 0;
+    document.getElementById('np-prog-fill').style.width = pct + '%';
+    document.getElementById('np-prog-thumb').style.left = `calc(${pct}% - 5px)`;
+    document.getElementById('bb-prog-fill').style.width = pct + '%';
+    document.getElementById('np-cur').textContent = fmtTime(cur);
+    document.getElementById('bb-cur').textContent = fmtTime(cur);
+    document.getElementById('np-dur').textContent = fmtTime(dur);
+    document.getElementById('bb-dur').textContent = fmtTime(dur);
+  } catch(e) {}
+}
+function updateNowPlayingDuration() {
+  setTimeout(() => {
+    if (!player || !ytReady) return;
+    try {
+      const dur = player.getDuration() || 0;
+      document.getElementById('np-dur').textContent = fmtTime(dur);
+      document.getElementById('bb-dur').textContent = fmtTime(dur);
+    } catch(e) {}
+  }, 1500);
+}
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+// ── SEEK ─────────────────────────────────────────────────────────────────────
+function seekOnClick(e, el) {
+  const rect = el.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  if (!player || !ytReady) return;
+  try {
+    const dur = player.getDuration() || 0;
+    player.seekTo(dur * pct, true);
+  } catch(e) {}
+}
+
+document.getElementById('np-prog-track').addEventListener('click', function(e) { seekOnClick(e, this); });
+document.getElementById('bb-prog-track').addEventListener('click', function(e) { seekOnClick(e, this); });
+
+// ── VOLUME CLICK ─────────────────────────────────────────────────────────────
+document.getElementById('np-vol-slider').addEventListener('click', function(e) {
+  const rect = this.getBoundingClientRect();
+  setVolume(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+});
+document.getElementById('bb-vol-track').addEventListener('click', function(e) {
+  const rect = this.getBoundingClientRect();
+  setVolume(Math.round(((e.clientX - rect.left) / rect.width) * 100));
+});
+
+// ── BUTTONS ──────────────────────────────────────────────────────────────────
+function updatePlayIcons(playing) {
+  const playPath = '<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/>';
+  const pausePath = '<path d="M216,48a16,16,0,0,0-16,16V192a16,16,0,0,0,32,0V64A16,16,0,0,0,216,48Zm-112,0A16,16,0,0,0,88,64V192a16,16,0,0,0,32,0V64A16,16,0,0,0,104,48Z"/>';
+  document.getElementById('np-play-icon').innerHTML = playing ? pausePath : playPath;
+  document.getElementById('bb-play-icon').innerHTML = playing ? pausePath : playPath;
+}
+
+['np-play','bb-play'].forEach(id => {
+  document.getElementById(id).addEventListener('click', togglePlay);
+});
+['np-next','bb-next'].forEach(id => {
+  document.getElementById(id).addEventListener('click', nextTrack);
+});
+['np-prev','bb-prev'].forEach(id => {
+  document.getElementById(id).addEventListener('click', prevTrack);
+});
+['np-shuffle','bb-shuffle'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function() {
+    shuffle = !shuffle;
+    this.classList.toggle('active', shuffle);
+    document.getElementById(id === 'np-shuffle' ? 'bb-shuffle' : 'np-shuffle').classList.toggle('active', shuffle);
+  });
+});
+['np-repeat','bb-repeat'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function() {
+    repeat = !repeat;
+    this.classList.toggle('active', repeat);
+    document.getElementById(id === 'np-repeat' ? 'bb-repeat' : 'np-repeat').classList.toggle('active', repeat);
+  });
+});
+
+document.getElementById('bb-like').addEventListener('click', function() {
+  if (currentIdx === -1) return;
+  const id = queue[currentIdx].id;
+  if (liked.has(id)) liked.delete(id); else liked.add(id);
+  updateLikeBtn();
+});
+
+function updateLikeBtn() {
+  if (currentIdx === -1) return;
+  const id = queue[currentIdx].id;
+  document.getElementById('bb-like').classList.toggle('liked', liked.has(id));
+}
+
+// ── AMBIENT GLOW ─────────────────────────────────────────────────────────────
+const ambientColors = [
+  ['#c8ff00','#1a2200'], ['#ff3cac','#2a0020'], ['#00cfff','#00152a'],
+  ['#ff8c00','#2a1500'], ['#a855f7','#1a0030'], ['#22d3ee','#001a20'],
+];
+let ambientIdx = 0;
+function updateAmbient(videoId) {
+  ambientIdx = (ambientIdx + 1) % ambientColors.length;
+  const [a, b] = ambientColors[ambientIdx];
+  document.getElementById('ambient').style.background =
+    `radial-gradient(ellipse 80% 60% at 20% 80%, ${a}18 0%, transparent 60%),
+     radial-gradient(ellipse 60% 80% at 80% 20%, ${a}10 0%, transparent 50%),
+     radial-gradient(ellipse 100% 100% at 50% 50%, ${b}cc 0%, var(--bg) 70%)`;
+}
+
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+// Piped instances to try in order (same approach as Koop Music)
+const PIPED_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://piped-api.garudalinux.org',
+  'https://api.piped.projectsegfau.lt',
+  'https://pipedapi.in.projectsegfau.lt',
+];
+
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  const q = this.value.trim();
+  const section = document.getElementById('search-results-section');
+  if (!q) { section.style.display = 'none'; return; }
+  searchTimeout = setTimeout(() => searchYT(q), 500);
+});
+
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    clearTimeout(searchTimeout);
+    const q = this.value.trim();
+    if (q) searchYT(q);
+  }
+});
+
+async function searchYT(query) {
+  const section = document.getElementById('search-results-section');
+  const grid = document.getElementById('search-grid');
+  section.style.display = 'block';
+
+  // Check if it's a YouTube URL or bare video ID first
+  const ytIdPattern = /^[a-zA-Z0-9_-]{11}$/;
+  const urlMatch = query.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (urlMatch || ytIdPattern.test(query)) {
+    const id = urlMatch ? urlMatch[1] : query;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">⏳</div>Loading...</div>`;
+    try {
+      const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);
+      const data = await res.json();
+      if (data.title) {
+        const track = { id, title: data.title, artist: data.author_name || 'Unknown', duration: '' };
+        if (!queue.find(t => t.id === id)) queue.push(track);
+        renderTracks([track], grid);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // Full text search via Piped API
+  grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">🔍</div>Searching...</div>`;
+
+  let results = null;
+  for (const instance of PIPED_INSTANCES) {
+    try {
+      const res = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&filter=music_songs`, { signal: AbortSignal.timeout(4000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.items && data.items.length > 0) { results = data.items; break; }
+    } catch(e) { continue; }
+  }
+
+  // Fallback: try without music filter
+  if (!results) {
+    for (const instance of PIPED_INSTANCES) {
+      try {
+        const res = await fetch(`${instance}/search?q=${encodeURIComponent(query)}&filter=videos`, { signal: AbortSignal.timeout(4000) });
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.items && data.items.length > 0) { results = data.items; break; }
+      } catch(e) { continue; }
+    }
+  }
+
+  if (!results || results.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="big">😕</div>
+        No results found. Try a different query or paste a YouTube URL directly.
+      </div>`;
+    return;
+  }
+
+  // Map Piped results to track objects
+  const tracks = results.slice(0, 12).map(item => {
+    const id = (item.url || '').replace('/watch?v=', '').split('&')[0];
+    const durSec = item.duration || 0;
+    return {
+      id,
+      title: item.title || 'Unknown',
+      artist: item.uploaderName || 'Unknown',
+      duration: durSec > 0 ? fmtTime(durSec) : '',
+      thumbnail: item.thumbnail || null,
+    };
+  }).filter(t => t.id && t.id.length === 11);
+
+  // Add new tracks to queue if not already there
+  tracks.forEach(t => { if (!queue.find(q => q.id === t.id)) queue.push(t); });
+
+  renderSearchResults(tracks, grid);
+}
+
+function renderSearchResults(tracks, container) {
+  container.innerHTML = '';
+  tracks.forEach(t => {
+    const idx = queue.findIndex(q => q.id === t.id);
+    const card = document.createElement('div');
+    card.className = 'track-card' + (currentIdx === idx ? ' playing' : '');
+    const imgSrc = t.thumbnail || thumb(t.id);
+    card.innerHTML = `
+      <div class="track-thumb">
+        <img src="${imgSrc}" alt="${t.title}" loading="lazy" onerror="this.src='${thumb(t.id)}'">
+        <div class="playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+        <div class="track-play-btn">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${t.title}</div>
+        <div class="track-artist">${t.artist}</div>
+        <div class="track-duration">${t.duration}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      if (currentIdx === idx) togglePlay();
+      else playTrack(idx);
+    });
+    container.appendChild(card);
+  });
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') nextTrack();
+  if (e.code === 'ArrowLeft') prevTrack();
+  if (e.code === 'ArrowUp') setVolume(volume + 5);
+  if (e.code === 'ArrowDown') setVolume(volume - 5);
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderTracks(queue, document.getElementById('tracks-grid'));
+renderQueue();
+updateAmbient('');
+
+// Load YouTube IFrame API
+const tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+</script>
+</body>
+</html>
