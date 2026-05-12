@@ -37,6 +37,16 @@ nav{
 }
 .nav-tab:hover{color:#c7d5e0}
 .nav-tab.active{color:#c7d5e0;border-bottom-color:#66c0f4}
+
+/* TOTAL COUNTER in nav */
+.nav-total{
+  font-family:'Rajdhani',sans-serif;
+  font-size:13px;color:#8f98a0;
+  margin-right:12px;
+  white-space:nowrap;
+}
+.nav-total span{color:#66c0f4;font-weight:700;}
+
 .nav-search{
   background:#000;border:1px solid #333;
   padding:5px 10px;color:#c7d5e0;font-size:13px;
@@ -89,6 +99,7 @@ aside{
 .src-hydra{background:#1a3a4a;color:#66c0f4}
 .src-archive{background:#3a2a10;color:#f4a336}
 .src-t9{background:#2a1a3a;color:#c466f4}
+.src-gnmath{background:#1a3a1a;color:#4af49a}
 
 /* MAIN */
 main{flex:1;overflow-y:auto;background:#1b2838}
@@ -304,6 +315,7 @@ main{flex:1;overflow-y:auto;background:#1b2838}
     <div class="nav-tab" onclick="setTab(this,'library')">Library</div>
     <div class="nav-tab" onclick="setTab(this,'community')">Community</div>
   </div>
+  <div class="nav-total">Total: <span id="totalCount">0</span> games</div>
   <input class="nav-search" type="text" placeholder="Search all games..." id="searchInput" oninput="applySearch()">
 </nav>
 
@@ -326,6 +338,10 @@ main{flex:1;overflow-y:auto;background:#1b2838}
       <div class="sidebar-item" onclick="setCategory(this,'t9')" data-cat="t9">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         T9 Collection
+      </div>
+      <div class="sidebar-item" onclick="setCategory(this,'gnmath')" data-cat="gnmath">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        GN Math
       </div>
     </div>
     <div class="sidebar-divider"></div>
@@ -405,6 +421,21 @@ main{flex:1;overflow-y:auto;background:#1b2838}
         </div>
       </div>
     </div>
+
+    <!-- GN MATH SECTION -->
+    <div id="gnmath-section">
+      <div class="section-bar">
+        <span class="section-title">🧮 GN Math</span>
+        <span class="section-badge src-gnmath">GNMATH</span>
+        <span class="section-count" id="gnmathCount">0</span>
+        <button class="section-toggle" onclick="toggleSection('gnmath')">Collapse</button>
+      </div>
+      <div class="section-content" id="gnmath-content">
+        <div class="game-grid" id="gnmathGrid">
+          <div class="status-msg"><div class="spinner"></div><span>Loading GN Math games...</span></div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -463,6 +494,32 @@ const ARCHIVE_BASES={
   "{COVER_URL2}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-2/main/",
   "{COVER_URL3}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-3/main/",
 };
+
+// ============================================================
+// GN MATH CONFIG
+// ============================================================
+const GNMATH_SOURCES = [
+  {
+    key: 'gnmath',
+    zonesurls: [
+      "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json",
+      "https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json",
+      "https://cdn.jsdelivr.net/gh/gn-math/assets/zones.json"
+    ],
+    coverURL: "https://cdn.jsdelivr.net/gh/gn-math/covers@main",
+    htmlURL:  "https://cdn.jsdelivr.net/gh/gn-math/html@main"
+  },
+  {
+    key: 'freebuisness',
+    zonesurls: [
+      "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
+      "https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json",
+      "https://cdn.jsdelivr.net/gh/freebuisness/assets/zones.json"
+    ],
+    coverURL: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main",
+    htmlURL:  "https://cdn.jsdelivr.net/gh/freebuisness/html@main"
+  }
+];
 
 // ============================================================
 // T9 GAMES (extracted from HTML)
@@ -655,22 +712,28 @@ const T9_GAMES = [
   {name:"Speed Stars",url:"/speedstars.html",cover:"speedstars.png"},
 ];
 
-// T9 site base for resolving relative covers
 const T9_SITE = "https://t9lat22.github.io";
 
 // ============================================================
 // STATE
 // ============================================================
-let hydraGames=[], archiveGames=[], t9Games=[];
+let hydraGames=[], archiveGames=[], t9Games=[], gnmathGames=[];
 let currentGame=null, currentGameSource=null;
 let heroZones=[], heroIdx=0, heroTimer=null;
 let activeCategory='all';
 
 // ============================================================
+// TOTAL COUNTER
+// ============================================================
+function updateTotalCount(){
+  let total = hydraGames.length + archiveGames.length + t9Games.length + gnmathGames.length;
+  document.getElementById('totalCount').textContent = total.toLocaleString();
+}
+
+// ============================================================
 // INIT
 // ============================================================
 async function init(){
-  // Load T9 immediately (static data)
   t9Games = T9_GAMES.map(g => ({
     ...g,
     source:'t9',
@@ -678,12 +741,11 @@ async function init(){
     playUrl: g.url.startsWith('http') ? g.url : T9_SITE + g.url
   }));
   renderSection('t9', t9Games, 't9Grid', 't9Count');
+  updateTotalCount();
 
-  // Load Hydra
   fetchHydra();
-
-  // Load Archive
   fetchArchive();
+  fetchGnMath();
 }
 
 async function fetchHydra(){
@@ -704,6 +766,7 @@ async function fetchHydra(){
       buildHero();
       buildTags();
       renderSection('hydra', hydraGames, 'hydraGrid', 'hydraCount');
+      updateTotalCount();
       return;
     }catch(e){}
   }
@@ -722,9 +785,46 @@ async function fetchArchive(){
       source:'archive'
     }));
     renderSection('archive', archiveGames, 'archiveGrid', 'archiveCount');
+    updateTotalCount();
   }catch(e){
     document.getElementById('archiveGrid').innerHTML='<div class="status-msg" style="color:#c94444">Failed to load Archive games</div>';
   }
+}
+
+async function fetchGnMath(){
+  let allZones = [];
+  for(let src of GNMATH_SOURCES){
+    for(let url of src.zonesurls){
+      try{
+        let r = await fetch(url + '?t=' + Date.now());
+        if(!r.ok) continue;
+        let data = await r.json();
+        let zones = data.map(z => ({
+          ...z,
+          _gnSrc: src,
+          source: 'gnmath',
+          name: z.name || z.title || z.file_name || '',
+          coverFull: z.cover
+            ? z.cover.replace('{COVER_URL}', src.coverURL).replace('{HTML_URL}', src.htmlURL)
+            : '',
+          playUrl: z.url
+            ? z.url.replace('{HTML_URL}', src.htmlURL).replace('{COVER_URL}', src.coverURL)
+            : ''
+        }));
+        allZones.push(...zones);
+        break; // got this source, move on
+      }catch(e){}
+    }
+  }
+  // dedupe by name
+  let seen = new Set();
+  gnmathGames = allZones.filter(z => {
+    let k = z.name.toLowerCase().trim();
+    if(!k || seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+  renderSection('gnmath', gnmathGames, 'gnmathGrid', 'gnmathCount');
+  updateTotalCount();
 }
 
 function resolvePlaceholders(str){
@@ -810,13 +910,14 @@ function setCategory(el,c){
   document.querySelectorAll('.sidebar-item[data-cat]').forEach(i=>i.classList.remove('active'));
   el.classList.add('active');
 
-  // Show/hide sections
-  let showHydra = c==='all'||c==='hydra';
+  let showHydra   = c==='all'||c==='hydra';
   let showArchive = c==='all'||c==='archive';
-  let showT9 = c==='all'||c==='t9';
-  document.getElementById('hydra-section').style.display=showHydra?'':'none';
-  document.getElementById('archive-section').style.display=showArchive?'':'none';
-  document.getElementById('t9-section').style.display=showT9?'':'none';
+  let showT9      = c==='all'||c==='t9';
+  let showGnmath  = c==='all'||c==='gnmath';
+  document.getElementById('hydra-section').style.display   = showHydra   ? '' : 'none';
+  document.getElementById('archive-section').style.display = showArchive ? '' : 'none';
+  document.getElementById('t9-section').style.display      = showT9      ? '' : 'none';
+  document.getElementById('gnmath-section').style.display  = showGnmath  ? '' : 'none';
 
   applySearch();
 }
@@ -849,6 +950,13 @@ function applySearch(){
     });
     sortArrByName(filtered,sort);
     renderSection('t9',filtered,'t9Grid','t9Count');
+  }
+  if(activeCategory==='all'||activeCategory==='gnmath'){
+    let filtered=gnmathGames.filter(g=>{
+      return !q||g.name.toLowerCase().includes(q);
+    });
+    sortArrByName(filtered,sort);
+    renderSection('gnmath',filtered,'gnmathGrid','gnmathCount');
   }
 }
 
@@ -883,6 +991,9 @@ function renderSection(source, games, gridId, countId){
     }else if(source==='archive'){
       name=g.name; cover=g.cover;
       srcLabel='ARCHIVE';srcClass='src-archive';
+    }else if(source==='gnmath'){
+      name=g.name; cover=g.coverFull||'';
+      srcLabel='GNMATH';srcClass='src-gnmath';
     }else{
       name=g.name; cover=g.coverFull;
       srcLabel='T9';srcClass='src-t9';
@@ -930,7 +1041,7 @@ function loadThumb(card,cover,source,g){
 // ============================================================
 async function playGame(g, source){
   currentGame=g; currentGameSource=source;
-  let name = source==='hydra'?(g.title||g.name||g.file_name):g.name;
+  let name = (source==='hydra') ? (g.title||g.name||g.file_name) : g.name;
   document.getElementById('viewerTitle').textContent=name;
   document.getElementById('viewerAuthor').textContent=g.author?'by '+g.author:'';
   document.getElementById('viewer').style.display='flex';
@@ -941,6 +1052,8 @@ async function playGame(g, source){
 
   if(source==='hydra'){
     await openHydraGame(g);
+  }else if(source==='gnmath'){
+    await openGnMathGame(g);
   }else{
     let url = source==='archive' ? g.url : g.playUrl;
     await fetchAndWriteGame(url);
@@ -970,7 +1083,18 @@ async function openHydraGame(z){
   alert('Failed to load game');
 }
 
-// Fetch any HTML URL and write it into the iframe so scripts actually execute
+async function openGnMathGame(z){
+  // If it's a direct http URL, just navigate
+  if(z.playUrl && z.playUrl.startsWith('http') && !z.playUrl.includes('{HTML_URL}')){
+    await fetchAndWriteGame(z.playUrl);
+    return;
+  }
+  // Try fetching the HTML content
+  if(z.playUrl){
+    await fetchAndWriteGame(z.playUrl);
+  }
+}
+
 let currentBlobUrl=null;
 async function fetchAndWriteGame(url){
   let frame=document.getElementById('gameFrame');
@@ -979,13 +1103,11 @@ async function fetchAndWriteGame(url){
     let r=await fetch(url);
     if(!r.ok) throw new Error('HTTP '+r.status);
     let html=await r.text();
-    // Blob URL gives the page a proper origin so scripts run
     if(currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     let blob=new Blob([html],{type:'text/html'});
     currentBlobUrl=URL.createObjectURL(blob);
     frame.src=currentBlobUrl;
   }catch(e){
-    // CORS blocked — fall back to direct navigation (still executes, just no fetch intercept)
     console.warn('fetch failed, direct nav fallback:', e.message);
     if(currentBlobUrl){URL.revokeObjectURL(currentBlobUrl);currentBlobUrl=null;}
     frame.src=url;
@@ -1020,7 +1142,9 @@ async function openNewTab(){
       }catch(e){}
     }
   }else{
-    let url=currentGameSource==='archive'?currentGame.url:currentGame.playUrl;
+    let url=currentGameSource==='archive'?currentGame.url:
+            currentGameSource==='gnmath'?currentGame.playUrl:
+            currentGame.playUrl;
     window.open(url,'_blank');
   }
 }
@@ -1053,7 +1177,7 @@ function showInfo(g,source){
   document.getElementById('infoTitle').textContent=name;
   document.getElementById('infoAuthor').textContent=g.author?'by '+g.author:'';
 
-  let sourceLabels={'hydra':'Hydra Network','archive':'Master Archive','t9':'T9 Collection'};
+  let sourceLabels={'hydra':'Hydra Network','archive':'Master Archive','t9':'T9 Collection','gnmath':'GN Math'};
   document.getElementById('infoSource').textContent=sourceLabels[source]||source;
 
   let fileRow=document.getElementById('infoFileRow');
@@ -1066,10 +1190,12 @@ function showInfo(g,source){
     cover=HYDRA_BASES[0]+g.thumb.replace(/^\/+/,'');
     img.onerror=()=>{img.src=HYDRA_BASES[1]+g.thumb.replace(/^\/+/,'')};
   }else if(source==='archive'){cover=g.cover;}
+  else if(source==='gnmath'){cover=g.coverFull||'';}
   else{cover=g.coverFull;}
   img.src=cover||'';
 
-  let tags=source==='hydra'&&Array.isArray(g.special)?g.special:[];
+  let tags=source==='hydra'&&Array.isArray(g.special)?g.special:
+           source==='gnmath'&&Array.isArray(g.special)?g.special:[];
   let tagRow=document.getElementById('infoTagRow');
   document.getElementById('infoTags').innerHTML=tags.map(t=>`<span class="info-tag">${t}</span>`).join('');
   tagRow.style.display=tags.length?'':'none';
