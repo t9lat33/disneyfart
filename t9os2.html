@@ -454,6 +454,30 @@ box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
   }
+     #blkDiv {
+  display: none;
+  transform: translateY(-50px);
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:99%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
   #musicDiv {
    display: none;
     margin-top: 20px;
@@ -1295,7 +1319,45 @@ requestAnimationFrame(updateFPS);
 </div>
 
 
+<div id="blkDiv">
+  <button class="close-btn" onclick="document.getElementById('blkDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeBLK()">●</button>
 
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Blooket hacks</h3>
+
+
+
+ 
+<iframe id="mframe" class="blkframe" src="blk2.html"></iframe>
+  <style>
+    .blkframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframeBLK() {
+      let iframe = document.getElementById("blkframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
 
 <script>
   function www(){
@@ -2178,7 +2240,7 @@ document.getElementById('day').textContent = day;
 
         <script>
     // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu', 'blkDiv'];
 
     // Store each div's original colors when the page opens
     const originalColors = {};
@@ -2297,7 +2359,7 @@ document.getElementById('day').textContent = day;
 
         <script>
     // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
+    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu', 'blkDiv'];
 
     // Store each div's original colors when the page opens
     const originalColors = {};
@@ -2447,7 +2509,7 @@ document.getElementById('day').textContent = day;
 
 
 </style> </div> <div 
-onclick="window.open('https://dsc.gg/t9network', '_blank')" class="icon" style="left:100px; top:120px;"> <img src="discord2.png" style="border-radius:20%; "> <span>dsc.gg/t9network</span> </div>
+onclick="blk()" class="icon" style="left:100px; top:120px;"> <img style="border-radius:35%;" src="blk2.png" style="border-radius:20%; "> <span>Blooket hacks</span> </div>
 
 <div onclick="settings()" class="icon" style="left:100px; top:220px; "> 
   <img src="setting.png" alt="settings" style="border-radius:20%; "> 
@@ -2718,7 +2780,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
-
+<script>
+  function blk(){
+    const div = document.getElementById('blkDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 
 <script>
   function settings(){
@@ -3493,6 +3560,7 @@ document.getElementById("movieDiv"),
 document.getElementById("roDiv"),
 document.getElementById("settingsDiv"),
 document.getElementById("calcDiv"),
+document.getElementById("blkDiv"),
 document.getElementById("wwwDiv"),
 
 
@@ -3897,7 +3965,7 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
@@ -3937,6 +4005,7 @@ function hacks(){ openDiv('hacksDiv'); }
 function emulator(){ openDiv('emulatorDiv'); }
 function collab(){ openDiv('collabDiv'); }
 function sound(){ openDiv('soundDiv'); }
+function sound(){ openDiv('blkDiv'); }
 function admin(){ openDiv('adminDiv'); }
 </script>
 
