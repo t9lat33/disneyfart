@@ -196,7 +196,6 @@ color: white;
         rgb(15, 15, 15),
         rgb(10, 10, 10)
       );
-      border: 1px solid rgb(57, 57, 57);
       border-radius: 15px;
       display: flex;
       flex-direction: row;
@@ -211,6 +210,7 @@ color: white;
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
+      border:2px solid gray;
 
     }
 
@@ -227,6 +227,7 @@ color: white;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
+      border:2px solid gray;
     }
 
     .navbar:hover::after {
@@ -346,12 +347,12 @@ color: white;
   #hiddenDiv {
     display: none;
   transform: translateY(-50px);
+  border:2px solid gray;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     margin:auto;
     inset:0;
@@ -388,17 +389,18 @@ display: none;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
+    border:2px solid gray;
     border-radius:6px; 
     width:40%;
     height: 67%; 
     right:50px;
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
@@ -425,6 +427,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     width:70%;
     height: 71%; 
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -434,11 +437,11 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
   display: none;
   transform: translateY(-50px);
     padding: 10px;
+    border:2px solid gray;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     margin:auto;
     inset:0;
@@ -457,12 +460,12 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
      #blkDiv {
   display: none;
   transform: translateY(-50px);
+  border:2px solid gray;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     margin:auto;
     inset:0;
@@ -486,7 +489,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
@@ -509,7 +512,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
     margin:auto;
     inset:0;
@@ -534,7 +537,7 @@ background: linear-gradient(
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-border: 1px solid rgb(51, 51, 51);   
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
@@ -567,7 +570,7 @@ box-shadow: 2px #141414;
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-  border: 1px solid rgba(50, 50, 50, 0.5);   
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
@@ -1587,6 +1590,19 @@ background: linear-gradient(
 
 </div>
 
+<div onclick="update()" class="notify2">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">JOIN SERVER</div>
+    <div class="desc">Join our server for sneak peaks and link drops!</div>
+  </div>
+
+</div>
+
 
 
 <style>
@@ -1614,7 +1630,29 @@ animation: notifyIn 0.35s ease-out;
 border:3px solid white;
 transform: scale(1.03);
 }
+.notify2{
+background-color:rgba(0, 0, 0, 0.61);
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:11%;
+animation: notifyIn 0.35s ease-out;
 
+}
+.notify:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
 .ntext{
 display:flex;
 flex-direction:column;
