@@ -2233,61 +2233,303 @@ document.getElementById('day').textContent = day;
 
 
   
-   <label class="label" for="background-select">Select Background:</label>
-<select id="background-select">
-  <option value="minecraftCozy2.mp4">Default</option>
-                      <option value="abstract.png">T9 Abstract</option>
-                                            <option value="stars3.png">blue space</option>
-                                                                        <option value="silver2.gif">Silver Surfer Live</option>
-                            <option value="silver.jpeg">Silver Surfer</option>
-                          <option value="naruto.png">Naruto</option>
-                  <option value="red.jpg">Red Abstract</option>
-                  <option value="halloween.png">halloween</option>
+   <div style="margin-top: 44px; padding: 20px; overflow-y: auto; height: calc(100% - 50px);">
+    
+    <h2 style="color: white; text-align: center; margin-bottom: 15px;"> Select Wallpaper</h2>
+    
+    <div id="wallpaper-gallery" style="
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      padding: 10px;
+      max-height: 350px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    ">
+    </div>
 
-                  <option value="purplecity2.png">T9 OS city</option>
-
-                <option value="toyota.jpg">Toyota GR supra</option>
-
-              <option value="car.jpeg">Hennessey Venom F5 car</option>
-
-            <option value="goku.jpg">Goku</option>
-
-          <option value="ocean.png">Moonlit Voyage</option>
-
-          <option value="vibes.gif">Synthwave sunset</option>
-
-        <option value="deadpool.gif">Deadpool</option>
-
-  <option value="city.jpg">City</option>
-  <option value="sunset.jpg">Sunset</option>
-  <option value="mountains.jpg">Mountains</option>
-  <option value="tree.jpg">Tropical trees</option>
-  <option value="space.jpg">Space</option>
-    <option value="psky.jpg">Purple sky</option>
-    <option value="abstract.jpg">Abstract</option>
-    <option value="cyberpunk.gif">Cyberpunk</option>
-    <option value="luffy.gif">Luffy Straw hat</option>
-    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
-      <option value="pbWaves.jpg">Purple Blue Abstract</option>
-
-</select>
-
-<input type="file" id="background-upload" accept="image/*,video/*">
-
-
-   <label class="label" for="preset">Select Tab Cloak:</label>
-
- <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
-    <option value="default">Default (T9 OS)</option>
-    <option value="google">Google</option>
-    <option value="classroom">Google Classroom</option>
-    <option value="vocab">Vocabulary.com</option>
-  </select>
+    <div style="text-align: center; margin: 20px 0;">
+      <label for="background-upload" style="
+        display: inline-block;
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: sans-serif;
+        font-size: 14px;
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: background 0.2s;
+      " onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+        📁 Upload Custom Background
+      </label>
+      <input type="file" id="background-upload" accept="image/*,video/*" style="display: none;">
+    </div>
 
 
   
 
+<script>
+// ============================================
+// WALLPAPER GALLERY - IMAGE CLICK SELECTION
+// ============================================
+(function() {
+  const wallpapers = [
+    { name: 'Default', path: 'minecraftCozy2.mp4', type: 'video' },
+    { name: 'T9 Abstract', path: 'abstract.png', type: 'image' },
+    { name: 'Blue Space', path: 'stars3.png', type: 'image' },
+    { name: 'Silver Surfer Live', path: 'silver2.gif', type: 'image' },
+    { name: 'Silver Surfer', path: 'silver.jpeg', type: 'image' },
+    { name: 'Naruto', path: 'naruto.png', type: 'image' },
+    { name: 'Red Abstract', path: 'red.jpg', type: 'image' },
+    { name: 'Halloween', path: 'halloween.png', type: 'image' },
+    { name: 'T9 OS City', path: 'purplecity2.png', type: 'image' },
+    { name: 'Toyota GR Supra', path: 'toyota.jpg', type: 'image' },
+    { name: 'Hennessey Venom F5', path: 'car.jpeg', type: 'image' },
+    { name: 'Goku', path: 'goku.jpg', type: 'image' },
+    { name: 'Moonlit Voyage', path: 'ocean.png', type: 'image' },
+    { name: 'Synthwave Sunset', path: 'vibes.gif', type: 'image' },
+    { name: 'Deadpool', path: 'deadpool.gif', type: 'image' },
+    { name: 'City', path: 'city.jpg', type: 'image' },
+    { name: 'Sunset', path: 'sunset.jpg', type: 'image' },
+    { name: 'Mountains', path: 'mountains.jpg', type: 'image' },
+    { name: 'Tropical Trees', path: 'tree.jpg', type: 'image' },
+    { name: 'Space', path: 'space.jpg', type: 'image' },
+    { name: 'Purple Sky', path: 'psky.jpg', type: 'image' },
+    { name: 'Abstract', path: 'abstract.jpg', type: 'image' },
+    { name: 'Cyberpunk', path: 'cyberpunk.gif', type: 'image' },
+    { name: 'Luffy', path: 'luffy.gif', type: 'image' },
+    { name: 'Samurai Moon', path: 'tmoon.gif', type: 'image' },
+    { name: 'Purple Blue Abstract', path: 'pbWaves.jpg', type: 'image' }
+  ];
 
+  function applyWallpaper(path, type) {
+    const videoBg = document.getElementById("video-background");
+    const body = document.body;
+    
+    // Stop and hide video
+    if (videoBg) {
+      videoBg.pause();
+      videoBg.removeAttribute('src');
+      videoBg.load();
+      videoBg.style.display = 'none';
+    }
+    
+    // Clear body background
+    body.style.backgroundImage = 'none';
+    body.style.background = 'none';
+    
+    if (type === 'video') {
+      if (videoBg) {
+        videoBg.src = path;
+        videoBg.style.display = 'block';
+        videoBg.load();
+        videoBg.onloadeddata = () => {
+          videoBg.play().catch(e => console.log('Video play failed:', e));
+        };
+      }
+    } else {
+      body.style.backgroundImage = `url(${path})`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundRepeat = 'no-repeat';
+      body.style.backgroundAttachment = 'fixed';
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('selectedBackground', path);
+    localStorage.setItem('backgroundType', type);
+  }
+
+  function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 20px;
+      z-index: 10000;
+      font-family: sans-serif;
+      font-size: 14px;
+      animation: slideUp 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+  }
+
+  function createWallpaperGallery() {
+    const gallery = document.getElementById('wallpaper-gallery');
+    if (!gallery) return;
+    
+    gallery.innerHTML = '';
+    const currentBg = localStorage.getItem('selectedBackground') || wallpapers[0].path;
+    
+    wallpapers.forEach(wallpaper => {
+      const thumbnail = document.createElement('div');
+      const isSelected = currentBg === wallpaper.path;
+      
+      thumbnail.style.cssText = `
+        position: relative;
+        cursor: pointer;
+        border-radius: 10px;
+        overflow: hidden;
+        aspect-ratio: 16/9;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 3px solid ${isSelected ? '#4CAF50' : 'rgba(255,255,255,0.2)'};
+      `;
+      
+      thumbnail.onmouseenter = () => {
+        thumbnail.style.transform = 'scale(1.05)';
+        thumbnail.style.boxShadow = '0 5px 15px rgba(0,0,0,0.4)';
+      };
+      thumbnail.onmouseleave = () => {
+        thumbnail.style.transform = 'scale(1)';
+        thumbnail.style.boxShadow = 'none';
+      };
+      
+      const img = document.createElement('img');
+      img.src = wallpaper.path;
+      img.alt = wallpaper.name;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      img.onerror = () => {
+        img.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="112"><rect fill="#333" width="200" height="112"/><text fill="white" font-family="Arial" font-size="12" x="50%" y="50%" text-anchor="middle" dy=".3em">No Preview</text></svg>'
+        );
+      };
+      
+      const label = document.createElement('div');
+      label.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.75);
+        color: white;
+        padding: 4px 8px;
+        font-size: 11px;
+        text-align: center;
+        font-family: sans-serif;
+      `;
+      label.textContent = wallpaper.name;
+      
+      // Video badge
+      if (wallpaper.type === 'video') {
+        const badge = document.createElement('div');
+        badge.style.cssText = `
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          background: rgba(0,0,0,0.7);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 10px;
+          font-size: 10px;
+        `;
+        badge.textContent = '🎬';
+        thumbnail.appendChild(badge);
+      }
+      
+      // Selected checkmark
+      if (isSelected) {
+        const checkmark = document.createElement('div');
+        checkmark.style.cssText = `
+          position: absolute;
+          top: 5px;
+          left: 5px;
+          background: #4CAF50;
+          color: white;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+        `;
+        checkmark.textContent = '✓';
+        thumbnail.appendChild(checkmark);
+      }
+      
+      thumbnail.onclick = () => {
+        applyWallpaper(wallpaper.path, wallpaper.type);
+        showNotification(`✅ Wallpaper set to: ${wallpaper.name}`);
+        createWallpaperGallery(); // Refresh to update selection
+      };
+      
+      thumbnail.appendChild(img);
+      thumbnail.appendChild(label);
+      gallery.appendChild(thumbnail);
+    });
+  }
+
+  // Upload custom background
+  document.getElementById('background-upload').addEventListener('change', async function() {
+    const file = this.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const path = e.target.result;
+      const type = file.type.startsWith('video/') ? 'video' : 'image';
+      applyWallpaper(path, type);
+      showNotification(`✅ Custom background applied!`);
+      createWallpaperGallery(); // Refresh gallery
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Load saved background on startup
+  function loadSavedBackground() {
+    const savedBg = localStorage.getItem('selectedBackground') || wallpapers[0].path;
+    const savedType = localStorage.getItem('backgroundType') || wallpapers[0].type;
+    applyWallpaper(savedBg, savedType);
+  }
+  
+  loadSavedBackground();
+
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideUp {
+      from { transform: translate(-50%, 20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    #wallpaper-gallery::-webkit-scrollbar { width: 6px; }
+    #wallpaper-gallery::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    #wallpaper-gallery::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+    #wallpaper-gallery::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+  `;
+  document.head.appendChild(style);
+
+  // Initialize gallery when settings opens
+  const settingsDiv = document.getElementById('settingsDiv');
+  if (settingsDiv) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.target.style.display === 'block') {
+          setTimeout(createWallpaperGallery, 100);
+        }
+      });
+    });
+    observer.observe(settingsDiv, { attributes: true, attributeFilter: ['style'] });
+    if (settingsDiv.style.display === 'block') {
+      createWallpaperGallery();
+    }
+  }
+})();
+</script>
 
 
         <script>
