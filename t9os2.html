@@ -2233,231 +2233,177 @@ document.getElementById('day').textContent = day;
 
 
   
-  <div style="margin-top: 40px; padding: 10px; height: calc(100% - 50px); overflow-y: auto;">
-    
-    <h3 style="color:white; text-align:center; margin:10px 0;">Select Wallpaper</h3>
-    
-    <div id="wallpaper-gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:5px;"></div>
-    
-    <div style="text-align:center; margin-top:15px;">
-      <button onclick="document.getElementById('bg-upload').click()" style="padding:8px 16px; background:#333; color:white; border:1px solid #555; border-radius:5px; cursor:pointer;">Upload Custom</button>
-      <input type="file" id="bg-upload" accept="image/*,video/*" style="display:none;">
-    </div>
-  </div>
-</div> 
+  <!-- paste this inside your settingsDiv, after your existing title bar -->
+
+<style>
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 10px 16px 0;
+}
+.wp-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  aspect-ratio: 16/9;
+  background: #111;
+  transition: border-color .15s, transform .15s;
+}
+.wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.25); }
+.wp-card.wp-active { border-color: #1db954; }
+.wp-card img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+}
+.wp-card-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 12px 6px 5px;
+  font-size: 10px; color: #fff; font-family: sans-serif;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wp-check {
+  position: absolute; top: 5px; right: 5px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #1db954; display: none;
+  align-items: center; justify-content: center;
+}
+.wp-card.wp-active .wp-check { display: flex; }
+.wp-upload-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 14px auto 0;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7);
+  border-radius: 8px; padding: 8px 18px;
+  font-size: 12px; cursor: pointer;
+  transition: background .15s;
+}
+.wp-upload-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+</style>
+
+<h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Wallpaper</h3>
+
+<div id="wp-grid" class="wp-grid"></div>
+
+<button class="wp-upload-btn" onclick="document.getElementById('wp-upload').click()">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  Upload image / video
+</button>
+<input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
 
 <script>
-// Simple wallpaper system
-var wallpapers = [
-  { name: 'Default', file: 'minecraftCozy2.mp4', video: true },
-  { name: 'T9 Abstract', file: 'abstract.png' },
-  { name: 'Blue Space', file: 'stars3.png' },
-  { name: 'Silver Surfer', file: 'silver.jpeg' },
-  { name: 'Naruto', file: 'naruto.png' },
-  { name: 'City', file: 'city.jpg' },
-  { name: 'Sunset', file: 'sunset.jpg' },
-  { name: 'Space', file: 'space.jpg' },
-  { name: 'Goku', file: 'goku.jpg' }
-];
+(function(){
+  var WALLPAPERS = [
+    { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
+    { name:'Abstract',      file:'abstract.png'  },
+    { name:'Blue Space',    file:'stars3.png'    },
+    { name:'Silver Surfer', file:'silver.jpeg'   },
+    { name:'Naruto',        file:'naruto.png'    },
+    { name:'City',          file:'city.jpg'      },
+    { name:'Sunset',        file:'sunset.jpg'    },
+    { name:'Space',         file:'space.jpg'     },
+    { name:'Goku',          file:'goku.jpg'      }
+  ];
 
-var currentBg = localStorage.getItem('currentBg') || 'minecraftCozy2.mp4';
-
-// Create video element ONCE
-var bgVideo = document.createElement('video');
-bgVideo.id = 'bg-video';
-bgVideo.autoplay = true;
-bgVideo.loop = true;
-bgVideo.muted = true;
-bgVideo.playsInline = true;
-bgVideo.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;';
-document.body.prepend(bgVideo);
-
-function changeBg(file, isVideo) {
-  bgVideo.style.display = 'none';
-  bgVideo.pause();
-  document.body.style.backgroundImage = 'none';
-  
-  if (isVideo) {
-    bgVideo.src = file;
-    bgVideo.style.display = 'block';
-    bgVideo.load();
-    bgVideo.play();
-  } else {
-    document.body.style.backgroundImage = 'url(' + file + ')';
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
+  /* one shared video el */
+  var vid = document.getElementById('_wp_vid');
+  if (!vid) {
+    vid = document.createElement('video');
+    vid.id = '_wp_vid';
+    vid.autoplay = vid.loop = vid.muted = vid.playsInline = true;
+    vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+    document.body.prepend(vid);
   }
-  
-  localStorage.setItem('currentBg', file);
-  currentBg = file;
-  buildGallery();
-}
 
-function buildGallery() {
-  var g = document.getElementById('wallpaper-gallery');
-  if (!g) return;
-  g.innerHTML = '';
-  
-  for (var i = 0; i < wallpapers.length; i++) {
-    var wp = wallpapers[i];
-    var div = document.createElement('div');
-    div.style.cssText = 'cursor:pointer;border:2px solid ' + (currentBg === wp.file ? '#4CAF50' : '#444') + ';border-radius:5px;overflow:hidden;';
-    
-    var img = document.createElement('img');
-    img.src = wp.file;
-    img.style.cssText = 'width:100%;height:100px;object-fit:cover;display:block;';
-    img.onerror = function(){ this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect fill="%23333" width="200" height="100"/><text fill="white" x="50%" y="50%" text-anchor="middle" font-size="12">No Preview</text></svg>'; };
-    
-    var label = document.createElement('div');
-    label.style.cssText = 'padding:5px;color:white;font-size:11px;text-align:center;background:#1a1a1a;';
-    label.innerHTML = wp.name + (wp.video ? ' 🎬' : '') + (currentBg === wp.file ? ' ✓' : '');
-    
-    (function(f, v) {
-      div.onclick = function() { changeBg(f, v); };
-    })(wp.file, wp.video);
-    
-    div.appendChild(img);
-    div.appendChild(label);
-    g.appendChild(div);
-  }
-}
+  var current = localStorage.getItem('wp_file') || '';
 
-// Upload
-document.getElementById('bg-upload').onchange = function(e) {
-  var file = e.target.files[0];
-  if (!file) return;
-  
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    changeBg(ev.target.result, file.type.startsWith('video/'));
-  };
-  reader.readAsDataURL(file);
-};
-
-// Load saved wallpaper
-var savedBg = localStorage.getItem('currentBg');
-if (savedBg) {
-  var found = wallpapers.find(function(w) { return w.file === savedBg; });
-  changeBg(savedBg, found ? found.video : false);
-} else {
-  changeBg('minecraftCozy2.mp4', true);
-}
-
-// Build gallery when settings opens
-var settingsDiv = document.getElementById('settingsDiv');
-var observer = new MutationObserver(function() {
-  if (settingsDiv.style.display === 'block') {
-    buildGallery();
-  }
-});
-observer.observe(settingsDiv, { attributes: true, attributeFilter: ['style'] });
-</script>
-
-
-        <script>
-    // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu', 'blkDiv'];
-
-    // Store each div's original colors when the page opens
-    const originalColors = {};
-    divIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            originalColors[id] = {
-                bg: getComputedStyle(el).backgroundColor,
-                border: getComputedStyle(el).borderColor
-            };
-        }
+  function applyWP(file, isVideo) {
+    vid.pause(); vid.removeAttribute('src'); vid.load(); vid.style.display = 'none';
+    document.body.style.backgroundImage = 'none';
+    if (isVideo && file) {
+      vid.src = file; vid.style.display = 'block'; vid.load(); vid.play().catch(Object);
+    } else if (file) {
+      document.body.style.cssText += ';background-image:url('+file+');background-size:cover;background-position:center;background-repeat:no-repeat;';
+    }
+    current = file;
+    try { localStorage.setItem('wp_file', file); localStorage.setItem('wp_video', isVideo?'1':'0'); } catch(e){}
+    document.querySelectorAll('.wp-card').forEach(function(c){
+      c.classList.toggle('wp-active', c.dataset.file === file);
     });
+  }
 
-    // Store original text shadows for time and battery
-    const timeEl = document.getElementById('time');
-    const batteryEl = document.getElementById('batteryPercentage');
-    const originalTextShadows = {
-        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
-        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
+  function buildGrid(list) {
+    var grid = document.getElementById('wp-grid');
+    if (!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
+  }
+
+  function addCard(grid, name, file, isVideo) {
+    var card = document.createElement('div');
+    card.className = 'wp-card' + (file===current?' wp-active':'');
+    card.dataset.file = file;
+
+    var chk = document.createElement('div');
+    chk.className = 'wp-check';
+    chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    var img = document.createElement('img');
+    img.src = file; img.alt = name; img.loading = 'lazy';
+    img.onerror = function(){
+      this.src = 'data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">'+name+'</text></svg>'
+      );
     };
 
-    // 1. Load saved progress from LocalStorage
-    window.addEventListener('load', () => {
-        const savedColor = localStorage.getItem('userColor');
-        if (savedColor) {
-            divIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.backgroundColor = savedColor;
-                    el.style.borderColor = savedColor;
-                }
-            });
-            
-            // Apply saved color to text shadows
-            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
-            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
-            
-            document.getElementById('picker').value = savedColor;
-        }
-    });
+    var lbl = document.createElement('div');
+    lbl.className = 'wp-card-label';
+    lbl.textContent = name + (isVideo ? ' ▶' : '');
 
-    // 2. Change color for the list of divs
-    document.getElementById('picker').addEventListener('input', function() {
-        const newColor = this.value;
+    card.appendChild(chk); card.appendChild(img); card.appendChild(lbl);
+    card.onclick = function(){ applyWP(file, isVideo); };
+    grid.appendChild(card);
+  }
 
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.backgroundColor = newColor;
-                el.style.borderColor = newColor;
-            }
-        });
+  /* build when settings opens */
+  var settingsEl = document.getElementById('settingsDiv');
+  if (settingsEl) {
+    new MutationObserver(function(){
+      if (settingsEl.style.display==='block') buildGrid(WALLPAPERS);
+    }).observe(settingsEl, {attributes:true, attributeFilter:['style']});
+  }
 
-        // Update text shadows for time and battery
-        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
-        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
+  /* upload */
+  document.getElementById('wp-upload').onchange = function(){
+    var f = this.files[0]; if (!f) return;
+    var isVid = f.type.startsWith('video/');
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var url = e.target.result;
+      applyWP(url, isVid);
+      var grid = document.getElementById('wp-grid');
+      if (grid) {
+        var old = grid.querySelector('[data-file^="data:"]');
+        if (old) old.remove();
+        addCard(grid, 'My upload', url, isVid);
+        grid.querySelector('[data-file^="data:"]')
+          && (grid.querySelector('[data-file^="data:"]').classList.add('wp-active'));
+      }
+    };
+    reader.readAsDataURL(f); this.value='';
+  };
 
-        localStorage.setItem('userColor', newColor);
-    });
-
-    // 3. Reset to "Normal" (Each div returns to its own original color)
-    document.getElementById('reset').addEventListener('click', () => {
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el && originalColors[id]) {
-                el.style.backgroundColor = originalColors[id].bg;
-                el.style.borderColor = originalColors[id].border;
-            }
-        });
-
-        // Reset text shadows to original
-        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
-        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
-
-        localStorage.removeItem('userColor');
-    });
+  /* restore on load */
+  var savedFile  = localStorage.getItem('wp_file');
+  var savedIsVid = localStorage.getItem('wp_video')==='1';
+  if (savedFile) applyWP(savedFile, savedIsVid);
+  else applyWP('minecraftCozy2.mp4', true);
+})();
 </script>
-
- <script>
-    // Load saved position on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      const navbar = document.querySelector('.navbar');
-      const savedPosition = localStorage.getItem('navbarPosition');
-      
-      if (savedPosition === 'sidebar') {
-        navbar.classList.add('sidebar');
-      }
-    });
-
-    function toggleNavbar() {
-      const navbar = document.querySelector('.navbar');
-      navbar.classList.toggle('sidebar');
-      
-      // Save the current position
-      if (navbar.classList.contains('sidebar')) {
-        localStorage.setItem('navbarPosition', 'sidebar');
-      } else {
-        localStorage.setItem('navbarPosition', 'dock');
-      }
-    }
-  </script>
 
   
 </div>
