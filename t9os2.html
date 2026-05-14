@@ -2233,9 +2233,7 @@ document.getElementById('day').textContent = day;
 
 
   
-  <!-- paste this inside your settingsDiv, after your existing title bar -->
-
-<style>
+ <style>
 .wp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -2254,24 +2252,34 @@ document.getElementById('day').textContent = day;
 }
 .wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.25); }
 .wp-card.wp-active { border-color: #1db954; }
-.wp-card img {
+ 
+/* shared styles for both img and video previews */
+.wp-card img,
+.wp-card video {
   width: 100%; height: 100%; object-fit: cover;
   display: block; pointer-events: none;
 }
+.wp-card video {
+  position: absolute; top: 0; left: 0;
+}
+ 
 .wp-card-label {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: 12px 6px 5px;
   font-size: 10px; color: #fff; font-family: sans-serif;
   background: linear-gradient(transparent, rgba(0,0,0,.75));
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  z-index: 2;
 }
 .wp-check {
   position: absolute; top: 5px; right: 5px;
   width: 17px; height: 17px; border-radius: 50%;
   background: #1db954; display: none;
   align-items: center; justify-content: center;
+  z-index: 3;
 }
 .wp-card.wp-active .wp-check { display: flex; }
+ 
 .wp-upload-btn {
   display: flex; align-items: center; gap: 6px;
   margin: 14px auto 0;
@@ -2283,20 +2291,35 @@ document.getElementById('day').textContent = day;
   transition: background .15s;
 }
 .wp-upload-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+ 
+.wp-upload-hint {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,.35);
+  font-family: sans-serif;
+  margin-top: 6px;
+}
 </style>
-
+ 
 <h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Wallpaper</h3>
-
+ 
 <div id="wp-grid" class="wp-grid"></div>
-
+ 
 <button class="wp-upload-btn" onclick="document.getElementById('wp-upload').click()">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="17 8 12 3 7 8"/>
+    <line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
   Upload image / video
 </button>
+<p class="wp-upload-hint">Max 50 MB · JPG, PNG, GIF, WebP, MP4, WebM, MOV</p>
 <input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
-
+ 
 <script>
 (function(){
+  var MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+ 
   var WALLPAPERS = [
     { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
     { name:'Abstract',      file:'abstract.png'  },
@@ -2308,8 +2331,8 @@ document.getElementById('day').textContent = day;
     { name:'Space',         file:'space.jpg'     },
     { name:'Goku',          file:'goku.jpg'      }
   ];
-
-  /* one shared video el */
+ 
+  /* ── shared background video element ── */
   var vid = document.getElementById('_wp_vid');
   if (!vid) {
     vid = document.createElement('video');
@@ -2318,93 +2341,242 @@ document.getElementById('day').textContent = day;
     vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
     document.body.prepend(vid);
   }
-
+ 
   var current = localStorage.getItem('wp_file') || '';
-
+ 
+  /* ── apply wallpaper ── */
   function applyWP(file, isVideo) {
     vid.pause(); vid.removeAttribute('src'); vid.load(); vid.style.display = 'none';
     document.body.style.backgroundImage = 'none';
     if (isVideo && file) {
-      vid.src = file; vid.style.display = 'block'; vid.load(); vid.play().catch(Object);
+      vid.src = file; vid.style.display = 'block'; vid.load();
+      vid.play().catch(Object);
     } else if (file) {
-      document.body.style.cssText += ';background-image:url('+file+');background-size:cover;background-position:center;background-repeat:no-repeat;';
+      document.body.style.cssText += ';background-image:url(' + file + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
     }
     current = file;
-    try { localStorage.setItem('wp_file', file); localStorage.setItem('wp_video', isVideo?'1':'0'); } catch(e){}
+    try {
+      localStorage.setItem('wp_file', file);
+      localStorage.setItem('wp_video', isVideo ? '1' : '0');
+    } catch(e){}
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
     });
   }
-
+ 
+  /* ── build the grid ── */
   function buildGrid(list) {
     var grid = document.getElementById('wp-grid');
     if (!grid || grid.dataset.built) return;
     grid.dataset.built = '1';
     list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
   }
-
+ 
+  /* ── add one card ── */
   function addCard(grid, name, file, isVideo) {
     var card = document.createElement('div');
-    card.className = 'wp-card' + (file===current?' wp-active':'');
+    card.className = 'wp-card' + (file === current ? ' wp-active' : '');
     card.dataset.file = file;
-
+ 
+    /* checkmark */
     var chk = document.createElement('div');
     chk.className = 'wp-check';
     chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-
-    var img = document.createElement('img');
-    img.src = file; img.alt = name; img.loading = 'lazy';
-    img.onerror = function(){
-      this.src = 'data:image/svg+xml,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">'+name+'</text></svg>'
-      );
-    };
-
+ 
+    /* preview: video card vs image card */
+    if (isVideo) {
+      var prev = document.createElement('video');
+      prev.src = file;
+      prev.muted = prev.loop = prev.playsInline = true;
+      prev.autoplay = true;
+      prev.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;';
+      card.appendChild(prev);
+      /* play on hover, pause on leave — saves GPU when idle */
+      card.addEventListener('mouseenter', function(){ prev.play().catch(Object); });
+      card.addEventListener('mouseleave', function(){ prev.pause(); });
+      /* autoplay the currently-selected card */
+      if (file === current) { prev.play().catch(Object); }
+    } else {
+      var img = document.createElement('img');
+      img.src = file; img.alt = name; img.loading = 'lazy';
+      img.onerror = function(){
+        this.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">' + name + '</text></svg>'
+        );
+      };
+      card.appendChild(img);
+    }
+ 
+    /* label */
     var lbl = document.createElement('div');
     lbl.className = 'wp-card-label';
     lbl.textContent = name + (isVideo ? ' ▶' : '');
-
-    card.appendChild(chk); card.appendChild(img); card.appendChild(lbl);
+ 
+    card.appendChild(chk);
+    card.appendChild(lbl);
     card.onclick = function(){ applyWP(file, isVideo); };
     grid.appendChild(card);
   }
-
-  /* build when settings opens */
+ 
+  /* ── watch settings panel open ── */
   var settingsEl = document.getElementById('settingsDiv');
   if (settingsEl) {
     new MutationObserver(function(){
-      if (settingsEl.style.display==='block') buildGrid(WALLPAPERS);
-    }).observe(settingsEl, {attributes:true, attributeFilter:['style']});
+      if (settingsEl.style.display === 'block') buildGrid(WALLPAPERS);
+    }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
   }
-
-  /* upload */
-  document.getElementById('wp-upload').onchange = function(){
+ 
+  /* ── toast helper ── */
+  function toast(msg, color) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:20px;left:20px;background:' + (color||'#111') + ';color:#fff;padding:10px 16px;border-radius:8px;font-family:sans-serif;font-size:13px;z-index:99999;border:1px solid rgba(255,255,255,.15);transition:opacity .4s';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 2500);
+  }
+ 
+  /* ── IndexedDB helpers ── */
+  var _db = null;
+  function openDB() {
+    return new Promise(function(res, rej){
+      if (_db) return res(_db);
+      var req = indexedDB.open('BackgroundStorage', 1);
+      req.onerror = function(){ rej(req.error); };
+      req.onsuccess = function(){ _db = req.result; res(_db); };
+      req.onupgradeneeded = function(e){
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
+      };
+    });
+  }
+  function idbSet(key, val) {
+    return openDB().then(function(db){
+      return new Promise(function(res, rej){
+        var tx = db.transaction(['media'], 'readwrite');
+        var req = tx.objectStore('media').put(val, key);
+        req.onsuccess = res; req.onerror = function(){ rej(req.error); };
+      });
+    });
+  }
+  function idbGet(key) {
+    return openDB().then(function(db){
+      return new Promise(function(res, rej){
+        var tx = db.transaction(['media'], 'readonly');
+        var req = tx.objectStore('media').get(key);
+        req.onsuccess = function(){ res(req.result); };
+        req.onerror = function(){ rej(req.error); };
+      });
+    });
+  }
+  function idbDel(key) {
+    return openDB().then(function(db){
+      return new Promise(function(res, rej){
+        var tx = db.transaction(['media'], 'readwrite');
+        var req = tx.objectStore('media').delete(key);
+        req.onsuccess = res; req.onerror = function(){ rej(req.error); };
+      });
+    });
+  }
+ 
+  /* ── upload handler ── */
+  document.getElementById('wp-upload').onchange = async function(){
     var f = this.files[0]; if (!f) return;
+ 
+    /* 50 MB guard */
+    if (f.size > MAX_BYTES) {
+      toast('⚠️ File too large — max 50 MB', '#b00020');
+      this.value = '';
+      return;
+    }
+ 
     var isVid = f.type.startsWith('video/');
-    var reader = new FileReader();
-    reader.onload = function(e){
-      var url = e.target.result;
-      applyWP(url, isVid);
-      var grid = document.getElementById('wp-grid');
-      if (grid) {
-        var old = grid.querySelector('[data-file^="data:"]');
+    toast('Saving ' + (isVid ? 'video' : 'image') + '…');
+ 
+    try {
+      var ab = await f.arrayBuffer();
+      if (isVid) {
+        await idbSet('savedVideo', { data: ab, type: f.type, name: f.name });
+        await idbDel('savedImage');
+        localStorage.setItem('backgroundType', 'video');
+        localStorage.setItem('hasVideoInIndexedDB', 'true');
+        localStorage.removeItem('selectedBackground');
+        localStorage.removeItem('hasLargeImageInIndexedDB');
+ 
+        var blob = new Blob([ab], { type: f.type });
+        var url  = URL.createObjectURL(blob);
+        applyWP(url, true);
+ 
+        /* add preview card */
+        var grid = document.getElementById('wp-grid');
+        var old  = grid && grid.querySelector('[data-file^="blob:"]');
         if (old) old.remove();
-        addCard(grid, 'My upload', url, isVid);
-        grid.querySelector('[data-file^="data:"]')
-          && (grid.querySelector('[data-file^="data:"]').classList.add('wp-active'));
+        if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, true);
+ 
+      } else {
+        /* image */
+        await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
+        await idbDel('savedVideo');
+        localStorage.setItem('backgroundType', 'image');
+        localStorage.setItem('hasLargeImageInIndexedDB', 'true');
+        localStorage.removeItem('selectedBackground');
+        localStorage.removeItem('hasVideoInIndexedDB');
+ 
+        var blob = new Blob([ab], { type: f.type });
+        var url  = URL.createObjectURL(blob);
+        applyWP(url, false);
+ 
+        var grid = document.getElementById('wp-grid');
+        var old  = grid && grid.querySelector('[data-file^="blob:"]');
+        if (old) old.remove();
+        if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, false);
       }
-    };
-    reader.readAsDataURL(f); this.value='';
+ 
+      toast('✓ Saved!', '#1a1a1a');
+    } catch(err) {
+      console.error(err);
+      toast('✗ Save failed', '#b00020');
+    }
+    this.value = '';
   };
-
-  /* restore on load */
-  var savedFile  = localStorage.getItem('wp_file');
-  var savedIsVid = localStorage.getItem('wp_video')==='1';
-  if (savedFile) applyWP(savedFile, savedIsVid);
-  else applyWP('minecraftCozy2.mp4', true);
+ 
+  /* ── restore on page load ── */
+  async function restore() {
+    var savedType  = localStorage.getItem('backgroundType') || 'video';
+    var hasVid     = localStorage.getItem('hasVideoInIndexedDB') === '1' || localStorage.getItem('hasVideoInIndexedDB') === 'true';
+    var hasLargeImg= localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
+    var savedFile  = localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
+ 
+    if (savedType === 'video') {
+      if (hasVid) {
+        try {
+          var rec = await idbGet('savedVideo');
+          if (rec && rec.data) {
+            var blob = new Blob([rec.data], { type: rec.type || 'video/mp4' });
+            applyWP(URL.createObjectURL(blob), true);
+            return;
+          }
+        } catch(e){}
+      }
+      applyWP(savedFile, true);
+    } else {
+      if (hasLargeImg) {
+        try {
+          var rec = await idbGet('savedImage');
+          if (rec && rec.data) {
+            var blob = new Blob([rec.data], { type: rec.type || 'image/jpeg' });
+            applyWP(URL.createObjectURL(blob), false);
+            return;
+          }
+        } catch(e){}
+      }
+      if (savedFile) applyWP(savedFile, false);
+    }
+  }
+ 
+  restore();
 })();
 </script>
-
+ 
   
 </div>
 <style>
