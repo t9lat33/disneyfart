@@ -167,7 +167,12 @@ main{flex:1;overflow-y:auto;background:#1b2838}
   padding:2px 8px;font-size:10px;margin-left:8px;
   font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;
 }
-
+.card-thumb-placeholder, .card-thumb {
+  contain: strict;
+}
+.hero-bg img {
+  will-change: auto;
+}
 /* GRID */
 .game-grid{
   display:grid;
@@ -178,6 +183,7 @@ main{flex:1;overflow-y:auto;background:#1b2838}
   background:#16202d;overflow:hidden;
   cursor:pointer;
   border:1px solid #1a2430;
+  contain:layout style;
 }
 .game-card:hover{border-color:#66c0f4}
 .card-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
@@ -1025,6 +1031,7 @@ function renderSection(source, games, gridId, countId){
 
 function loadThumb(card,cover,source,g){
   let img=new Image();
+  img.loading='lazy';
   img.className='card-thumb';
   img.onload=()=>{
     let ph=card.querySelector('.card-thumb-placeholder');

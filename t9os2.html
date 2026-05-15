@@ -3825,19 +3825,7 @@ window.addEventListener("blur",stopAll);
   
   const originalSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
-    if (key.includes('icon') || key.includes('theme') || key.includes('background')) {
-      localStorageQueue.set(key, value);
-      
-      if (saveTimeout) clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        localStorageQueue.forEach((val, k) => {
-          originalSetItem(k, val);
-        });
-        localStorageQueue.clear();
-      }, 300);
-    } else {
-      originalSetItem(key, value);
-    }
+    originalSetItem(key, value);
   };
 
   // ============================================
