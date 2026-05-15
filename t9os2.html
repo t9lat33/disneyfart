@@ -2497,39 +2497,71 @@ document.getElementById('day').textContent = day;
     });
   }
 
-  document.getElementById('wp-upload').onchange = async function(){
-    var f = this.files[0]; if (!f) return;
+  document.getElementById('wp-upload').onchange = async function() {
+  var f = this.files[0]; if (!f) return;
 
-    if (f.size > MAX_BYTES) {
-      toast('⚠️ File too large — max 50 MB', '#b00020');
-      this.value = '';
-      return;
+  if (f.size > MAX_BYTES) {
+    toast('⚠️ File too large — max 50 MB', '#b00020');
+    this.value = '';
+    return;
+  }
+
+  var isVid = f.type.startsWith('video/');
+  toast('Saving ' + (isVid ? 'video' : 'image') + '…');
+
+  try {
+    var ab = await f.arrayBuffer();
+
+    if (isVid) {
+      // Save binary data in IndexedDB
+      await idbSet('savedVideo', { data: ab, type: f.type, name: f.name });
+      // Remove previous image data
+      await idbDel('savedImage');
+
+      // Create blob URL for the video
+      const blob = new Blob([ab], { type: f.type });
+      const url = URL.createObjectURL(blob);
+
+      // Save the URL in localStorage for restore
+      localStorage.setItem('wp_file', url);
+      localStorage.setItem('backgroundType', 'video');
+      localStorage.setItem('hasVideoInIndexedDB', 'true');
+
+      // Apply wallpaper with new URL
+      applyWP(url, true);
+
+      // Update grid UI
+      const grid = document.getElementById('wp-grid');
+      const old = grid && grid.querySelector('[data-file^="blob:"]');
+      if (old) old.remove();
+      if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, true);
+    } else {
+      await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
+      await idbDel('savedVideo');
+      localStorage.setItem('backgroundType', 'image');
+      localStorage.setItem('hasLargeImageInIndexedDB', 'true');
+      localStorage.removeItem('selectedBackground');
+      localStorage.removeItem('hasVideoInIndexedDB');
+
+      var blob = new Blob([ab], { type: f.type });
+      var url = URL.createObjectURL(blob);
+      applyWP(url, false);
+
+      var grid = document.getElementById('wp-grid');
+      var old = grid && grid.querySelector('[data-file^="blob:"]');
+      if (old) old.remove();
+      if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, false);
     }
 
-    var isVid = f.type.startsWith('video/');
-    toast('Saving ' + (isVid ? 'video' : 'image') + '…');
+    toast('✓ Saved!', '#1a1a1a');
+  } catch(err) {
+    console.error(err);
+    toast('✗ Save failed', '#b00020');
+  }
+  this.value = '';
+};
 
-    try {
-      var ab = await f.arrayBuffer();
-
-      if (isVid) {
-        await idbSet('savedVideo', { data: ab, type: f.type, name: f.name });
-        await idbDel('savedImage');
-        localStorage.setItem('backgroundType', 'video');
-        localStorage.setItem('hasVideoInIndexedDB', 'true');
-        localStorage.removeItem('selectedBackground');
-        localStorage.removeItem('hasLargeImageInIndexedDB');
-
-        var blob = new Blob([ab], { type: f.type });
-        var url = URL.createObjectURL(blob);
-        applyWP(url, true);
-
-        var grid = document.getElementById('wp-grid');
-        var old = grid && grid.querySelector('[data-file^="blob:"]');
-        if (old) old.remove();
-        if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, true);
-
-      } else {
+         else {
         await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
         await idbDel('savedVideo');
         localStorage.setItem('backgroundType', 'image');
