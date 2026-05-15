@@ -2555,36 +2555,74 @@ document.getElementById('day').textContent = day;
     this.value = '';
   };
 
-  async function restore() {
+   async function restore() {
+    // Ensure video element exists
+    var vid = document.getElementById('_wp_vid');
+    if (!vid) {
+      vid = document.createElement('video');
+      vid.id = '_wp_vid';
+      vid.autoplay = true;
+      vid.loop = true;
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.setAttribute('playsinline', '');
+      vid.setAttribute('webkit-playsinline', '');
+      vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+      document.body.prepend(vid);
+    }
+
     var savedType   = localStorage.getItem('backgroundType') || 'video';
     var hasVid      = localStorage.getItem('hasVideoInIndexedDB') === 'true';
     var hasLargeImg = localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
     var savedFile   = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
 
-    if (savedType === 'video') {
-      if (hasVid) {
-        try {
-          var rec = await idbGet('savedVideo');
-          if (rec && rec.data) {
-            var blob = new Blob([rec.data], { type: rec.type || 'video/mp4' });
-            applyWP(URL.createObjectURL(blob), true);
-            return;
-          }
-        } catch(e) { console.error('IDB video load failed', e); }
-      }
-      applyWP(savedFile, true);
-    } else {
-      if (hasLargeImg) {
-        try {
-          var rec = await idbGet('savedImage');
-          if (rec && rec.data) {
-            var blob = new Blob([rec.data], { type: rec.type || 'image/jpeg' });
-            applyWP(URL.createObjectURL(blob), false);
-            return;
-          }
-        } catch(e) { console.error('IDB image load failed', e); }
-      }
-      if (savedFile) applyWP(savedFile, false);
+    // Clear previous state
+    vid.pause();
+    vid.removeAttribute('src');
+    vid.load();
+    vid.style.display = 'none';
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundPosition = '';
+    document.body.style.backgroundRepeat = '';
+    document.body.style.backgroundAttachment = '';
+
+    if (savedType === 'video' && hasVid) {
+      try {
+        var rec = await idbGet('savedVideo');
+        if (rec && rec.data) {
+          var blob = new Blob([rec.data], { type: rec.type || 'video/mp4' });
+          var url = URL.createObjectURL(blob);
+          vid.style.display = 'block';
+          vid.src = url;
+          vid.load();
+          vid.onloadedmetadata = function() {
+            vid.play().catch(function() {
+              var playOnInteract = function() {
+                vid.play();
+                document.removeEventListener('click', playOnInteract);
+                document.removeEventListener('keydown', playOnInteract);
+              };
+              document.addEventListener('click', playOnInteract);
+              document.addEventListener('keydown', playOnInteract);
+            });
+          };
+          return;
+        }
+      } catch(e) { console.error('IDB video load failed', e); }
+    }
+    
+    if (savedType === 'video' && savedFile) {
+      vid.style.display = 'block';
+      vid.src = savedFile;
+      vid.load();
+      vid.play().catch(function(){});
+    } else if (savedFile) {
+      document.body.style.backgroundImage = 'url(' + JSON.stringify(savedFile) + ')';
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
     }
   }
 
@@ -2897,14 +2935,15 @@ document.addEventListener('selectstart', e => e.preventDefault());
 <script>
   const presetSelect = document.getElementById("preset");
 
-  window.addEventListener("DOMContentLoaded", () => {
-    localStorage.removeItem("bg"); // clean up legacy key
-    presetSelect.value = localStorage.getItem("cloak_preset") || "default";
-  });
-
-  presetSelect.addEventListener("change", () => {
-    localStorage.setItem("cloak_preset", presetSelect.value);
-    console.log("✅ Preset saved:", presetSelect.value);
+  document.addEventListener("DOMContentLoaded", () => {
+    localStorage.removeItem("bg");
+    var presetSelect = document.getElementById("preset");
+    if (presetSelect) {
+      presetSelect.value = localStorage.getItem("cloak_preset") || "default";
+      presetSelect.addEventListener("change", function() {
+        localStorage.setItem("cloak_preset", presetSelect.value);
+      });
+    }
   });
 </script>
 
