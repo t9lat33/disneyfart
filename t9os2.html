@@ -2284,15 +2284,7 @@ document.getElementById('day').textContent = day;
  
 <div id="wp-grid" class="wp-grid"></div>
  
-<button class="wp-upload-btn" onclick="document.getElementById('wp-upload').click()">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-    <polyline points="17 8 12 3 7 8"/>
-    <line x1="12" y1="3" x2="12" y2="15"/>
-  </svg>
-  Upload image / video
-</button>
-<p class="wp-upload-hint">Max 50 MB · JPG, PNG, GIF, WebP, MP4, WebM, MOV</p>
+
 <input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
  
 <script>
@@ -2301,13 +2293,12 @@ document.getElementById('day').textContent = day;
 
   var WALLPAPERS = [
     { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
-    { name:'Abstract',      file:'abstract.png'  },
-    { name:'Blue Space',    file:'stars3.png'    },
+    { name:'Crimson Blind',     file:'crimson-blind.mp4', video:true },
+    { name:'Gengar',     file:'gengar.mp4', video:true },
+    { name:'Sasuke rainy night',     file:'sasuke.mp4', video:true },
     { name:'Silver Surfer', file:'silver.jpeg'   },
+    { name:'Silver Surfer', file:'lockedin.jpg'   },
     { name:'Naruto',        file:'naruto.png'    },
-    { name:'City',          file:'city.jpg'      },
-    { name:'Sunset',        file:'sunset.jpg'    },
-    { name:'Space',         file:'space.jpg'     },
     { name:'Goku',          file:'goku.jpg'      }
   ];
 
@@ -2558,34 +2549,7 @@ document.getElementById('day').textContent = day;
     console.error(err);
     toast('✗ Save failed', '#b00020');
   }
-  this.value = '';
-};
-
-         else {
-        await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
-        await idbDel('savedVideo');
-        localStorage.setItem('backgroundType', 'image');
-        localStorage.setItem('hasLargeImageInIndexedDB', 'true');
-        localStorage.removeItem('selectedBackground');
-        localStorage.removeItem('hasVideoInIndexedDB');
-
-        var blob = new Blob([ab], { type: f.type });
-        var url = URL.createObjectURL(blob);
-        applyWP(url, false);
-
-        var grid = document.getElementById('wp-grid');
-        var old = grid && grid.querySelector('[data-file^="blob:"]');
-        if (old) old.remove();
-        if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, false);
-      }
-
-      toast('✓ Saved!', '#1a1a1a');
-    } catch(err) {
-      console.error(err);
-      toast('✗ Save failed', '#b00020');
-    }
-    this.value = '';
-  };
+ 
 
       async function restore() {
     var savedType   = localStorage.getItem('backgroundType') || 'video';
