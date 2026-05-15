@@ -2334,11 +2334,13 @@ document.getElementById('day').textContent = day;
       document.body.style.cssText += ';background-image:url(' + file + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
     }
     current = file;
-  try {
+ try {
   localStorage.setItem('wp_file', file);
   localStorage.setItem('wp_video', isVideo ? '1' : '0');
   localStorage.setItem('selectedBackground', file);
   localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+  localStorage.setItem('hasVideoInIndexedDB', 'false');
+  localStorage.removeItem('hasLargeImageInIndexedDB');
 } catch(e){}
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
