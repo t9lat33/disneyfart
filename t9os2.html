@@ -2523,12 +2523,12 @@ document.getElementById('day').textContent = day;
   };
  
   /* ── restore on page load ── */
-  async function restore() {
+async function restore() {
     var savedType  = localStorage.getItem('backgroundType') || 'video';
-    var hasVid     = localStorage.getItem('hasVideoInIndexedDB') === '1' || localStorage.getItem('hasVideoInIndexedDB') === 'true';
+    var hasVid     = localStorage.getItem('hasVideoInIndexedDB') === 'true';
     var hasLargeImg= localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
-    var savedFile  = localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
- 
+    var savedFile  = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
+
     if (savedType === 'video') {
       if (hasVid) {
         try {
@@ -2538,7 +2538,7 @@ document.getElementById('day').textContent = day;
             applyWP(URL.createObjectURL(blob), true);
             return;
           }
-        } catch(e){}
+        } catch(e) { console.error('IDB video load failed', e); }
       }
       applyWP(savedFile, true);
     } else {
@@ -2550,7 +2550,7 @@ document.getElementById('day').textContent = day;
             applyWP(URL.createObjectURL(blob), false);
             return;
           }
-        } catch(e){}
+        } catch(e) { console.error('IDB image load failed', e); }
       }
       if (savedFile) applyWP(savedFile, false);
     }
@@ -3168,10 +3168,7 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("background-select");
-  const upload = document.getElementById("background-upload");
-  const body = document.body;
+
   
   // Create FRESH video element
   const videoBackground = document.createElement("video");
@@ -3465,9 +3462,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Load saved background on startup
-  loadSavedBackground();
-});
+  
 </script>
 
 <style>
