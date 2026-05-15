@@ -2293,47 +2293,37 @@ document.getElementById('day').textContent = day;
 
   var WALLPAPERS = [
     { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
-    { name:'Crimson Blind',     file:'crimson-blind.mp4', video:true },
-    { name:'Gengar',     file:'gengar.mp4', video:true },
-    { name:'Sasuke rainy night',     file:'sasuke.mp4', video:true },
+    { name:'Crimson Blind', file:'crimson-blind.mp4', video:true },
+    { name:'Gengar',        file:'gengar.mp4', video:true },
+    { name:'Sasuke rainy night', file:'sasuke.mp4', video:true },
     { name:'Silver Surfer', file:'silver.jpeg'   },
-    { name:'Silver Surfer', file:'lockedin.jpg'   },
+    { name:'Locked In',     file:'lockedin.jpg'   },
     { name:'Naruto',        file:'naruto.png'    },
     { name:'Goku',          file:'goku.jpg'      }
   ];
 
-  var vid = document.getElementById('_wp_vid');
-  if (!vid) {
-    vid = document.createElement('video');
-    vid.id = '_wp_vid';
-    vid.autoplay = true;
-    vid.loop = true;
-    vid.muted = true;
-    vid.playsInline = true;
-    vid.setAttribute('playsinline', '');
-    vid.setAttribute('webkit-playsinline', '');
-    vid.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:0',
-      'width:100%',
-      'height:100%',
-      'object-fit:cover',
-      'z-index:-999',
-      'display:none',
-      'pointer-events:none'
-    ].join(';');
-    document.body.prepend(vid);
-  }
+  // Create video element for wallpaper
+  var vid = document.createElement('video');
+  vid.id = '_wp_vid';
+  vid.autoplay = true;
+  vid.loop = true;
+  vid.muted = true;
+  vid.playsInline = true;
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('webkit-playsinline', '');
+  vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+  document.body.prepend(vid);
 
   var current = localStorage.getItem('wp_file') || '';
 
   function applyWP(file, isVideo) {
+    // Reset video
     vid.pause();
     vid.removeAttribute('src');
     vid.load();
     vid.style.display = 'none';
 
+    // Reset body background
     document.body.style.backgroundImage = '';
     document.body.style.backgroundSize = '';
     document.body.style.backgroundPosition = '';
@@ -2344,20 +2334,18 @@ document.getElementById('day').textContent = day;
       vid.style.display = 'block';
       vid.src = file;
       vid.load();
-      var playPromise = vid.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(function(err) {
-          var retry = function() {
-            vid.play().catch(function(){});
-            document.removeEventListener('click', retry);
-            document.removeEventListener('keydown', retry);
-          };
-          document.addEventListener('click', retry);
-          document.addEventListener('keydown', retry);
-        });
-      }
+      vid.play().catch(function(err) {
+        // Autoplay was prevented, add click handler to start
+        var playOnce = function() {
+          vid.play().catch(function(){});
+          document.removeEventListener('click', playOnce);
+          document.removeEventListener('keydown', playOnce);
+        };
+        document.addEventListener('click', playOnce);
+        document.addEventListener('keydown', playOnce);
+      });
     } else if (file) {
-      document.body.style.backgroundImage = 'url(' + JSON.stringify(file) + ')';
+      document.body.style.backgroundImage = 'url("' + file + '")';
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundPosition = 'center center';
       document.body.style.backgroundRepeat = 'no-repeat';
@@ -2371,10 +2359,9 @@ document.getElementById('day').textContent = day;
       localStorage.setItem('wp_video', isVideo ? '1' : '0');
       localStorage.setItem('selectedBackground', file);
       localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
-      localStorage.setItem('hasVideoInIndexedDB', 'false');
-      localStorage.removeItem('hasLargeImageInIndexedDB');
     } catch(e) {}
 
+    // Update active state on cards
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
     });
@@ -2391,6 +2378,7 @@ document.getElementById('day').textContent = day;
     var card = document.createElement('div');
     card.className = 'wp-card' + (file === current ? ' wp-active' : '');
     card.dataset.file = file;
+    card.onclick = function(){ applyWP(file, isVideo); };
 
     var chk = document.createElement('div');
     chk.className = 'wp-check';
@@ -2427,176 +2415,53 @@ document.getElementById('day').textContent = day;
 
     card.appendChild(chk);
     card.appendChild(lbl);
-    card.onclick = function(){ applyWP(file, isVideo); };
     grid.appendChild(card);
   }
 
+  // Build grid when settings opens
   var settingsEl = document.getElementById('settingsDiv');
   if (settingsEl) {
-    new MutationObserver(function(){
-      if (settingsEl.style.display === 'block') buildGrid(WALLPAPERS);
+    new MutationObserver(function(mutations){
+      mutations.forEach(function(m){
+        if (m.target.style.display === 'block') {
+          buildGrid(WALLPAPERS);
+        }
+      });
     }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
   }
 
-  function toast(msg, color) {
-    var t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:20px;left:20px;background:' + (color||'#111') + ';color:#fff;padding:10px 16px;border-radius:8px;font-family:sans-serif;font-size:13px;z-index:99999;border:1px solid rgba(255,255,255,.15);transition:opacity .4s';
-    document.body.appendChild(t);
-    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 2500);
-  }
-
-  var _db = null;
-  function openDB() {
-    return new Promise(function(res, rej){
-      if (_db) return res(_db);
-      var req = indexedDB.open('BackgroundStorage', 1);
-      req.onerror = function(){ rej(req.error); };
-      req.onsuccess = function(){ _db = req.result; res(_db); };
-      req.onupgradeneeded = function(e){
-        var db = e.target.result;
-        if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
-      };
-    });
-  }
-  function idbSet(key, val) {
-    return openDB().then(function(db){
-      return new Promise(function(res, rej){
-        var tx = db.transaction(['media'], 'readwrite');
-        var req = tx.objectStore('media').put(val, key);
-        req.onsuccess = res; req.onerror = function(){ rej(req.error); };
-      });
-    });
-  }
-  function idbGet(key) {
-    return openDB().then(function(db){
-      return new Promise(function(res, rej){
-        var tx = db.transaction(['media'], 'readonly');
-        var req = tx.objectStore('media').get(key);
-        req.onsuccess = function(){ res(req.result); };
-        req.onerror = function(){ rej(req.error); };
-      });
-    });
-  }
-  function idbDel(key) {
-    return openDB().then(function(db){
-      return new Promise(function(res, rej){
-        var tx = db.transaction(['media'], 'readwrite');
-        var req = tx.objectStore('media').delete(key);
-        req.onsuccess = res; req.onerror = function(){ rej(req.error); };
-      });
-    });
-  }
-
+// File upload handler
   document.getElementById('wp-upload').onchange = async function() {
-  var f = this.files[0]; if (!f) return;
+    var f = this.files[0]; if (!f) return;
 
-  if (f.size > MAX_BYTES) {
-    toast('⚠️ File too large — max 50 MB', '#b00020');
-    this.value = '';
-    return;
-  }
-
-  var isVid = f.type.startsWith('video/');
-  toast('Saving ' + (isVid ? 'video' : 'image') + '…');
-
-  try {
-    var ab = await f.arrayBuffer();
-
-    if (isVid) {
-      // Save binary data in IndexedDB
-      await idbSet('savedVideo', { data: ab, type: f.type, name: f.name });
-      // Remove previous image data
-      await idbDel('savedImage');
-
-      // Create blob URL for the video
-      const blob = new Blob([ab], { type: f.type });
-      const url = URL.createObjectURL(blob);
-
-      // Save the URL in localStorage for restore
-      localStorage.setItem('wp_file', url);
-      localStorage.setItem('backgroundType', 'video');
-      localStorage.setItem('hasVideoInIndexedDB', 'true');
-
-      // Apply wallpaper with new URL
-      applyWP(url, true);
-
-      // Update grid UI
-      const grid = document.getElementById('wp-grid');
-      const old = grid && grid.querySelector('[data-file^="blob:"]');
-      if (old) old.remove();
-      if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, true);
-    } else {
-      await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
-      await idbDel('savedVideo');
-      localStorage.setItem('backgroundType', 'image');
-      localStorage.setItem('hasLargeImageInIndexedDB', 'true');
-      localStorage.removeItem('selectedBackground');
-      localStorage.removeItem('hasVideoInIndexedDB');
-
-      var blob = new Blob([ab], { type: f.type });
-      var url = URL.createObjectURL(blob);
-      applyWP(url, false);
-
-      var grid = document.getElementById('wp-grid');
-      var old = grid && grid.querySelector('[data-file^="blob:"]');
-      if (old) old.remove();
-      if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, false);
+    if (f.size > MAX_BYTES) {
+      alert('⚠️ File too large — max 50 MB');
+      this.value = '';
+      return;
     }
 
-    toast('✓ Saved!', '#1a1a1a');
-  } catch(err) {
-    console.error(err);
-    toast('✗ Save failed', '#b00020');
-  }
- 
-
-      async function restore() {
-    var savedType   = localStorage.getItem('backgroundType') || 'video';
-    var hasVid      = localStorage.getItem('hasVideoInIndexedDB') === 'true';
-    var hasLargeImg = localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
-    var savedFile   = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
-
-    // Clear previous state
-    vid.pause();
-    vid.removeAttribute('src');
-    vid.load();
-    vid.style.display = 'none';
-    document.body.style.backgroundImage = '';
-    document.body.style.backgroundSize = '';
-    document.body.style.backgroundPosition = '';
-    document.body.style.backgroundRepeat = '';
-    document.body.style.backgroundAttachment = '';
-
-    if (savedType === 'video' && hasVid) {
-      try {
-        var rec = await idbGet('savedVideo');
-        if (rec && rec.data) {
-          var blob = new Blob([rec.data], { type: rec.type || 'video/mp4' });
-          var url = URL.createObjectURL(blob);
-          
-          // DON'T use applyWP here - it tries to save blob URL to localStorage
-          vid.style.display = 'block';
-          vid.src = url;
-          vid.load();
-          var playPromise = vid.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(function(err) {
-              var retry = function() {
-                vid.play().catch(function(){});
-                document.removeEventListener('click', retry);
-                document.removeEventListener('keydown', retry);
-              };
-              document.addEventListener('click', retry);
-              document.addEventListener('keydown', retry);
-            });
-          }
-          return;
-        }
-      } catch(e) { console.error('IDB video load failed', e); }
-    }
+    var isVid = f.type.startsWith('video/');
+    var url = URL.createObjectURL(f);
     
-    if (savedType === 'video' && savedFile) {
+    applyWP(url, isVid);
+    
+    // Add to grid
+    var grid = document.getElementById('wp-grid');
+    if (grid) {
+      var old = grid.querySelector('[data-file^="blob:"]');
+      if (old) old.remove();
+      addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, isVid);
+    }
+
+    this.value = '';
+  };
+
+  // Restore wallpaper on load
+  function restore() {
+    var savedFile = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || '';
+    var savedType = localStorage.getItem('backgroundType') || '';
+    
+    if (savedFile && savedType === 'video') {
       applyWP(savedFile, true);
     } else if (savedFile) {
       applyWP(savedFile, false);
