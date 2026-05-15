@@ -1012,23 +1012,23 @@ border: 1px solid rgba(255, 255, 255, 0.15);
  <h2 style="color:white;   font-family: 'Orbitron', sans-serif; text-align: center; font-size:20px;" id="fpsCounter">FPS:</h2>
 
 <script>
-let lastTime = performance.now();
-let frameCount = 0;
-
-function updateFPS(now) {
-    frameCount++;
-    if (now - lastTime >= 1000) {
-        frameCount = 0;
-        lastTime = now;
+(function() {
+  var frames = 0, last = performance.now(), smooth = 0;
+  function tick(now) {
+    frames++;
+    var delta = now - last;
+    if (delta >= 1000) {
+      var raw = frames * 1000 / delta;
+      smooth = smooth === 0 ? raw : smooth * 0.8 + raw * 0.2; // smooth out spikes
+      var el = document.getElementById("fpsCounter");
+      if (el) el.textContent = "FPS: " + Math.round(smooth);
+      frames = 0;
+      last = now;
     }
-    requestAnimationFrame(updateFPS);
-}
-
-setInterval(() => {
-    document.getElementById("fpsCounter").textContent = "FPS: " + frameCount;
-}, 1000);
-
-requestAnimationFrame(updateFPS);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
 </script>
 
 </div>
@@ -2334,10 +2334,12 @@ document.getElementById('day').textContent = day;
       document.body.style.cssText += ';background-image:url(' + file + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
     }
     current = file;
-    try {
-      localStorage.setItem('wp_file', file);
-      localStorage.setItem('wp_video', isVideo ? '1' : '0');
-    } catch(e){}
+  try {
+  localStorage.setItem('wp_file', file);
+  localStorage.setItem('wp_video', isVideo ? '1' : '0');
+  localStorage.setItem('selectedBackground', file);
+  localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+} catch(e){}
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
     });
