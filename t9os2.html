@@ -452,7 +452,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     position: fixed;
     z-index: 1000;
     border-radius:6px; 
-    width:99%;
+    width:97%;
     height: 85%; 
     overflow-x: hidden;
     overflow-y: auto;
@@ -1597,7 +1597,7 @@ background: linear-gradient(
 
 </div>
 
-<div onclick="update()" class="notify2">
+<div onclick="window.open('https://discord.gg/8sHzTtnUSu', '_blank')" class="notify2">
 
   <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
     <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
@@ -1652,7 +1652,7 @@ right:20px;
 padding:10px;
 font-family: Arial, sans-serif;
 transition: 0.1s ease;
-top:15%;
+top:13.5%;
 animation: notifyIn 0.35s ease-out;
 
 }
@@ -2334,11 +2334,13 @@ document.getElementById('day').textContent = day;
       document.body.style.cssText += ';background-image:url(' + file + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
     }
     current = file;
-  try {
+ try {
   localStorage.setItem('wp_file', file);
   localStorage.setItem('wp_video', isVideo ? '1' : '0');
   localStorage.setItem('selectedBackground', file);
   localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+  localStorage.setItem('hasVideoInIndexedDB', 'false');
+  localStorage.removeItem('hasLargeImageInIndexedDB');
 } catch(e){}
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
@@ -2558,7 +2560,155 @@ document.getElementById('day').textContent = day;
 })();
 </script>
  
-  
+  <h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Panic Key</h3>
+
+<div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:10px;">
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">Key:</label>
+    <input id="panicKeyInput" type="text" maxlength="1" placeholder="e.g. Escape"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:180px;"
+      readonly
+      onkeydown="event.preventDefault(); this.value = event.key === ' ' ? 'Space' : event.key; localStorage.setItem('panicKey', event.key);"
+    />
+    <span style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif;">press any key</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">URL:</label>
+    <input id="panicUrlInput" type="text" placeholder="https://google.com"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:260px;"
+      oninput="localStorage.setItem('panicUrl', this.value)"
+    />
+  </div>
+
+  <div style="display:flex; gap:10px;">
+    <button onclick="testPanic()"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Test
+    </button>
+    <button onclick="clearPanic()"
+      style="background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.4); border-radius:8px;
+             color:#ff6b6b; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Clear
+    </button>
+  </div>
+
+  <p id="panicStatus" style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif; margin:0;"></p>
+
+</div>
+
+<script>
+  (function() {
+    const keyInput = document.getElementById('panicKeyInput');
+    const urlInput = document.getElementById('panicUrlInput');
+
+    const savedKey = localStorage.getItem('panicKey');
+    const savedUrl = localStorage.getItem('panicUrl');
+    if (savedKey) keyInput.value = savedKey === ' ' ? 'Space' : savedKey;
+    if (savedUrl) urlInput.value = savedUrl;
+  })();
+
+  function doPanic() {
+    const panicUrl = localStorage.getItem('panicUrl');
+    if (!panicUrl) return;
+    window.location.replace(panicUrl);
+  }
+
+// Main page listener - captures everything including inputs
+  document.addEventListener('keydown', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.target === document.getElementById('panicKeyInput')) return;
+    if (e.key === panicKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      doPanic();
+    }
+  }, true);
+
+  // Listen for keypress forwarded from iframes
+  window.addEventListener('message', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.data && e.data.type === 'panicKey' && e.data.key === panicKey) {
+      doPanic();
+    }
+  });
+
+  // Inject forwarder script into every iframe
+  function injectPanicIntoIframe(iframe) {
+    try {
+      const script = iframe.contentDocument.createElement('script');
+      script.textContent = `
+        document.addEventListener('keydown', function(e) {
+          try {
+            window.top.postMessage({ type: 'panicKey', key: e.key }, '*');
+          } catch(err) {}
+        }, true);
+      `;
+      iframe.contentDocument.head.appendChild(script);
+    } catch(err) {
+      // cross-origin iframes can't be injected, use postMessage fallback below
+    }
+  }
+
+  // Inject into all current iframes and watch for new ones
+  function injectAll() {
+    document.querySelectorAll('iframe').forEach(injectPanicIntoIframe);
+  }
+
+  // Re-inject when iframes load or change src
+  document.querySelectorAll('iframe').forEach(function(iframe) {
+    iframe.addEventListener('load', function() {
+      injectPanicIntoIframe(iframe);
+    });
+  });
+
+  new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      m.addedNodes.forEach(function(node) {
+        if (node.tagName === 'IFRAME') {
+          node.addEventListener('load', function() {
+            injectPanicIntoIframe(node);
+          });
+        }
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+
+  // Run on page ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectAll);
+  } else {
+    injectAll();
+  }
+
+  function testPanic() {
+    const url = localStorage.getItem('panicUrl');
+    const key = localStorage.getItem('panicKey');
+    const status = document.getElementById('panicStatus');
+    if (!url || !key) {
+      status.textContent = 'Set both a key and URL first.';
+      status.style.color = '#ff6b6b';
+      return;
+    }
+    status.textContent = 'Works! Press ' + (key === ' ' ? 'Space' : key) + ' anywhere to panic.';
+    status.style.color = '#1db954';
+  }
+
+  function clearPanic() {
+    localStorage.removeItem('panicKey');
+    localStorage.removeItem('panicUrl');
+    document.getElementById('panicKeyInput').value = '';
+    document.getElementById('panicUrlInput').value = '';
+    document.getElementById('panicStatus').textContent = 'Cleared.';
+    document.getElementById('panicStatus').style.color = 'rgba(255,255,255,0.4)';
+  }
+</script>
 </div>
 <style>
    .round-btn {
