@@ -2297,8 +2297,8 @@ document.getElementById('day').textContent = day;
  
 <script>
 (function(){
-  var MAX_BYTES = 50 * 1024 * 1024; // 50 MB
- 
+  var MAX_BYTES = 50 * 1024 * 1024;
+
   var WALLPAPERS = [
     { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
     { name:'Abstract',      file:'abstract.png'  },
@@ -2310,78 +2310,118 @@ document.getElementById('day').textContent = day;
     { name:'Space',         file:'space.jpg'     },
     { name:'Goku',          file:'goku.jpg'      }
   ];
- 
-  /* ── shared background video element ── */
+
   var vid = document.getElementById('_wp_vid');
   if (!vid) {
     vid = document.createElement('video');
     vid.id = '_wp_vid';
-    vid.autoplay = vid.loop = vid.muted = vid.playsInline = true;
-    vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+    vid.autoplay = true;
+    vid.loop = true;
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.setAttribute('playsinline', '');
+    vid.setAttribute('webkit-playsinline', '');
+    vid.style.cssText = [
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'width:100%',
+      'height:100%',
+      'object-fit:cover',
+      'z-index:-999',
+      'display:none',
+      'pointer-events:none'
+    ].join(';');
     document.body.prepend(vid);
   }
- 
+
   var current = localStorage.getItem('wp_file') || '';
- 
-  /* ── apply wallpaper ── */
+
   function applyWP(file, isVideo) {
-    vid.pause(); vid.removeAttribute('src'); vid.load(); vid.style.display = 'none';
-    document.body.style.backgroundImage = 'none';
+    vid.pause();
+    vid.removeAttribute('src');
+    vid.load();
+    vid.style.display = 'none';
+
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundPosition = '';
+    document.body.style.backgroundRepeat = '';
+    document.body.style.backgroundAttachment = '';
+
     if (isVideo && file) {
-      vid.src = file; vid.style.display = 'block'; vid.load();
-      vid.play().catch(Object);
+      vid.style.display = 'block';
+      vid.src = file;
+      vid.load();
+      var playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(function(err) {
+          var retry = function() {
+            vid.play().catch(function(){});
+            document.removeEventListener('click', retry);
+            document.removeEventListener('keydown', retry);
+          };
+          document.addEventListener('click', retry);
+          document.addEventListener('keydown', retry);
+        });
+      }
     } else if (file) {
-      document.body.style.cssText += ';background-image:url(' + file + ');background-size:cover;background-position:center;background-repeat:no-repeat;';
+      document.body.style.backgroundImage = 'url(' + JSON.stringify(file) + ')';
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
     }
+
     current = file;
- try {
-  localStorage.setItem('wp_file', file);
-  localStorage.setItem('wp_video', isVideo ? '1' : '0');
-  localStorage.setItem('selectedBackground', file);
-  localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
-  localStorage.setItem('hasVideoInIndexedDB', 'false');
-  localStorage.removeItem('hasLargeImageInIndexedDB');
-} catch(e){}
+
+    try {
+      localStorage.setItem('wp_file', file);
+      localStorage.setItem('wp_video', isVideo ? '1' : '0');
+      localStorage.setItem('selectedBackground', file);
+      localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+      localStorage.setItem('hasVideoInIndexedDB', 'false');
+      localStorage.removeItem('hasLargeImageInIndexedDB');
+    } catch(e) {}
+
     document.querySelectorAll('.wp-card').forEach(function(c){
       c.classList.toggle('wp-active', c.dataset.file === file);
     });
   }
- 
-  /* ── build the grid ── */
+
   function buildGrid(list) {
     var grid = document.getElementById('wp-grid');
     if (!grid || grid.dataset.built) return;
     grid.dataset.built = '1';
     list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
   }
- 
-  /* ── add one card ── */
+
   function addCard(grid, name, file, isVideo) {
     var card = document.createElement('div');
     card.className = 'wp-card' + (file === current ? ' wp-active' : '');
     card.dataset.file = file;
- 
-    /* checkmark */
+
     var chk = document.createElement('div');
     chk.className = 'wp-check';
     chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
- 
-    /* preview: video card vs image card */
+
     if (isVideo) {
       var prev = document.createElement('video');
       prev.src = file;
-      prev.muted = prev.loop = prev.playsInline = true;
-      prev.autoplay = true;
+      prev.muted = true;
+      prev.loop = true;
+      prev.playsInline = true;
       prev.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;';
       card.appendChild(prev);
-      /* play on hover, pause on leave — saves GPU when idle */
-      card.addEventListener('mouseenter', function(){ prev.play().catch(Object); });
+      card.addEventListener('mouseenter', function(){ prev.play().catch(function(){}); });
       card.addEventListener('mouseleave', function(){ prev.pause(); });
-      /* autoplay the currently-selected card */
-      if (file === current) { prev.play().catch(Object); }
+      if (file === current) { prev.play().catch(function(){}); }
     } else {
       var img = document.createElement('img');
-      img.src = file; img.alt = name; img.loading = 'lazy';
+      img.src = file;
+      img.alt = name;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
       img.onerror = function(){
         this.src = 'data:image/svg+xml,' + encodeURIComponent(
           '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">' + name + '</text></svg>'
@@ -2389,27 +2429,24 @@ document.getElementById('day').textContent = day;
       };
       card.appendChild(img);
     }
- 
-    /* label */
+
     var lbl = document.createElement('div');
     lbl.className = 'wp-card-label';
     lbl.textContent = name + (isVideo ? ' ▶' : '');
- 
+
     card.appendChild(chk);
     card.appendChild(lbl);
     card.onclick = function(){ applyWP(file, isVideo); };
     grid.appendChild(card);
   }
- 
-  /* ── watch settings panel open ── */
+
   var settingsEl = document.getElementById('settingsDiv');
   if (settingsEl) {
     new MutationObserver(function(){
       if (settingsEl.style.display === 'block') buildGrid(WALLPAPERS);
     }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
   }
- 
-  /* ── toast helper ── */
+
   function toast(msg, color) {
     var t = document.createElement('div');
     t.textContent = msg;
@@ -2417,8 +2454,7 @@ document.getElementById('day').textContent = day;
     document.body.appendChild(t);
     setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 2500);
   }
- 
-  /* ── IndexedDB helpers ── */
+
   var _db = null;
   function openDB() {
     return new Promise(function(res, rej){
@@ -2460,23 +2496,22 @@ document.getElementById('day').textContent = day;
       });
     });
   }
- 
-  /* ── upload handler ── */
+
   document.getElementById('wp-upload').onchange = async function(){
     var f = this.files[0]; if (!f) return;
- 
-    /* 50 MB guard */
+
     if (f.size > MAX_BYTES) {
       toast('⚠️ File too large — max 50 MB', '#b00020');
       this.value = '';
       return;
     }
- 
+
     var isVid = f.type.startsWith('video/');
     toast('Saving ' + (isVid ? 'video' : 'image') + '…');
- 
+
     try {
       var ab = await f.arrayBuffer();
+
       if (isVid) {
         await idbSet('savedVideo', { data: ab, type: f.type, name: f.name });
         await idbDel('savedImage');
@@ -2484,36 +2519,34 @@ document.getElementById('day').textContent = day;
         localStorage.setItem('hasVideoInIndexedDB', 'true');
         localStorage.removeItem('selectedBackground');
         localStorage.removeItem('hasLargeImageInIndexedDB');
- 
+
         var blob = new Blob([ab], { type: f.type });
-        var url  = URL.createObjectURL(blob);
+        var url = URL.createObjectURL(blob);
         applyWP(url, true);
- 
-        /* add preview card */
+
         var grid = document.getElementById('wp-grid');
-        var old  = grid && grid.querySelector('[data-file^="blob:"]');
+        var old = grid && grid.querySelector('[data-file^="blob:"]');
         if (old) old.remove();
         if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, true);
- 
+
       } else {
-        /* image */
         await idbSet('savedImage', { data: ab, type: f.type, name: f.name });
         await idbDel('savedVideo');
         localStorage.setItem('backgroundType', 'image');
         localStorage.setItem('hasLargeImageInIndexedDB', 'true');
         localStorage.removeItem('selectedBackground');
         localStorage.removeItem('hasVideoInIndexedDB');
- 
+
         var blob = new Blob([ab], { type: f.type });
-        var url  = URL.createObjectURL(blob);
+        var url = URL.createObjectURL(blob);
         applyWP(url, false);
- 
+
         var grid = document.getElementById('wp-grid');
-        var old  = grid && grid.querySelector('[data-file^="blob:"]');
+        var old = grid && grid.querySelector('[data-file^="blob:"]');
         if (old) old.remove();
         if (grid) addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, false);
       }
- 
+
       toast('✓ Saved!', '#1a1a1a');
     } catch(err) {
       console.error(err);
@@ -2521,13 +2554,12 @@ document.getElementById('day').textContent = day;
     }
     this.value = '';
   };
- 
-  /* ── restore on page load ── */
-async function restore() {
-    var savedType  = localStorage.getItem('backgroundType') || 'video';
-    var hasVid     = localStorage.getItem('hasVideoInIndexedDB') === 'true';
-    var hasLargeImg= localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
-    var savedFile  = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
+
+  async function restore() {
+    var savedType   = localStorage.getItem('backgroundType') || 'video';
+    var hasVid      = localStorage.getItem('hasVideoInIndexedDB') === 'true';
+    var hasLargeImg = localStorage.getItem('hasLargeImageInIndexedDB') === 'true';
+    var savedFile   = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'minecraftCozy2.mp4';
 
     if (savedType === 'video') {
       if (hasVid) {
@@ -2555,7 +2587,7 @@ async function restore() {
       if (savedFile) applyWP(savedFile, false);
     }
   }
- 
+
   restore();
 })();
 </script>
