@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T9 AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #080809;
+      --bg1:        #0d0d0e;
+      --bg2:        #111113;
+      --bg3:        #1a1a1d;
+      --border:     rgba(255,255,255,0.06);
+      --border2:    rgba(255,255,255,0.10);
+      --text:       #e8e8e6;
+      --text2:      #787876;
+      --text3:      #444;
+      --accent:     #ffffff;
+      --accent-dim: rgba(255,255,255,0.05);
+      --accent-dim2:rgba(255,255,255,0.09);
+      --radius:     10px;
+      --sidebar:    252px;
+    }
+
+    html, body {
+      height: 100%; width: 100%; overflow: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 15px; line-height: 1.6;
+      -webkit-font-smoothing: auto;
+    }
+
+    #shell { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar); flex-shrink: 0;
+      background: var(--bg1); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    #brand { padding: 26px 22px 22px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .brand-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+    .brand-tagline { font-size: 10px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.8px; margin-top: 3px; }
+
+    #new-chat-btn {
+      margin: 14px 14px 0; padding: 9px 14px;
+      background: var(--accent-dim); border: 1px solid var(--border2); border-radius: 7px;
+      color: var(--text2); font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; gap: 7px;
+      transition: opacity 0.15s; width: calc(100% - 28px);
+    }
+    #new-chat-btn:hover { background: var(--accent-dim2); border-color: rgba(255,255,255,0.16); color: var(--text); opacity: 0.8; }
+
+    .sidebar-section { padding: 20px 16px 8px; font-size: 10px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; color: var(--text3); text-transform: uppercase; }
+
+    .history-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; }
+    .history-list::-webkit-scrollbar { width: 0; }
+    .history-item { padding: 8px 12px; border-radius: 6px; font-size: 13px; color: var(--text2); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-item:hover { background: var(--bg3); color: var(--text); }
+    .history-item.active { background: var(--bg3); color: var(--text); }
+
+    #sidebar-footer { padding: 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
+    .model-badge { display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; font-size: 12px; color: var(--text2); }
+    .model-badge.vision { border-color: rgba(255,255,255,0.18); color: var(--text); }
+    .model-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+    .model-badge.vision .model-dot { background: var(--text); }
+    .model-name { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Main ── */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); min-width: 0; }
+
+    #topbar {
+      height: 54px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 26px; flex-shrink: 0; background: var(--bg);
+    }
+    .topbar-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text2); letter-spacing: -0.1px; }
+    .topbar-right { display: flex; align-items: center; gap: 6px; }
+
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--border);
+      background: transparent; color: var(--text3); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: opacity 0.15s;
+    }
+    .icon-btn:hover { background: var(--bg3); color: var(--text2); border-color: var(--border2); opacity: 0.8; }
+    .icon-btn.active { background: var(--bg3); border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+    /* ── Messages ── */
+    #msgs { flex: 1; overflow-y: auto; padding: 32px 0; }
+    #msgs::-webkit-scrollbar { width: 3px; }
+    #msgs::-webkit-scrollbar-track { background: transparent; }
+    #msgs::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+    .msgs-inner { max-width: 760px; margin: 0 auto; padding: 0 28px; display: flex; flex-direction: column; gap: 0; }
+
+    #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px; gap: 14px; }
+    .welcome-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -1px; color: var(--text); margin-top: 4px; }
+    .welcome-sub { font-size: 14px; color: var(--text2); max-width: 400px; line-height: 1.7; }
+    .welcome-caps { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+    .welcome-cap { padding: 9px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; cursor: pointer; }
+    .welcome-cap:hover { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+
+    .msg-row { padding: 20px 0; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border); animation: fadeIn 0.2s ease both; will-change: opacity; }
+    .msg-row:last-child { border-bottom: none; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .msg-header { display: flex; align-items: center; gap: 9px; }
+    .msg-avatar { width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
+    .msg-sender { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+    .msg-model-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text3); background: var(--bg2); border: 1px solid var(--border); padding: 1px 7px; border-radius: 4px; letter-spacing: 0.2px; }
+    .msg-body { padding-left: 33px; font-size: 15px; color: var(--text); line-height: 1.75; white-space: pre-wrap; word-break: break-word; }
+    .msg-body img { display: block; max-width: 480px; max-height: 320px; border-radius: 7px; border: 1px solid var(--border); margin-top: 10px; object-fit: contain; background: var(--bg2); }
+
+    /* ── Typing dots ── */
+    .typing-dots { display: flex; gap: 5px; padding: 4px 0; align-items: center; }
+    .typing-dots span { width: 4px; height: 4px; border-radius: 50%; background: var(--text3); animation: dotPulse 1.2s ease-in-out infinite; will-change: opacity; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+    /* ── Input ── */
+    #input-area { flex-shrink: 0; padding: 14px 26px 20px; background: var(--bg); }
+    #input-outer { max-width: 760px; margin: 0 auto; }
+
+    #attach-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .attach-thumb { position: relative; width: 48px; height: 48px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border2); flex-shrink: 0; }
+    .attach-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .attach-remove { position: absolute; inset: 0; background: rgba(0,0,0,0.6); border: none; cursor: pointer; display: none; align-items: center; justify-content: center; color: #fff; }
+    .attach-thumb:hover .attach-remove { display: flex; }
+
+    #screen-pill { display: none; align-items: center; gap: 6px; padding: 4px 11px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 20px; font-size: 11.5px; color: var(--text2); font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px; width: fit-content; }
+    #screen-pill button { background: none; border: none; color: var(--text3); cursor: pointer; padding: 0; display: flex; align-items: center; }
+
+    #input-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); display: flex; flex-direction: column; }
+    #input-box:focus-within { border-color: rgba(255,255,255,0.18); }
+
+    /* listening ring on input box */
+    #input-box.listening { border-color: rgba(255,255,255,0.35); }
+
+    #inp { background: transparent; border: none; outline: none; color: var(--text); font-family: 'Instrument Sans', sans-serif; font-size: 15px; line-height: 1.6; padding: 13px 15px 0; resize: none; max-height: 160px; min-height: 50px; width: 100%; }
+    #inp::placeholder { color: var(--text3); }
+
+    #input-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; }
+    .input-tools { display: flex; gap: 2px; }
+
+    .input-tool { width: 30px; height: 30px; border-radius: 5px; border: none; background: transparent; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s; }
+    .input-tool:hover { background: var(--bg3); color: var(--text2); opacity: 0.8; }
+    .input-tool.active { color: var(--text); background: var(--bg3); }
+
+    /* ── Mic button ── */
+    #mic-btn {
+      width: 30px; height: 30px; border-radius: 5px; border: none;
+      background: transparent; color: var(--text3); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.15s; position: relative;
+    }
+    #mic-btn:hover { background: var(--bg3); color: var(--text2); opacity: 0.8; }
+    #mic-btn.listening {
+      color: var(--text);
+      background: var(--bg3);
+    }
+    /* pulsing ring while listening — opacity only, compositor-safe */
+    #mic-btn.listening::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.3);
+      animation: micRing 1s ease-in-out infinite;
+      will-change: opacity;
+    }
+    @keyframes micRing { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+    /* ── Voice status bar ── */
+    #voice-status {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 11px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'IBM Plex Mono', monospace;
+      margin-bottom: 10px;
+      width: fit-content;
+      animation: fadeIn 0.2s ease both;
+    }
+    #voice-status.on { display: flex; }
+    .voice-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text2);
+      animation: dotPulse 1s ease-in-out infinite;
+      will-change: opacity;
+    }
+
+    #send-btn { height: 32px; padding: 0 16px; background: var(--text); border: none; border-radius: 6px; color: #080809; font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; letter-spacing: 0.1px; }
+    #send-btn:hover { opacity: 0.75; }
+    #send-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+    .input-hint { text-align: center; font-size: 10.5px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-top: 9px; letter-spacing: 0.2px; }
+
+    * { scrollbar-width: thin; scrollbar-color: var(--bg3) transparent; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+<div id="shell">
+
+  <aside id="sidebar">
+    <div id="brand">
+      <div class="brand-name">T9 AI</div>
+      <div class="brand-tagline">VISION · LANGUAGE · INTELLIGENCE</div>
+    </div>
+
+    <button id="new-chat-btn" onclick="newChat()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      New conversation
+    </button>
+
+    <div class="sidebar-section">Recent</div>
+    <div class="history-list" id="historyList">
+      <div class="history-item active">New conversation</div>
+    </div>
+
+    <div id="sidebar-footer">
+      <div class="model-badge" id="modelBadge">
+        <div class="model-dot"></div>
+        <span class="model-name" id="modelName">llama-3.3-70b-versatile</span>
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="flex-shrink:0;color:var(--text3)">
+          <path d="M2 3.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main">
+
+    <div id="topbar">
+      <span class="topbar-title" id="convTitle">New conversation</span>
+      <div class="topbar-right">
+        <button class="icon-btn" id="imgTopBtn" title="Upload image" onclick="document.getElementById('fileIn').click()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <rect x="1" y="3" width="13" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="5" cy="6.5" r="1.1" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1 10.5l3.5-3.5 2.5 2.5 2-2 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="scrTopBtn" title="Share screen" onclick="captureScreen()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <rect x="1" y="2" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M5 13h5M7.5 11v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="msgs">
+      <div class="msgs-inner" id="msgsInner">
+        <div id="welcome">
+          <div class="welcome-title">Good to see you.</div>
+          <div class="welcome-sub">T9 AI routes your message to the right model — vision or language — based on what you send. Use the mic to speak your message.</div>
+          <div class="welcome-caps">
+            <div class="welcome-cap" onclick="setPrompt('Explain how neural networks learn')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 4v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Explain a concept
+            </div>
+            <div class="welcome-cap" onclick="setPrompt('Analyze this image and describe what you see')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1.5" width="11" height="9" rx="1.2" stroke="currentColor" stroke-width="1.2"/><circle cx="4" cy="5" r="1" stroke="currentColor" stroke-width="1.1"/><path d="M1 9l3-3 2.5 2.5 2-2 3.5 3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+              Analyze an image
+            </div>
+            <div class="welcome-cap" onclick="setPrompt('Help me write a professional email')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M1 4.5l5.5 4 5.5-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Draft a message
+            </div>
+            <div class="welcome-cap" onclick="document.getElementById('scrTopBtn').click()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4 11.5h5M6.5 9v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Analyze my screen
+            </div>
+            <div class="welcome-cap" onclick="startVoice()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="1" width="5" height="7" rx="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6.5A5 5 0 0 0 11.5 6.5M6.5 11.5v-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Speak to T9
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="input-area">
+      <div id="input-outer">
+        <div id="attach-strip"></div>
+
+        <!-- voice status pill -->
+        <div id="voice-status">
+          <div class="voice-dot"></div>
+          <span id="voice-label">Listening…</span>
+        </div>
+
+        <div id="screen-pill">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="0.5" y="1" width="10" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M3 10h5M5.5 8v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          Screen captured
+          <button id="screenRemoveBtn">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div id="input-box">
+          <textarea id="inp" rows="1" placeholder="Message T9 AI… or tap 🎤 to speak"></textarea>
+          <div id="input-actions">
+            <div class="input-tools">
+              <!-- image upload -->
+              <button class="input-tool" title="Upload image" onclick="document.getElementById('fileIn').click()">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="1" y="3" width="13" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                  <circle cx="5" cy="6.5" r="1.1" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M1 10.5l3.5-3.5 2.5 2.5 2-2 3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <!-- screen capture -->
+              <button class="input-tool" id="scrInputBtn" title="Capture screen" onclick="captureScreen()">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="1" y="2" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M5 13h5M7.5 11v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <!-- mic -->
+              <button class="input-tool" id="mic-btn" title="Voice input" onclick="toggleVoice()">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="4.5" y="1" width="6" height="8" rx="3" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M2 7.5A5.5 5.5 0 0 0 13 7.5M7.5 13v-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <button id="send-btn" onclick="doSend()">
+              Send
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6h8M7 2.5l3.5 3.5L7 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-hint">Tap 🎤 to speak &nbsp;·&nbsp; Enter to send &nbsp;·&nbsp; Shift+Enter for new line</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<input type="file" id="fileIn" accept="image/*" multiple style="display:none">
+
+<script>
+  const WORKER = 'https://throbbing-forest-16db.t9osta.workers.dev/';
+
+  const msgsInner   = document.getElementById('msgsInner');
+  const inp         = document.getElementById('inp');
+  const sendBtn     = document.getElementById('send-btn');
+  const fileIn      = document.getElementById('fileIn');
+  const attachStrip = document.getElementById('attach-strip');
+  const screenPill  = document.getElementById('screen-pill');
+  const scrInputBtn = document.getElementById('scrInputBtn');
+  const scrTopBtn   = document.getElementById('scrTopBtn');
+  const modelBadge  = document.getElementById('modelBadge');
+  const modelName   = document.getElementById('modelName');
+  const historyList = document.getElementById('historyList');
+  const convTitle   = document.getElementById('convTitle');
+  const micBtn      = document.getElementById('mic-btn');
+  const voiceStatus = document.getElementById('voice-status');
+  const voiceLabel  = document.getElementById('voice-label');
+  const inputBox    = document.getElementById('input-box');
+
+  let images    = [];
+  let screenB64 = null;
+  let msgCount  = 0;
+
+  /* ─────────────────────────────────────────
+     VOICE INPUT
+     Uses Web Speech API — built into Chrome /
+     Chromebook, zero libraries, zero cost.
+  ───────────────────────────────────────── */
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+
+  function initRecognition() {
+    if (!SpeechRecognition) return null;
+    const r = new SpeechRecognition();
+    r.lang = 'en-US';
+    r.continuous = false;       // one utterance at a time — lighter on CPU
+    r.interimResults = true;    // show live transcript while speaking
+
+    r.onstart = () => {
+      isListening = true;
+      micBtn.classList.add('listening');
+      inputBox.classList.add('listening');
+      voiceStatus.classList.add('on');
+      voiceLabel.textContent = 'Listening…';
+      inp.placeholder = 'Speak now…';
+    };
+
+    r.onresult = (e) => {
+      let interim = '';
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      // Show live transcript in the input box
+      inp.value = final || interim;
+      autoResize();
+      if (final) {
+        voiceLabel.textContent = 'Got it — sending…';
+      }
+    };
+
+    r.onend = () => {
+      isListening = false;
+      micBtn.classList.remove('listening');
+      inputBox.classList.remove('listening');
+      inp.placeholder = 'Message T9 AI… or tap 🎤 to speak';
+      // Auto-send if we captured something
+      const text = inp.value.trim();
+      if (text) {
+        voiceLabel.textContent = 'Sending…';
+        setTimeout(() => {
+          voiceStatus.classList.remove('on');
+          doSend();
+        }, 300);
+      } else {
+        voiceStatus.classList.remove('on');
+      }
+    };
+
+    r.onerror = (e) => {
+      isListening = false;
+      micBtn.classList.remove('listening');
+      inputBox.classList.remove('listening');
+      voiceStatus.classList.remove('on');
+      inp.placeholder = 'Message T9 AI… or tap 🎤 to speak';
+      if (e.error !== 'aborted' && e.error !== 'no-speech') {
+        // Surface real errors quietly in the input
+        inp.value = '';
+        inp.placeholder = 'Mic error: ' + e.error + '. Try again.';
+        setTimeout(() => { inp.placeholder = 'Message T9 AI… or tap 🎤 to speak'; }, 3000);
+      }
+    };
+
+    return r;
+  }
+
+  function toggleVoice() {
+    if (!SpeechRecognition) {
+      alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+    recognition = initRecognition();
+    recognition.start();
+  }
+
+  // Allow calling startVoice() from the welcome card
+  function startVoice() { toggleVoice(); }
+
+  /* ───────────────────────────────────────── */
+
+  function esc(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function setPrompt(text) {
+    inp.value = text; inp.focus(); autoResize();
+  }
+
+  function autoResize() {
+    inp.style.height = 'auto';
+    inp.style.height = Math.min(inp.scrollHeight, 160) + 'px';
+  }
+
+  function updateModel() {
+    const hasImg = images.length > 0 || screenB64 !== null;
+    if (hasImg) {
+      modelBadge.classList.add('vision');
+      modelName.textContent = 'llama-4-scout · vision';
+    } else {
+      modelBadge.classList.remove('vision');
+      modelName.textContent = 'llama-3.3-70b-versatile';
+    }
+  }
+
+  function hideWelcome() {
+    const w = document.getElementById('welcome');
+    if (w && w.parentNode) w.remove();
+  }
+
+  function renderAttachStrip() {
+    attachStrip.innerHTML = '';
+    images.forEach((o, i) => {
+      const d = document.createElement('div'); d.className = 'attach-thumb';
+      const img = document.createElement('img'); img.src = o.url;
+      const btn = document.createElement('button'); btn.className = 'attach-remove';
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2l9 9M11 2l-9 9" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+      btn.onclick = () => { images.splice(i, 1); renderAttachStrip(); updateModel(); };
+      d.appendChild(img); d.appendChild(btn); attachStrip.appendChild(d);
+    });
+    updateModel();
+  }
+
+  function showScreenPill(show) {
+    screenPill.style.display = show ? 'flex' : 'none';
+    scrInputBtn.classList.toggle('active', show);
+    scrTopBtn.classList.toggle('active', show);
+    updateModel();
+  }
+
+  document.getElementById('screenRemoveBtn').onclick = () => { screenB64 = null; showScreenPill(false); };
+
+  fileIn.onchange = (e) => {
+    Array.from(e.target.files).forEach(f => {
+      if (!f.type.startsWith('image/')) return;
+      images.push({ url: URL.createObjectURL(f), file: f });
+    });
+    renderAttachStrip(); fileIn.value = '';
+  };
+
+  async function captureScreen() {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { width:{max:1920}, height:{max:1080} } });
+      const vt = stream.getVideoTracks()[0];
+      await new Promise(r => setTimeout(r, 200));
+      let cap;
+      if (typeof ImageCapture !== 'undefined') {
+        const bm = await new ImageCapture(vt).grabFrame();
+        const c = document.createElement('canvas');
+        c.width = bm.width; c.height = bm.height;
+        c.getContext('2d').drawImage(bm, 0, 0);
+        cap = c.toDataURL('image/png');
+      } else {
+        const vid = document.createElement('video');
+        vid.srcObject = stream;
+        await new Promise(r => { vid.onloadedmetadata = r; });
+        vid.play();
+        await new Promise(r => setTimeout(r, 400));
+        const c = document.createElement('canvas');
+        c.width = vid.videoWidth; c.height = vid.videoHeight;
+        c.getContext('2d').drawImage(vid, 0, 0);
+        cap = c.toDataURL('image/png');
+        vid.pause();
+      }
+      stream.getTracks().forEach(t => t.stop());
+      screenB64 = cap; showScreenPill(true);
+    } catch (err) {
+      if (err.name !== 'NotAllowedError') alert('Screen capture failed: ' + err.message);
+    }
+  }
+
+  function addRow(role, text, imgObjs, sc, modelUsed) {
+    hideWelcome(); msgCount++;
+
+    if (role === 'user' && msgCount === 1 && text) {
+      const title = text.length > 36 ? text.slice(0, 36) + '…' : text;
+      convTitle.textContent = title;
+      historyList.innerHTML = `<div class="history-item active">${esc(title)}</div>`;
+    }
+
+    const row = document.createElement('div'); row.className = 'msg-row';
+    const header = document.createElement('div'); header.className = 'msg-header';
+    const avatar = document.createElement('div'); avatar.className = 'msg-avatar';
+
+    if (role === 'user') {
+      avatar.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.3" stroke="currentColor" stroke-width="1.2"/><path d="M1 11.5c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+    } else {
+      avatar.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2.5h8M6 2.5v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 5.5c2.2 0 3-1 3-2s-.8-1.5-3-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="9" cy="9.5" r="1.3" fill="currentColor"/></svg>`;
+    }
+
+    const sender = document.createElement('span'); sender.className = 'msg-sender';
+    sender.textContent = role === 'user' ? 'You' : 'T9 AI';
+    header.appendChild(avatar); header.appendChild(sender);
+
+    if (role === 'ai' && modelUsed) {
+      const tag = document.createElement('span'); tag.className = 'msg-model-tag';
+      const short = modelUsed.includes('scout') ? 'llama-4-scout'
+                  : modelUsed.includes('maverick') ? 'llama-4-maverick'
+                  : modelUsed.replace('meta-llama/', '').split('-').slice(0,3).join('-');
+      tag.textContent = short; header.appendChild(tag);
+    }
+
+    const body = document.createElement('div'); body.className = 'msg-body';
+    if (text) body.innerHTML = esc(text).replace(/\n/g,'<br>');
+    if (imgObjs && imgObjs.length) imgObjs.forEach(o => { const i = document.createElement('img'); i.src = o.url; body.appendChild(i); });
+    if (sc) { const i = document.createElement('img'); i.src = sc; body.appendChild(i); }
+
+    row.appendChild(header); row.appendChild(body);
+    msgsInner.appendChild(row);
+    document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+    return body;
+  }
+
+  function addTyping() {
+    hideWelcome();
+    const row = document.createElement('div'); row.className = 'msg-row'; row.id = 'typing-row';
+    const header = document.createElement('div'); header.className = 'msg-header';
+    const avatar = document.createElement('div'); avatar.className = 'msg-avatar';
+    avatar.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2.5h8M6 2.5v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 5.5c2.2 0 3-1 3-2s-.8-1.5-3-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="9" cy="9.5" r="1.3" fill="currentColor"/></svg>`;
+    const sender = document.createElement('span'); sender.className = 'msg-sender'; sender.textContent = 'T9 AI';
+    header.appendChild(avatar); header.appendChild(sender);
+    const body = document.createElement('div'); body.className = 'msg-body';
+    body.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+    row.appendChild(header); row.appendChild(body);
+    msgsInner.appendChild(row);
+    document.getElementById('msgs').scrollTop = 99999;
+  }
+
+  function removeTyping() { const t = document.getElementById('typing-row'); if (t) t.remove(); }
+
+  function newChat() {
+    msgsInner.innerHTML = '';
+    const w = document.createElement('div'); w.id = 'welcome';
+    w.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;gap:14px;';
+    w.innerHTML = `<div class="welcome-title">Good to see you.</div><div class="welcome-sub">T9 AI routes your message to the right model — vision or language — based on what you send. Use the mic to speak.</div>`;
+    msgsInner.appendChild(w);
+    msgCount = 0; images = []; screenB64 = null;
+    renderAttachStrip(); showScreenPill(false);
+    inp.value = ''; autoResize();
+    convTitle.textContent = 'New conversation';
+    historyList.innerHTML = '<div class="history-item active">New conversation</div>';
+  }
+
+  async function doSend() {
+    const text = inp.value.trim();
+    if (!text && !images.length && !screenB64) return;
+    sendBtn.disabled = true;
+
+    const snapImgs = [...images]; const snapScr = screenB64;
+    addRow('user', text, snapImgs, snapScr, null);
+    inp.value = ''; autoResize();
+    images = []; screenB64 = null;
+    renderAttachStrip(); showScreenPill(false);
+    addTyping();
+
+    try {
+      const fd = new FormData();
+      fd.append('prompt', text || 'Describe and analyze what you see in detail.');
+      snapImgs.forEach((o, idx) => fd.append('images', o.file, o.file.name || `image_${idx}.jpg`));
+      if (snapScr) { const blob = await (await fetch(snapScr)).blob(); fd.append('screenshot', blob, 'screenshot.png'); }
+
+      const res = await fetch(WORKER, { method: 'POST', body: fd });
+      const data = await res.json();
+      removeTyping();
+      if (data.response) addRow('ai', data.response, [], null, data.model_used || '');
+      else addRow('ai', 'Error: ' + (data.error || 'No response.'), [], null, '');
+    } catch (e) {
+      removeTyping();
+      addRow('ai', 'Network error: ' + e.message, [], null, '');
+    }
+
+    sendBtn.disabled = false; updateModel();
+  }
+
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
+  inp.addEventListener('input', autoResize);
+
+  document.getElementById('msgs').addEventListener('dragover', e => e.preventDefault());
+  document.getElementById('msgs').addEventListener('drop', e => {
+    e.preventDefault();
+    Array.from(e.dataTransfer.files).forEach(f => {
+      if (!f.type.startsWith('image/')) return;
+      images.push({ url: URL.createObjectURL(f), file: f });
+    });
+    renderAttachStrip();
+  });
+</script>
+</body>
+</html>
