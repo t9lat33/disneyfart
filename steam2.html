@@ -184,6 +184,10 @@ main{flex:1;overflow-y:auto;background:#1b2838;will-change:scroll-position}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         GN Math
       </div>
+      <div onclick="window.open('lumins.html', '_blank')" class="sidebar-item active" onclick="setCategory(this,'all')" data-cat="all">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        LuminSDK
+      </div>
     </div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section">
@@ -324,7 +328,7 @@ const ARCHIVE_JSON="https://raw.githubusercontent.com/sea-bean-unblocked/for-a-f
 const ARCHIVE_BASES={"{HTML_URL1}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-1/main/","{HTML_URL2}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-2/main/","{HTML_URL3}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-3/main/","{COVER_URL1}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-1/main/","{COVER_URL2}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-2/main/","{COVER_URL3}":"https://raw.githubusercontent.com/sea-bean-unblocked/Folder-3/main/"};
 const GNMATH_SOURCES=[{key:'gnmath',zonesurls:["https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json","https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json"],coverURL:"https://cdn.jsdelivr.net/gh/gn-math/covers@main",htmlURL:"https://cdn.jsdelivr.net/gh/gn-math/html@main"},{key:'freebuisness',zonesurls:["https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json","https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json"],coverURL:"https://cdn.jsdelivr.net/gh/freebuisness/covers@main",htmlURL:"https://cdn.jsdelivr.net/gh/freebuisness/html@main"}];
 
-const T9_SITE="https://t9lat22.github.io";
+const T9_SITE="";
 const T9_GAMES=[
   {name:"Bendy and the Ink Machine",url:"/bendy.html",cover:"bendy.png"},
   {name:"People Playground",url:"/people.html",cover:"people.png"},
