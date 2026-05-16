@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <title>Learnify</title>
 
@@ -46,7 +46,7 @@
   color: white;
   font-size: 45px;
   position: fixed;
-  top: 130px;
+  top: 110px;
   text-align: center;
   text-shadow: 0 0 10px #202020;
   font-family: 'Orbitron', sans-serif;
@@ -58,7 +58,7 @@
 color: white;
   font-size: 25px;
   position: fixed;
-  top: 165px;
+  top: 145px;
   text-align: center;
   text-shadow: 0 0 10px #202020;
   font-family: 'Orbitron', sans-serif;
@@ -75,7 +75,6 @@ color: white;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-      border: 1px solid rgba(34, 34, 34, 0.25);
       border-radius: 50px;
       display: flex;
       flex-direction: row;
@@ -90,6 +89,8 @@ color: white;
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
+                  border: 2px solid gray;
+
 
     }
   .fpscounter {
@@ -100,11 +101,10 @@ color: white;
       min-width: 98px;   
       height: 45px;
          background: linear-gradient(160deg,
-        rgba(15,15,15,0.65),
-        rgba(10,10,10,0.65)
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
       );
-      border: 1px solid rgba(34, 34, 34, 0.25);
-      border-radius: 50px;
+      border-radius: 15px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -118,11 +118,10 @@ color: white;
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
+                  border: 2px solid gray;
 
     }
         .fpscounter:hover {
-      height: 64px;
-      border-radius: 40px;
       border-color: rgba(0, 0, 0, 0.6);
     }
 
@@ -135,6 +134,7 @@ color: white;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
+                  border: 2px solid gray;
     }
 
     .fpscounter:hover::after {
@@ -148,11 +148,11 @@ color: white;
       transform: translateX(-50%);
       height: 56px;
          background: linear-gradient(160deg,
-        rgba(15,15,15,0.65),
-        rgba(10,10,10,0.65)
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
       );
-      border: 1px solid rgba(34, 34, 34, 0.25);
-      border-radius: 50px;
+      border: 2px solid gray;
+      border-radius: 15px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -169,8 +169,6 @@ color: white;
 
     }
         .musicNav:hover {
-      height: 64px;
-      border-radius: 40px;
       border-color: rgba(0, 0, 0, 0.6);
     }
 
@@ -183,6 +181,7 @@ color: white;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
+            border: 2px solid gray;
     }
 
     .musicNav:hover::after {
@@ -197,11 +196,10 @@ color: white;
       transform: translateX(-50%);
       height: 56px;
          background: linear-gradient(160deg,
-        rgba(15,15,15,0.65),
-        rgba(10,10,10,0.65)
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
       );
-      border: 1px solid rgba(34, 34, 34, 0.25);
-      border-radius: 50px;
+      border-radius: 15px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -215,13 +213,12 @@ color: white;
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
+      border:2px solid gray;
 
     }
 
     .navbar:hover {
-      height: 64px;
-      border-radius: 40px;
-      border-color: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgb(57, 57, 57);
     }
 
     .navbar::after {
@@ -233,6 +230,7 @@ color: white;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
+      border:2px solid gray;
     }
 
     .navbar:hover::after {
@@ -351,21 +349,22 @@ color: white;
 
   #hiddenDiv {
     display: none;
-    margin-top: 20px;
+  transform: translateY(-50px);
+  border:2px solid gray;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
-    inset: 0;
     margin:auto;
+    inset:0;
+    top: -45px;
     position: fixed;
     z-index: 1000;
     border-radius:6px; 
-    width:70%;
-    height: 71%; 
+    width:98%;
+    height: 85%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -385,29 +384,33 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     transform: scale(1) translateY(0);
   }
 }
-    #aiDiv {
- display: none;
+#aiDiv {
+display: none;
     margin-top: 20px;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
+    border:2px solid gray;
     border-radius:6px; 
     width:70%;
-    height: 71%; 
+    height: 67%; 
+    right:50px;
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
 box-shadow: 2px #141414;
-animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
+}
 
-  }
+
+
    #terminalDiv {
     display: none;
     margin-top: 20px;
@@ -427,6 +430,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     width:70%;
     height: 71%; 
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -434,21 +438,46 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
   }
    #movieDiv {
   display: none;
-    margin-top: 20px;
+  transform: translateY(-50px);
+    padding: 10px;
+    border:2px solid gray;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:98%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+     #blkDiv {
+  display: none;
+  transform: translateY(-50px);
+  border:2px solid gray;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
     color: white;
-    inset: 0;
     margin:auto;
+    inset:0;
+    top: -45px;
     position: fixed;
     z-index: 1000;
     border-radius:6px; 
-    width:70%;
-    height: 71%; 
+    width:99%;
+    height: 85%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -463,7 +492,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
@@ -479,22 +508,23 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
   }
     #roDiv {
-display: none;
-    margin-top: 20px;
+  display: none;
+  transform: translateY(-50px);
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
-    inset: 0;
     margin:auto;
+    inset:0;
+    top: -45px;
     position: fixed;
     z-index: 1000;
     border-radius:6px; 
-    width:70%;
-    height: 71%; 
+    width:98%;
+    height: 85%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -510,23 +540,30 @@ background: linear-gradient(
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-border: 1px solid rgb(34, 34, 34);   
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:30px; 
-    width:25%;
-    height: 40%; 
+    border-radius:12px; 
+    width:30%;
+    height: 42%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
-      top:155px;
+      top:225px;
       animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
 
   }
+  #t9Div h4 {
+  width: 100%;
+  left: 0;
+  transform: none; /* remove centering trick */
+  text-align: center;
+  border-bottom: 1px solid white;
+}
   #settingsDiv {
     display: none;
     margin-top: 20px;
@@ -536,16 +573,16 @@ box-shadow: 2px #141414;
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-  border: 1px solid rgba(0, 0, 0, 0.5);   
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:20px; 
+    border-radius:12px; 
     opacity:85%; 
-    width:600px;
-    height: 500px; 
+    width:71%;
+    height: 70%; 
     overflow-x: hidden;
     overflow-y: auto;
     animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -563,7 +600,7 @@ backdrop-filter: blur(7px);
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:20px; 
+    border-radius:12px; 
     opacity:85%; 
     width:600px;
     height: 500px; 
@@ -573,22 +610,23 @@ backdrop-filter: blur(7px);
 
   }
     #updateDiv {
+      display:none;
     margin-top: 20px;
     padding: 10px;
  background: linear-gradient(160deg,
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:20px; 
+    border-radius:12px; 
     opacity:85%; 
-    width:600px;
-    height: 500px; 
+    width:70%;
+    height: 71%; 
     overflow-x: hidden;
     overflow-y: auto;
     animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -880,16 +918,28 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 </style>
 </head>
 <body>
+    <style>
+        .nav-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+    </style>
 
 <div id="navbar" class="navbar">
+
+   <a onclick="t9()">
+    <img src="logo.png">
+  </a>
+      <div class="nav-divider"></div>
+
   
   <a onclick="hidden2()">
-    <img src="classwork2.png">
+    <img src="steam2.png">
   </a>
-  
-  <a onclick="www()">
-    <img src="saturn.png">
-  </a>
+
    <a onclick="ai()">
     <img src="chatgpt.png">
   </a>
@@ -903,7 +953,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 
     <a onclick="Chat()">
-    <img src="message.png">
+    <img style="border-radius:35%;" src="discord2.png">
   </a>
   
 
@@ -962,25 +1012,23 @@ border: 1px solid rgba(255, 255, 255, 0.15);
  <h2 style="color:white;   font-family: 'Orbitron', sans-serif; text-align: center; font-size:20px;" id="fpsCounter">FPS:</h2>
 
 <script>
-let lastTime = performance.now();
-let frameCount = 0;
-let fps = 0;
-
-function updateFPS(now) {
-    frameCount++;
-
-    if (now - lastTime >= 1000) {
-        fps = frameCount;
-        frameCount = 0;
-        lastTime = now;
-
-        document.getElementById("fpsCounter").textContent = "FPS: " + fps;
+(function() {
+  var frames = 0, last = performance.now(), smooth = 0;
+  function tick(now) {
+    frames++;
+    var delta = now - last;
+    if (delta >= 1000) {
+      var raw = frames * 1000 / delta;
+      smooth = smooth === 0 ? raw : smooth * 0.8 + raw * 0.2; // smooth out spikes
+      var el = document.getElementById("fpsCounter");
+      if (el) el.textContent = "FPS: " + Math.round(smooth);
+      frames = 0;
+      last = now;
     }
-
-    requestAnimationFrame(updateFPS);
-}
-
-requestAnimationFrame(updateFPS);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
 </script>
 
 </div>
@@ -1032,60 +1080,55 @@ requestAnimationFrame(updateFPS);
 </div>
 
 <div id="updateDiv">
-  <button class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
-  <h1 style="text-align: center">Updates</h1>
-<h1 style="text-align: center;">Version 3.54</h1>
-        <h3 style="text-align: center; color:white;">New update: T9 surf not workin for most of yall so im switching it back to the old UV version so it should work now.</h3>
-                <h3 style="text-align: center; color:white;">New VPS coming this week so i can properly host my own prxy. Also theres a new update coming with UI updates new features and g@ms.</h3>
+    <div style="
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 33px;
+      background: rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid gray;
+    ">
+      <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
+      <h3 style="color:white; margin:0; font-size:15px;">Updates</h3>
+    </div>
 
-                <h3 style="text-align: center; color:white;">New links: t9math.pages.dev, t9-os.b-cdn.net, mathlearn2day.pages.dev</h3>
-                  <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io
-"  target="_blank">make Vercel links</a>
-  <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://app.netlify.com/start/deploy?repository=https%3A%2F%2Fgithub.com%2Ft9lat22%2Ft9lat22.github.io"  target="_blank">make Netlify links</a>
-    <a style="background-color: rgb(0, 0, 0); padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://forms.gle/BSTZQSijox8Dm2nL8"  target="_blank">Give feedback</a>
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px; padding: 50px 20px 20px;">
 
+      <h1 style="color:white;">Version 3.7</h1>
+      <h3 style="color:white;">New update: ui changes, improved ai,cine cloud, live wallpapers, 6k games.</h3>
+      <h3 style="color:white;">New links: join the server for more links!</h3>
 
+      <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <a style="background-color:#000; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io" target="_blank">make Vercel links</a>
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://app.netlify.com/start/deploy?repository=https%3A%2F%2Fgithub.com%2Ft9lat22%2Ft9lat22.github.io" target="_blank">make Netlify links</a>
+        <a style="background-color:#000; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://forms.gle/BSTZQSijox8Dm2nL8" target="_blank">Give feedback</a>
+      </div>
 
+      <h3 style="color:white;">If you would like to help out T9 OS please donate to our Ko-Fi. Thank you!</h3>
 
+      <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://ko-fi.com/t9oss" target="_blank">Donate!</a>
+        <a style="background-color:#7289da; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://discord.gg/yRTtj35HyJ" target="_blank">Join server!</a>
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="ad.html" target="_blank">support T9 OS for free</a>
+      </div>
 
+      <h3 style="color:white;" id="random-text">Fun fact:</h3>
 
+    </div>
 
-
-
-        <h3 style="text-align: center; color:white;">If you would like to help out T9 OS please donate to our Ko-Fi. Thank you!</h3>
-
-
-
-
-
-  <a style="background-color: white; padding:10px 20px; color:black; border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://ko-fi.com/t9oss"  target="_blank">Donate!</a>
-
-    <a style="background-color: 	#7289da; padding:10px 20px; color:rgb(255, 255, 255); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="https://dsc.gg/t9os"  target="_blank">Join server!</a>
-        <a style="background-color: rgb(255, 255, 255); padding:10px 20px; color:rgb(0, 0, 0); border-radius: 10px; text-align: center; font-family: sans-serif; text-decoration: none; " href="ad.html"  target="_blank">support T9 OS for free</a>
-
-
-    
-
-<h3 style="text-align: center;" id="random-text">Fun fact:</h3>
-
-
-  <script>
-        const texts = [
-            'Fun fact: T9 OS got ddosed before, yet they still failed.',
-            'Fun fact: It is said that if you dont join our DC server T9 will haunt you.',
-            'Fun fact: I make little money from T9 OS so a donation would be nice.',
-            'Fun fact: my old DC account got banned and i lost my old server too with 700 members :('
-
-
-        ];
-        document.getElementById("random-text").textContent = texts[Math.floor(Math.random() * texts.length)];
+    <script>
+      const texts = [
+        'Fun fact: T9 OS got ddosed before, yet they still failed.',
+        'Fun fact: It is said that if you dont join our DC server T9 will haunt you.',
+        'Fun fact: I make little money from T9 OS so a donation would be nice.',
+        'Fun fact: my old DC account got banned and i lost my old server too with 700 members :('
+      ];
+      document.getElementById("random-text").textContent = texts[Math.floor(Math.random() * texts.length)];
     </script>
-
-
-        
-       
-
-          
 </div>
 
 
@@ -1098,7 +1141,7 @@ requestAnimationFrame(updateFPS);
 
 
 
-<iframe id="framesearch" src="t9brow.html"></iframe>
+<iframe id="framesearch" src="gim.html"></iframe>
   <style>
     #framesearch{
       width:100%;
@@ -1144,7 +1187,7 @@ requestAnimationFrame(updateFPS);
 
 
 
-<iframe id="framechat" src="chat5.html"></iframe>
+<iframe id="framechat" src="c6.html"></iframe>
   <style>
     #framechat{
       width:100%;
@@ -1154,7 +1197,7 @@ requestAnimationFrame(updateFPS);
       border:none;
       border-radius:0px 0px 15px 15px;
       left:0;
-      border-top: 1px solid rgb(37, 37, 37);
+border-top:2px solid gray;
     }
   
   </style>
@@ -1243,6 +1286,8 @@ requestAnimationFrame(updateFPS);
       border-radius:0px 0px 15px 15px;
       left: 0;
       bottom: 0;
+      border-top:2px solid gray;
+
     }
    
   </style>
@@ -1264,7 +1309,46 @@ requestAnimationFrame(updateFPS);
 </div>
 
 
+<div id="blkDiv">
+  <button class="close-btn" onclick="document.getElementById('blkDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeBLK()">●</button>
 
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Blooket hacks</h3>
+
+
+
+ 
+<iframe id="mframe" class="blkframe" src="blk2.html"></iframe>
+  <style>
+    .blkframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+            border-top: 2px solid gray;
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframeBLK() {
+      let iframe = document.getElementById("blkframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
 
 <script>
   function www(){
@@ -1295,54 +1379,92 @@ requestAnimationFrame(updateFPS);
 </script>
 
 <div id="t9Div">
-  <button class="close-btn2" onclick="document.getElementById('t9Div').style.display = 'none';">●</button>
-      <h4 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >T9's Secret corner</h4>
-
+  <div style="
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  background: rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+        border-bottom: 2px solid gray;
+">
+  <button class="close-btn" onclick="document.getElementById('t9Div').style.display = 'none';" style="position:absolute; left:10px;">●</button>
+  <h3 style="color:white; margin:0; font-size:15px;">Apps</h3>
+</div>
 
   &nbsp;&nbsp;&nbsp;&nbsp; 
   
- <h1 style="text-align: center;">welcome to my secret corner</h1>
- <h2 style="text-align: center;">btw how did u find my secret corner?</h2>
-<h3 style="text-align: center;" id="count">0 people online</h2>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, onDisconnect, set }
-from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+<div style="
+  margin-top: 44px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+">
 
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "chat2-a86b2.firebaseapp.com",
-  databaseURL: "https://chat2-a86b2-default-rtdb.firebaseio.com",
-  projectId: "chat2-a86b2"
-};
+  <div class="app-icon" onclick="closeT9(); hidden3()">
+    <img src="steam2.png" />
+    <span>Games</span>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+  <div class="app-icon" onclick="closeT9(); music()">
+    <img src="spotify.png">
+    <span>Music</span>
+  </div>
 
-const connectionsRef = ref(db, "connections");
-const connectedRef = ref(db, ".info/connected");
+  <div class="app-icon" onclick="closeT9(); movie()">
+    <img src="netflix2.png">
+    <span>Movies</span>
+  </div>
 
-onValue(connectedRef, (snap) => {
-  if (snap.val()) {
-    const myConnection = push(connectionsRef);
-    set(myConnection, true);
-    onDisconnect(myConnection).remove();
+    <div class="app-icon" onclick="closeT9(); settings()">
+    <img src="setting.png">
+    <span>Settings</span>
+  </div>
+   <div class="app-icon" onclick="closeT9(); ro()">
+    <img src="steam.png" style="border-radius: 200%;">
+    <span>Cine Cloud</span>
+  </div>
+<script>
+  function closeT9() {
+    document.getElementById('t9Div').style.display = 'none';
   }
-});
-
-onValue(connectionsRef, (snapshot) => {
-  const data = snapshot.val();
-  const count = data ? Object.keys(data).length : 0;
-  document.getElementById("count").innerText =
-    count + " people online";
-});
 </script>
+</div>
 
+<style>
+  .app-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+    width: 60px;
+  }
 
-<img style="width:75px; height:50px;" src="cat.gif">
-<img style="width:100px; height:75px;" src="please.png">
+  .app-icon:hover {
+    background: rgba(255,255,255,0.1);
+  }
 
+  .app-icon img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-icon span {
+    color: white;
+    font-size: 11px;
+    font-family: sans-serif;
+    text-align: center;
+  }
+</style>
 
 
 
@@ -1418,10 +1540,12 @@ background: linear-gradient(
     position:fixed;
     left:0;
     width:100%;
-    border-radius: 0px 0px 15px 15px;
+    border-radius: 0px 0px 0px 0px;
     display: flex;
     justify-content: center;
     align-items: center;
+    border-bottom:1.5px solid gray;
+
 
     
   }
@@ -1442,6 +1566,108 @@ background: linear-gradient(
 </style>
 
 </div>
+<div onclick="update()" class="notify">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">UPDATES</div>
+    <div class="desc">Check for latest updates</div>
+  </div>
+
+</div>
+
+<div onclick="window.open('https://discord.gg/8sHzTtnUSu', '_blank')" class="notify2">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">JOIN SERVER</div>
+    <div class="desc">Join our server for sneak peaks and link drops!</div>
+  </div>
+
+</div>
+
+
+
+<style>
+
+.notify{
+background-color:rgba(0, 0, 0, 0.61);
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:5%;
+animation: notifyIn 0.35s ease-out;
+
+}
+.notify:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
+.notify2{
+background-color:rgba(0, 0, 0, 0.61);
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:13.5%;
+animation: notifyIn 0.35s ease-out;
+
+}
+.notify2:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
+.ntext{
+display:flex;
+flex-direction:column;
+}
+
+.ntitle{
+font-size:13px;
+font-weight:bold;
+}
+
+.desc{
+font-size:10px;
+opacity:0.7;
+}
+
+@keyframes notifyIn{
+from{
+opacity:0;
+transform: translateX(20px) scale(0.95);
+}
+to{
+opacity:1;
+transform: translateX(0) scale(1);
+}
+}
+</style>
 
 
 <button onclick="t9()" style="position: fixed; bottom:0; right:0; padding:10px 20px; opacity: 0;"></button>
@@ -1457,10 +1683,10 @@ background: linear-gradient(
 <h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
 
  
+ 
 
 
-
-<iframe id="frame2" src="select.html"></iframe>
+<iframe id="frame2" src="steam2.html"></iframe>
   <style>
     #frame2{
       width:100%;
@@ -1472,6 +1698,8 @@ background: linear-gradient(
       left:0;
       border-top: 1px solid rgb(37, 37, 37);
       background-image:url("space2.png");
+      border-top:2px solid gray;
+
     }
     .back {
     background: none;
@@ -1493,7 +1721,7 @@ display: none;
         rgba(15,15,15,0.65),
         rgba(10,10,10,0.65)
       );
-        border: 1px solid rgba(0, 0, 0, 0.5);
+border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
@@ -1535,26 +1763,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
   }
   </style>
 
-  <script>
-let lastTime = performance.now();
-let frameCount = 0;
-let fps = 0;
-
-function trackFPS() {
-  frameCount++;
-  const now = performance.now();
-  const delta = now - lastTime;
-  if (delta >= 1000) { 
-    fps = Math.round((frameCount * 1000) / delta);
-    document.getElementById('fpsCounter').innerText = 'FPS: ' + fps;
-    frameCount = 0;
-    lastTime = now;
-  }
-  requestAnimationFrame(trackFPS);
-}
-
-requestAnimationFrame(trackFPS);
-</script>
+ 
 
   <script>
     function fullscreenIframe() {
@@ -1579,12 +1788,12 @@ requestAnimationFrame(trackFPS);
 
 
 
-<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >GTA: Vice City</h3>
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Cine Cloud</h3>
  
 
 
 
-<iframe id="frameRo" src="play.html"></iframe>
+<iframe id="frameRo" src="entercloud.html"></iframe>
   <style>
     #frameRo{
       width:100%;
@@ -1594,7 +1803,7 @@ requestAnimationFrame(trackFPS);
       border:none;
       border-radius:0px 0px 15px 15px;
       left:0;
-      border-top: 1px solid rgb(37, 37, 37);
+      border-top: 2px solid gray;
     }
   
   </style>
@@ -1645,7 +1854,7 @@ requestAnimationFrame(trackFPS);
       border:none;
       border-radius:0px 0px 15px 15px;
       left:0;
-      border-top: 1px solid rgb(37, 37, 37);
+border-top:2px solid gray;
     }
   
   </style>
@@ -1717,16 +1926,24 @@ requestAnimationFrame(trackFPS);
 
 
 <div id="contextMenu">
-      <div onclick="settings()" class="menu-item">Change Wallpaper</div>
-            <div onclick="openGame()" class="menu-item">about:blank cloak</div>
+      <div onclick="settings()" class="menu-item">
+    <i class="fa-solid fa-image"></i> Change Wallpaper
+  </div>
+  <div onclick="openGame()" class="menu-item">
+    <i class="fa-solid fa-mask"></i> about:blank cloak
+  </div>
 
-    <div class="divider"></div>
+  <div class="divider"></div>
 
-    <div class="menu-item" onclick="hidden2()">Games</div>
-
-    <div class="menu-item" onclick="www()">Browser</div>
-
-    <div onclick="settings()" class="menu-item" >Settings</div>
+  <div class="menu-item" onclick="hidden2()">
+    <i class="fa-solid fa-gamepad"></i> Games
+  </div>
+  <div class="menu-item" onclick="www()">
+    <i class="fa-solid fa-globe"></i> Browser
+  </div>
+  <div onclick="settings()" class="menu-item">
+    <i class="fa-solid fa-gear"></i> Settings
+  </div>
 </div>
 
 <script>
@@ -1775,7 +1992,7 @@ document.addEventListener("click", () => {
 
 
 
-<iframe id="frame5" src="test100.html"></iframe>
+<iframe id="frame5" src="ta2.html"></iframe>
   <style>
     #frame5{
       width:100%;
@@ -1785,7 +2002,7 @@ document.addEventListener("click", () => {
       border:none;
       border-radius:0px 0px 15px 15px;
       left:0;
-      border-top: 1px solid rgb(37, 37, 37);
+      border-top: 2px solid gray;
     }
     .back {
     background: none;
@@ -1956,286 +2173,436 @@ document.getElementById('day').textContent = day;
 
 
 <div id="settingsDiv">
-  <button class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+   <div style="
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 33px;
+  background: rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom:2px solid gray;
 
-  <h1 class="seth">Settings</h1>
-
+">
   
-   <label class="label" for="background-select">Select Background:</label>
-<select id="background-select">
-  <option value="minecraftCozy2.mp4">Default</option>
-                      <option value="abstract.png">T9 Abstract</option>
-                                            <option value="stars3.png">blue space</option>
-                                                                        <option value="silver2.gif">Silver Surfer Live</option>
-                            <option value="silver.jpeg">Silver Surfer</option>
-                          <option value="naruto.png">Naruto</option>
-                  <option value="red.jpg">Red Abstract</option>
-                  <option value="halloween.png">halloween</option>
-
-                  <option value="purplecity2.png">T9 OS city</option>
-
-                <option value="toyota.jpg">Toyota GR supra</option>
-
-              <option value="car.jpeg">Hennessey Venom F5 car</option>
-
-            <option value="goku.jpg">Goku</option>
-
-          <option value="ocean.png">Moonlit Voyage</option>
-
-          <option value="vibes.gif">Synthwave sunset</option>
-
-        <option value="deadpool.gif">Deadpool</option>
-
-  <option value="city.jpg">City</option>
-  <option value="sunset.jpg">Sunset</option>
-  <option value="mountains.jpg">Mountains</option>
-  <option value="tree.jpg">Tropical trees</option>
-  <option value="space.jpg">Space</option>
-    <option value="psky.jpg">Purple sky</option>
-    <option value="abstract.jpg">Abstract</option>
-    <option value="cyberpunk.gif">Cyberpunk</option>
-    <option value="luffy.gif">Luffy Straw hat</option>
-    <option value="tmoon.gif">Samurai Spirit Under the Moon</option>
-      <option value="pbWaves.jpg">Purple Blue Abstract</option>
-
-</select>
-
-<input type="file" id="background-upload" accept="image/*,video/*">
+  <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+    <h3 style="color:white; margin:0; font-size:15px;">Settings</h3>
+</div>
+<h1 style="text-align: center;">Appearances</h1>
 
 
   
-<h2 style="text-align: center;">Appearances</h2>
+ <style>
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 10px 16px 0;
+}
+.wp-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  aspect-ratio: 16/9;
+  background: #111;
+  transition: border-color .15s, transform .15s;
+}
+.wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.25); }
+.wp-card.wp-active { border-color: #1db954; }
+ 
+/* shared styles for both img and video previews */
+.wp-card img,
+.wp-card video {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+}
+.wp-card video {
+  position: absolute; top: 0; left: 0;
+}
+ 
+.wp-card-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 12px 6px 5px;
+  font-size: 10px; color: #fff; font-family: sans-serif;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  z-index: 2;
+}
+.wp-check {
+  position: absolute; top: 5px; right: 5px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #1db954; display: none;
+  align-items: center; justify-content: center;
+  z-index: 3;
+}
+.wp-card.wp-active .wp-check { display: flex; }
+ 
+.wp-upload-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 14px auto 0;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7);
+  border-radius: 8px; padding: 8px 18px;
+  font-size: 12px; cursor: pointer;
+  transition: background .15s;
+}
+.wp-upload-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+ 
+.wp-upload-hint {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,.35);
+  font-family: sans-serif;
+  margin-top: 6px;
+}
+</style>
+ 
+<h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Wallpaper</h3>
+ 
+<div id="wp-grid" class="wp-grid"></div>
+ 
 
-    <label class="label" for="picker">Select theme:</label>
-        <input type="color" id="picker" value="#333333">
+<input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
+ 
+<script>
+(function(){
+  var MAX_BYTES = 50 * 1024 * 1024;
 
-    <a   id="reset" class="round-btn">Reset theme</a>
+  var WALLPAPERS = [
+    { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
+    { name:'Crimson Blind', file:'crimson-blind.mp4', video:true },
+    { name:'Gengar',        file:'gengar.mp4', video:true },
+    { name:'Sasuke rainy night', file:'sasuke.mp4', video:true },
+    { name:'Silver Surfer', file:'silver.jpeg'   },
+    { name:'Locked In',     file:'lockedin.jpg'   },
+    { name:'Naruto',        file:'naruto.png'    },
+    { name:'Goku',          file:'goku.jpg'      }
+  ];
 
+  // Create video element for wallpaper
+  var vid = document.createElement('video');
+  vid.id = '_wp_vid';
+  vid.autoplay = true;
+  vid.loop = true;
+  vid.muted = true;
+  vid.playsInline = true;
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('webkit-playsinline', '');
+  vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+  document.body.prepend(vid);
 
-        <script>
-    // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
+  var current = localStorage.getItem('wp_file') || '';
 
-    // Store each div's original colors when the page opens
-    const originalColors = {};
-    divIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            originalColors[id] = {
-                bg: getComputedStyle(el).backgroundColor,
-                border: getComputedStyle(el).borderColor
-            };
-        }
-    });
+  function applyWP(file, isVideo) {
+    // Reset video
+    vid.pause();
+    vid.removeAttribute('src');
+    vid.load();
+    vid.style.display = 'none';
 
-    // Store original text shadows for time and battery
-    const timeEl = document.getElementById('time');
-    const batteryEl = document.getElementById('batteryPercentage');
-    const originalTextShadows = {
-        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
-        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
-    };
+    // Reset body background
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundPosition = '';
+    document.body.style.backgroundRepeat = '';
+    document.body.style.backgroundAttachment = '';
 
-    // 1. Load saved progress from LocalStorage
-    window.addEventListener('load', () => {
-        const savedColor = localStorage.getItem('userColor');
-        if (savedColor) {
-            divIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.backgroundColor = savedColor;
-                    el.style.borderColor = savedColor;
-                }
-            });
-            
-            // Apply saved color to text shadows
-            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
-            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
-            
-            document.getElementById('picker').value = savedColor;
-        }
-    });
-
-    // 2. Change color for the list of divs
-    document.getElementById('picker').addEventListener('input', function() {
-        const newColor = this.value;
-
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.backgroundColor = newColor;
-                el.style.borderColor = newColor;
-            }
-        });
-
-        // Update text shadows for time and battery
-        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
-        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
-
-        localStorage.setItem('userColor', newColor);
-    });
-
-    // 3. Reset to "Normal" (Each div returns to its own original color)
-    document.getElementById('reset').addEventListener('click', () => {
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el && originalColors[id]) {
-                el.style.backgroundColor = originalColors[id].bg;
-                el.style.borderColor = originalColors[id].border;
-            }
-        });
-
-        // Reset text shadows to original
-        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
-        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
-
-        localStorage.removeItem('userColor');
-    });
-</script>
-
- <script>
-    // Load saved position on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      const navbar = document.querySelector('.navbar');
-      const savedPosition = localStorage.getItem('navbarPosition');
-      
-      if (savedPosition === 'sidebar') {
-        navbar.classList.add('sidebar');
-      }
-    });
-
-    function toggleNavbar() {
-      const navbar = document.querySelector('.navbar');
-      navbar.classList.toggle('sidebar');
-      
-      // Save the current position
-      if (navbar.classList.contains('sidebar')) {
-        localStorage.setItem('navbarPosition', 'sidebar');
-      } else {
-        localStorage.setItem('navbarPosition', 'dock');
-      }
+    if (isVideo && file) {
+      vid.style.display = 'block';
+      vid.src = file;
+      vid.load();
+      vid.play().catch(function(err) {
+        // Autoplay was prevented, add click handler to start
+        var playOnce = function() {
+          vid.play().catch(function(){});
+          document.removeEventListener('click', playOnce);
+          document.removeEventListener('keydown', playOnce);
+        };
+        document.addEventListener('click', playOnce);
+        document.addEventListener('keydown', playOnce);
+      });
+    } else if (file) {
+      document.body.style.backgroundImage = 'url("' + file + '")';
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
     }
-  </script>
 
-   <label class="label" for="preset">Select Tab Cloak:</label>
+    current = file;
 
- <select style="padding:10px 20px; border-radius:10px; font-family: sans-serif; text-align: center;" id="preset">
-    <option value="default">Default (T9 OS)</option>
-    <option value="google">Google</option>
-    <option value="classroom">Google Classroom</option>
-    <option value="vocab">Vocabulary.com</option>
-  </select>
-</div> 
+    try {
+      localStorage.setItem('wp_file', file);
+      localStorage.setItem('wp_video', isVideo ? '1' : '0');
+      localStorage.setItem('selectedBackground', file);
+      localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+    } catch(e) {}
 
-
-
-
-        <script>
-    // List of div IDs
-    const divIds = ['aiDiv', 'hiddenDiv', 'settingsDiv', 'widgetDiv', 'musicDiv', 'searchDiv', 'emulatorDiv', 'hacksDiv', 'movieDiv', 'terminalDiv', 'ChatDiv', 'updateDiv', 'collabDiv', 'tnav', 'navbar', 'roDiv', 'calcDiv', 'wwwDiv', 'fpsDiv', 'musicNav', 'contextMenu'];
-
-    // Store each div's original colors when the page opens
-    const originalColors = {};
-    divIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            originalColors[id] = {
-                bg: getComputedStyle(el).backgroundColor,
-                border: getComputedStyle(el).borderColor
-            };
-        }
+    // Update active state on cards
+    document.querySelectorAll('.wp-card').forEach(function(c){
+      c.classList.toggle('wp-active', c.dataset.file === file);
     });
+  }
 
-    // Store original text shadows for time and battery
-    const timeEl = document.getElementById('time');
-    const batteryEl = document.getElementById('batteryPercentage');
-    const originalTextShadows = {
-        time: timeEl ? getComputedStyle(timeEl).textShadow : 'none',
-        battery: batteryEl ? getComputedStyle(batteryEl).textShadow : 'none'
-    };
+  function buildGrid(list) {
+    var grid = document.getElementById('wp-grid');
+    if (!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
+  }
 
-    // 1. Load saved progress from LocalStorage
-    window.addEventListener('load', () => {
-        const savedColor = localStorage.getItem('userColor');
-        if (savedColor) {
-            divIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.backgroundColor = savedColor;
-                    el.style.borderColor = savedColor;
-                }
-            });
-            
-            // Apply saved color to text shadows
-            if (timeEl) timeEl.style.textShadow = `0 0 10px ${savedColor}`;
-            if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${savedColor}`;
-            
-            document.getElementById('picker').value = savedColor;
-        }
-    });
+  function addCard(grid, name, file, isVideo) {
+    var card = document.createElement('div');
+    card.className = 'wp-card' + (file === current ? ' wp-active' : '');
+    card.dataset.file = file;
+    card.onclick = function(){ applyWP(file, isVideo); };
 
-    // 2. Change color for the list of divs
-    document.getElementById('picker').addEventListener('input', function() {
-        const newColor = this.value;
+    var chk = document.createElement('div');
+    chk.className = 'wp-check';
+    chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.backgroundColor = newColor;
-                el.style.borderColor = newColor;
-            }
-        });
-
-        // Update text shadows for time and battery
-        if (timeEl) timeEl.style.textShadow = `0 0 10px ${newColor}`;
-        if (batteryEl) batteryEl.style.textShadow = `0 0 10px ${newColor}`;
-
-        localStorage.setItem('userColor', newColor);
-    });
-
-    // 3. Reset to "Normal" (Each div returns to its own original color)
-    document.getElementById('reset').addEventListener('click', () => {
-        divIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el && originalColors[id]) {
-                el.style.backgroundColor = originalColors[id].bg;
-                el.style.borderColor = originalColors[id].border;
-            }
-        });
-
-        // Reset text shadows to original
-        if (timeEl) timeEl.style.textShadow = originalTextShadows.time;
-        if (batteryEl) batteryEl.style.textShadow = originalTextShadows.battery;
-
-        localStorage.removeItem('userColor');
-    });
-</script>
-
- <script>
-    // Load saved position on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      const navbar = document.querySelector('.navbar');
-      const savedPosition = localStorage.getItem('navbarPosition');
-      
-      if (savedPosition === 'sidebar') {
-        navbar.classList.add('sidebar');
-      }
-    });
-
-    function toggleNavbar() {
-      const navbar = document.querySelector('.navbar');
-      navbar.classList.toggle('sidebar');
-      
-      // Save the current position
-      if (navbar.classList.contains('sidebar')) {
-        localStorage.setItem('navbarPosition', 'sidebar');
-      } else {
-        localStorage.setItem('navbarPosition', 'dock');
-      }
+    if (isVideo) {
+      var prev = document.createElement('video');
+      prev.src = file;
+      prev.muted = true;
+      prev.loop = true;
+      prev.playsInline = true;
+      prev.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;';
+      card.appendChild(prev);
+      card.addEventListener('mouseenter', function(){ prev.play().catch(function(){}); });
+      card.addEventListener('mouseleave', function(){ prev.pause(); });
+      if (file === current) { prev.play().catch(function(){}); }
+    } else {
+      var img = document.createElement('img');
+      img.src = file;
+      img.alt = name;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      img.onerror = function(){
+        this.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">' + name + '</text></svg>'
+        );
+      };
+      card.appendChild(img);
     }
-  </script>
 
-  
+    var lbl = document.createElement('div');
+    lbl.className = 'wp-card-label';
+    lbl.textContent = name + (isVideo ? ' ▶' : '');
+
+    card.appendChild(chk);
+    card.appendChild(lbl);
+    grid.appendChild(card);
+  }
+
+  // Build grid when settings opens
+  var settingsEl = document.getElementById('settingsDiv');
+  if (settingsEl) {
+    new MutationObserver(function(mutations){
+      mutations.forEach(function(m){
+        if (m.target.style.display === 'block') {
+          buildGrid(WALLPAPERS);
+        }
+      });
+    }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
+  }
+
+// File upload handler
+  document.getElementById('wp-upload').onchange = async function() {
+    var f = this.files[0]; if (!f) return;
+
+    if (f.size > MAX_BYTES) {
+      alert('⚠️ File too large — max 50 MB');
+      this.value = '';
+      return;
+    }
+
+    var isVid = f.type.startsWith('video/');
+    var url = URL.createObjectURL(f);
+    
+    applyWP(url, isVid);
+    
+    // Add to grid
+    var grid = document.getElementById('wp-grid');
+    if (grid) {
+      var old = grid.querySelector('[data-file^="blob:"]');
+      if (old) old.remove();
+      addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, isVid);
+    }
+
+    this.value = '';
+  };
+
+  // Restore wallpaper on load
+  function restore() {
+  var savedFile = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'crimson-blind.mp4';
+var savedType = localStorage.getItem('backgroundType') || 'image';
+    
+    if (savedFile && savedType === 'video') {
+      applyWP(savedFile, true);
+    } else if (savedFile) {
+      applyWP(savedFile, false);
+    }
+  }
+
+  restore();
+})();
+</script>
+ 
+  <h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Panic Key</h3>
+
+<div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:10px;">
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">Key:</label>
+    <input id="panicKeyInput" type="text" maxlength="1" placeholder="e.g. Escape"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:180px;"
+      readonly
+      onkeydown="event.preventDefault(); this.value = event.key === ' ' ? 'Space' : event.key; localStorage.setItem('panicKey', event.key);"
+    />
+    <span style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif;">press any key</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">URL:</label>
+    <input id="panicUrlInput" type="text" placeholder="https://google.com"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:260px;"
+      oninput="localStorage.setItem('panicUrl', this.value)"
+    />
+  </div>
+
+  <div style="display:flex; gap:10px;">
+    <button onclick="testPanic()"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Test
+    </button>
+    <button onclick="clearPanic()"
+      style="background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.4); border-radius:8px;
+             color:#ff6b6b; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Clear
+    </button>
+  </div>
+
+  <p id="panicStatus" style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif; margin:0;"></p>
+
+</div>
+
+<script>
+  (function() {
+    const keyInput = document.getElementById('panicKeyInput');
+    const urlInput = document.getElementById('panicUrlInput');
+
+    const savedKey = localStorage.getItem('panicKey');
+    const savedUrl = localStorage.getItem('panicUrl');
+    if (savedKey) keyInput.value = savedKey === ' ' ? 'Space' : savedKey;
+    if (savedUrl) urlInput.value = savedUrl;
+  })();
+
+  function doPanic() {
+    const panicUrl = localStorage.getItem('panicUrl');
+    if (!panicUrl) return;
+    window.location.replace(panicUrl);
+  }
+
+// Main page listener - captures everything including inputs
+  document.addEventListener('keydown', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.target === document.getElementById('panicKeyInput')) return;
+    if (e.key === panicKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      doPanic();
+    }
+  }, true);
+
+  // Listen for keypress forwarded from iframes
+  window.addEventListener('message', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.data && e.data.type === 'panicKey' && e.data.key === panicKey) {
+      doPanic();
+    }
+  });
+
+  // Inject forwarder script into every iframe
+  function injectPanicIntoIframe(iframe) {
+    try {
+      const script = iframe.contentDocument.createElement('script');
+      script.textContent = `
+        document.addEventListener('keydown', function(e) {
+          try {
+            window.top.postMessage({ type: 'panicKey', key: e.key }, '*');
+          } catch(err) {}
+        }, true);
+      `;
+      iframe.contentDocument.head.appendChild(script);
+    } catch(err) {
+      // cross-origin iframes can't be injected, use postMessage fallback below
+    }
+  }
+
+  // Inject into all current iframes and watch for new ones
+  function injectAll() {
+    document.querySelectorAll('iframe').forEach(injectPanicIntoIframe);
+  }
+
+  // Re-inject when iframes load or change src
+  document.querySelectorAll('iframe').forEach(function(iframe) {
+    iframe.addEventListener('load', function() {
+      injectPanicIntoIframe(iframe);
+    });
+  });
+
+  new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      m.addedNodes.forEach(function(node) {
+        if (node.tagName === 'IFRAME') {
+          node.addEventListener('load', function() {
+            injectPanicIntoIframe(node);
+          });
+        }
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+
+  // Run on page ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectAll);
+  } else {
+    injectAll();
+  }
+
+  function testPanic() {
+    const url = localStorage.getItem('panicUrl');
+    const key = localStorage.getItem('panicKey');
+    const status = document.getElementById('panicStatus');
+    if (!url || !key) {
+      status.textContent = 'Set both a key and URL first.';
+      status.style.color = '#ff6b6b';
+      return;
+    }
+    status.textContent = 'Works! Press ' + (key === ' ' ? 'Space' : key) + ' anywhere to panic.';
+    status.style.color = '#1db954';
+  }
+
+  function clearPanic() {
+    localStorage.removeItem('panicKey');
+    localStorage.removeItem('panicUrl');
+    document.getElementById('panicKeyInput').value = '';
+    document.getElementById('panicUrlInput').value = '';
+    document.getElementById('panicStatus').textContent = 'Cleared.';
+    document.getElementById('panicStatus').style.color = 'rgba(255,255,255,0.4)';
+  }
+</script>
 </div>
 <style>
    .round-btn {
@@ -2282,15 +2649,15 @@ document.getElementById('day').textContent = day;
 
 
 </style> </div> <div 
-onclick="window.open('https://dsc.gg/t9network', '_blank')" class="icon" style="left:100px; top:120px;"> <img src="discord2.png"> <span>dsc.gg/t9network</span> </div>
+onclick="blk()" class="icon" style="left:100px; top:120px;"> <img style="border-radius:35%;" src="blk2.png" style="border-radius:20%; "> <span>Blooket hacks</span> </div>
 
-<div onclick="settings()" class="icon" style="left:100px; top:220px;"> 
-  <img src="setting.png" alt="settings"> 
+<div onclick="settings()" class="icon" style="left:100px; top:220px; "> 
+  <img src="setting.png" alt="settings" style="border-radius:20%; "> 
   <span>Settings</span> </div> 
 
   <div onclick="ro()" class="icon" style="left:100px; top:320px;"> 
-    <img src="gtavc.png"> 
-    <span>GTA: Vice City</span> </div> 
+    <img src="steam.png" style="border-radius:200%; ">
+    <span>Cine Cloud</span> </div> 
 
 
 
@@ -2392,14 +2759,15 @@ document.addEventListener('selectstart', e => e.preventDefault());
 <script>
   const presetSelect = document.getElementById("preset");
 
-  window.addEventListener("DOMContentLoaded", () => {
-    localStorage.removeItem("bg"); // clean up legacy key
-    presetSelect.value = localStorage.getItem("cloak_preset") || "default";
-  });
-
-  presetSelect.addEventListener("change", () => {
-    localStorage.setItem("cloak_preset", presetSelect.value);
-    console.log("✅ Preset saved:", presetSelect.value);
+  document.addEventListener("DOMContentLoaded", () => {
+    localStorage.removeItem("bg");
+    var presetSelect = document.getElementById("preset");
+    if (presetSelect) {
+      presetSelect.value = localStorage.getItem("cloak_preset") || "default";
+      presetSelect.addEventListener("change", function() {
+        localStorage.setItem("cloak_preset", presetSelect.value);
+      });
+    }
   });
 </script>
 
@@ -2553,7 +2921,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
-
+<script>
+  function blk(){
+    const div = document.getElementById('blkDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
 
 <script>
   function settings(){
@@ -2564,6 +2937,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
 <script>
   function hidden2(){
     const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function update(){
+    const div = document.getElementById('updateDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
   }
 </script>
@@ -2684,333 +3063,14 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("background-select");
-  const upload = document.getElementById("background-upload");
-  const body = document.body;
+
   
-  // Create FRESH video element
-  const videoBackground = document.createElement("video");
-  videoBackground.id = "video-background";
-  videoBackground.autoplay = true;
-  videoBackground.loop = true;
-  videoBackground.muted = true;
-  videoBackground.playsInline = true;
-  videoBackground.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -9999 !important;
-    pointer-events: none;
-    display: none;
-  `;
-  document.body.insertBefore(videoBackground, document.body.firstChild);
+  
 
-  // ========== INDEXEDDB FOR LARGE VIDEO STORAGE ==========
-  const DB_NAME = 'BackgroundStorage';
-  const STORE_NAME = 'media';
-  let db = null;
-
-  function openDatabase() {
-    return new Promise((resolve, reject) => {
-      if (db && db.name === DB_NAME) {
-        resolve(db);
-        return;
-      }
-      
-      const request = indexedDB.open(DB_NAME, 1);
-      
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        db = request.result;
-        resolve(db);
-      };
-      
-      request.onupgradeneeded = (event) => {
-        const database = event.target.result;
-        if (!database.objectStoreNames.contains(STORE_NAME)) {
-          database.createObjectStore(STORE_NAME);
-        }
-      };
-    });
-  }
-
-  async function saveToIndexedDB(key, data) {
-    const database = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const transaction = database.transaction([STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.put(data, key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async function loadFromIndexedDB(key) {
-    const database = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const transaction = database.transaction([STORE_NAME], 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(key);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async function deleteFromIndexedDB(key) {
-    const database = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const transaction = database.transaction([STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.delete(key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  // Apply background (supports images and videos)
-  function setBackground(src, type = 'image', isBlob = false, blobData = null) {
-    const videoBg = document.getElementById("video-background");
-    
-    // 🚨 CRITICAL FIX: Remove ALL existing video elements first
-    document.querySelectorAll('video[style*="fixed"]').forEach(v => {
-      if (v.id !== "video-background") {
-        v.pause();
-        v.removeAttribute('src');
-        v.load();
-        v.remove();
-      }
-    });
-    
-    // FORCE stop and hide the main video
-    if (videoBg) {
-      videoBg.pause();
-      videoBg.removeAttribute('src');
-      videoBg.load();
-      videoBg.style.display = 'none';
-    }
-    
-    // Clear any image background
-    body.style.backgroundImage = 'none';
-    body.style.background = 'none';
-    body.style.backgroundColor = 'transparent';
-    
-    if (type === 'video' && videoBg) {
-      let videoUrl = src;
-      if (isBlob && blobData) {
-        const blob = new Blob([blobData], { type: blobData.type || 'video/mp4' });
-        videoUrl = URL.createObjectURL(blob);
-      }
-      
-      // Set video background
-      videoBg.src = videoUrl;
-      videoBg.style.display = 'block';
-      videoBg.load();
-      
-      // Wait for video to load before playing
-      videoBg.onloadeddata = () => {
-        videoBg.play().catch(e => console.log('Video play failed:', e));
-      };
-      
-      localStorage.setItem("backgroundType", "video");
-      localStorage.setItem("hasVideoInIndexedDB", isBlob ? "true" : "false");
-      if (!isBlob) {
-        localStorage.setItem("selectedBackground", src);
-      }
-      localStorage.removeItem("hasLargeImageInIndexedDB");
-    } else if (type === 'image') {
-      // Set image background DIRECTLY
-      body.style.backgroundImage = `url(${src})`;
-      body.style.backgroundSize = 'cover';
-      body.style.backgroundPosition = 'center';
-      body.style.backgroundRepeat = 'no-repeat';
-      body.style.backgroundAttachment = 'fixed';
-      
-      localStorage.setItem("backgroundType", "image");
-      if (src) {
-        if (src.length > 500000) {
-          localStorage.setItem("hasLargeImageInIndexedDB", "true");
-        } else {
-          localStorage.setItem("selectedBackground", src);
-          localStorage.removeItem("hasLargeImageInIndexedDB");
-        }
-      } else {
-        localStorage.removeItem("selectedBackground");
-        localStorage.removeItem("hasLargeImageInIndexedDB");
-      }
-      localStorage.removeItem("hasVideoInIndexedDB");
-    }
-  }
-
-  // Load saved background on startup
-  async function loadSavedBackground() {
-    const savedType = localStorage.getItem("backgroundType") || 'video';
-    const hasVideo = localStorage.getItem("hasVideoInIndexedDB") === 'true';
-    const hasLargeImage = localStorage.getItem("hasLargeImageInIndexedDB") === 'true';
-    const savedBg = localStorage.getItem("selectedBackground") || "minecraftCozy2.mp4";
-    
-    if (savedType === 'video') {
-      if (hasVideo) {
-        try {
-          const videoData = await loadFromIndexedDB('savedVideo');
-          if (videoData && videoData.data) {
-            setBackground('', 'video', true, videoData.data);
-          }
-        } catch (err) {
-          console.error('Failed to load video from IndexedDB:', err);
-          setBackground(savedBg, 'video');
-        }
-      } else {
-        setBackground(savedBg, 'video');
-      }
-    } else if (savedType === 'image') {
-      if (hasLargeImage) {
-        try {
-          const imageData = await loadFromIndexedDB('savedImage');
-          if (imageData && imageData.data) {
-            const blob = new Blob([imageData.data], { type: imageData.type || 'image/jpeg' });
-            const url = URL.createObjectURL(blob);
-            setBackground(url, 'image');
-          }
-        } catch (err) {
-          console.error('Failed to load image from IndexedDB:', err);
-        }
-      } else if (savedBg) {
-        setBackground(savedBg, 'image');
-      }
-    }
-  }
-
-  // Upload custom background (image or video)
-  upload.addEventListener("change", async () => {
-    const file = upload.files[0];
-    if (!file) return;
-
-    const fileType = file.type;
-    
-    if (fileType.startsWith('video/')) {
-      const loadingMsg = document.createElement('div');
-      loadingMsg.textContent = 'Saving video...';
-      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:99999;';
-      document.body.appendChild(loadingMsg);
-      
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        await saveToIndexedDB('savedVideo', {
-          data: arrayBuffer,
-          type: fileType,
-          name: file.name,
-          size: file.size
-        });
-        await deleteFromIndexedDB('savedImage');
-        localStorage.removeItem("selectedBackground");
-        localStorage.removeItem("hasLargeImageInIndexedDB");
-        setBackground('', 'video', true, arrayBuffer);
-        localStorage.setItem("backgroundType", "video");
-        localStorage.setItem("hasVideoInIndexedDB", "true");
-        select.value = "";
-        loadingMsg.textContent = '✓ Video saved!';
-        setTimeout(() => loadingMsg.remove(), 1500);
-      } catch (err) {
-        loadingMsg.textContent = '✗ Failed';
-        setTimeout(() => loadingMsg.remove(), 2000);
-      }
-    } else if (fileType.startsWith('image/')) {
-      const loadingMsg = document.createElement('div');
-      loadingMsg.textContent = 'Saving image...';
-      loadingMsg.style.cssText = 'position:fixed; bottom:20px; left:20px; background:black; color:white; padding:10px; border-radius:5px; z-index:99999;';
-      document.body.appendChild(loadingMsg);
-      
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        if (file.size > 500000) {
-          await saveToIndexedDB('savedImage', {
-            data: arrayBuffer,
-            type: fileType,
-            name: file.name,
-            size: file.size
-          });
-          localStorage.setItem("hasLargeImageInIndexedDB", "true");
-          localStorage.removeItem("selectedBackground");
-          const blob = new Blob([arrayBuffer], { type: fileType });
-          const url = URL.createObjectURL(blob);
-          setBackground(url, 'image');
-        } else {
-          const reader = new FileReader();
-          const dataUrl = await new Promise((resolve) => {
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(file);
-          });
-          setBackground(dataUrl, 'image');
-          localStorage.removeItem("hasLargeImageInIndexedDB");
-          await deleteFromIndexedDB('savedImage');
-        }
-        localStorage.setItem("backgroundType", "image");
-        localStorage.removeItem("hasVideoInIndexedDB");
-        await deleteFromIndexedDB('savedVideo');
-        select.value = "";
-        loadingMsg.textContent = '✓ Image saved!';
-        setTimeout(() => loadingMsg.remove(), 1500);
-      } catch (err) {
-        loadingMsg.textContent = '✗ Failed';
-        setTimeout(() => loadingMsg.remove(), 2000);
-      }
-    }
-  });
-
-  // Dropdown change
-  select.addEventListener("change", async () => {
-    const value = select.value;
-    if (value) {
-      const isVideo = value.match(/\.(mp4|webm|mov|ogg|ogv|avi|mkv)$/i);
-      const type = isVideo ? 'video' : 'image';
-      await setBackground(value, type);
-      localStorage.setItem("backgroundType", type);
-      if (type === 'video') {
-        localStorage.setItem("hasVideoInIndexedDB", "false");
-        localStorage.setItem("selectedBackground", value);
-      } else {
-        localStorage.setItem("selectedBackground", value);
-      }
-      localStorage.removeItem("hasLargeImageInIndexedDB");
-      await deleteFromIndexedDB('savedVideo');
-      await deleteFromIndexedDB('savedImage');
-    }
-  });
-
-  // Load saved background on startup
-  loadSavedBackground();
-});
+  
 </script>
 
-<style>
-/* Ensure proper layering */
-body {
-  position: relative;
-  min-height: 100vh;
-}
 
-/* Optional: Add a semi-transparent overlay for better text readability */
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.15);
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Style for the upload input to accept video files */
-#background-upload {
-  /* Add accept attribute in HTML: accept="image/*,video/*" */
-}
-</style>
 
 <script>
   const btn = document.getElementById("toggleBTN");
@@ -3165,7 +3225,7 @@ body::after {
     }
   }
 </style>
-<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">V3.51</p>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">V3.7</p>
 <p style="color:#acacac; position: fixed; bottom: -3px; left: 100px; opacity: 0.6;" id="myId">ID: <span id="idValue"></span></p>
 
 
@@ -3255,7 +3315,7 @@ body::after {
         const currentID = localStorage.getItem(ID_KEY);
         if (currentID !== myID) originalSetItem.call(localStorage, ID_KEY, myID);
         if (isLocked) lockScreen();
-      }, 100);
+      }, 2000);
 
       const bannedRef = db.ref("bannedIDs");
       bannedRef.on("value", (snapshot) => {
@@ -3322,6 +3382,7 @@ document.getElementById("movieDiv"),
 document.getElementById("roDiv"),
 document.getElementById("settingsDiv"),
 document.getElementById("calcDiv"),
+document.getElementById("blkDiv"),
 document.getElementById("wwwDiv"),
 
 
@@ -3500,46 +3561,16 @@ window.addEventListener("blur",stopAll);
   
   const originalSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
-    if (key.includes('icon') || key.includes('theme') || key.includes('background')) {
-      localStorageQueue.set(key, value);
-      
-      if (saveTimeout) clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        localStorageQueue.forEach((val, k) => {
-          originalSetItem(k, val);
-        });
-        localStorageQueue.clear();
-      }, 300);
-    } else {
-      originalSetItem(key, value);
-    }
+    originalSetItem(key, value);
   };
 
   // ============================================
   // 3. OPTIMIZE IFRAMES
   // ============================================
   
-  function optimizeIframes() {
-    document.querySelectorAll('iframe').forEach(iframe => {
-      const parent = iframe.closest('[id$="Div"]');
-      if (!parent) return;
-      
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          try {
-            iframe.contentWindow?.postMessage(
-              { type: entry.isIntersecting ? 'resume' : 'pause' }, '*'
-            );
-          } catch(e) {}
-        });
-      }, { threshold: 0.01 });
-      
-      observer.observe(parent);
-    });
-  }
   
-  optimizeIframes();
-  setInterval(optimizeIframes, 5000);
+  
+  
 
   // ============================================
   // 4. BATCH DOM UPDATES
@@ -3584,15 +3615,6 @@ window.addEventListener("blur",stopAll);
   // 7. PASSIVE EVENTS
   // ============================================
   
-  const passiveEvents = ['scroll','touchstart','touchmove','wheel'];
-  const origAdd = EventTarget.prototype.addEventListener;
-  
-  EventTarget.prototype.addEventListener = function(type, listener, options) {
-    if (passiveEvents.includes(type)) {
-      options = typeof options === 'object' ? {...options, passive:true} : {passive:true};
-    }
-    return origAdd.call(this,type,listener,options);
-  };
 
   // ============================================
   // 8. NOTIFICATION OPTIMIZATION
@@ -3662,21 +3684,12 @@ window.addEventListener("blur",stopAll);
   // 12. FPS COUNTER
   // ============================================
   
-  const fps=document.getElementById('fpsCounter');
-  if(fps&&window.trackFPS){
-    let last=0;
-    const orig=window.trackFPS;
-    window.trackFPS=function(){
-      const now=performance.now();
-      if(now-last>500){orig();last=now;}
-    };
-  }
+ 
 
   // ============================================
   // 13. MEMORY OBSERVER
   // ============================================
   
-  new MutationObserver(()=>{}).observe(document.body,{childList:true,subtree:true});
 
   // ============================================
   // 14. GPU ACCELERATION (NAVBAR EXCLUDED)
@@ -3726,7 +3739,7 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv'];
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
@@ -3766,6 +3779,7 @@ function hacks(){ openDiv('hacksDiv'); }
 function emulator(){ openDiv('emulatorDiv'); }
 function collab(){ openDiv('collabDiv'); }
 function sound(){ openDiv('soundDiv'); }
+function sound(){ openDiv('blkDiv'); }
 function admin(){ openDiv('adminDiv'); }
 </script>
 
@@ -3779,8 +3793,7 @@ function admin(){ openDiv('adminDiv'); }
 
   gtag('config', 'G-NEXJFPJPCP');
 </script>
-  <script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-5b49fd63.js"></script>
-
+<script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-5b49fd63.js"></script>
 
 </body>
 
