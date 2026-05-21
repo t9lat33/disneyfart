@@ -1,0 +1,1358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="./ghost.js"></script>
+  <script src="/uv/uv.bundle.js"></script>
+  <script src="/uv/uv.config.js"></script>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="./index.config.js"></script>
+  <script src="./surf/baremux/index.js"></script>
+  <script src="./surf/scram/scramjet.all.js"></script>
+  <title>T9</title>
+  <meta name="title" content="T9" />
+  <meta name="description" content="a modern web proxy browser" />
+  <script>
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      location.replace(`https://${location.host}${location.pathname}${location.search}${location.hash}`);
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:       #080808;
+      --bg2:      #0f0f0f;
+      --surface:  #141414;
+      --surface2: #1c1c1c;
+      --border:   rgba(255,255,255,0.07);
+      --border-hi:rgba(255,255,255,0.13);
+      --border-focus:rgba(255,255,255,0.35);
+      --text:     #efefef;
+      --text-dim: #888;
+      --text-muted:#444;
+      --white:    #fff;
+      --r-xs: 3px;
+      --r-sm: 5px;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    #browser { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── Chrome ── */
+    #chrome {
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 100;
+    }
+
+    /* ── Tab strip ── */
+    #tab-strip {
+      display: flex;
+      align-items: flex-end;
+      height: 36px;
+      padding: 0 8px;
+      gap: 1px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--border);
+    }
+    #tab-strip::-webkit-scrollbar { display: none; }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      min-width: 100px;
+      max-width: 200px;
+      padding: 0 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: var(--r-sm) var(--r-sm) 0 0;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11.5px;
+      font-weight: 400;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      letter-spacing: 0.01em;
+      position: relative;
+      bottom: -1px;
+    }
+    .tab:hover { color: var(--text-dim); background: var(--surface); }
+    .tab.active {
+      background: var(--bg);
+      border-color: var(--border);
+      border-bottom-color: var(--bg);
+      color: var(--text);
+    }
+
+    .tab-fav { width: 13px; height: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .tab-fav img { width: 13px; height: 13px; object-fit: contain; border-radius: 2px; }
+    .tab-fav svg { opacity: 0.4; }
+    .tab.active .tab-fav svg { opacity: 0.6; }
+    .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+    .tab-x {
+      flex-shrink: 0;
+      width: 14px; height: 14px;
+      border-radius: var(--r-xs);
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 0;
+      opacity: 0;
+      transition: background 0.1s, color 0.1s, opacity 0.15s;
+    }
+    .tab:hover .tab-x, .tab.active .tab-x { opacity: 1; }
+    .tab-x:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    #btn-newtab {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      margin-bottom: 2px;
+      border-radius: var(--r-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    #btn-newtab:hover { background: var(--surface); color: var(--text); }
+
+    /* ── Nav bar ── */
+    #nav-bar {
+      display: flex;
+      align-items: center;
+      height: 44px;
+      padding: 0 8px;
+      gap: 2px;
+    }
+
+    .nav-btn {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      border-radius: var(--r-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, color 0.1s;
+    }
+    .nav-btn:hover:not(:disabled) { background: var(--surface); color: var(--text); }
+    .nav-btn:disabled { opacity: 0.2; cursor: default; }
+    .nav-btn:active:not(:disabled) { background: var(--surface2); }
+
+    #brand {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      padding: 0 6px;
+      flex-shrink: 0;
+      color: var(--text-dim);
+      user-select: none;
+    }
+
+    /* ── WISP status ── */
+    #wisp-status {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      padding: 3px 7px;
+      border-radius: var(--r-xs);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #wisp-status.show { opacity: 1; pointer-events: auto; }
+    #wisp-status .ws-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); }
+    #wisp-status.ok .ws-dot  { background: #5a5; }
+    #wisp-status.err .ws-dot { background: #a44; }
+    #wisp-status.checking .ws-dot { background: #888; animation: blink 0.7s infinite; }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── URL bar ── */
+    #url-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      height: 32px;
+      padding: 0 5px 0 10px;
+      gap: 6px;
+      transition: border-color 0.2s, background 0.2s;
+      min-width: 0;
+      cursor: text;
+      margin: 0 4px;
+    }
+    #url-bar:focus-within {
+      border-color: var(--border-focus);
+      background: var(--bg2);
+    }
+
+    #url-scheme {
+      font-size: 9.5px;
+      font-family: 'IBM Plex Mono', monospace;
+      flex-shrink: 0;
+      padding: 2px 5px;
+      border-radius: var(--r-xs);
+      background: rgba(255,255,255,0.05);
+      color: #6a6;
+      border: 1px solid rgba(255,255,255,0.06);
+      letter-spacing: 0.03em;
+      display: none;
+    }
+    #url-scheme.visible { display: block; }
+    #url-scheme.insecure { color: #a55; }
+
+    #url-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 400;
+      outline: none;
+      letter-spacing: 0.01em;
+      min-width: 0;
+    }
+    #url-input::placeholder { color: var(--text-muted); font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; }
+
+    #url-go {
+      width: 24px; height: 24px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+      padding: 0;
+    }
+    #url-go:hover { background: var(--surface2); color: var(--text); border-color: var(--border-hi); }
+
+    .side-btn {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, color 0.1s;
+    }
+    .side-btn:hover { background: var(--surface); color: var(--text); }
+    .side-btn.starred { color: var(--white); }
+
+    /* ── Content area ── */
+    #content { flex: 1; position: relative; overflow: hidden; background: var(--bg); }
+
+    #proxy-frame {
+      position: absolute; inset: 0;
+      border: none; display: none;
+      width: 100%; height: 100%;
+    }
+
+    /* ── Progress bar ── */
+    #prog { position: absolute; top: 0; left: 0; right: 0; height: 1px; pointer-events: none; z-index: 200; }
+    #prog-bar {
+      height: 100%; width: 0; opacity: 0;
+      background: var(--text-dim);
+      transition: opacity 0.3s;
+    }
+    #prog-bar.loading { opacity: 1; animation: progAnim 1.6s ease infinite; }
+    @keyframes progAnim {
+      0%   { width: 0%; }
+      60%  { width: 80%; }
+      100% { width: 80%; }
+    }
+
+    /* ── Error page ── */
+    #error-page {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px;
+      z-index: 50;
+    }
+    #error-page.visible { display: flex; }
+    .err-icon { opacity: 0.2; }
+    .err-title { font-size: 18px; font-weight: 500; color: var(--text); letter-spacing: -0.02em; }
+    .err-msg {
+      font-size: 12px; color: var(--text-muted); text-align: center;
+      max-width: 400px; line-height: 1.7;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .err-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .err-btn {
+      padding: 7px 14px; border-radius: var(--r-sm);
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-dim); font-size: 12px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 400; cursor: pointer;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+    }
+    .err-btn:hover { background: var(--surface2); border-color: var(--border-hi); color: var(--text); }
+    .err-btn.primary { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .err-btn.primary:hover { background: var(--surface2); border-color: rgba(255,255,255,0.3); }
+    .err-code {
+      font-size: 9.5px; color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-xs); padding: 3px 9px; letter-spacing: 0.06em;
+    }
+
+    /* ── New tab ── */
+    #newtab {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      gap: 0;
+    }
+    #newtab::-webkit-scrollbar { display: none; }
+
+    #nt-clock-wrap {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.5s ease both;
+    }
+    #nt-clock {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 64px; font-weight: 300;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #nt-date {
+      font-size: 10px; color: var(--text-muted);
+      letter-spacing: 0.2em; text-transform: uppercase;
+      margin-top: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    #nt-logo-wrap {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s 0.06s ease both;
+    }
+    #nt-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 48px; font-weight: 300;
+      color: var(--text);
+      letter-spacing: 0.1em;
+      user-select: none; line-height: 1;
+    }
+    #nt-tag {
+      font-size: 9px; color: var(--text-muted);
+      letter-spacing: 0.3em; text-transform: uppercase;
+      margin-top: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── New tab search ── */
+    #nt-search-wrap {
+      width: 520px; max-width: 94vw;
+      margin-bottom: 24px;
+      animation: fadeUp 0.5s 0.12s ease both;
+      position: relative;
+    }
+    #nt-sw {
+      display: flex; align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      height: 46px; padding: 0 6px 0 14px; gap: 8px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    #nt-sw:focus-within {
+      border-color: var(--border-focus);
+      background: var(--bg2);
+    }
+
+    #se-toggle {
+      flex-shrink: 0; width: 28px; height: 28px;
+      border-radius: var(--r-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500; letter-spacing: 0.05em;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+      user-select: none;
+    }
+    #se-toggle:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: var(--border-hi); }
+
+    #nt-s {
+      flex: 1; border: none; background: transparent;
+      font-size: 13.5px; color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 400; outline: none;
+      letter-spacing: 0.01em; min-width: 0;
+    }
+    #nt-s::placeholder { color: var(--text-muted); }
+
+    #nt-go {
+      flex-shrink: 0; height: 32px; padding: 0 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-hi);
+      background: var(--surface2);
+      color: var(--text); font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500; letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    #nt-go:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    #nt-go:active { background: rgba(255,255,255,0.06); }
+
+    /* ── Quick shortcuts ── */
+    .nt-section { width: 520px; max-width: 94vw; animation: fadeUp 0.5s 0.18s ease both; }
+    .nt-lbl {
+      font-size: 9px; color: var(--text-muted);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-bottom: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    #nt-sc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .sc {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 14px 8px 12px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .sc:hover { background: var(--surface2); border-color: var(--border-hi); }
+    .sc-i {
+      width: 32px; height: 32px;
+      border-radius: var(--r-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      color: var(--text-dim);
+    }
+    .sc-i img { width: 18px; height: 18px; object-fit: contain; }
+    .sc-n { font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.02em; font-weight: 400; text-align: center; }
+
+    /* ── Recently closed ── */
+    #rc-sec { margin-top: 14px; animation: fadeUp 0.5s 0.22s ease both; }
+    .rc {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+      margin-bottom: 4px;
+    }
+    .rc:hover { background: var(--surface2); border-color: var(--border-hi); }
+    .rc-fav { width: 14px; height: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+    .rc-fav img { width: 14px; height: 14px; object-fit: contain; border-radius: 2px; }
+    .rc-url { flex: 1; font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'IBM Plex Mono', monospace; }
+    .rc-lbl { font-size: 9px; color: var(--text-muted); flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── Omnibox ── */
+    #omni {
+      position: fixed; z-index: 9999; display: none;
+      background: rgba(14,14,14,0.97);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--r-lg); padding: 4px;
+      min-width: 420px; max-width: 560px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.8);
+      top: 88px; left: 50%; transform: translateX(-50%);
+      animation: omniIn 0.12s ease;
+    }
+    @keyframes omniIn { from { opacity:0; transform:translateX(-50%) translateY(-6px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+    .or {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: var(--r-sm);
+      cursor: pointer; color: var(--text-dim);
+      transition: background 0.08s, color 0.08s;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 12.5px;
+    }
+    .or:hover, .or.sel { background: var(--surface); color: var(--text); }
+    .or-icon { width: 20px; text-align: center; flex-shrink: 0; color: var(--text-muted); }
+    .or-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ob {
+      font-size: 9px; padding: 2px 6px;
+      border-radius: var(--r-xs);
+      background: var(--surface2); color: var(--text-muted);
+      letter-spacing: 0.08em; flex-shrink: 0;
+      font-family: 'IBM Plex Mono', monospace;
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+
+    /* ── Dropdowns ── */
+    .chrome-dropdown {
+      position: fixed; z-index: 9999; display: none;
+      background: rgba(14,14,14,0.97);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--r-md); padding: 4px;
+      min-width: 170px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+      font-size: 12.5px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      animation: dropIn 0.12s ease;
+    }
+    @keyframes dropIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .drop-section-label {
+      font-size: 9px; color: var(--text-muted);
+      letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 6px 10px 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .drop-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: var(--r-sm);
+      cursor: pointer; color: var(--text-dim);
+      transition: background 0.08s, color 0.08s;
+    }
+    .drop-item:hover { background: var(--surface); color: var(--text); }
+    .drop-item.active { color: var(--white); }
+    .drop-item.active::after { content: ''; position: absolute; right: 10px; width: 4px; height: 4px; border-radius: 50%; background: var(--white); }
+    .drop-item-icon { width: 18px; text-align: center; flex-shrink: 0; }
+    .drop-divider { height: 1px; background: var(--border); margin: 3px 6px; }
+
+    /* SE dropdown inside search bar */
+    #se-dropdown {
+      position: absolute; z-index: 9999; display: none;
+      background: rgba(14,14,14,0.97);
+      border: 1px solid var(--border-hi); border-radius: var(--r-md);
+      padding: 4px; min-width: 200px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+      top: calc(100% + 6px); left: 0;
+      animation: dropIn 0.12s ease;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 12.5px;
+    }
+    #se-dropdown .drop-section-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase; padding: 6px 10px 4px; font-family: 'IBM Plex Mono', monospace; }
+    #se-dropdown .se-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; color: var(--text-dim); transition: background 0.08s, color 0.08s; position: relative; }
+    #se-dropdown .se-item:hover { background: var(--surface); color: var(--text); }
+    #se-dropdown .se-item.active { color: var(--white); }
+    #se-dropdown .se-item.active::after { content: ''; position: absolute; right: 10px; width: 4px; height: 4px; border-radius: 50%; background: var(--white); }
+    #se-dropdown .se-abbr { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xs); padding: 1px 5px; flex-shrink: 0; }
+    #se-dropdown .se-name { font-size: 12.5px; }
+
+    /* SE dropdown chrome variant */
+    #se-dropdown-chrome .se-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; color: var(--text-dim); transition: background 0.08s, color 0.08s; position: relative; }
+    #se-dropdown-chrome .se-item:hover { background: var(--surface); color: var(--text); }
+    #se-dropdown-chrome .se-item.active { color: var(--white); }
+    #se-dropdown-chrome .se-abbr { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-xs); padding: 1px 5px; flex-shrink: 0; }
+
+    /* ── Chrome badge ── */
+    .chrome-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-radius: var(--r-xs);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 4px;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+      user-select: none;
+    }
+    .chrome-badge:hover { background: var(--surface); border-color: var(--border-hi); color: var(--text-dim); }
+    .chrome-badge .badge-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+    .chrome-badge .badge-dot.ok { background: #5a5; }
+    .chrome-badge .badge-dot.err { background: #a44; }
+
+    /* ── Utilities ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+    #proxy-loading, #proxy-watermark, #terminal-shell { display: none !important; }
+
+    /* ── Video / wallpaper ── */
+    #video-background { position: fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-2; pointer-events:none; display:none; }
+
+    /* ── Toast ── */
+    #wp-toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20000;
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: var(--r-sm); padding: 8px 16px;
+      font-size: 12px; font-family: 'IBM Plex Sans', sans-serif; color: var(--text-dim);
+      display: none; align-items: center; gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      white-space: nowrap;
+    }
+    #wp-toast.show { display: flex; }
+    #wp-toast .toast-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+    #wp-toast .toast-dot.success { background: #5a5; }
+    #wp-toast .toast-dot.error   { background: #a44; }
+  </style>
+</head>
+
+<body>
+  <video id="video-background" autoplay loop muted playsinline></video>
+  <input id="background-upload" type="file" accept="image/*,video/*" style="display:none" />
+
+  <div id="proxy-shell" style="display:none">
+    <div id="proxy-loading"></div>
+    <div id="proxy-watermark"><pre class="watermark-logo" id="watermark-logo"></pre><div class="watermark-hint"></div></div>
+  </div>
+  <div id="terminal-shell" style="display:none"></div>
+
+  <div id="browser">
+    <div id="chrome">
+      <div id="tab-strip">
+        <button id="btn-newtab" title="New tab (Ctrl+T)" onclick="B.addTab()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div id="nav-bar">
+        <button class="nav-btn" id="btn-back" title="Back (Alt+Left)" onclick="B.back()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7L9 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="nav-btn" id="btn-fwd" title="Forward (Alt+Right)" onclick="B.fwd()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="nav-btn" id="btn-reload" title="Reload (Ctrl+R)" onclick="B.reload()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7A5 5 0 1 0 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 1.5V4.5H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="nav-btn" id="btn-home" title="Home" onclick="B.home()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 5.5L7 1.5L12.5 5.5V12C12.5 12.28 12.28 12.5 12 12.5H2C1.72 12.5 1.5 12.28 1.5 12V5.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div id="brand">T9</div>
+
+        <div id="wisp-status" title="WISP server status">
+          <span class="ws-dot"></span>
+          <span id="wisp-label">WISP</span>
+        </div>
+
+        <div class="chrome-badge" id="badge-se" onclick="B.toggleSeDropdownChrome(event)" title="Search engine">
+          <span class="badge-dot ok" id="se-badge-dot"></span>
+          <span id="se-name-badge">DDG</span>
+          <svg width="7" height="5" viewBox="0 0 7 5" fill="none"><path d="M1 1l2.5 2.5L6 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+
+        <div id="url-bar" onclick="B.focusUrl()">
+          <span id="url-scheme"></span>
+          <input id="url-input" type="text" placeholder="Search or enter a URL…"
+            autocomplete="off" spellcheck="false"
+            onfocus="B.onFocus()" onblur="B.onBlur()"
+            oninput="B.onInput(this.value)"
+            onkeydown="B.onKey(event)" />
+          <button id="url-go" onclick="B.navigate(document.getElementById('url-input').value)" title="Go">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <button class="side-btn" id="btn-star" title="Bookmark" onclick="B.star()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" id="star-icon"><path d="M7 1.5l1.5 3.2 3.5.5-2.5 2.5.6 3.5L7 9.5l-3.1 1.7.6-3.5L2 5.2l3.5-.5L7 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="side-btn" title="Menu" onclick="B.menu(event)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="11" r="1" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="content">
+      <div id="prog"><div id="prog-bar"></div></div>
+
+      <iframe id="proxy-frame" title="T9 Proxy"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-modals"></iframe>
+
+      <div id="error-page">
+        <div class="err-icon" id="err-icon">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M22 8L40 36H4L22 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 20V27" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="31.5" r="1.3" fill="currentColor"/></svg>
+        </div>
+        <div class="err-title" id="err-title">Connection failed</div>
+        <div class="err-msg" id="err-msg">Could not connect to the proxy server.</div>
+        <div class="err-actions">
+          <button class="err-btn primary" onclick="B.retryLoad()">Retry</button>
+          <button class="err-btn" onclick="B.home()">New tab</button>
+        </div>
+        <div class="err-code" id="err-code">ERR_CONNECTION_FAILED</div>
+      </div>
+
+      <div id="newtab">
+        <div id="nt-clock-wrap">
+          <div id="nt-clock"></div>
+          <div id="nt-date"></div>
+        </div>
+
+        <div id="nt-logo-wrap">
+          <div id="nt-logo">T9</div>
+          <div id="nt-tag">browser</div>
+        </div>
+
+        <div class="nt-section" id="nt-search-wrap">
+          <div id="nt-sw">
+            <button id="se-toggle" title="Change search engine" onclick="B.toggleSeDropdownNT(event)">
+              <span id="se-abbr-nt">DDG</span>
+            </button>
+            <input id="nt-s" type="text" placeholder="Search or type a URL…"
+              autocomplete="off" spellcheck="false"
+              onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
+            <button id="nt-go" onclick="B.navigate(document.getElementById('nt-s').value)">GO</button>
+          </div>
+          <div id="se-dropdown"></div>
+        </div>
+
+        <div class="nt-section" id="nt-sc-section">
+          <div class="nt-lbl">Quick access</div>
+          <div id="nt-sc"></div>
+        </div>
+
+        <div class="nt-section" id="rc-sec" style="display:none">
+          <div class="nt-lbl" style="margin-top:14px">Recently closed</div>
+          <div id="nt-rc"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="omni"></div>
+  <div class="chrome-dropdown" id="se-dropdown-chrome"></div>
+
+  <div id="wp-toast"><span class="toast-dot" id="toast-dot"></span><span id="toast-msg">Saving…</span></div>
+
+  <script>
+    /* ────────────────────────────────────────────────────────── */
+    /* SVG icon helpers                                           */
+    /* ────────────────────────────────────────────────────────── */
+    const IC = {
+      globe: `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 1.5C6.5 1.5 4.5 3.5 4.5 6.5C4.5 9.5 6.5 11.5 6.5 11.5" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 1.5C6.5 1.5 8.5 3.5 8.5 6.5C8.5 9.5 6.5 11.5 6.5 11.5" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 6.5H11.5" stroke="currentColor" stroke-width="1.1"/></svg>`,
+      close:`<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+      link: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M5 3.5H3C2.4 3.5 2 3.9 2 4.5V9C2 9.6 2.4 10 3 10H7.5C8.1 10 8.5 9.6 8.5 9V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 2H10V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 2L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+      search:`<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9 9L11.5 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+      play:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 2L11 6.5L3 11V2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`,
+      code:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.5 4L2 6.5L4.5 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 4L11 6.5L8.5 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      user:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 12C1.5 9.5 3.7 7.5 6.5 7.5C9.3 7.5 11.5 9.5 11.5 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+      bolt:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M7.5 1.5L2.5 7.5H6.5L5.5 11.5L10.5 5.5H6.5L7.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+      chat:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2H11C11.6 2 12 2.4 12 3V8C12 8.6 11.6 9 11 9H4L1.5 11.5V3C1.5 2.4 1.9 2 2.5 2H2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+      book:  `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 2.5H8.5C9.1 2.5 9.5 2.9 9.5 3.5V10.5C9.5 11.1 9.1 11.5 8.5 11.5H2.5V2.5Z" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 4H11V12H4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    };
+
+    /* ────────────────────────────────────────────────────────── */
+    /* Search engines                                             */
+    /* ────────────────────────────────────────────────────────── */
+    const SEARCH_ENGINES = {
+      duckduckgo: { name:'DuckDuckGo', short:'DDG', url:'https://duckduckgo.com/?q=' },
+      google:     { name:'Google',     short:'GGL', url:'https://www.google.com/search?q=' },
+      bing:       { name:'Bing',       short:'BNG', url:'https://www.bing.com/search?q=' },
+      brave:      { name:'Brave',      short:'BRV', url:'https://search.brave.com/search?q=' },
+      startpage:  { name:'Startpage',  short:'SPG', url:'https://www.startpage.com/sp/search?query=' },
+    };
+
+    /* ────────────────────────────────────────────────────────── */
+    /* Quick shortcuts                                            */
+    /* ────────────────────────────────────────────────────────── */
+    const SHORTCUTS = [
+      { label:'Google',    url:'https://google.com',    icon:'search' },
+      { label:'YouTube',   url:'https://youtube.com',   icon:'play'   },
+      { label:'Reddit',    url:'https://reddit.com',    icon:'chat'   },
+      { label:'GitHub',    url:'https://github.com',    icon:'code'   },
+      { label:'Wikipedia', url:'https://wikipedia.org', icon:'book'   },
+    ];
+
+    /* ────────────────────────────────────────────────────────── */
+    /* Known blocked sites                                        */
+    /* ────────────────────────────────────────────────────────── */
+    const BLOCKED_HOSTS = [
+      'play.geforcenow.com','geforcenow.com',
+      'netflix.com','hulu.com','disneyplus.com',
+    ];
+    function isKnownBlocked(url) {
+      try {
+        const h = new URL(url).hostname.replace(/^www\./, '');
+        return BLOCKED_HOSTS.some(b => h === b || h.endsWith('.'+b));
+      } catch { return false; }
+    }
+
+    /* ────────────────────────────────────────────────────────── */
+    /* Main browser object                                        */
+    /* ────────────────────────────────────────────────────────── */
+    const B = (() => {
+      let tabs   = [mkTab()];
+      let cur    = 0;
+      let recent = [];
+      let omniIdx = -1;
+      let _progTimer;
+      let _lastLoadedUrl = null;
+      let currentSearch  = localStorage.getItem('t9_search') || 'duckduckgo';
+
+      /* ── WISP ── */
+      const wispUrl = 'wss://wisp.rhw.one/wisp/';
+      let wispAlive = null;
+
+      function checkWisp(timeout = 4000) {
+        return new Promise(resolve => {
+          setWispStatus('checking');
+          let done = false;
+          const finish = ok => {
+            if (done) return;
+            done = true;
+            wispAlive = ok;
+            setWispStatus(ok ? 'ok' : 'err');
+            resolve(ok);
+          };
+          try {
+            const ws = new WebSocket(wispUrl);
+            ws.onopen  = () => { ws.close(); finish(true); };
+            ws.onerror = () => finish(false);
+            ws.onclose = e => { if (!done) finish(e.code !== 1000 && e.code !== 1001 ? false : true); };
+            setTimeout(() => finish(false), timeout);
+          } catch { finish(false); }
+        });
+      }
+
+      function setWispStatus(state) {
+        const el  = document.getElementById('wisp-status');
+        const dot = el.querySelector('.ws-dot');
+        const lbl = document.getElementById('wisp-label');
+        el.className = 'show ' + state;
+        dot.className = 'ws-dot ' + state;
+        lbl.textContent = state === 'checking' ? 'WISP…' : state === 'ok' ? 'WISP' : 'WISP ✕';
+        if (state === 'ok') setTimeout(() => { if (wispAlive) el.classList.remove('show'); }, 2500);
+      }
+
+      /* ── Tab helpers ── */
+      function mkTab(url, title) {
+        return { url:url||'', title:title||'New tab', fav:null, hist:url?[url]:[], hidx:url?0:-1 };
+      }
+      function ct() { return tabs[cur]; }
+      function getFav(url) {
+        try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; }
+        catch { return null; }
+      }
+      function resolveUrl(raw) {
+        raw = (raw||'').trim();
+        if (!raw) return null;
+        if (/^https?:\/\//i.test(raw)) return raw;
+        if (/^[a-z][a-z0-9+\-.]*:\/\//i.test(raw)) return raw;
+        if (/^localhost(:\d+)?(\/|$)/.test(raw)) return 'http://'+raw;
+        if (raw.includes('.') && !raw.includes(' ')) return 'https://'+raw;
+        return SEARCH_ENGINES[currentSearch].url + encodeURIComponent(raw);
+      }
+
+      /* ── Clock ── */
+      function tick() {
+        const n = new Date();
+        const c = document.getElementById('nt-clock');
+        const d = document.getElementById('nt-date');
+        if (c) c.textContent = n.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        if (d) d.textContent = n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+      }
+      setInterval(tick, 1000); tick();
+
+      /* ── Build shortcuts ── */
+      function buildShortcuts() {
+        const el = document.getElementById('nt-sc');
+        el.innerHTML = SHORTCUTS.map(s =>
+          `<div class="sc" onclick="B.navigate('${esc(s.url)}')">
+            <div class="sc-i">${IC[s.icon]||IC.globe}</div>
+            <div class="sc-n">${esc(s.label)}</div>
+          </div>`
+        ).join('');
+      }
+
+      /* ── Tabs ── */
+      function renderTabs() {
+        const strip = document.getElementById('tab-strip');
+        const add   = document.getElementById('btn-newtab');
+        strip.querySelectorAll('.tab').forEach(el => el.remove());
+        tabs.forEach((t, i) => {
+          const d = document.createElement('div');
+          d.className = 'tab' + (i===cur?' active':'');
+          const favHtml = t.fav
+            ? `<img src="${esc(t.fav)}" alt="" onerror="this.style.display='none'">`
+            : IC.globe;
+          d.innerHTML = `<span class="tab-fav">${favHtml}</span><span class="tab-title">${esc(t.title)}</span><button class="tab-x" title="Close">${IC.close}</button>`;
+          d.onclick = () => { if (cur!==i) { cur=i; sync(); } };
+          d.querySelector('.tab-x').onclick = e => { e.stopPropagation(); closeTab(i); };
+          strip.insertBefore(d, add);
+        });
+        document.getElementById('btn-back').disabled   = ct().hidx <= 0;
+        document.getElementById('btn-fwd').disabled    = ct().hidx >= ct().hist.length-1;
+      }
+
+      function sync() {
+        const t = ct();
+        document.getElementById('url-input').value = t.url;
+        setScheme(t.url);
+        renderTabs();
+        hideError();
+        if (t.url) { showFrame(); doLoad(t.url, false); }
+        else { showNew(); }
+      }
+
+      function addTab(url, title) {
+        tabs.push(mkTab(url, title));
+        cur = tabs.length-1;
+        sync();
+        if (!url) setTimeout(() => document.getElementById('nt-s').focus(), 50);
+      }
+
+      function closeTab(i) {
+        const t = tabs[i];
+        if (t.url) {
+          recent.unshift({ url:t.url, title:t.title, fav:t.fav });
+          if (recent.length>6) recent.pop();
+          renderRecent();
+        }
+        if (tabs.length===1) { tabs=[mkTab()]; cur=0; sync(); return; }
+        tabs.splice(i,1);
+        if (cur>=tabs.length) cur=tabs.length-1;
+        sync();
+      }
+
+      function renderRecent() {
+        const sec  = document.getElementById('rc-sec');
+        const list = document.getElementById('nt-rc');
+        if (!recent.length) { sec.style.display='none'; return; }
+        sec.style.display='';
+        list.innerHTML = recent.map(r => {
+          const favHtml = r.fav
+            ? `<img src="${esc(r.fav)}" alt="" onerror="this.style.display='none'">`
+            : IC.globe;
+          return `<div class="rc" onclick="B.navigate('${esc(r.url)}')">
+            <span class="rc-fav">${favHtml}</span>
+            <span class="rc-url">${esc(r.url)}</span>
+            <span class="rc-lbl">closed</span>
+          </div>`;
+        }).join('');
+      }
+
+      /* ── Navigation ── */
+      function navigate(raw, pushHist=true) {
+        const url = resolveUrl(raw);
+        if (!url) return;
+
+        if (isKnownBlocked(url)) {
+          showError(
+            'blocked',
+            'Site blocks proxies',
+            `${new URL(url).hostname} actively rejects proxy connections.`,
+            'ERR_PROXY_BLOCKED'
+          );
+          const t = ct();
+          t.url=url; t.title=new URL(url).hostname; t.fav=getFav(url);
+          document.getElementById('url-input').value = url;
+          setScheme(url); renderTabs(); _lastLoadedUrl=url; stopProg();
+          return;
+        }
+
+        const t = ct();
+        if (pushHist) {
+          t.hist = t.hist.slice(0, t.hidx+1);
+          t.hist.push(url);
+          t.hidx = t.hist.length-1;
+        }
+        t.url=url; t.fav=getFav(url);
+        try { t.title=new URL(url).hostname; } catch { t.title=url; }
+        document.getElementById('url-input').value = url;
+        setScheme(url);
+        renderTabs();
+        hideError();
+        showFrame();
+        _lastLoadedUrl=url;
+        doLoad(url, pushHist);
+        hideOmni();
+      }
+
+      function doLoad(url) {
+        startProg();
+        hideError();
+        const frame = document.getElementById('proxy-frame');
+
+        if (wispAlive===false) {
+          stopProg();
+          showError('warn','WISP server unreachable',
+            `Cannot connect to ${wispUrl}. The relay may be offline.`,
+            'ERR_WISP_OFFLINE');
+          return;
+        }
+
+        if (typeof openInFrame==='function') {
+          openInFrame(url);
+        } else {
+          let waited=0;
+          const iv = setInterval(()=>{
+            waited+=100;
+            if (typeof openInFrame==='function') {
+              clearInterval(iv); openInFrame(url);
+            } else if (waited>=3000) {
+              clearInterval(iv); stopProg();
+              showError('warn','Scramjet not ready',
+                'The service worker failed to initialize. Try reloading.','ERR_SW_TIMEOUT');
+            }
+          },100);
+        }
+
+        frame.onload = () => { stopProg(); tryUpdateTitle(); };
+
+        const loadTimeout = setTimeout(() => { stopProg(); }, 15000);
+        frame.onload = () => { clearTimeout(loadTimeout); stopProg(); tryUpdateTitle(); };
+      }
+
+      function tryUpdateTitle() {
+        try {
+          const title = document.getElementById('proxy-frame').contentDocument?.title;
+          if (title) { ct().title=title; renderTabs(); }
+        } catch {}
+      }
+
+      function retryLoad() {
+        if (_lastLoadedUrl) { hideError(); navigate(_lastLoadedUrl,false); }
+        else { home(); }
+      }
+
+      /* ── History ── */
+      function back() {
+        const t=ct();
+        if (t.hidx>0) {
+          t.hidx--; const url=t.hist[t.hidx];
+          t.url=url; t.fav=getFav(url);
+          document.getElementById('url-input').value=url;
+          setScheme(url); renderTabs(); hideError();
+          _lastLoadedUrl=url; doLoad(url,false);
+        }
+      }
+      function fwd() {
+        const t=ct();
+        if (t.hidx<t.hist.length-1) {
+          t.hidx++; const url=t.hist[t.hidx];
+          t.url=url; t.fav=getFav(url);
+          document.getElementById('url-input').value=url;
+          setScheme(url); renderTabs(); hideError();
+          _lastLoadedUrl=url; doLoad(url,false);
+        }
+      }
+      function reload() { if (ct().url) { hideError(); startProg(); doLoad(ct().url,false); } }
+      function home() {
+        if (typeof goHome==='function') goHome();
+        ct().url=''; ct().title='New tab'; ct().fav=null;
+        document.getElementById('url-input').value='';
+        setScheme(''); renderTabs(); hideError(); showNew();
+        setTimeout(()=>document.getElementById('nt-s').focus(),50);
+      }
+
+      /* ── Views ── */
+      function showFrame() {
+        document.getElementById('proxy-frame').style.display='block';
+        document.getElementById('newtab').style.display='none';
+        document.getElementById('error-page').classList.remove('visible');
+      }
+      function showNew() {
+        document.getElementById('proxy-frame').style.display='none';
+        document.getElementById('newtab').style.display='flex';
+        document.getElementById('error-page').classList.remove('visible');
+      }
+
+      const ERR_ICONS = {
+        warn:    `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M22 8L40 36H4L22 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 20V27" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="31.5" r="1.3" fill="currentColor"/></svg>`,
+        blocked: `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="15" stroke="currentColor" stroke-width="1.5"/><path d="M12 12L32 32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        offline: `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M10 34L34 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 18C11 12 17 9 22 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3"/><path d="M28 10C33 12 38 16 41 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="22" cy="36" r="2" fill="currentColor"/></svg>`,
+      };
+
+      function showError(type, title, msg, code) {
+        document.getElementById('proxy-frame').style.display='none';
+        document.getElementById('newtab').style.display='none';
+        document.getElementById('err-icon').innerHTML  = ERR_ICONS[type]||ERR_ICONS.warn;
+        document.getElementById('err-title').textContent = title||'Something went wrong';
+        document.getElementById('err-msg').textContent   = msg||'';
+        document.getElementById('err-code').textContent  = code||'';
+        document.getElementById('error-page').classList.add('visible');
+      }
+      function hideError() {
+        document.getElementById('error-page').classList.remove('visible');
+      }
+
+      /* ── URL bar ── */
+      function focusUrl() { document.getElementById('url-input').select(); }
+      function setScheme(url) {
+        const el = document.getElementById('url-scheme');
+        if (!url) { el.textContent=''; el.classList.remove('visible','insecure'); return; }
+        try {
+          const u=new URL(url);
+          if (u.protocol==='https:') { el.textContent='https'; el.className='visible'; }
+          else { el.textContent=u.protocol.replace(':',''); el.className='visible insecure'; }
+        } catch { el.textContent=''; el.classList.remove('visible','insecure'); }
+      }
+      function onFocus() { setTimeout(()=>document.getElementById('url-input').select(),0); }
+      function onBlur()  { hideOmni(); }
+      function onInput(val) { setScheme(val); buildOmni(val); }
+      function onKey(e) {
+        const rows=document.querySelectorAll('#omni .or');
+        if (e.key==='ArrowDown')       { e.preventDefault(); omniIdx=Math.min(omniIdx+1,rows.length-1); hilite(); }
+        else if (e.key==='ArrowUp')    { e.preventDefault(); omniIdx=Math.max(omniIdx-1,0); hilite(); }
+        else if (e.key==='Enter')      { if (omniIdx>=0&&rows[omniIdx]) rows[omniIdx].click(); else navigate(e.target.value); hideOmni(); }
+        else if (e.key==='Escape')     { hideOmni(); e.target.blur(); }
+      }
+
+      /* ── Omnibox ── */
+      const QUICK = [
+        { label:'google.com',    icon:'search' },
+        { label:'youtube.com',   icon:'play'   },
+        { label:'reddit.com',    icon:'chat'   },
+        { label:'github.com',    icon:'code'   },
+        { label:'wikipedia.org', icon:'book'   },
+        { label:'twitter.com',   icon:'user'   },
+        { label:'discord.com',   icon:'chat'   },
+        { label:'twitch.tv',     icon:'bolt'   },
+      ];
+      function buildOmni(val) {
+        const d=document.getElementById('omni');
+        if (!val) { hideOmni(); return; }
+        omniIdx=-1;
+        const isUrl=/^https?:\/\/|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(val);
+        const se=SEARCH_ENGINES[currentSearch];
+        let html = isUrl
+          ? `<div class="or" onclick="B.navigate('${esc(val)}')"><span class="or-icon">${IC.link}</span><span class="or-text">${esc(val)}</span><span class="ob">go</span></div>`
+          : `<div class="or" onclick="B.navigate(${JSON.stringify(val)})"><span class="or-icon">${IC.search}</span><span class="or-text">${esc(val)}</span><span class="ob">${esc(se.short)}</span></div>`;
+        QUICK.filter(q=>q.label.includes(val.toLowerCase())).slice(0,4).forEach(q=>{
+          html+=`<div class="or" onclick="B.navigate('https://${esc(q.label)}')"><span class="or-icon">${IC[q.icon]||IC.globe}</span><span class="or-text">${esc(q.label)}</span><span class="ob">site</span></div>`;
+        });
+        d.innerHTML=html; d.style.display='block';
+      }
+      function hilite() { document.querySelectorAll('#omni .or').forEach((el,i)=>el.classList.toggle('sel',i===omniIdx)); }
+      function hideOmni() { setTimeout(()=>{ document.getElementById('omni').style.display='none'; },150); }
+
+      /* ── Progress ── */
+      function startProg() {
+        const b=document.getElementById('prog-bar');
+        clearTimeout(_progTimer);
+        b.style.transition='none'; b.style.width='0'; b.style.opacity='1';
+        b.classList.add('loading');
+      }
+      function stopProg() {
+        const b=document.getElementById('prog-bar');
+        b.classList.remove('loading');
+        b.style.transition='width .2s ease'; b.style.width='100%';
+        _progTimer=setTimeout(()=>{ b.style.opacity='0'; b.style.width='0'; },300);
+      }
+
+      /* ── Search engine ── */
+      function updateSeUI() {
+        const se=SEARCH_ENGINES[currentSearch];
+        document.getElementById('se-abbr-nt').textContent   = se.short;
+        document.getElementById('se-name-badge').textContent = se.short;
+        localStorage.setItem('t9_search',currentSearch);
+      }
+      function setSearchEngine(key) {
+        currentSearch=key; updateSeUI();
+        document.getElementById('se-dropdown').style.display='none';
+        document.getElementById('se-dropdown-chrome').style.display='none';
+      }
+      function buildSeItems() {
+        return Object.entries(SEARCH_ENGINES).map(([key,se])=>
+          `<div class="se-item ${currentSearch===key?'active':''}" onclick="B.setSearchEngine('${key}')">
+            <span class="se-abbr">${esc(se.short)}</span>
+            <span class="se-name">${esc(se.name)}</span>
+          </div>`
+        ).join('');
+      }
+      function toggleSeDropdownNT(e) {
+        e.stopPropagation();
+        const d=document.getElementById('se-dropdown');
+        if (d.style.display==='block') { d.style.display='none'; return; }
+        d.innerHTML=`<div class="drop-section-label">Search engine</div>${buildSeItems()}`;
+        d.style.display='block';
+        setTimeout(()=>document.addEventListener('click',()=>d.style.display='none',{once:true}),0);
+      }
+      function toggleSeDropdownChrome(e) {
+        e.stopPropagation();
+        const d=document.getElementById('se-dropdown-chrome');
+        if (d.style.display==='block') { d.style.display='none'; return; }
+        const rect=document.getElementById('badge-se').getBoundingClientRect();
+        d.style.top=(rect.bottom+6)+'px'; d.style.left=rect.left+'px';
+        d.innerHTML=`<div class="drop-section-label">Search engine</div>${buildSeItems()}`;
+        d.style.display='block';
+        setTimeout(()=>document.addEventListener('click',()=>d.style.display='none',{once:true}),0);
+      }
+
+      /* ── Star / Menu ── */
+      function star() {
+        const btn=document.getElementById('btn-star');
+        btn.classList.toggle('starred');
+        const path=document.getElementById('star-icon').querySelector('path');
+        path.setAttribute('fill',btn.classList.contains('starred')?'currentColor':'none');
+      }
+
+      function menu(e) {
+        const old=document.getElementById('_smenu');
+        if (old) { old.remove(); return; }
+        const items=[
+          ['New tab',      'Ctrl+T', ()=>addTab()],
+          ['Reload',       'Ctrl+R', ()=>reload()],
+          ['Home',          null,    ()=>home()],
+          ['Re-check WISP', null,    ()=>checkWisp()],
+          ['Dev tools',     null,    ()=>{ if(typeof handleDev==='function')handleDev(); }],
+        ];
+        const m=document.createElement('div');
+        m.id='_smenu';
+        const nb=document.getElementById('nav-bar').getBoundingClientRect();
+        m.style.cssText=`position:fixed;z-index:9999;
+          background:rgba(14,14,14,0.97);
+          border:1px solid rgba(255,255,255,0.13);border-radius:8px;padding:4px;min-width:180px;
+          font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;
+          box-shadow:0 16px 48px rgba(0,0,0,.9);
+          right:10px;top:${nb.bottom+6}px;animation:dropIn 0.12s ease;`;
+        const styleEl=document.createElement('style');
+        styleEl.textContent=`@keyframes dropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}`;
+        m.appendChild(styleEl);
+        items.forEach(([lbl,kbd,fn])=>{
+          const r=document.createElement('div');
+          r.style.cssText=`display:flex;align-items:center;justify-content:space-between;
+            padding:7px 10px;border-radius:5px;cursor:pointer;color:#888;
+            transition:background .08s,color .08s;gap:20px;`;
+          r.innerHTML=`<span>${lbl}</span>${kbd?`<span style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#444;letter-spacing:.05em">${kbd}</span>`:''}`;
+          r.onmouseenter=()=>{ r.style.background='rgba(255,255,255,0.06)'; r.style.color='#efefef'; };
+          r.onmouseleave=()=>{ r.style.background=''; r.style.color='#888'; };
+          r.onclick=()=>{ fn(); m.remove(); };
+          m.appendChild(r);
+        });
+        document.body.appendChild(m);
+        setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
+        e.stopPropagation();
+      }
+
+      /* ── Keyboard ── */
+      document.addEventListener('keydown', e=>{
+        if (e.ctrlKey||e.metaKey) {
+          if (e.key==='t') { e.preventDefault(); addTab(); }
+          if (e.key==='w') { e.preventDefault(); closeTab(cur); }
+          if (e.key==='l') { e.preventDefault(); focusUrl(); }
+          if (e.key==='r') { e.preventDefault(); reload(); }
+          if (e.key==='Tab') { e.preventDefault(); cur=(cur+1)%tabs.length; sync(); }
+        }
+      });
+
+      /* ── Hash sync ── */
+      window.addEventListener('hashchange', ()=>{
+        const token=window.location.hash.replace(/^#/,'');
+        if (!token) return;
+        try {
+          if (typeof decodeTarget==='function') {
+            const url=decodeTarget(token);
+            if (url&&url!==ct().url) {
+              ct().url=url; ct().fav=getFav(url);
+              try { ct().title=new URL(url).hostname; } catch {}
+              document.getElementById('url-input').value=url;
+              setScheme(url); renderTabs(); showFrame(); _lastLoadedUrl=url;
+            }
+          }
+        } catch {}
+      });
+
+      window._browserSyncUrl=function(url) {
+        if (!url||url===ct().url) return;
+        ct().url=url; ct().fav=getFav(url);
+        try { ct().title=new URL(url).hostname; } catch {}
+        document.getElementById('url-input').value=url;
+        setScheme(url); renderTabs(); _lastLoadedUrl=url;
+      };
+
+      /* ── Init ── */
+      buildShortcuts();
+      renderTabs();
+      showNew();
+      updateSeUI();
+
+      checkWisp().then(ok=>{
+        if (!ok) console.warn('[T9] WISP unreachable:', wispUrl);
+      });
+
+      return {
+        addTab, navigate, back, fwd, reload, home,
+        focusUrl, onFocus, onBlur, onInput, onKey,
+        star, menu, retryLoad,
+        setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome,
+      };
+    })();
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+
+  <script src="./app.js" defer></script>
+
+  <script>
+    window.addEventListener('load', ()=>{
+      const orig=window.setLocationLabel;
+      if (typeof orig==='function') {
+        window.setLocationLabel=function(val) {
+          orig(val);
+          if (typeof window._browserSyncUrl==='function') window._browserSyncUrl(val);
+        };
+      }
+      const hash=window.location.hash.replace(/^#/,'');
+      if (hash&&typeof decodeTarget==='function') {
+        try {
+          const url=decodeTarget(hash);
+          if (url) {
+            window._browserSyncUrl(url);
+            document.getElementById('proxy-frame').style.display='block';
+            document.getElementById('newtab').style.display='none';
+          }
+        } catch {}
+      }
+    });
+  </script>
+</body>
+</html>
