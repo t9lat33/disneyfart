@@ -1,0 +1,3801 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="max-age=31536000, public">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<title>Learnify</title>
+
+</head>
+<body>
+  
+
+    
+
+
+  
+
+<style>
+
+@import url('https://fonts.googleapis.com/css?family=Luckiest+Guy');
+
+  body {
+  background-repeat: no-repeat;
+  background-size: cover;   /* make sure images cover the whole screen */
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  text-decoration: none;
+  }
+  a{
+    outline:none;
+  }
+  a:focus{
+    outline:none;
+  }
+
+.clock {
+  color: white;
+  font-size: 45px;
+  position: fixed;
+  top: 110px;
+  text-align: center;
+  text-shadow: 0 0 10px #202020;
+  font-family: 'Orbitron', sans-serif;
+}
+
+
+  .battery {
+    
+color: white;
+  font-size: 25px;
+  position: fixed;
+  top: 145px;
+  text-align: center;
+  text-shadow: 0 0 10px #202020;
+  font-family: 'Orbitron', sans-serif;
+
+
+  }
+   .musicplayer {
+      position: fixed;
+      bottom: 12px;
+      left: 21%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+      border-radius: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+                  border: 2px solid gray;
+
+
+    }
+  .fpscounter {
+      position: fixed;
+      bottom: 12px;
+      right: -2%;
+      transform: translateX(-50%);
+      min-width: 98px;   
+      height: 45px;
+         background: linear-gradient(160deg,
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
+      );
+      border-radius: 15px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+                  border: 2px solid gray;
+
+    }
+        .fpscounter:hover {
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .fpscounter::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+                  border: 2px solid gray;
+    }
+
+    .fpscounter:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+    .musicNav {
+      position: fixed;
+      bottom: 12px;
+      left: 23%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
+      );
+      border: 2px solid gray;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+        .musicNav:hover {
+      border-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .musicNav::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+            border: 2px solid gray;
+    }
+
+    .musicNav:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+
+.navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
+      );
+      border-radius: 15px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+      border:2px solid gray;
+
+    }
+
+    .navbar:hover {
+      border: 1px solid rgb(57, 57, 57);
+    }
+
+    .navbar::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+      border:2px solid gray;
+    }
+
+    .navbar:hover::after {
+      opacity: 1;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+    }
+
+    .navbar img {
+      width: 30px;
+      height: 30px;
+      transition: transform 0.15s ease;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .navbar img:hover {
+      transform: scale(1.25) translateY(-3px);
+    }
+    .navbar img:active{
+        transform: scale(0.97);
+    }
+
+      .navbar.sidebar {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      bottom: auto;
+      transform: translateY(-50%);
+      width: 64px;
+      height: auto;
+      flex-direction: column;
+      gap: 14px;
+      padding: 12px 0;
+      border-radius: 18px;
+      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
+    }
+
+    .navbar.sidebar:hover {
+      width: 72px;
+      height: auto;
+      border-radius: 24px;
+    }
+
+    .navbar.sidebar img:hover {
+      transform: scale(1.25) translateX(3px);
+    }
+.navbar.sidebar img:active{
+        transform: scale(0.97);
+    }
+    .navbar.sidebar::after {
+      inset: 0;
+      box-shadow: 0 0 0 0 rgba(55, 55, 55, 0.5);
+      transition: box-shadow 0.3s;
+      background: none;
+    }
+
+    .navbar.sidebar:hover::after {
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+      background: none;
+    }
+
+
+
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: rgb(255, 0, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+} 
+
+
+ .full-btn {
+    background: none;
+    border: none;
+    color: rgb(26, 255, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+    top:-0.5;
+} 
+  img {
+    width: 28px;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  img:hover {
+    box-shadow: none;
+    border-radius: 15px;
+        transform: translateY(-3px);
+
+  }
+
+  .line {
+    width: 2px;
+    height: 50px;
+    background-color: white;
+    right: 150px;
+    position: fixed;
+  }
+
+  .line2 {
+    width: 2px;
+    height: 50px;
+    background-color: white;
+    right: 280px;
+    position: fixed;
+  }
+
+  #hiddenDiv {
+    display: none;
+  transform: translateY(-50px);
+  border:2px solid gray;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:98%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+  }
+@keyframes osOpenReal {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(40px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+#aiDiv {
+display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border:2px solid gray;
+    border-radius:6px; 
+    width:70%;
+    height: 67%; 
+    right:50px;
+    overflow-x: hidden;
+    border:2px solid gray;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
+}
+
+
+
+   #terminalDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+    background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+  border: 1px solid rgba(0, 0, 0, 0.5);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    border:2px solid gray;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+   #movieDiv {
+  display: none;
+  transform: translateY(-50px);
+    padding: 10px;
+    border:2px solid gray;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:98%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+     #blkDiv {
+  display: none;
+  transform: translateY(-50px);
+  border:2px solid gray;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:99%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+  #musicDiv {
+   display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+border:2px solid gray;
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #roDiv {
+  display: none;
+  transform: translateY(-50px);
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+border:2px solid gray;
+    color: white;
+    margin:auto;
+    inset:0;
+    top: -45px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:98%;
+    height: 85%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #t9Div {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+border:2px solid gray;
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:30%;
+    height: 42%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      top:225px;
+      animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+
+  }
+  #t9Div h4 {
+  width: 100%;
+  left: 0;
+  transform: none; /* remove centering trick */
+  text-align: center;
+  border-bottom: 1px solid white;
+}
+  #settingsDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+     background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+border:2px solid gray;
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    opacity:85%; 
+    width:71%;
+    height: 70%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+
+  }
+  #appsDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0,0,0,0.4);   
+backdrop-filter: blur(7px);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+    #updateDiv {
+      display:none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+border:2px solid gray;
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    opacity:85%; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+    #widgetDiv {
+    margin-top: 20px;
+    padding: 10px;
+backdrop-filter: blur(2px);   
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );  border: 1px solid rgba(0, 0, 0, 0.5);   
+   color: white;
+   right:50px;
+   top:50px;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:150px;
+    height: 150px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+  #collabDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,1rgba(0, 0, 0, 0.5)
+        rgba(10,10,10,0.65)
+      );
+       border: 1px solid rgba(0,180,255,.5); 
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+    #soundDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+   #hacksDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:600px;
+    height: 500px; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+     #calcDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);  
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:25%;
+    height: 60%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+   #emulatorDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+  #searchDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:12px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+      animation: popIn2 0.5s ease-out forwards;
+
+  }
+    #adminDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);   
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:20px; 
+    opacity:85%; 
+    width:85%;
+    height: 73%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+      animation: popIn 0.5s ease-out forwards;
+
+  }
+
+  /* Logo Styles */
+  #logo {
+    display:none;
+    inset: 0;
+    margin:auto;
+      position:fixed;
+    position: fixed;
+    font-size: 200px;
+    font-family: 'Luckiest Guy', cursive;
+    width:400px;
+      animation: popIn 0.5s ease-out forwards;
+
+   
+  color: white;
+
+  }
+  .Lbtn{
+    padding:10px 20px; 
+    background-color:black;
+    border-radius: 15px;
+    color:white;
+    text-decoration: none;
+
+    
+  }
+   .btn {
+    width: 150px;
+    height: 150px;
+    border-radius: 200px ; /* Add !important to ensure it overrides other styles */
+    gap: 150px;
+    transition: transform 0.3s ease-in-out;
+    font-family: sans-serif;
+      transition: all 0.3s ease;   /* smooth hover */
+    font-size: 15px;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: none;
+    border-radius: 50px !important; /* Ensure hover state also has the same border-radius */
+
+}
+     .gtext{
+          text-align:center;
+          font-family: sans-serif;
+background:none;  
+border-radius: 20px;           
+          color:#ffffff;
+                  
+     }
+   
+  .ui-top {
+    background-color: #ffffff; /* Different color for the top section */
+    padding: 15px 20px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+ @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 80%;
+        transform: scale(1);
+      }
+    }
+     @keyframes popIn2 {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 100%;
+        transform: scale(1);
+      }
+    }
+
+    
+  
+#searchBar{
+  text-align:center;
+  background: rgba(0, 0, 0, 0.3); 
+border: 1px solid rgba(255, 255, 255, 0.15);  
+  color: white;
+  border-radius: 15px;
+  position: absolute;
+  left:43%;
+  padding: 10px 20px;
+  border-style: solid;
+  border-width: 2px;
+  border-color:rgb(255, 255, 255);
+
+}
+
+
+  
+  /* Reduce shadow complexity */
+  .navbar, #settingsDiv, #appsDiv {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+  }
+
+</style>
+</head>
+<body>
+    <style>
+        .nav-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+    </style>
+
+<div id="navbar" class="navbar">
+
+   <a onclick="t9()">
+    <img src="logo.png">
+  </a>
+      <div class="nav-divider"></div>
+
+  
+  <a onclick="hidden2()">
+    <img src="steam2.png">
+  </a>
+
+   <a onclick="ai()">
+    <img src="chatgpt.png">
+  </a>
+  <a onclick="movie()">
+    <img src="netflix2.png">
+  </a>
+   <a onclick="music()">
+    <img src="spotify.png">
+  </a>
+ 
+
+
+    <a onclick="Chat()">
+    <img style="border-radius:35%;" src="discord2.png">
+  </a>
+  
+
+
+</div>
+
+<div id="musicNav" class="musicNav">
+  <img id="t9-thumb" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:none;flex-shrink:0;">
+  <div style="display:flex;flex-direction:column;justify-content:center;overflow:hidden;max-width:140px;">
+    <span id="t9-title" style="color:#fff;font-size:0.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">Nothing playing</span>
+    <span id="t9-artist" style="color:rgba(255,255,255,0.45);font-size:0.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;"></span>
+  </div>
+  <div id="t9-bars" style="display:flex;align-items:flex-end;gap:2px;height:18px;flex-shrink:0;"></div>
+</div>
+
+<script>
+  const barsEl = document.getElementById('t9-bars');
+  const bars = Array.from({length: 4}, () => {
+    const b = document.createElement('div');
+    b.style.cssText = 'width:3px;background:#1db954;border-radius:2px;height:3px;transition:height 0.12s ease;';
+    barsEl.appendChild(b);
+    return b;
+  });
+
+  let playing = false, animFrame;
+
+  function animateBars() {
+    if (!playing) return;
+    bars.forEach(b => b.style.height = (Math.floor(Math.random() * 14) + 3) + 'px');
+    animFrame = setTimeout(animateBars, 110);
+  }
+
+  function setPlaying(state) {
+    playing = state;
+    clearTimeout(animFrame);
+    state ? animateBars() : bars.forEach(b => b.style.height = '3px');
+  }
+
+  const bc = new BroadcastChannel('t9_music_channel');
+  bc.onmessage = ({ data }) => {
+    if (data.type === 'track') {
+      document.getElementById('t9-title').textContent = data.title;
+      document.getElementById('t9-artist').textContent = data.artist;
+      const thumb = document.getElementById('t9-thumb');
+      thumb.src = data.artwork;
+      thumb.style.display = 'block';
+      setPlaying(true);
+    } else if (data.type === 'playstate') {
+      setPlaying(data.playing);
+    }
+  };
+</script>
+
+<div id="fpsDiv"  class="fpscounter">
+  
+ <h2 style="color:white;   font-family: 'Orbitron', sans-serif; text-align: center; font-size:20px;" id="fpsCounter">FPS:</h2>
+
+<script>
+(function() {
+  var frames = 0, last = performance.now(), smooth = 0;
+  function tick(now) {
+    frames++;
+    var delta = now - last;
+    if (delta >= 1000) {
+      var raw = frames * 1000 / delta;
+      smooth = smooth === 0 ? raw : smooth * 0.8 + raw * 0.2; // smooth out spikes
+      var el = document.getElementById("fpsCounter");
+      if (el) el.textContent = "FPS: " + Math.round(smooth);
+      frames = 0;
+      last = now;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+
+</div>
+
+<!-- Hidden Div -->
+
+
+<div id="collabDiv">
+  <button class="close-btn" onclick="document.getElementById('collabDiv').style.display = 'none';">●</button>
+  <h1 class="gtext"> Partners </h1>
+  <p color="white" style="text-align: center;"></p>
+
+           <a href="https://forms.gle/D95nf65yRoxeMtP3A" target="_blank">
+     <img class="btn" src="partner.png">
+          </a>
+
+     <a href="https://ratgames.vercel.app/" target="_blank">
+     <img class="btn" src="rat.gif">
+          </a>
+          
+           <a href="https://1anime.app" target="_blank">
+     <img class="btn" src="anime-partner.png">
+          </a>
+        
+           <a href="https://ducky-ea0.pages.dev" target="_blank">
+     <img class="btn" src="duckmath.png">
+          </a>
+
+            <a href="https://demonzero.space" target="_blank">
+     <img class="btn" src="demon.png">
+          </a>
+
+             <a href="https://classroomspot.b-cdn.net" target="_blank">
+     <img class="btn" src="cs.png">
+          </a>
+
+          <a href="https://sites.google.com/view/thesolarsystem67/home" target="_blank">
+     <img class="btn" src="jupiter.gif">
+
+         <a href="https://ixi-os.rs-p.workers.dev/" target="_blank">
+     <img class="btn" src="rsos.png">
+          </a>
+     
+     
+        
+       
+
+          
+</div>
+
+<div id="updateDiv">
+    <div style="
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 33px;
+      background: rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid gray;
+    ">
+      <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('updateDiv').style.display = 'none';">●</button>
+      <h3 style="color:white; margin:0; font-size:15px;">Updates</h3>
+    </div>
+
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px; padding: 50px 20px 20px;">
+
+      <h1 style="color:white;">Version 3.7</h1>
+      <h3 style="color:white;">New update: ui changes, improved ai,cine cloud, live wallpapers, 6k games.</h3>
+      <h3 style="color:white;">New links: join the server for more links!</h3>
+
+      <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <a style="background-color:#000; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://vercel.com/new/clone?repository-url=https://github.com/t9lat22/t9lat22.github.io" target="_blank">make Vercel links</a>
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://app.netlify.com/start/deploy?repository=https%3A%2F%2Fgithub.com%2Ft9lat22%2Ft9lat22.github.io" target="_blank">make Netlify links</a>
+        <a style="background-color:#000; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://forms.gle/BSTZQSijox8Dm2nL8" target="_blank">Give feedback</a>
+      </div>
+
+      <h3 style="color:white;">If you would like to help out T9 OS please donate to our Ko-Fi. Thank you!</h3>
+
+      <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://ko-fi.com/t9oss" target="_blank">Donate!</a>
+        <a style="background-color:#7289da; padding:10px 20px; color:#fff; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="https://discord.gg/yRTtj35HyJ" target="_blank">Join server!</a>
+        <a style="background-color:#fff; padding:10px 20px; color:#000; border-radius:10px; font-family:sans-serif; text-decoration:none;" href="ad.html" target="_blank">support T9 OS for free</a>
+      </div>
+
+      <h3 style="color:white;" id="random-text">Fun fact:</h3>
+
+    </div>
+
+    <script>
+      const texts = [
+        'Fun fact: T9 OS got ddosed before, yet they still failed.',
+        'Fun fact: It is said that if you dont join our DC server T9 will haunt you.',
+        'Fun fact: I make little money from T9 OS so a donation would be nice.',
+        'Fun fact: my old DC account got banned and i lost my old server too with 700 members :('
+      ];
+      document.getElementById("random-text").textContent = texts[Math.floor(Math.random() * texts.length)];
+    </script>
+</div>
+
+
+<div id="wwwDiv">
+  <button class="close-btn" onclick="document.getElementById('wwwDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif " >Browser</h3>
+ 
+
+
+
+<iframe id="framesearch" src="gim.html"></iframe>
+  <style>
+    #framesearch{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframesearch() {
+      let iframe = document.getElementById("framesearch");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="ChatDiv">
+  <button class="close-btn" onclick="document.getElementById('ChatDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframechat()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Chat</h3>
+ 
+
+
+
+<iframe id="framechat" src="c6.html"></iframe>
+  <style>
+    #framechat{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+border-top:2px solid gray;
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframechat() {
+      let iframe = document.getElementById("framechat");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="terminalDiv">
+  <button class="close-btn" onclick="document.getElementById('terminalDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeter()">●</button>
+
+    <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame3').src = 'terminal.html';">←</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Terminal</h3>
+
+
+
+ 
+<iframe class="frame3" src="terminal.html"></iframe>
+  <style>
+    .frame3{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+    }
+   
+  </style>
+     <script>
+    function fullscreenIframeter() {
+      let iframe = document.getElementById("frame3");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+<div id="movieDiv">
+  <button class="close-btn" onclick="document.getElementById('movieDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframe3()">●</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Movies</h3>
+
+
+
+ 
+<iframe id="mframe" class="mframe" src="movie3.html"></iframe>
+  <style>
+    .mframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+      border-top:2px solid gray;
+
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframe3() {
+      let iframe = document.getElementById("mframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+
+<div id="blkDiv">
+  <button class="close-btn" onclick="document.getElementById('blkDiv').style.display = 'none';">●</button>
+      <button class="full-btn" onclick="fullscreenIframeBLK()">●</button>
+
+        <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Blooket hacks</h3>
+
+
+
+ 
+<iframe id="mframe" class="blkframe" src="blk2.html"></iframe>
+  <style>
+    .blkframe{
+      width:100%;
+      height:95%;
+      bottom:10px;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left: 0;
+      bottom: 0;
+            border-top: 2px solid gray;
+    }
+   
+  </style>
+   <script>
+    function fullscreenIframeBLK() {
+      let iframe = document.getElementById("blkframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           
+</div>
+
+<script>
+  function www(){
+    const div = document.getElementById('wwwDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function Chat(){
+    const div = document.getElementById('ChatDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function t9(){
+    const div = document.getElementById('t9Div');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+
+<script>
+  function terminal(){
+    const div = document.getElementById('terminalDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<div id="t9Div">
+  <div style="
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  background: rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+        border-bottom: 2px solid gray;
+">
+  <button class="close-btn" onclick="document.getElementById('t9Div').style.display = 'none';" style="position:absolute; left:10px;">●</button>
+  <h3 style="color:white; margin:0; font-size:15px;">Apps</h3>
+</div>
+
+  &nbsp;&nbsp;&nbsp;&nbsp; 
+  
+
+<div style="
+  margin-top: 44px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+">
+
+  <div class="app-icon" onclick="closeT9(); hidden3()">
+    <img src="steam2.png" />
+    <span>Games</span>
+  </div>
+
+  <div class="app-icon" onclick="closeT9(); music()">
+    <img src="spotify.png">
+    <span>Music</span>
+  </div>
+
+  <div class="app-icon" onclick="closeT9(); movie()">
+    <img src="netflix2.png">
+    <span>Movies</span>
+  </div>
+
+    <div class="app-icon" onclick="closeT9(); settings()">
+    <img src="setting.png">
+    <span>Settings</span>
+  </div>
+   <div class="app-icon" onclick="closeT9(); ro()">
+    <img src="steam.png" style="border-radius: 200%;">
+    <span>Cine Cloud</span>
+  </div>
+<script>
+  function closeT9() {
+    document.getElementById('t9Div').style.display = 'none';
+  }
+</script>
+</div>
+
+<style>
+  .app-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+    width: 60px;
+  }
+
+  .app-icon:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .app-icon img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-icon span {
+    color: white;
+    font-size: 11px;
+    font-family: sans-serif;
+    text-align: center;
+  }
+</style>
+
+
+
+</script>
+</script>
+  <style>
+    .btn-container {
+      display: flex;
+      gap: 10px; /* space between buttons */
+      position: absolute;
+      top: 30px;
+      left: 30px;
+    }
+
+    .t9btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      font-family: sans-serif;
+      font-size: 15px;
+      border: #ffffff 0.2px solid;
+      display: inline-block;
+      cursor: pointer;
+    }
+  </style>
+  </a>
+<style>
+  .warn{
+    top:0;
+    font-family: sans-serif;
+    position: absolute;
+    right:0;
+  }
+   .close-btn2 {
+    background: none;
+    border: none;
+    color: rgb(255, 0, 0);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+    top:0;
+} 
+
+  </style>
+
+  <p class="warn"></p>
+
+
+           
+        
+       
+
+          
+</div>
+
+
+
+
+
+<style>
+  .tnav {
+    top:0;
+    height:25px;
+    opacity:65%; 
+background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+  border: 1px solid rgba(0, 0, 0, 0.5); 
+    position:fixed;
+    left:0;
+    width:100%;
+    border-radius: 0px 0px 0px 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom:1.5px solid gray;
+
+
+    
+  }
+  .timg{
+    width:21px;
+    transform: translateY(-3px);
+    gap:70px;
+
+  }
+  .timg:hover{
+    transform: translateY(-4x);
+
+
+  }
+
+  
+ 
+</style>
+
+</div>
+<div onclick="update()" class="notify">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">UPDATES</div>
+    <div class="desc">Check for latest updates</div>
+  </div>
+
+</div>
+
+<div onclick="window.open('https://discord.gg/8sHzTtnUSu', '_blank')" class="notify2">
+
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2a7 7 0 0 0-7 7v4.28l-1.7 1.7A1 1 0 0 0 4 17h16a1 1 0 0 0 .7-1.72L19 13.28V9a7 7 0 0 0-7-7zm0 20a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/>
+  </svg>
+
+  <div class="ntext">
+    <div class="ntitle">JOIN SERVER</div>
+    <div class="desc">Join our server for sneak peaks and link drops!</div>
+  </div>
+
+</div>
+
+
+
+<style>
+
+.notify{
+background-color:rgba(0, 0, 0, 0.61);
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:5%;
+animation: notifyIn 0.35s ease-out;
+
+}
+.notify:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
+.notify2{
+background-color:rgba(0, 0, 0, 0.61);
+width:170px;
+height:auto;
+color:white;
+border-radius:12px;
+border:2px solid gray;
+display:flex;
+align-items:center;
+gap:8px;
+position:absolute;
+right:20px;
+padding:10px;
+font-family: Arial, sans-serif;
+transition: 0.1s ease;
+top:13.5%;
+animation: notifyIn 0.35s ease-out;
+
+}
+.notify2:hover{
+border:3px solid white;
+transform: scale(1.03);
+}
+.ntext{
+display:flex;
+flex-direction:column;
+}
+
+.ntitle{
+font-size:13px;
+font-weight:bold;
+}
+
+.desc{
+font-size:10px;
+opacity:0.7;
+}
+
+@keyframes notifyIn{
+from{
+opacity:0;
+transform: translateX(20px) scale(0.95);
+}
+to{
+opacity:1;
+transform: translateX(0) scale(1);
+}
+}
+</style>
+
+
+<button onclick="t9()" style="position: fixed; bottom:0; right:0; padding:10px 20px; opacity: 0;"></button>
+   
+             
+</div>
+<div id="hiddenDiv">
+<button class="close-btn" onclick="document.getElementById('hiddenDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframe()">●</button>
+
+  <button class="back" style="top:7px; left: 50px; position: fixed; color:white;"    onclick="document.getElementById('frame2').src = 'select.html';">←</button>
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Games </h3>
+<h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
+
+ 
+ 
+
+
+<iframe id="frame2" src="steam2.html"></iframe>
+  <style>
+    #frame2{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 12px 12px;
+      left:0;
+      border-top: 1px solid rgb(37, 37, 37);
+      background-image:url("space2.png");
+      border-top:2px solid gray;
+
+    }
+    .back {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+        transform: translateY(2px);
+        top:-2px;
+
+}
+     #ChatDiv {
+display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+border:2px solid gray;
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  }
+      #wwwDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+ background: linear-gradient(160deg,
+        rgba(15,15,15,0.65),
+        rgba(10,10,10,0.65)
+      );
+        border: 1px solid rgba(0, 0, 0, 0.5);
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:6px; 
+    width:70%;
+    height: 71%; 
+    overflow-x: hidden;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+
+  
+
+  }
+  </style>
+
+ 
+
+  <script>
+    function fullscreenIframe() {
+      let iframe = document.getElementById("frame2");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+ 
+
+</div>
+<div id="roDiv">
+  <button class="close-btn" onclick="document.getElementById('roDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeRo()">●</button>
+
+
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" >Cine Cloud</h3>
+ 
+
+
+
+<iframe id="frameRo" src="entercloud.html"></iframe>
+  <style>
+    #frameRo{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 2px solid gray;
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeRo() {
+      let iframe = document.getElementById("frameRo");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+
+<div id="musicDiv">
+  <button class="close-btn" onclick="document.getElementById('musicDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeMusic()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Music</h3>
+ 
+<iframe id="frameMusic" src="music4.html"></iframe>
+
+
+
+
+
+
+
+
+  <style>
+    #frameMusic{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+border-top:2px solid gray;
+    }
+  
+  </style>
+
+
+
+    <script>
+    function fullscreenIframeMusic() {
+      let iframe = document.getElementById("frameMusic");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+
+
+ 
+           
+</div>
+<style>
+
+
+/* Context Menu */
+#contextMenu {
+    position: absolute;
+    width: 190px;
+     background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    backdrop-filter: blur(3px);
+    color:white;
+    display: none;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* Items */
+.menu-item {
+    padding: 11px 15px;
+    cursor: default;
+    transition: background 0.15s;
+}
+
+.menu-item:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 0;
+}
+</style>
+</head>
+
+<body>
+
+
+<div id="contextMenu">
+      <div onclick="settings()" class="menu-item">
+    <i class="fa-solid fa-image"></i> Change Wallpaper
+  </div>
+  <div onclick="openGame()" class="menu-item">
+    <i class="fa-solid fa-mask"></i> about:blank cloak
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="menu-item" onclick="hidden2()">
+    <i class="fa-solid fa-gamepad"></i> Games
+  </div>
+  <div class="menu-item" onclick="www()">
+    <i class="fa-solid fa-globe"></i> Browser
+  </div>
+  <div onclick="settings()" class="menu-item">
+    <i class="fa-solid fa-gear"></i> Settings
+  </div>
+</div>
+
+<script>
+const menu = document.getElementById("contextMenu");
+
+document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+
+    menu.style.display = "block";
+
+    let x = e.pageX;
+    let y = e.pageY;
+
+    // Prevent overflow off screen
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+
+    if (x + menuWidth > window.innerWidth) {
+        x -= menuWidth;
+    }
+
+    if (y + menuHeight > window.innerHeight) {
+        y -= menuHeight;
+    }
+
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+});
+
+document.addEventListener("click", () => {
+    menu.style.display = "none";
+});
+</script>
+
+
+
+
+
+<div id="aiDiv">
+  <button class="close-btn" onclick="document.getElementById('aiDiv').style.display = 'none';">●</button>
+    <button class="full-btn" onclick="fullscreenIframeAI()">●</button>
+
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >AI</h3>
+<h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
+ 
+
+
+
+<iframe id="frame5" src="ta2.html"></iframe>
+  <style>
+    #frame5{
+      width:100%;
+      height:95%;
+      bottom:0;
+      position: absolute;
+      border:none;
+      border-radius:0px 0px 15px 15px;
+      left:0;
+      border-top: 2px solid gray;
+    }
+    .back {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    font-size:20px;
+        transform: translateY(2px);
+        top:-2px;
+
+}
+
+  </style>
+
+  
+ 
+  <script>
+    function fullscreenIframeAI() {
+      let iframe = document.getElementById("frame5");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) { 
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) { 
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) { 
+        iframe.msRequestFullscreen();
+      }
+    }
+  </script>
+           <style>
+    #hiddenDiv iframe {
+      pointer-events: none;
+    }
+
+    #hiddenDiv.dragging iframe,
+    #hiddenDiv.resizing iframe {
+      pointer-events: none;
+    }
+
+    .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      cursor: move;
+      z-index: 5;
+    }
+
+    .resizer {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      right: 0;
+      bottom: 0;
+      cursor: nwse-resize;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.1);
+    }
+</style>
+</div>
+
+<div id="tnav" class="tnav">
+
+   
+
+  <a href="https://discord.gg/tknXENDkzY">
+    <img class="timg" src="discord.png">
+  </a>  
+
+  <a onclick="settings()">
+    <img class="timg" src="settings22.png">
+  </a>
+
+  <a href='/'>
+    <img class="timg" src="home.png">
+  </a>
+
+
+  <a id="fullscreen-button">
+    <img class="timg" src="fullscreen.png">
+  </a>
+
+
+
+
+
+
+<p id="battery2" style="display:flex; align-items:center; gap:8px; color:white;"></p>
+<script>
+navigator.getBattery().then(battery => {
+  const el = document.getElementById('battery2');
+  const update = () => {
+    const pct = Math.round(battery.level * 100);
+    const charging = battery.charging;
+    const color = pct <= 20 ? '#e74c3c' : pct <= 50 ? '#f39c12' : '#2ecc71';
+    el.innerHTML = `
+      <svg width="28" height="14" viewBox="0 0 28 14" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="24" height="13" rx="3" ry="3"
+              stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <rect x="25" y="4" width="3" height="6" rx="1"
+              fill="currentColor" opacity="0.5"/>
+        <rect x="2" y="2" width="${20 * battery.level}" height="10" rx="2"
+              fill="${color}"/>
+        ${charging ? `<text x="12" y="11" font-size="9" text-anchor="middle" fill="white" font-weight="bold">⚡</text>` : ''}
+      </svg>
+      <span>${pct}%</span>
+    `;
+  };
+  update();
+  battery.addEventListener('levelchange', update);
+  battery.addEventListener('chargingchange', update);
+});
+</script>
+<style>
+#battery2 {
+  right: 225px;
+  top: -10px;
+  position: fixed;
+}
+#clock2 {
+  right: 100px;
+  top: -10px;
+  position: fixed;
+}
+</style>
+
+<p id="clock2" style="color:white;"></p>
+<script>
+  const updateTime = () => {
+    const now = new Date();
+    document.getElementById('clock2').textContent = now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+  updateTime();
+  setInterval(updateTime, 1000);
+</script>
+ 
+<h2 class="battery" id="date"></h2>
+<div class="clock" id="day"></div>
+<script>
+  const now = new Date();
+
+const date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+document.getElementById('date').textContent = date;
+
+const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+document.getElementById('day').textContent = day;
+</script>
+
+
+
+</div>
+ 
+<style>
+  .timeBattery{
+    background-color:black;
+    opacity: 50%;
+  }
+</style>
+
+
+
+<div id="settingsDiv">
+   <div style="
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 33px;
+  background: rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom:2px solid gray;
+
+">
+  
+  <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+    <h3 style="color:white; margin:0; font-size:15px;">Settings</h3>
+</div>
+<h1 style="text-align: center;">Appearances</h1>
+
+
+  
+ <style>
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 10px 16px 0;
+}
+.wp-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  aspect-ratio: 16/9;
+  background: #111;
+  transition: border-color .15s, transform .15s;
+}
+.wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.25); }
+.wp-card.wp-active { border-color: #1db954; }
+ 
+/* shared styles for both img and video previews */
+.wp-card img,
+.wp-card video {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+}
+.wp-card video {
+  position: absolute; top: 0; left: 0;
+}
+ 
+.wp-card-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 12px 6px 5px;
+  font-size: 10px; color: #fff; font-family: sans-serif;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  z-index: 2;
+}
+.wp-check {
+  position: absolute; top: 5px; right: 5px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #1db954; display: none;
+  align-items: center; justify-content: center;
+  z-index: 3;
+}
+.wp-card.wp-active .wp-check { display: flex; }
+ 
+.wp-upload-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 14px auto 0;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7);
+  border-radius: 8px; padding: 8px 18px;
+  font-size: 12px; cursor: pointer;
+  transition: background .15s;
+}
+.wp-upload-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+ 
+.wp-upload-hint {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,.35);
+  font-family: sans-serif;
+  margin-top: 6px;
+}
+</style>
+ 
+<h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Wallpaper</h3>
+ 
+<div id="wp-grid" class="wp-grid"></div>
+ 
+
+<input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
+ 
+<script>
+(function(){
+  var MAX_BYTES = 50 * 1024 * 1024;
+
+  var WALLPAPERS = [
+    { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
+    { name:'Crimson Blind', file:'crimson-blind.mp4', video:true },
+    { name:'Gengar',        file:'gengar.mp4', video:true },
+    { name:'Sasuke rainy night', file:'sasuke.mp4', video:true },
+    { name:'Silver Surfer', file:'silver.jpeg'   },
+    { name:'Locked In',     file:'lockedin.jpg'   },
+    { name:'Naruto',        file:'naruto.png'    },
+    { name:'Goku',          file:'goku.jpg'      }
+  ];
+
+  // Create video element for wallpaper
+  var vid = document.createElement('video');
+  vid.id = '_wp_vid';
+  vid.autoplay = true;
+  vid.loop = true;
+  vid.muted = true;
+  vid.playsInline = true;
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('webkit-playsinline', '');
+  vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
+  document.body.prepend(vid);
+
+  var current = localStorage.getItem('wp_file') || '';
+
+  function applyWP(file, isVideo) {
+    // Reset video
+    vid.pause();
+    vid.removeAttribute('src');
+    vid.load();
+    vid.style.display = 'none';
+
+    // Reset body background
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundSize = '';
+    document.body.style.backgroundPosition = '';
+    document.body.style.backgroundRepeat = '';
+    document.body.style.backgroundAttachment = '';
+
+    if (isVideo && file) {
+      vid.style.display = 'block';
+      vid.src = file;
+      vid.load();
+      vid.play().catch(function(err) {
+        // Autoplay was prevented, add click handler to start
+        var playOnce = function() {
+          vid.play().catch(function(){});
+          document.removeEventListener('click', playOnce);
+          document.removeEventListener('keydown', playOnce);
+        };
+        document.addEventListener('click', playOnce);
+        document.addEventListener('keydown', playOnce);
+      });
+    } else if (file) {
+      document.body.style.backgroundImage = 'url("' + file + '")';
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center center';
+      document.body.style.backgroundRepeat = 'no-repeat';
+      document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    current = file;
+
+    try {
+      localStorage.setItem('wp_file', file);
+      localStorage.setItem('wp_video', isVideo ? '1' : '0');
+      localStorage.setItem('selectedBackground', file);
+      localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
+    } catch(e) {}
+
+    // Update active state on cards
+    document.querySelectorAll('.wp-card').forEach(function(c){
+      c.classList.toggle('wp-active', c.dataset.file === file);
+    });
+  }
+
+  function buildGrid(list) {
+    var grid = document.getElementById('wp-grid');
+    if (!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
+  }
+
+  function addCard(grid, name, file, isVideo) {
+    var card = document.createElement('div');
+    card.className = 'wp-card' + (file === current ? ' wp-active' : '');
+    card.dataset.file = file;
+    card.onclick = function(){ applyWP(file, isVideo); };
+
+    var chk = document.createElement('div');
+    chk.className = 'wp-check';
+    chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    if (isVideo) {
+      var prev = document.createElement('video');
+      prev.src = file;
+      prev.muted = true;
+      prev.loop = true;
+      prev.playsInline = true;
+      prev.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;';
+      card.appendChild(prev);
+      card.addEventListener('mouseenter', function(){ prev.play().catch(function(){}); });
+      card.addEventListener('mouseleave', function(){ prev.pause(); });
+      if (file === current) { prev.play().catch(function(){}); }
+    } else {
+      var img = document.createElement('img');
+      img.src = file;
+      img.alt = name;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      img.onerror = function(){
+        this.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">' + name + '</text></svg>'
+        );
+      };
+      card.appendChild(img);
+    }
+
+    var lbl = document.createElement('div');
+    lbl.className = 'wp-card-label';
+    lbl.textContent = name + (isVideo ? ' ▶' : '');
+
+    card.appendChild(chk);
+    card.appendChild(lbl);
+    grid.appendChild(card);
+  }
+
+  // Build grid when settings opens
+  var settingsEl = document.getElementById('settingsDiv');
+  if (settingsEl) {
+    new MutationObserver(function(mutations){
+      mutations.forEach(function(m){
+        if (m.target.style.display === 'block') {
+          buildGrid(WALLPAPERS);
+        }
+      });
+    }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
+  }
+
+// File upload handler
+  document.getElementById('wp-upload').onchange = async function() {
+    var f = this.files[0]; if (!f) return;
+
+    if (f.size > MAX_BYTES) {
+      alert('⚠️ File too large — max 50 MB');
+      this.value = '';
+      return;
+    }
+
+    var isVid = f.type.startsWith('video/');
+    var url = URL.createObjectURL(f);
+    
+    applyWP(url, isVid);
+    
+    // Add to grid
+    var grid = document.getElementById('wp-grid');
+    if (grid) {
+      var old = grid.querySelector('[data-file^="blob:"]');
+      if (old) old.remove();
+      addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, isVid);
+    }
+
+    this.value = '';
+  };
+
+  // Restore wallpaper on load
+  function restore() {
+  var savedFile = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'crimson-blind.mp4';
+var savedType = localStorage.getItem('backgroundType') || 'image';
+    
+    if (savedFile && savedType === 'video') {
+      applyWP(savedFile, true);
+    } else if (savedFile) {
+      applyWP(savedFile, false);
+    }
+  }
+
+  restore();
+})();
+</script>
+ 
+  <h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Panic Key</h3>
+
+<div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:10px;">
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">Key:</label>
+    <input id="panicKeyInput" type="text" maxlength="1" placeholder="e.g. Escape"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:180px;"
+      readonly
+      onkeydown="event.preventDefault(); this.value = event.key === ' ' ? 'Space' : event.key; localStorage.setItem('panicKey', event.key);"
+    />
+    <span style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif;">press any key</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">URL:</label>
+    <input id="panicUrlInput" type="text" placeholder="https://google.com"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:260px;"
+      oninput="localStorage.setItem('panicUrl', this.value)"
+    />
+  </div>
+
+  <div style="display:flex; gap:10px;">
+    <button onclick="testPanic()"
+      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
+             color:white; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Test
+    </button>
+    <button onclick="clearPanic()"
+      style="background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.4); border-radius:8px;
+             color:#ff6b6b; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
+      Clear
+    </button>
+  </div>
+
+  <p id="panicStatus" style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif; margin:0;"></p>
+
+</div>
+
+<script>
+  (function() {
+    const keyInput = document.getElementById('panicKeyInput');
+    const urlInput = document.getElementById('panicUrlInput');
+
+    const savedKey = localStorage.getItem('panicKey');
+    const savedUrl = localStorage.getItem('panicUrl');
+    if (savedKey) keyInput.value = savedKey === ' ' ? 'Space' : savedKey;
+    if (savedUrl) urlInput.value = savedUrl;
+  })();
+
+  function doPanic() {
+    const panicUrl = localStorage.getItem('panicUrl');
+    if (!panicUrl) return;
+    window.location.replace(panicUrl);
+  }
+
+// Main page listener - captures everything including inputs
+  document.addEventListener('keydown', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.target === document.getElementById('panicKeyInput')) return;
+    if (e.key === panicKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      doPanic();
+    }
+  }, true);
+
+  // Listen for keypress forwarded from iframes
+  window.addEventListener('message', function(e) {
+    const panicKey = localStorage.getItem('panicKey');
+    if (!panicKey) return;
+    if (e.data && e.data.type === 'panicKey' && e.data.key === panicKey) {
+      doPanic();
+    }
+  });
+
+  // Inject forwarder script into every iframe
+  function injectPanicIntoIframe(iframe) {
+    try {
+      const script = iframe.contentDocument.createElement('script');
+      script.textContent = `
+        document.addEventListener('keydown', function(e) {
+          try {
+            window.top.postMessage({ type: 'panicKey', key: e.key }, '*');
+          } catch(err) {}
+        }, true);
+      `;
+      iframe.contentDocument.head.appendChild(script);
+    } catch(err) {
+      // cross-origin iframes can't be injected, use postMessage fallback below
+    }
+  }
+
+  // Inject into all current iframes and watch for new ones
+  function injectAll() {
+    document.querySelectorAll('iframe').forEach(injectPanicIntoIframe);
+  }
+
+  // Re-inject when iframes load or change src
+  document.querySelectorAll('iframe').forEach(function(iframe) {
+    iframe.addEventListener('load', function() {
+      injectPanicIntoIframe(iframe);
+    });
+  });
+
+  new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      m.addedNodes.forEach(function(node) {
+        if (node.tagName === 'IFRAME') {
+          node.addEventListener('load', function() {
+            injectPanicIntoIframe(node);
+          });
+        }
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+
+  // Run on page ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectAll);
+  } else {
+    injectAll();
+  }
+
+  function testPanic() {
+    const url = localStorage.getItem('panicUrl');
+    const key = localStorage.getItem('panicKey');
+    const status = document.getElementById('panicStatus');
+    if (!url || !key) {
+      status.textContent = 'Set both a key and URL first.';
+      status.style.color = '#ff6b6b';
+      return;
+    }
+    status.textContent = 'Works! Press ' + (key === ' ' ? 'Space' : key) + ' anywhere to panic.';
+    status.style.color = '#1db954';
+  }
+
+  function clearPanic() {
+    localStorage.removeItem('panicKey');
+    localStorage.removeItem('panicUrl');
+    document.getElementById('panicKeyInput').value = '';
+    document.getElementById('panicUrlInput').value = '';
+    document.getElementById('panicStatus').textContent = 'Cleared.';
+    document.getElementById('panicStatus').style.color = 'rgba(255,255,255,0.4)';
+  }
+</script>
+</div>
+<style>
+   .round-btn {
+    border-radius: 12px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size:medium;
+   }
+   .seth{
+    text-align: center;
+    font-family: sans-serif;
+   }
+  
+</style>
+
+<style>
+
+
+
+
+
+.icon { 
+  position: absolute; width: 80px; text-align: center; cursor: default;}
+
+.icon img {
+   width: 48px;
+    height: 48px;
+   pointer-events: none;
+   border-radius: 15px;
+  }
+
+.icon span {
+   display: block; font-size: 12px; margin-top: 6px; line-height: 1.2; color:white; word-break: break-word; pointer-events: none; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+ text-shadow: 
+    -0.5px -0.5px 0 black,
+     0.5px -0.5px 0 black,
+    -0.5px  0.5px 0 black,
+     0.5px  0.5px 0 black;
+}
+.icon.selected { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}.icon:hover { background: rgba(0, 120, 255, 0.35); border-radius: 6px;}
+
+
+
+</style> </div> <div 
+onclick="blk()" class="icon" style="left:100px; top:120px;"> <img style="border-radius:35%;" src="blk2.png" style="border-radius:20%; "> <span>Blooket hacks</span> </div>
+
+<div onclick="settings()" class="icon" style="left:100px; top:220px; "> 
+  <img src="setting.png" alt="settings" style="border-radius:20%; "> 
+  <span>Settings</span> </div> 
+
+  <div onclick="ro()" class="icon" style="left:100px; top:320px;"> 
+    <img src="steam.png" style="border-radius:200%; ">
+    <span>Cine Cloud</span> </div> 
+
+
+
+<script>
+  const icons = document.querySelectorAll('.icon');
+const gridSize = 100;
+const offsetX = 5;  // Matches your HTML left: 5px
+const offsetY = 20; // Matches your HTML top: 120px/220px grid logic
+
+let draggingIcon = null;
+let mouseOffset = { x: 0, y: 0 };
+let mouseStart = { x: 0, y: 0 };
+let isDragging = false;
+const dragThreshold = 5;
+
+// Precision snapping functions
+const snapX = (v) => Math.round((v - offsetX) / gridSize) * gridSize + offsetX;
+const snapY = (v) => Math.round((v - offsetY) / gridSize) * gridSize + offsetY;
+
+// Check for collisions using snapped coordinates
+function isOccupied(x, y, ignore) {
+  return Array.from(icons).some(ic => 
+    ic !== ignore && 
+    parseInt(ic.style.left) === x && 
+    parseInt(ic.style.top) === y
+  );
+}
+
+icons.forEach(icon => {
+  icon.addEventListener('mousedown', (e) => {
+    draggingIcon = icon;
+    mouseStart = { x: e.clientX, y: e.clientY };
+    const rect = icon.getBoundingClientRect();
+    mouseOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    icon.style.zIndex = 1000;
+  });
+
+  // Captures and blocks the click if the mouse moved (dragging)
+  icon.addEventListener('click', (e) => {
+    if (isDragging) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  }, true); 
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!draggingIcon) return;
+
+  const dx = e.clientX - mouseStart.x;
+  const dy = e.clientY - mouseStart.y;
+
+  if (!isDragging && Math.hypot(dx, dy) > dragThreshold) {
+    isDragging = true;
+  }
+
+  if (!isDragging) return;
+
+  // Real-time movement logic
+  let x = Math.min(Math.max(e.clientX - mouseOffset.x, 0), window.innerWidth - draggingIcon.offsetWidth);
+  let y = Math.min(Math.max(e.clientY - mouseOffset.y, 0), window.innerHeight - draggingIcon.offsetHeight);
+
+  draggingIcon.style.left = x + 'px';
+  draggingIcon.style.top = y + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  if (!draggingIcon) return;
+
+  if (isDragging) {
+    const targetX = snapX(draggingIcon.offsetLeft);
+    const targetY = snapY(draggingIcon.offsetTop);
+
+    if (isOccupied(targetX, targetY, draggingIcon)) {
+      // Snap back to original grid spot if blocked
+      draggingIcon.style.left = snapX(mouseStart.x - mouseOffset.x) + 'px';
+      draggingIcon.style.top = snapY(mouseStart.y - mouseOffset.y) + 'px';
+    } else {
+      // Lock into new grid spot
+      draggingIcon.style.left = targetX + 'px';
+      draggingIcon.style.top = targetY + 'px';
+    }
+
+    // Delay resetting the flag so 'click' event doesn't trigger 's()'
+    setTimeout(() => { isDragging = false; }, 50);
+  }
+
+  draggingIcon.style.zIndex = '';
+  draggingIcon = null;
+});
+
+document.addEventListener('selectstart', e => e.preventDefault());
+  </script>
+
+
+
+
+
+<script>
+  const presetSelect = document.getElementById("preset");
+
+  document.addEventListener("DOMContentLoaded", () => {
+    localStorage.removeItem("bg");
+    var presetSelect = document.getElementById("preset");
+    if (presetSelect) {
+      presetSelect.value = localStorage.getItem("cloak_preset") || "default";
+      presetSelect.addEventListener("change", function() {
+        localStorage.setItem("cloak_preset", presetSelect.value);
+      });
+    }
+  });
+</script>
+
+
+
+<script>
+  function updateTime() {
+  var date = new Date();
+  var options = { hour: 'numeric', minute: 'numeric',  hour12: true };
+  var formattedTime = date.toLocaleTimeString('en-US', options);
+  document.getElementById("time").innerHTML = formattedTime;
+  }
+  
+  setInterval(updateTime, 1000); 
+
+  // Battery Status
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(function(battery) {
+      updateBatteryStatus(battery);
+      battery.addEventListener('levelchange', function() {
+        updateBatteryStatus(battery);
+      });
+    });
+  } else {
+    document.getElementById('batteryPercentage').innerHTML = 'Battery API not supported.';
+  }
+
+  function updateBatteryStatus(battery) {
+    var percentage = Math.floor(battery.level * 100);
+    document.getElementById('batteryPercentage').innerHTML = percentage + '%';
+  }
+
+  // Toggle Div Visibility
+  const button = document.getElementById('toggleDivButton');
+  const hiddenDiv = document.getElementById('hiddenDiv');
+
+  button.addEventListener('click', () => {
+    if (hiddenDiv.style.display === 'none' || hiddenDiv.style.display === '') {
+      hiddenDiv.style.display = 'block';
+    } else {
+      hiddenDiv.style.display = 'none';
+    }
+  });
+</script>
+<script>
+  function updateTime() {
+    const date = new Date();
+    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+    const formattedTime = date.toLocaleTimeString('en-US', options);
+
+    const hour = date.getHours();
+    let emoji = "⏰";
+
+    if (hour >= 5 && hour < 12) {
+      emoji = "🌅"; 
+    } else if (hour >= 12 && hour < 17) {
+      emoji = "🌞"; 
+    } else if (hour >= 17 && hour < 21) {
+      emoji = "🌇"; 
+    } else {
+      emoji = "🌙"; 
+    }
+
+    document.getElementById("wtime").innerHTML = `${formattedTime} ${emoji}`;
+  }
+
+  setInterval(updateTime, 1000);
+  updateTime(); 
+</script>
+
+
+<script>
+  function admin(){
+    const div = document.getElementById('adminDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, onValue, push, onDisconnect, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  // 🔥 Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+    authDomain: "chat-99dfe.firebaseapp.com",
+    databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+    projectId: "chat-99dfe",
+    storageBucket: "chat-99dfe.firebasestorage.app",
+    messagingSenderId: "17277094525",
+    appId: "1:17277094525:web:989d19d04fdde769de7f14",
+    measurementId: "G-NEXJFPJPCP"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Reference for connections
+  const connectionsRef = ref(db, "connections");
+
+  // Human detection
+  let isHuman = false;
+  window.addEventListener("mousemove", () => { isHuman = true; }, { once: true });
+  window.addEventListener("touchstart", () => { isHuman = true; }, { once: true });
+
+  // Create a new unique connection for THIS user if human
+  let myConnection;
+  function connectIfHuman() {
+    if (!isHuman) return; // skip bots
+    myConnection = push(connectionsRef);
+    set(myConnection, true);
+    onDisconnect(myConnection).remove();
+  }
+
+  // Wait a short time for human interaction
+  setTimeout(connectIfHuman, 3000); // 3 seconds delay
+
+  // Update live user count
+  onValue(connectionsRef, (snapshot) => {
+    document.getElementById("count").innerText = snapshot.numChildren();
+  });
+</script>
+
+
+<script>
+  function emulator(){
+    const div = document.getElementById('emulatorDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+<script>
+  function sound(){
+    const div = document.getElementById('soundDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function ai(){
+    const div = document.getElementById('aiDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function hacks(){
+    const div = document.getElementById('hacksDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function blk(){
+    const div = document.getElementById('blkDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function settings(){
+    const div = document.getElementById('settingsDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function hidden2(){
+    const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function update(){
+    const div = document.getElementById('updateDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function hidden3(){
+    const div = document.getElementById('hiddenDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function music(){
+    const div = document.getElementById('musicDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function movie(){
+    const div = document.getElementById('movieDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function leader(){
+    const div = document.getElementById('leaderboardDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function apps(){
+    const div = document.getElementById('appsDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function collab(){
+    const div = document.getElementById('collabDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function calc(){
+    const div = document.getElementById('calcDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+<script>
+  function s(){
+    const div = document.getElementById('searchDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
+  function ro(){
+    const div = document.getElementById('roDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+
+
+<script>
+  const fullscreenButton = document.getElementById('fullscreen-button');
+
+  fullscreenButton.addEventListener('click', toggleFullscreen);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+</script>
+
+<script>
+  function openGame() {
+    var win = window.open ()
+    var url = "index.html"
+    var iframe = win.document.createElement('iframe')
+    iframe.style.width = "100%"
+    iframe.style.height = "100%"
+    iframe.style.border = "none"
+    iframe.src = url
+    win.document.body.appendChild(iframe)
+  }
+  </script>
+
+<script>
+  document.getElementById('searchBar').addEventListener('input', function () {
+    const searchTerm = this.value.toLowerCase();
+    const images = document.querySelectorAll('#imageContainer img');
+
+    images.forEach(image => {
+      const altText = image.getAttribute('alt') || '';
+      if (altText.toLowerCase().includes(searchTerm)) {
+        image.style.display = 'inline-block';
+      } else {
+        image.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+<style>
+  /* Style for the select dropdown */
+#background-select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9; /* Fallback color */
+    font-size: 16px;
+    width: 200px;
+    font-family: Poppins;
+    background-repeat: no-repeat;
+}
+
+</style>
+
+<script>
+
+  
+  
+
+  
+</script>
+
+
+
+<script>
+  const btn = document.getElementById("toggleBTN");
+  const img = document.getElementById("logo");
+
+  btn.addEventListener("click", () => {
+    if (img.style.display === "block") {
+      img.style.display = "none"; 
+    } else {
+      img.style.display = "block";  
+    }
+  });
+</script>
+
+
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // 🔥 Your Firebase config (same as Page A)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+      authDomain: "chat-99dfe.firebaseapp.com",
+      databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+      projectId: "chat-99dfe",
+      storageBucket: "chat-99dfe.firebasestorage.app",
+      messagingSenderId: "17277094525",
+      appId: "1:17277094525:web:989d19d04fdde769de7f14",
+      measurementId: "G-NEXJFPJPCP"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const imgBox = document.getElementById("imgBox");
+
+    // Listen to changes in globalImage in real-time
+    const imageRef = ref(db, "globalImage");
+    onValue(imageRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.url) {
+        imgBox.innerHTML = `<img src="${data.url}">`;
+      } else {
+        imgBox.innerHTML = "";
+      }
+    });
+  </script>
+  <style>
+      #imgBox img {
+      max-width: 600px;
+      border-radius: 10px;
+      margin-top: 30px;
+      width:200px;
+      color:yellow;
+      font-family: sans-serif;
+      font-size:50px;
+    }
+  </style>
+
+</body>
+
+
+<div id="notifications"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, onChildAdded, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  // 🔥 Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDB4VU2JNQGO5pMgXGaasIiY6kFxgsb-84",
+    authDomain: "chat-99dfe.firebaseapp.com",
+    databaseURL: "https://chat-99dfe-default-rtdb.firebaseio.com",
+    projectId: "chat-99dfe",
+    storageBucket: "chat-99dfe.firebasestorage.app",
+    messagingSenderId: "17277094525",
+    appId: "1:17277094525:web:989d19d04fdde769de7f14",
+    measurementId: "G-NEXJFPJPCP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "globalMessages");
+
+  const container = document.getElementById("notifications");
+
+  // Function to show a toast
+  function showNotification(text) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = text;
+    container.appendChild(toast);
+
+    // Remove after 5 seconds
+    setTimeout(() => {
+      toast.style.transition = "opacity 0.5s ease";
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 500);
+    }, 5000);
+  }
+
+  // ✅ Record current timestamp when user loads the page
+  const pageLoadTime = Date.now();
+
+  // Listen for new messages only AFTER page load
+  onChildAdded(messagesRef, (snapshot) => {
+    const msg = snapshot.val();
+    if (!msg.timestamp || msg.timestamp >= pageLoadTime) {
+      showNotification(msg.text);
+    }
+  });
+</script>
+
+<style>
+  #notifications {
+    position: fixed;
+    top: 29.5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast {
+    background-color:#1b1b1bbd;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease-out;
+    font-size: 16px;
+    opacity: 0.95;
+    max-width: 80%;
+    text-align: center;
+    opacity:85%;
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">V3.7</p>
+<p style="color:#acacac; position: fixed; bottom: -3px; left: 100px; opacity: 0.6;" id="myId">ID: <span id="idValue"></span></p>
+
+
+<!-- Include Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // ========== CONFIG ==========
+  const OWNER_IDS = ["6528690208", "4084803237", "0635354315", "8862060932", "9937301888", "5069664537", "1362852477"]; // add both owner IDs here
+  const ID_KEY = "numericUserID";
+  // ============================
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD74Fi2RKsvv1sXTAEIiTYrRKCv22MRhh8",
+    authDomain: "t9oschat.firebaseapp.com",
+    databaseURL: "https://t9oschat-default-rtdb.firebaseio.com",
+    projectId: "t9oschat",
+    storageBucket: "t9oschat.firebasestorage.app",
+    messagingSenderId: "930534704832",
+    appId: "1:930534704832:web:c154890c3b5f36736f8f25",
+    measurementId: "G-STPKYT658F"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Generate numeric ID (~10 digits)
+  function generateNumericID() {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return random + timestamp;
+  }
+
+  // Protect critical functions
+  (function() {
+    'use strict';
+    
+    const originalSetItem = Storage.prototype.setItem;
+    const originalRemoveItem = Storage.prototype.removeItem;
+    const originalClear = Storage.prototype.clear;
+    
+    let isLocked = false;
+    let myID = null;
+
+    function lockScreen() {
+      if (isLocked) return;
+      isLocked = true;
+      document.body.innerHTML = "";
+      document.body.style.cssText = "background: red; color: white; display: flex; justify-content: center; align-items: center; font-size: 40px; overflow: hidden; margin: 0; height: 100vh;";
+      document.body.innerText = "BANNED";
+
+      const preventAll = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
+      ['keydown','keyup','keypress','mousedown','mouseup','click','touchstart','touchend','contextmenu','beforeunload'].forEach(event => {
+        document.addEventListener(event, preventAll, true);
+        window.addEventListener(event, preventAll, true);
+      });
+
+      Storage.prototype.setItem = function() {};
+      Storage.prototype.removeItem = function() {};
+      Storage.prototype.clear = function() {};
+      
+      Object.freeze(localStorage);
+      Object.freeze(sessionStorage);
+      
+      window.onbeforeunload = () => true;
+      history.pushState(null, null, location.href);
+      window.onpopstate = () => history.go(1);
+      
+      window.db = null;
+      window.firebase = null;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      myID = originalSetItem.call(localStorage, ID_KEY, localStorage.getItem(ID_KEY) || generateNumericID()) || localStorage.getItem(ID_KEY);
+      if (!myID) {
+        myID = generateNumericID();
+        originalSetItem.call(localStorage, ID_KEY, myID);
+      }
+
+      const idSpan = document.getElementById("idValue");
+      if (idSpan) idSpan.textContent = myID;
+
+      const checkInterval = setInterval(() => {
+        const currentID = localStorage.getItem(ID_KEY);
+        if (currentID !== myID) originalSetItem.call(localStorage, ID_KEY, myID);
+        if (isLocked) lockScreen();
+      }, 2000);
+
+      const bannedRef = db.ref("bannedIDs");
+      bannedRef.on("value", (snapshot) => {
+        const bannedIDs = snapshot.val() || [];
+        if (bannedIDs.includes(myID)) lockScreen();
+      });
+
+      // Owner shortcut: press "," to ban/unban
+      document.addEventListener("keydown", async (e) => {
+        if (!OWNER_IDS.includes(myID)) return; // check against both owners
+        if (e.key === ",") {
+          const action = prompt("Type 'ban' to ban or 'unban' to unban:");
+          if (!action) return;
+          const targetID = prompt("Enter the ID to " + action + ":");
+          if (!targetID) return;
+
+          const snapshot = await bannedRef.get();
+          let bannedIDs = snapshot.val() || [];
+
+          if (action.toLowerCase() === "ban") {
+            if (!bannedIDs.includes(targetID)) {
+              bannedIDs.push(targetID);
+              await bannedRef.set(bannedIDs);
+              alert("User banned: " + targetID);
+            } else {
+              alert("User is already banned.");
+            }
+          } else if (action.toLowerCase() === "unban") {
+            bannedIDs = bannedIDs.filter(id => id !== targetID);
+            await bannedRef.set(bannedIDs);
+            alert("User unbanned: " + targetID);
+          } else {
+            alert("Invalid action.");
+          }
+        }
+      });
+    });
+  })();
+</script>
+
+<!-- Test-->
+
+
+
+
+
+
+
+<!--test2-->
+
+  <script>
+const HEADER_HEIGHT = 30; // was 40
+
+const wins = [
+document.getElementById("hiddenDiv"),
+document.getElementById("ChatDiv"),
+document.getElementById("musicDiv"),
+document.getElementById("searchDiv"),
+document.getElementById("updateDiv"),
+document.getElementById("aiDiv"),
+document.getElementById("terminalDiv"),
+document.getElementById("emulatorDiv"),
+document.getElementById("movieDiv"),
+document.getElementById("roDiv"),
+document.getElementById("settingsDiv"),
+document.getElementById("calcDiv"),
+document.getElementById("blkDiv"),
+document.getElementById("wwwDiv"),
+
+
+
+
+
+];
+
+wins.forEach(win => {
+if (!win) return;
+
+// ───────── Drag handle ─────────
+let dragHandle = win.querySelector(".drag-handle");
+if (!dragHandle) {
+dragHandle = document.createElement("div");
+dragHandle.className = "drag-handle";
+Object.assign(dragHandle.style,{
+position:"absolute",top:"0",left:"50px",right:"0",
+height: HEADER_HEIGHT + "px",
+cursor:"move",zIndex:"5",pointerEvents:"none"
+});
+win.appendChild(dragHandle);
+}
+
+// ───────── Resizer ─────────
+let resizer = win.querySelector(".resizer");
+if (!resizer) {
+resizer = document.createElement("div");
+resizer.className = "resizer";
+Object.assign(resizer.style,{
+position:"absolute",width:"30px",height:"30px",
+right:"0",bottom:"0",cursor:"nwse-resize",zIndex:"10",
+background:"rgba(255,255,255,0.1)"
+});
+win.appendChild(resizer);
+}
+
+// ───────── Ensure iframe container respects header ─────────
+win.querySelectorAll("iframe").forEach(iframe => {
+if (!iframe.style.marginTop) {
+iframe.style.marginTop = HEADER_HEIGHT + "px";
+iframe.style.height = "calc(100% - " + HEADER_HEIGHT + "px)";
+iframe.style.display = "block";
+}
+});
+
+let isDragging=false,isResizing=false,offsetX=0,offsetY=0,
+startX=0,startY=0,startWidth=0,startHeight=0,hasBeenPositioned=false;
+
+// 🔒 SAFE iframe control
+function disableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.dataset._pe=i.style.pointerEvents;
+i.style.pointerEvents="none";
+});
+}
+function enableIframeTemp(){
+win.querySelectorAll("iframe").forEach(i=>{
+i.style.pointerEvents=i.dataset._pe||"auto";
+delete i.dataset._pe;
+});
+}
+
+// ───────── DRAG ─────────
+win.addEventListener("mousedown",e=>{
+if(e.target.closest("button,a,input,select,textarea")) return;
+const r=win.getBoundingClientRect();
+if(e.clientY-r.top>HEADER_HEIGHT||isResizing) return;
+
+if(!hasBeenPositioned){
+win.style.transform="none";
+win.style.margin="0";
+win.style.inset="auto";
+win.style.left=r.left+"px";
+win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+
+isDragging=true;
+offsetX=e.clientX-r.left;
+offsetY=e.clientY-r.top;
+disableIframeTemp();
+dragHandle.style.pointerEvents="auto";
+e.preventDefault();
+});
+
+// ───────── RESIZE ─────────
+resizer.addEventListener("mousedown",e=>{
+const r=win.getBoundingClientRect();
+if(!hasBeenPositioned){
+win.style.transform="none";win.style.margin="0";win.style.inset="auto";
+win.style.left=r.left+"px";win.style.top=r.top+"px";
+hasBeenPositioned=true;
+}
+isResizing=true;disableIframeTemp();
+startX=e.clientX;startY=e.clientY;
+startWidth=r.width;startHeight=r.height;
+win.style.width=startWidth+"px";win.style.height=startHeight+"px";
+e.preventDefault();e.stopPropagation();
+});
+
+// ───────── MOVE ─────────
+document.addEventListener("mousemove",e=>{
+if(isDragging){
+let x=e.clientX-offsetX;
+let y=e.clientY-offsetY;
+win.style.left=x+"px";
+win.style.top=y+"px";
+if(win.id==="hiddenDiv") win.style.willChange="transform";
+}
+if(isResizing){
+const dx=e.clientX-startX;
+const dy=e.clientY-startY;
+win.style.width=Math.max(300,startWidth+dx)+"px";
+win.style.height=Math.max(90,startHeight+dy)+"px";
+}
+});
+
+// ───────── FORCE UNFREEZE ─────────
+function stopAll(){
+enableIframeTemp();
+dragHandle.style.pointerEvents="none";
+isDragging=false;isResizing=false;
+win.style.willChange="auto";
+}
+document.addEventListener("mouseup",stopAll);
+document.addEventListener("mouseleave",stopAll);
+window.addEventListener("blur",stopAll);
+});
+</script>
+<script>
+ /**
+ * T9 OS Performance Optimizer - Smart Edition
+ * Optimizes performance WITHOUT affecting visuals or animations
+ * Focuses on reducing unnecessary work behind the scenes
+ */
+
+(function() {
+  'use strict';
+  
+  console.log('🚀 Smart Performance Optimizer loading...');
+
+  // ============================================
+  // 1. OPTIMIZE FIREBASE WITHOUT BREAKING IT
+  // ============================================
+  
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    const originalOnValue = firebase.database.Reference.prototype.on;
+    firebase.database.Reference.prototype.on = function(eventType, callback, cancelCallbackOrContext, context) {
+      let throttledCallback = callback;
+      
+      if (eventType === 'value' && !this.toString().includes('bannedIDs') && !this.toString().includes('globalMessages')) {
+        let pending = false;
+        
+        throttledCallback = function(...args) {
+          if (!pending) {
+            pending = true;
+            setTimeout(() => {
+              callback.apply(this, args);
+              pending = false;
+            }, 1000);
+          }
+        };
+      }
+      
+      return originalOnValue.call(this, eventType, throttledCallback, cancelCallbackOrContext, context);
+    };
+  }
+
+  // ============================================
+  // 2. DEBOUNCE LOCALSTORAGE WRITES
+  // ============================================
+  
+  const localStorageQueue = new Map();
+  let saveTimeout = null;
+  
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    originalSetItem(key, value);
+  };
+
+  // ============================================
+  // 3. OPTIMIZE IFRAMES
+  // ============================================
+  
+  
+  
+  
+
+  // ============================================
+  // 4. BATCH DOM UPDATES
+  // ============================================
+  
+  window.batchDOMUpdate = function(read, write) {
+    requestAnimationFrame(() => {
+      const data = read ? read() : null;
+      requestAnimationFrame(() => write && write(data));
+    });
+  };
+
+  // ============================================
+  // 5. DRAG PERFORMANCE
+  // ============================================
+  
+  let activeDrags = new Set();
+  
+  document.addEventListener('mousedown', e => {
+    const d = e.target.closest('.icon, [id$="Div"]');
+    if (d && !activeDrags.has(d)) {
+      activeDrags.add(d);
+      d.style.willChange = 'transform,left,top';
+    }
+  }, true);
+  
+  document.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      activeDrags.forEach(el => el.style.willChange = 'auto');
+      activeDrags.clear();
+    }, 100);
+  }, true);
+
+  // ============================================
+  // 6. CLOCK/BATTERY CONTAINMENT
+  // ============================================
+  
+  document.getElementById('time')?.style.setProperty('contain','layout style paint');
+  document.getElementById('batteryPercentage')?.style.setProperty('contain','layout style paint');
+
+  // ============================================
+  // 7. PASSIVE EVENTS
+  // ============================================
+  
+
+  // ============================================
+  // 8. NOTIFICATION OPTIMIZATION
+  // ============================================
+  
+  if (window.showNotification) {
+    const queue=[];
+    window.originalShowNotification=window.showNotification;
+    window.showNotification=function(text){
+      if(queue.includes(text))return;
+      queue.push(text);
+      if(queue.length>3)queue.shift();
+      requestAnimationFrame(()=>window.originalShowNotification(text));
+    };
+  }
+
+  // ============================================
+  // 9. LAZY LOAD IMAGES
+  // ============================================
+  
+  const lazy=()=>document.querySelectorAll('img:not([loading])')
+    .forEach(i=>i.loading='lazy');
+  lazy();
+  new MutationObserver(lazy).observe(document.body,{childList:true,subtree:true});
+
+  // ============================================
+  // 10. TAB VISIBILITY
+  // ============================================
+  
+  document.addEventListener('visibilitychange',()=>{
+    document.querySelectorAll('iframe').forEach(f=>{
+      try{
+        f.contentWindow?.postMessage(
+          {type:document.hidden?'pause':'resume'},'*'
+        );
+      }catch(e){}
+    });
+  });
+
+  // ============================================
+  // 11. CHROMEBOOK MODE
+  // ============================================
+  
+  const isChromebook=/CrOS/.test(navigator.userAgent);
+  const isLowMemory=navigator.deviceMemory&&navigator.deviceMemory<4;
+  
+  if(isChromebook||isLowMemory){
+    const style=document.createElement('style');
+    style.textContent=`
+      @media (prefers-reduced-motion: reduce){
+        *,*::before,*::after{
+          animation-duration:.01ms!important;
+          animation-iteration-count:1!important;
+          transition-duration:.01ms!important;
+        }
+      }
+      /* FIX: navbar removed from GPU transform */
+      .icon,[id$="Div"]{
+        transform:translateZ(0);
+        backface-visibility:hidden;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ============================================
+  // 12. FPS COUNTER
+  // ============================================
+  
+ 
+
+  // ============================================
+  // 13. MEMORY OBSERVER
+  // ============================================
+  
+
+  // ============================================
+  // 14. GPU ACCELERATION (NAVBAR EXCLUDED)
+  // ============================================
+  
+ 
+
+  // ============================================
+  // NAVBAR HARD FIX
+  // ============================================
+  
+  const navFix=document.createElement('style');
+  navFix.textContent=`
+   .navbar {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 56px;
+         background: linear-gradient(160deg,
+        rgba(255,255,255,0.08),
+        rgba(0,0,0,0.65)
+      );
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      backdrop-filter: blur(2px) saturate(140%);
+       box-shadow: 
+    0 12px 28px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.15) inset;
+      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
+      opacity: 0.92;
+      z-index: 9999;
+      will-change: height, border-radius;
+
+    }
+  `;
+  document.head.appendChild(navFix);
+
+  console.log('✅ Smart Performance Optimizer loaded successfully!');
+})();
+
+</script>
+<!-- Matomo -->
+<script>
+const toggleFns = ['movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv'];
+
+toggleFns.forEach(id => {
+  const div = document.getElementById(id);
+  if(!div) return;
+  const animName = getComputedStyle(div).animationName;
+  div.addEventListener('show', () => {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
+  });
+});
+
+function openDiv(id) {
+  const div = document.getElementById(id);
+  if(!div) return;
+  if(div.style.display === 'block'){
+    div.style.display = 'none';
+  } else {
+    div.style.animation = 'none';
+    div.offsetHeight;
+    div.style.animation = '';
+    div.style.display = 'block';
+  }
+}
+
+function movie(){ openDiv('movieDiv'); }
+function music(){ openDiv('musicDiv'); }
+function ai(){ openDiv('aiDiv'); }
+function www(){ openDiv('wwwDiv'); }
+function Chat(){ openDiv('ChatDiv'); }
+function terminal(){ openDiv('terminalDiv'); }
+function ro(){ openDiv('roDiv'); }
+function settings(){ openDiv('settingsDiv'); }
+function calc(){ openDiv('calcDiv'); }
+function s(){ openDiv('searchDiv'); }
+function hacks(){ openDiv('hacksDiv'); }
+function emulator(){ openDiv('emulatorDiv'); }
+function collab(){ openDiv('collabDiv'); }
+function sound(){ openDiv('soundDiv'); }
+function sound(){ openDiv('blkDiv'); }
+function admin(){ openDiv('adminDiv'); }
+</script>
+
+  <!--testing part-->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NEXJFPJPCP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NEXJFPJPCP');
+</script>
+
+</body>
+
+</html>
+
+
