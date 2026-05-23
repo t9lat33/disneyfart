@@ -589,6 +589,7 @@ box-shadow: 2px #141414;
   border-bottom: 1px solid white;
 }
   #settingsDiv {
+    display:none;
     margin-top: 20px;
     padding: 10px;
      background: linear-gradient(
@@ -2243,40 +2244,24 @@ document.getElementById('day').textContent = day;
 </style>
 
 <script>
-  // check if user visited before
-  let visited = localStorage.getItem("visited")
+  // First-time user: open settings so they can pick a wallpaper
+  if (!localStorage.getItem("visited")) {
+    localStorage.setItem("visited", "true");
 
-  // if NOT visited
-  if (!visited) {
-    document.getElementById("newUserBox1").textContent = 'Welcome';
+    // Wait for DOM to be ready, then open settings
+    window.addEventListener("DOMContentLoaded", function () {
+      const settingsDiv = document.getElementById("settingsDiv");
+      if (settingsDiv) {
+        settingsDiv.style.display = "block";
 
-    // save visit
-    localStorage.setItem("visited", "true")
-  }
-</script>
-<script>
-  // check if user visited before
-  let visited2 = localStorage.getItem("visited")
+        // Update the title to say Welcome instead of Settings
+        const titleEl = document.getElementById("newUserBox1");
+        if (titleEl) titleEl.textContent = "Welcome — Pick a Wallpaper!";
 
-  // if NOT visited
-  if (!visited2) {
-    document.getElementById("newUserBox2").textContent = 'Welcome to T9 OS! Let’s get you set up.';
-
-    // save visit
-    localStorage.setItem("visited", "true")
-  }
-</script>
-
-<script>
-  // check if user visited before
-  let visited3 = localStorage.getItem("visited")
-
-  // if NOT visited
-  if (!visited3) {
-    document.getElementById("newUserBox3").style.display = "block"
-
-    // save visit
-    localStorage.setItem("visited", "true")
+        const subtitleEl = document.getElementById("newUserBox2");
+        if (subtitleEl) subtitleEl.textContent = "Choose a wallpaper to get started";
+      }
+    });
   }
 </script>
 
