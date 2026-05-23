@@ -1,4 +1,4 @@
-<div id="navbar" class="navbar sidebar">
+<div id="navbar" class="navbar">
   
   <a onclick="loadPage()">
     <img src="game.png">
@@ -32,18 +32,17 @@
 </div>
 
 <style>
-    .navbar {
+   .navbar {
       position: fixed;
       bottom: 12px;
       left: 50%;
       transform: translateX(-50%);
       height: 56px;
          background: linear-gradient(160deg,
-        rgba(255,255,255,0.08),
-        rgba(0,0,0,0.65)
+        rgb(15, 15, 15),
+        rgb(10, 10, 10)
       );
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 16px;
+      border-radius: 15px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -57,13 +56,12 @@
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
+      border:2px solid gray;
 
     }
 
     .navbar:hover {
-      height: 64px;
-      border-radius: 20px;
-      border-color: rgba(0,180,255,0.6);
+      border: 1px solid rgb(57, 57, 57);
     }
 
     .navbar::after {
@@ -75,6 +73,7 @@
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
+      border:2px solid gray;
     }
 
     .navbar:hover::after {
@@ -97,7 +96,6 @@
     .navbar img:active{
         transform: scale(0.97);
     }
-
       .navbar.sidebar {
       position: fixed;
       top: 50%;
