@@ -589,7 +589,6 @@ box-shadow: 2px #141414;
   border-bottom: 1px solid white;
 }
   #settingsDiv {
-    display: none;
     margin-top: 20px;
     padding: 10px;
      background: linear-gradient(
@@ -613,31 +612,7 @@ border:2px solid gray;
 
 
   }
-  #newUserBox {
-    display: none;
-    margin-top: 20px;
-    padding: 10px;
-     background: linear-gradient(
-        145deg,
-        rgba(0, 0, 0, 0.842),
-        rgba(0, 0, 0, 0.534)
-      );
-border:2px solid gray;
-    color: white;
-    inset: 0;
-    margin:auto;
-    position: fixed;
-    z-index: 1000;
-    border-radius:12px; 
-    opacity:85%; 
-    width:71%;
-    height: 70%; 
-    overflow-x: hidden;
-    overflow-y: auto;
-    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
-
-  }
   #appsDiv {
     display: none;
     margin-top: 20px;
@@ -960,7 +935,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
   
   /* Reduce shadow complexity */
-  .navbar, #settingsDiv, #appsDiv, #newUserBox {
+  .navbar, #settingsDiv, #appsDiv{
     box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
   }
 
@@ -1358,15 +1333,7 @@ border-top:2px solid gray;
 </div>
 
 
-<script>
-  let visited = localStorage.getItem("new user")
 
-  if (!visited) {
-    document.getElementById("newUserBox").style.display = 'block'
-
-    localStorage.setItem("new user", "true")
-  }
-</script>
 <div id="animeDiv">
   <button class="close-btn" onclick="document.getElementById('animeDiv').style.display = 'none';">●</button>
       <button class="full-btn" onclick="fullscreenIframeANIME()">●</button>
@@ -2275,438 +2242,43 @@ document.getElementById('day').textContent = day;
   }
 </style>
 
-<div id="newUserBox">
-   <div style="
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 33px;
-  background: rgba(255,255,255,0.07);
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px 12px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom:2px solid gray;
-
-">
-  
-  <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('newUserBox').style.display = 'none';">●</button>
-    <h3 style="color:white; margin:0; font-size:15px;">Welcome</h3>
-</div>
-<h2 style="text-align: center;">Welcome to T9 OS! Let’s get you set up.</h2>
-
-
-  
- <style>
-.wp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
-  padding: 10px 16px 0;
-}
-.wp-card {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid transparent;
-  aspect-ratio: 16/9;
-  background: #111;
-  transition: border-color .15s, transform .15s;
-}
-.wp-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.25); }
-.wp-card.wp-active { border-color: #1db954; }
- 
-/* shared styles for both img and video previews */
-.wp-card img,
-.wp-card video {
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; pointer-events: none;
-}
-.wp-card video {
-  position: absolute; top: 0; left: 0;
-}
- 
-.wp-card-label {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 12px 6px 5px;
-  font-size: 10px; color: #fff; font-family: sans-serif;
-  background: linear-gradient(transparent, rgba(0,0,0,.75));
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  z-index: 2;
-}
-.wp-check {
-  position: absolute; top: 5px; right: 5px;
-  width: 17px; height: 17px; border-radius: 50%;
-  background: #1db954; display: none;
-  align-items: center; justify-content: center;
-  z-index: 3;
-}
-.wp-card.wp-active .wp-check { display: flex; }
- 
-.wp-upload-btn {
-  display: flex; align-items: center; gap: 6px;
-  margin: 14px auto 0;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.15);
-  color: rgba(255,255,255,.7);
-  border-radius: 8px; padding: 8px 18px;
-  font-size: 12px; cursor: pointer;
-  transition: background .15s;
-}
-.wp-upload-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
- 
-.wp-upload-hint {
-  text-align: center;
-  font-size: 10px;
-  color: rgba(255,255,255,.35);
-  font-family: sans-serif;
-  margin-top: 6px;
-}
-</style>
- 
-<h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Wallpaper</h3>
- 
-<div id="wp-grid" class="wp-grid"></div>
- 
-
-<input type="file" id="wp-upload" accept="image/*,video/*" style="display:none">
- 
 <script>
-(function(){
-  var MAX_BYTES = 50 * 1024 * 1024;
+  // check if user visited before
+  let visited = localStorage.getItem("visited")
 
-  var WALLPAPERS = [
-    { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
-    { name:'Crimson Blind', file:'crimson-blind.mp4', video:true },
-    { name:'Gengar',        file:'gengar.mp4', video:true },
-    { name:'Sasuke rainy night', file:'sasuke.mp4', video:true },
-    { name:'Silver Surfer', file:'silver.jpeg'   },
-    { name:'Locked In',     file:'lockedin.jpg'   },
-    { name:'Naruto',        file:'naruto.png'    },
-    { name:'Goku',          file:'goku.jpg'      }
-  ];
+  // if NOT visited
+  if (!visited) {
+    document.getElementById("newUserBox1").textContent = 'Welcome';
 
-  // Create video element for wallpaper
-  var vid = document.createElement('video');
-  vid.id = '_wp_vid';
-  vid.autoplay = true;
-  vid.loop = true;
-  vid.muted = true;
-  vid.playsInline = true;
-  vid.setAttribute('playsinline', '');
-  vid.setAttribute('webkit-playsinline', '');
-  vid.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-999;display:none;pointer-events:none;';
-  document.body.prepend(vid);
-
-  var current = localStorage.getItem('wp_file') || '';
-
-  function applyWP(file, isVideo) {
-    // Reset video
-    vid.pause();
-    vid.removeAttribute('src');
-    vid.load();
-    vid.style.display = 'none';
-
-    // Reset body background
-    document.body.style.backgroundImage = '';
-    document.body.style.backgroundSize = '';
-    document.body.style.backgroundPosition = '';
-    document.body.style.backgroundRepeat = '';
-    document.body.style.backgroundAttachment = '';
-
-    if (isVideo && file) {
-      vid.style.display = 'block';
-      vid.src = file;
-      vid.load();
-      vid.play().catch(function(err) {
-        // Autoplay was prevented, add click handler to start
-        var playOnce = function() {
-          vid.play().catch(function(){});
-          document.removeEventListener('click', playOnce);
-          document.removeEventListener('keydown', playOnce);
-        };
-        document.addEventListener('click', playOnce);
-        document.addEventListener('keydown', playOnce);
-      });
-    } else if (file) {
-      document.body.style.backgroundImage = 'url("' + file + '")';
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center center';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.backgroundAttachment = 'fixed';
-    }
-
-    current = file;
-
-    try {
-      localStorage.setItem('wp_file', file);
-      localStorage.setItem('wp_video', isVideo ? '1' : '0');
-      localStorage.setItem('selectedBackground', file);
-      localStorage.setItem('backgroundType', isVideo ? 'video' : 'image');
-    } catch(e) {}
-
-    // Update active state on cards
-    document.querySelectorAll('.wp-card').forEach(function(c){
-      c.classList.toggle('wp-active', c.dataset.file === file);
-    });
-  }
-
-  function buildGrid(list) {
-    var grid = document.getElementById('wp-grid');
-    if (!grid || grid.dataset.built) return;
-    grid.dataset.built = '1';
-    list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
-  }
-
-  function addCard(grid, name, file, isVideo) {
-    var card = document.createElement('div');
-    card.className = 'wp-card' + (file === current ? ' wp-active' : '');
-    card.dataset.file = file;
-    card.onclick = function(){ applyWP(file, isVideo); };
-
-    var chk = document.createElement('div');
-    chk.className = 'wp-check';
-    chk.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-
-    if (isVideo) {
-      var prev = document.createElement('video');
-      prev.src = file;
-      prev.muted = true;
-      prev.loop = true;
-      prev.playsInline = true;
-      prev.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;';
-      card.appendChild(prev);
-      card.addEventListener('mouseenter', function(){ prev.play().catch(function(){}); });
-      card.addEventListener('mouseleave', function(){ prev.pause(); });
-      if (file === current) { prev.play().catch(function(){}); }
-    } else {
-      var img = document.createElement('img');
-      img.src = file;
-      img.alt = name;
-      img.loading = 'lazy';
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-      img.onerror = function(){
-        this.src = 'data:image/svg+xml,' + encodeURIComponent(
-          '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="#1a1a1a"/><text x="80" y="45" font-size="11" fill="#555" text-anchor="middle" dominant-baseline="middle">' + name + '</text></svg>'
-        );
-      };
-      card.appendChild(img);
-    }
-
-    var lbl = document.createElement('div');
-    lbl.className = 'wp-card-label';
-    lbl.textContent = name + (isVideo ? ' ▶' : '');
-
-    card.appendChild(chk);
-    card.appendChild(lbl);
-    grid.appendChild(card);
-  }
-
-  // Build grid when settings opens
-  var settingsEl = document.getElementById('newUserBox');
-  if (settingsEl) {
-    new MutationObserver(function(mutations){
-      mutations.forEach(function(m){
-        if (m.target.style.display === 'block') {
-          buildGrid(WALLPAPERS);
-        }
-      });
-    }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
-  }
-
-// File upload handler
-  document.getElementById('wp-upload').onchange = async function() {
-    var f = this.files[0]; if (!f) return;
-
-    if (f.size > MAX_BYTES) {
-      alert('⚠️ File too large — max 50 MB');
-      this.value = '';
-      return;
-    }
-
-    var isVid = f.type.startsWith('video/');
-    var url = URL.createObjectURL(f);
-    
-    applyWP(url, isVid);
-    
-    // Add to grid
-    var grid = document.getElementById('wp-grid');
-    if (grid) {
-      var old = grid.querySelector('[data-file^="blob:"]');
-      if (old) old.remove();
-      addCard(grid, f.name.replace(/\.[^.]+$/, ''), url, isVid);
-    }
-
-    this.value = '';
-  };
-
-  // Restore wallpaper on load
-  function restore() {
-  var savedFile = localStorage.getItem('wp_file') || localStorage.getItem('selectedBackground') || 'crimson-blind.mp4';
-var savedType = localStorage.getItem('backgroundType') || 'image';
-    
-    if (savedFile && savedType === 'video') {
-      applyWP(savedFile, true);
-    } else if (savedFile) {
-      applyWP(savedFile, false);
-    }
-  }
-
-  restore();
-})();
-</script>
- 
-  <h3 style="text-align:center; color:white; font-family:sans-serif; margin:40px 0 10px;">Panic Key</h3>
-
-<div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:10px;">
-
-  <div style="display:flex; align-items:center; gap:10px;">
-    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">Key:</label>
-    <input id="panicKeyInput" type="text" maxlength="1" placeholder="e.g. Escape"
-      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
-             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:180px;"
-      readonly
-      onkeydown="event.preventDefault(); this.value = event.key === ' ' ? 'Space' : event.key; localStorage.setItem('panicKey', event.key);"
-    />
-    <span style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif;">press any key</span>
-  </div>
-
-  <div style="display:flex; align-items:center; gap:10px;">
-    <label style="color:white; font-family:sans-serif; font-size:14px; width:80px;">URL:</label>
-    <input id="panicUrlInput" type="text" placeholder="https://google.com"
-      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
-             color:white; padding:8px 12px; font-family:sans-serif; font-size:14px; width:260px;"
-      oninput="localStorage.setItem('panicUrl', this.value)"
-    />
-  </div>
-
-  <div style="display:flex; gap:10px;">
-    <button onclick="testPanic()"
-      style="background:rgba(255,255,255,0.08); border:1px solid gray; border-radius:8px;
-             color:white; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
-      Test
-    </button>
-    <button onclick="clearPanic()"
-      style="background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.4); border-radius:8px;
-             color:#ff6b6b; padding:8px 18px; font-family:sans-serif; font-size:13px; cursor:pointer;">
-      Clear
-    </button>
-  </div>
-
-  <p id="panicStatus" style="color:rgba(255,255,255,0.4); font-size:12px; font-family:sans-serif; margin:0;"></p>
-
-</div>
-
-<script>
-  (function() {
-    const keyInput = document.getElementById('panicKeyInput');
-    const urlInput = document.getElementById('panicUrlInput');
-
-    const savedKey = localStorage.getItem('panicKey');
-    const savedUrl = localStorage.getItem('panicUrl');
-    if (savedKey) keyInput.value = savedKey === ' ' ? 'Space' : savedKey;
-    if (savedUrl) urlInput.value = savedUrl;
-  })();
-
-  function doPanic() {
-    const panicUrl = localStorage.getItem('panicUrl');
-    if (!panicUrl) return;
-    window.location.replace(panicUrl);
-  }
-
-// Main page listener - captures everything including inputs
-  document.addEventListener('keydown', function(e) {
-    const panicKey = localStorage.getItem('panicKey');
-    if (!panicKey) return;
-    if (e.target === document.getElementById('panicKeyInput')) return;
-    if (e.key === panicKey) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      doPanic();
-    }
-  }, true);
-
-  // Listen for keypress forwarded from iframes
-  window.addEventListener('message', function(e) {
-    const panicKey = localStorage.getItem('panicKey');
-    if (!panicKey) return;
-    if (e.data && e.data.type === 'panicKey' && e.data.key === panicKey) {
-      doPanic();
-    }
-  });
-
-  // Inject forwarder script into every iframe
-  function injectPanicIntoIframe(iframe) {
-    try {
-      const script = iframe.contentDocument.createElement('script');
-      script.textContent = `
-        document.addEventListener('keydown', function(e) {
-          try {
-            window.top.postMessage({ type: 'panicKey', key: e.key }, '*');
-          } catch(err) {}
-        }, true);
-      `;
-      iframe.contentDocument.head.appendChild(script);
-    } catch(err) {
-      // cross-origin iframes can't be injected, use postMessage fallback below
-    }
-  }
-
-  // Inject into all current iframes and watch for new ones
-  function injectAll() {
-    document.querySelectorAll('iframe').forEach(injectPanicIntoIframe);
-  }
-
-  // Re-inject when iframes load or change src
-  document.querySelectorAll('iframe').forEach(function(iframe) {
-    iframe.addEventListener('load', function() {
-      injectPanicIntoIframe(iframe);
-    });
-  });
-
-  new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      m.addedNodes.forEach(function(node) {
-        if (node.tagName === 'IFRAME') {
-          node.addEventListener('load', function() {
-            injectPanicIntoIframe(node);
-          });
-        }
-      });
-    });
-  }).observe(document.body, { childList: true, subtree: true });
-
-  // Run on page ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectAll);
-  } else {
-    injectAll();
-  }
-
-  function testPanic() {
-    const url = localStorage.getItem('panicUrl');
-    const key = localStorage.getItem('panicKey');
-    const status = document.getElementById('panicStatus');
-    if (!url || !key) {
-      status.textContent = 'Set both a key and URL first.';
-      status.style.color = '#ff6b6b';
-      return;
-    }
-    status.textContent = 'Works! Press ' + (key === ' ' ? 'Space' : key) + ' anywhere to panic.';
-    status.style.color = '#1db954';
-  }
-
-  function clearPanic() {
-    localStorage.removeItem('panicKey');
-    localStorage.removeItem('panicUrl');
-    document.getElementById('panicKeyInput').value = '';
-    document.getElementById('panicUrlInput').value = '';
-    document.getElementById('panicStatus').textContent = 'Cleared.';
-    document.getElementById('panicStatus').style.color = 'rgba(255,255,255,0.4)';
+    // save visit
+    localStorage.setItem("visited", "true")
   }
 </script>
-</div>
+<script>
+  // check if user visited before
+  let visited2 = localStorage.getItem("visited")
+
+  // if NOT visited
+  if (!visited2) {
+    document.getElementById("newUserBox2").textContent = 'Welcome to T9 OS! Let’s get you set up.';
+
+    // save visit
+    localStorage.setItem("visited", "true")
+  }
+</script>
+
+<script>
+  // check if user visited before
+  let visited3 = localStorage.getItem("visited")
+
+  // if NOT visited
+  if (!visited3) {
+    document.getElementById("newUserBox3").style.display = "block"
+
+    // save visit
+    localStorage.setItem("visited", "true")
+  }
+</script>
 
 <div id="settingsDiv">
    <div style="
@@ -2724,9 +2296,9 @@ var savedType = localStorage.getItem('backgroundType') || 'image';
 ">
   
   <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
-    <h3 style="color:white; margin:0; font-size:15px;">Settings</h3>
+    <h3 id="newUserBox1" style="color:white; margin:0; font-size:15px;">Settings</h3>
 </div>
-<h1 style="text-align: center;">Appearances</h1>
+<h2 id="newUserBox2" style="text-align: center;">Appearances</h2>
 
 
   
@@ -3924,7 +3496,6 @@ document.getElementById("movieDiv"),
 document.getElementById("animeDiv"),
 document.getElementById("roDiv"),
 document.getElementById("settingsDiv"),
-document.getElementById("newUserBox"),
 document.getElementById("calcDiv"),
 document.getElementById("blkDiv"),
 document.getElementById("wwwDiv"),
@@ -4283,7 +3854,7 @@ window.addEventListener("blur",stopAll);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['animeDiv','movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv', 'settingsDiv', 'newUserBox'];
+const toggleFns = ['animeDiv','movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv', 'settingsDiv'];
 
 toggleFns.forEach(id => {
   const div = document.getElementById(id);
@@ -4318,7 +3889,6 @@ function Chat(){ openDiv('ChatDiv'); }
 function terminal(){ openDiv('terminalDiv'); }
 function ro(){ openDiv('roDiv'); }
 function settings(){ openDiv('settingsDiv'); }
-function settings(){ openDiv('newUserBox'); }
 function calc(){ openDiv('calcDiv'); }
 function s(){ openDiv('searchDiv'); }
 function hacks(){ openDiv('hacksDiv'); }
