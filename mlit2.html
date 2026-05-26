@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 LITE</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:#202036;font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:16px;
+}
+.shell{
+  width:100%;height:1100px;
+  max-width:calc(100vw - 32px);
+  background:#16162a;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.topbar{
+  flex-shrink:0;display:flex;align-items:center;gap:14px;
+  padding:13px 20px;border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.logo{
+  font-size:19px;font-weight:800;letter-spacing:-.5px;
+  color:#3b9eff;text-shadow:0 0 18px rgba(59,158,255,.4);
+  white-space:nowrap;flex-shrink:0;
+}
+.sw{flex:1;position:relative;}
+.sw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:rgba(255,255,255,.28);fill:none;}
+.sw input{
+  width:100%;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);border-radius:999px;
+  padding:8px 14px 8px 33px;color:#fff;font-size:13px;font-family:'Outfit',sans-serif;outline:none;
+  transition:border-color .2s,background .2s;
+}
+.sw input::placeholder{color:rgba(255,255,255,.22);}
+.sw input:focus{border-color:rgba(59,158,255,.4);background:rgba(255,255,255,.08);}
+.tabs{display:flex;gap:5px;flex-shrink:0;}
+.tab{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);
+  color:rgba(255,255,255,.45);padding:6px 15px;border-radius:999px;
+  font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all .18s;letter-spacing:.2px;
+}
+.tab:hover{background:rgba(255,255,255,.09);color:#fff;}
+.tab.active{background:#3b9eff;border-color:#3b9eff;color:#fff;box-shadow:0 0 12px rgba(59,158,255,.3);}
+.body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:18px 20px 14px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.07) transparent;
+}
+.body::-webkit-scrollbar{width:4px;}
+.body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px;}
+.sec{margin-bottom:26px;}
+.sec-lbl{
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.32);
+  letter-spacing:2.2px;text-transform:uppercase;margin-bottom:11px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:9px;
+}
+.card{
+  border-radius:8px;overflow:hidden;cursor:pointer;
+  aspect-ratio:2/3;background:#1c1c30;position:relative;
+  transition:transform .22s ease,box-shadow .22s ease;
+}
+.card:hover{transform:scale(1.06);box-shadow:0 14px 36px rgba(0,0,0,.65);z-index:4;}
+.card img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s;}
+.card img.loaded{opacity:1;}
+.card-hover{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(6,6,18,.93) 0%,rgba(6,6,18,.35) 42%,transparent 68%);
+  opacity:0;transition:opacity .2s;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:9px 7px;gap:5px;
+}
+.card:hover .card-hover{opacity:1;}
+.play-ring{
+  width:34px;height:34px;background:#3b9eff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transform:scale(.75) translateY(5px);transition:transform .2s;
+}
+.card:hover .play-ring{transform:scale(1) translateY(0);}
+.play-ring svg{width:13px;height:13px;fill:#fff;margin-left:2px;}
+.card-name{
+  font-size:10.5px;font-weight:600;color:#fff;text-align:center;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.spin-wrap{display:flex;justify-content:center;padding:50px;}
+.spin{
+  width:30px;height:30px;
+  border:3px solid rgba(255,255,255,.07);border-top-color:#3b9eff;
+  border-radius:50%;animation:rot .7s linear infinite;
+}
+@keyframes rot{to{transform:rotate(360deg);}}
+.fs{
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:none;flex-direction:column;
+}
+.fs.open{display:flex;}
+.fs-top{
+  flex-shrink:0;display:flex;align-items:center;gap:12px;
+  padding:11px 16px;background:rgba(12,12,22,.98);
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.fs-title{flex:1;font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fs-x{
+  width:32px;height:32px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.11);border-radius:50%;
+  color:#fff;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;flex-shrink:0;
+}
+.fs-x:hover{background:rgba(220,50,50,.35);}
+.fs-ctrl{
+  flex-shrink:0;padding:9px 16px;
+  background:rgba(12,12,22,.92);border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;gap:7px;
+}
+.src-row{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.55);padding:5px 13px;border-radius:999px;
+  font-size:11.5px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .18s;
+}
+.chip:hover{background:rgba(255,255,255,.12);color:#fff;}
+.chip.active{background:#3b9eff;border-color:#3b9eff;color:#fff;}
+.sel-row{display:flex;gap:7px;flex-wrap:wrap;}
+.fsel{
+  background:rgba(255,255,255,.07);color:#fff;
+  border:1px solid rgba(255,255,255,.1);border-radius:7px;
+  padding:5px 9px;font-size:12px;font-family:'Outfit',sans-serif;outline:none;cursor:pointer;
+}
+.fsel option{background:#16162a;}
+.frame-wrap{flex:1;background:#000;}
+.frame-wrap iframe{width:100%;height:100%;border:none;display:block;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">T9 LITE</div>
+    <div class="sw">
+      <svg stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="si" placeholder="Search movies, shows, anime...">
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-s="all">All</button>
+      <button class="tab" data-s="movie">Movies</button>
+      <button class="tab" data-s="tv">TV Shows</button>
+      <button class="tab" data-s="anime">Anime</button>
+    </div>
+  </div>
+  <div class="body" id="body">
+    <div class="spin-wrap"><div class="spin"></div></div>
+  </div>
+</div>
+
+<div class="fs" id="fs">
+  <div class="fs-top">
+    <div class="fs-title" id="fsT">Loading...</div>
+    <button class="fs-x" id="fsX">x</button>
+  </div>
+  <div class="fs-ctrl" id="fsC"></div>
+  <div class="frame-wrap">
+    <iframe id="fsF" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
+  </div>
+</div>
+
+<script>
+(function(){
+  var K='3a73619bbb8fc6d47742d1b5b2b707b5';
+  var B='https://api.themoviedb.org/3';
+  function P(p){return p?'https://image.tmdb.org/t/p/w342'+p:'';}
+
+  var MS=[
+    {n:'VidFast',  u:function(id){return 'https://vidfast.pro/movie/'+id;}},
+    {n:'VidSrc',   u:function(id){return 'https://vidsrc.xyz/embed/movie?tmdb='+id;}},
+    {n:'AutoEmbed',u:function(id){return 'https://player.autoembed.cc/embed/movie/'+id;}},
+    {n:'VidSrc ICU',u:function(id){return 'https://vidsrc.icu/embed/movie/'+id;}},
+    {n:'VidSrc CC',u:function(id){return 'https://vidsrc.cc/v2/embed/movie/'+id;}},
+  ];
+  var TS=[
+    {n:'VidFast',  u:function(id,s,e){return 'https://vidfast.pro/tv/'+id+'/'+s+'/'+e;}},
+    {n:'VidSrc',   u:function(id,s,e){return 'https://vidsrc.xyz/embed/tv?tmdb='+id+'&season='+s+'&episode='+e;}},
+    {n:'AutoEmbed',u:function(id,s,e){return 'https://player.autoembed.cc/embed/tv/'+id+'/'+s+'/'+e;}},
+    {n:'VidSrc ICU',u:function(id,s,e){return 'https://vidsrc.icu/embed/tv/'+id+'/'+s+'/'+e;}},
+    {n:'VidSrc CC',u:function(id,s,e){return 'https://vidsrc.cc/v2/embed/tv/'+id+'/'+s+'/'+e;}},
+  ];
+
+  var DEFS={
+    all:[
+      {label:'Trending This Week',ep:'trending/all/week',t:'trending'},
+      {label:'Popular Movies',ep:'movie/popular',t:'movie'},
+      {label:'Top Rated Movies',ep:'movie/top_rated',t:'movie'},
+      {label:'Popular TV Shows',ep:'tv/popular',t:'tv'},
+      {label:'Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16&with_original_language=ja'},
+    ],
+    movie:[
+      {label:'Popular',ep:'movie/popular',t:'movie'},
+      {label:'Top Rated',ep:'movie/top_rated',t:'movie'},
+      {label:'Now Playing',ep:'movie/now_playing',t:'movie'},
+      {label:'Upcoming',ep:'movie/upcoming',t:'movie'},
+      {label:'Action',ep:'discover/movie',t:'movie',x:'&with_genres=28'},
+      {label:'Comedy',ep:'discover/movie',t:'movie',x:'&with_genres=35'},
+      {label:'Horror',ep:'discover/movie',t:'movie',x:'&with_genres=27'},
+      {label:'Sci-Fi',ep:'discover/movie',t:'movie',x:'&with_genres=878'},
+      {label:'Thriller',ep:'discover/movie',t:'movie',x:'&with_genres=53'},
+      {label:'Romance',ep:'discover/movie',t:'movie',x:'&with_genres=10749'},
+      {label:'Animation',ep:'discover/movie',t:'movie',x:'&with_genres=16'},
+      {label:'Documentary',ep:'discover/movie',t:'movie',x:'&with_genres=99'},
+    ],
+    tv:[
+      {label:'Popular',ep:'tv/popular',t:'tv'},
+      {label:'Top Rated',ep:'tv/top_rated',t:'tv'},
+      {label:'On The Air',ep:'tv/on_the_air',t:'tv'},
+      {label:'Airing Today',ep:'tv/airing_today',t:'tv'},
+      {label:'Crime',ep:'discover/tv',t:'tv',x:'&with_genres=80'},
+      {label:'Drama',ep:'discover/tv',t:'tv',x:'&with_genres=18'},
+      {label:'Comedy',ep:'discover/tv',t:'tv',x:'&with_genres=35'},
+      {label:'Reality',ep:'discover/tv',t:'tv',x:'&with_genres=10764'},
+      {label:'Sci-Fi & Fantasy',ep:'discover/tv',t:'tv',x:'&with_genres=10765'},
+    ],
+    anime:[
+      {label:'Popular Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16&with_original_language=ja&sort_by=popularity.desc'},
+      {label:'Top Rated Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16&with_original_language=ja&sort_by=vote_average.desc&vote_count.gte=200'},
+      {label:'Action Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16,28&with_original_language=ja'},
+      {label:'Romance Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16,10749&with_original_language=ja'},
+      {label:'Fantasy Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16,14&with_original_language=ja'},
+      {label:'Adventure Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16,12&with_original_language=ja'},
+      {label:'Comedy Anime',ep:'discover/tv',t:'tv',x:'&with_genres=16,35&with_original_language=ja'},
+    ],
+  };
+
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting)return;
+      var img=e.target;
+      var src=img.getAttribute('data-src');
+      if(!src)return;
+      img.src=src;
+      img.removeAttribute('data-src');
+      img.onload=function(){img.classList.add('loaded');};
+      img.onerror=function(){img.style.opacity='0';};
+      obs.unobserve(img);
+    });
+  },{rootMargin:'300px'});
+
+  function fetchMany(def){
+    var all=[];
+    var pages=[1,2,3,4,5];
+    var promises=pages.map(function(pg){
+      var url=B+'/'+def.ep+'?api_key='+K+'&language=en-US&page='+pg;
+      if(def.x)url+=def.x;
+      return fetch(url).then(function(r){return r.json();}).then(function(d){
+        (d.results||[]).forEach(function(item){
+          if(!item.poster_path)return;
+          var mt=def.t==='trending'?item.media_type:def.t;
+          if(mt==='movie'||mt==='tv')all.push(Object.assign({},item,{media_type:mt}));
+        });
+      }).catch(function(){});
+    });
+    return Promise.all(promises).then(function(){
+      var seen={};
+      return all.filter(function(i){if(seen[i.id])return false;seen[i.id]=1;return true;}).slice(0,90);
+    });
+  }
+
+  function makeCard(item){
+    var div=document.createElement('div');
+    div.className='card';
+    var img=document.createElement('img');
+    img.setAttribute('data-src',P(item.poster_path));
+    img.alt=item.title||item.name||'';
+    obs.observe(img);
+    div.appendChild(img);
+    var hov=document.createElement('div');
+    hov.className='card-hover';
+    hov.innerHTML='<div class="play-ring"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-name">'+(item.title||item.name||'')+'</div>';
+    div.appendChild(hov);
+    div.addEventListener('click',function(){openModal(item);});
+    return div;
+  }
+
+  function makeSec(label,items){
+    var s=document.createElement('div');s.className='sec';
+    var l=document.createElement('div');l.className='sec-lbl';l.textContent=label;
+    var g=document.createElement('div');g.className='grid';
+    items.forEach(function(i){g.appendChild(makeCard(i));});
+    s.appendChild(l);s.appendChild(g);return s;
+  }
+
+  var cache={};var cur='all';
+  var body=document.getElementById('body');
+
+  function loadSec(sec){
+    body.innerHTML='<div class="spin-wrap"><div class="spin"></div></div>';
+    if(cache[sec]){
+      renderCache(sec);return;
+    }
+    var defs=DEFS[sec];
+    var results=[];
+    var done=0;
+    defs.forEach(function(def,i){
+      results[i]=null;
+      fetchMany(def).then(function(items){
+        results[i]={label:def.label,items:items};
+        done++;
+        if(done===defs.length){
+          cache[sec]=results;
+          renderCache(sec);
+        }
+      }).catch(function(){
+        results[i]={label:def.label,items:[]};
+        done++;
+        if(done===defs.length){
+          cache[sec]=results;
+          renderCache(sec);
+        }
+      });
+    });
+  }
+
+  function renderCache(sec){
+    body.innerHTML='';
+    cache[sec].forEach(function(row){
+      if(row&&row.items.length)body.appendChild(makeSec(row.label,row.items));
+    });
+  }
+
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+      t.classList.add('active');
+      cur=t.getAttribute('data-s');
+      document.getElementById('si').value='';
+      loadSec(cur);
+    });
+  });
+
+  var st;
+  document.getElementById('si').addEventListener('input',function(e){
+    clearTimeout(st);
+    var q=e.target.value.trim();
+    if(!q){loadSec(cur);return;}
+    st=setTimeout(function(){
+      body.innerHTML='<div class="spin-wrap"><div class="spin"></div></div>';
+      var all=[];
+      var done=0;
+      [1,2,3,4,5].forEach(function(pg){
+        fetch(B+'/search/multi?api_key='+K+'&query='+encodeURIComponent(q)+'&page='+pg)
+          .then(function(r){return r.json();})
+          .then(function(d){
+            (d.results||[]).forEach(function(r){if((r.media_type==='movie'||r.media_type==='tv')&&r.poster_path)all.push(r);});
+            done++;if(done===5)finish();
+          }).catch(function(){done++;if(done===5)finish();});
+      });
+      function finish(){
+        var seen={};
+        var items=all.filter(function(i){if(seen[i.id])return false;seen[i.id]=1;return true;}).slice(0,90);
+        body.innerHTML='';
+        if(!items.length){body.innerHTML='<div style="color:rgba(255,255,255,.28);text-align:center;padding:60px;font-size:14px">No results for "'+q+'"</div>';return;}
+        body.appendChild(makeSec('Results for "'+q+'" — '+items.length+' found',items));
+      }
+    },380);
+  });
+
+  var fs=document.getElementById('fs');
+  var fsT=document.getElementById('fsT');
+  var fsC=document.getElementById('fsC');
+  var fsF=document.getElementById('fsF');
+
+  function openModal(item){
+    fsT.textContent=item.title||item.name||'';
+    fsC.innerHTML='<div style="color:rgba(255,255,255,.28);font-size:12px">Loading...</div>';
+    fsF.src='about:blank';
+    fs.classList.add('open');
+    setTimeout(function(){
+      if(item.media_type==='tv'){buildTV(item);}else{buildMovie(item);}
+    },50);
+  }
+
+  function rChips(srcs,ci){
+    return srcs.map(function(s,i){
+      return '<button class="chip'+(i===ci?' active':'')+'" data-i="'+i+'">'+s.n+'</button>';
+    }).join('');
+  }
+
+  function buildMovie(item){
+    var ci=0;
+    fsC.innerHTML='<div class="src-row">'+rChips(MS,0)+'</div>';
+    fsC.querySelectorAll('.chip').forEach(function(b){
+      b.addEventListener('click',function(){
+        ci=parseInt(b.getAttribute('data-i'));
+        fsC.querySelectorAll('.chip').forEach(function(c,i){c.classList.toggle('active',i===ci);});
+        fsF.src=MS[ci].u(item.id);
+      });
+    });
+    fsF.src=MS[0].u(item.id);
+  }
+
+  function buildTV(item){
+    fetch(B+'/tv/'+item.id+'?api_key='+K)
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var seasons=(d.seasons||[]).filter(function(s){return s.season_number>0;});
+        var cs=seasons[0]?seasons[0].season_number:1;
+        var ce=1,ci=0;
+
+        function loadEps(sn){
+          return fetch(B+'/tv/'+item.id+'/season/'+sn+'?api_key='+K)
+            .then(function(r){return r.json();})
+            .then(function(d){return d.episodes||[];});
+        }
+
+        function render(){
+          loadEps(cs).then(function(ep){
+            ce=ep[0]?ep[0].episode_number:1;
+            fsF.src=TS[ci].u(item.id,cs,ce);
+            var sO=seasons.map(function(s){return '<option value="'+s.season_number+'"'+(s.season_number===cs?' selected':'')+'>'+s.name+'</option>';}).join('');
+            var eO=ep.map(function(e){return '<option value="'+e.episode_number+'">Ep '+e.episode_number+': '+e.name+'</option>';}).join('');
+            fsC.innerHTML='<div class="sel-row"><select class="fsel" id="ss">'+sO+'</select><select class="fsel" id="es">'+eO+'</select></div><div class="src-row">'+rChips(TS,ci)+'</div>';
+            document.getElementById('ss').addEventListener('change',function(){cs=parseInt(this.value);render();});
+            document.getElementById('es').addEventListener('change',function(){ce=parseInt(this.value);fsF.src=TS[ci].u(item.id,cs,ce);});
+            fsC.querySelectorAll('.chip').forEach(function(b){
+              b.addEventListener('click',function(){
+                ci=parseInt(b.getAttribute('data-i'));
+                fsC.querySelectorAll('.chip').forEach(function(c,i){c.classList.toggle('active',i===ci);});
+                fsF.src=TS[ci].u(item.id,cs,ce);
+              });
+            });
+          });
+        }
+        render();
+      }).catch(function(){});
+  }
+
+  document.getElementById('fsX').addEventListener('click',function(){fs.classList.remove('open');fsF.src='about:blank';});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&fs.classList.contains('open')){fs.classList.remove('open');fsF.src='about:blank';}});
+
+  loadSec('all');
+})();
+</script>
+</body>
+</html>
