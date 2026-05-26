@@ -152,7 +152,7 @@
   <div id="browser" class="relative z-10 flex flex-col h-screen w-screen">
 
     <!-- Chrome-like top bar -->
-     <header id="chrome" class="flex-shrink-0 glass-panel border-b border-border z-[9999] m-3 rounded-2xl shadow-lg shadow-black/40 overflow-hidden" style="position:relative;isolation:isolate;"></header>
+     <header id="chrome" class="flex-shrink-0 glass-panel border-b border-border z-30 m-3 rounded-2xl shadow-lg shadow-black/40 overflow-hidden"></header>
       <!-- Tab strip -->
       <div id="tab-strip" class="flex items-center h-10 px-3 gap-1 overflow-x-auto scrollbar-hide bg-chrome-tab/50">
         <button id="btn-newtab" onclick="B.addTab()" title="New tab (Ctrl+T)" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:bg-white/15 hover:text-white transition-fast">
@@ -348,8 +348,9 @@
       }
 
       function renderRecent() {
-        const sec = document.getElementById('rc-sec'), list = document.getElementById('nt-rc');
-        if(!recent.length){ sec.classList.add('hidden'); return; }
+  const sec = document.getElementById('rc-sec'), list = document.getElementById('nt-rc');
+  if(!sec || !list) return;
+  if(!recent.length){ sec.classList.add('hidden'); return; }
         sec.classList.remove('hidden');
         list.innerHTML = recent.map(r=>`<div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-border hover:bg-white/8 transition-fast cursor-pointer" onclick="B.navigate('${r.url.replace(/'/g, "\'")}')"><span class="text-text-muted text-sm">${r.fav?`<img src="${r.fav}" class="w-4 h-4 rounded-sm">`:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/></svg>'}</span><span class="text-sm text-text-secondary truncate flex-1 font-sans">${r.title || r.url}</span><span class="text-[10px] text-text-muted font-mono bg-white/5 px-2 py-0.5 rounded-full">closed</span></div>`).join('');
       }
