@@ -500,13 +500,13 @@
       showNew();
       document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
 
-      return { 
-        addTab, navigate, back, fwd, reload, home, 
-        focusUrl, onFocus, onBlur, onInput, onKey, 
-        star, menu, setProxy, toggleProxyDropdown, 
-        setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome, 
-        retryLoad, switchAndRetry, cur 
-      };
+     return { 
+  addTab, closeTab, navigate, back, fwd, reload, home, 
+  focusUrl, onFocus, onBlur, onInput, onKey, 
+  star, menu, setProxy, toggleProxyDropdown, 
+  setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome, 
+  retryLoad, switchAndRetry, cur 
+};
     })();
 
     const WP = {
