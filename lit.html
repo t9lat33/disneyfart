@@ -1,30 +1,19 @@
 <div id="navbar" class="navbar">
   
-  <a onclick="loadPage()">
-    <img src="game.png">
+  <a onclick="document.getElementById('framel').src = 'glit.html';">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="white" viewBox="0 0 24 24">
+      <path d="M7 6h10a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4h-1l-2-2H10l-2 2H7a4 4 0 0 1-4-4v-4a4 4 0 0 1 4-4zm2 4H7v2h2v2h2v-2h2v-2h-2V8H9v2zm7 1a1.5 1.5 0 1 0 0.001 3.001A1.5 1.5 0 0 0 16 11zm3-2a1 1 0 1 0 .001 2.001A1 1 0 0 0 19 9z"/>
+    </svg>
   </a>
-  <a onclick="document.getElementById('framel').src = 'terminal.html';">
-    <img src="terminal.png">
+   <a onclick="document.getElementById('framel').src = 'ta3.html';">
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="white" viewBox="0 0 24 24">
+      <path d="M12 2a3 3 0 0 1 3 3v1.1a5 5 0 0 1 2.9 2.9H19a3 3 0 1 1 0 6h-1.1a5 5 0 0 1-2.9 2.9V19a3 3 0 1 1-6 0v-1.1a5 5 0 0 1-2.9-2.9H5a3 3 0 1 1 0-6h1.1a5 5 0 0 1 2.9-2.9V5a3 3 0 0 1 3-3zm0 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+    </svg>
   </a>
-   <a onclick="document.getElementById('framel').src = 'test100.html';">
-    <img src="ai.png">
-  </a>
-  <a onclick="document.getElementById('framel').src = 'movie.html';">
-    <img src="movie2.png">
-  </a>
-   <a onclick="document.getElementById('framel').src = 'music3.html';">
-    <img src="music3.png">
-  </a>
-  <a onclick="document.getElementById('framel').src = 'r.html';">
-    <img  src="search.png">
-  </a>
-  
-  <a onclick="document.getElementById('framel').src = 'a.html';">
-    <img src="apps1.png">
-  </a>
-
-    <a onclick="document.getElementById('framel').src = 'chat3.html';">
-    <img src="chat2.png">
+  <a onclick="document.getElementById('framel').src = 'movie3.html';">
+     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="white" viewBox="0 0 24 24">
+      <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 2v12h12V6H6zm3 3 7 3-7 3V9z"/>
+    </svg>
   </a>
   
 
@@ -42,7 +31,7 @@
         rgb(15, 15, 15),
         rgb(10, 10, 10)
       );
-      border-radius: 15px;
+      border-radius: 25px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -56,7 +45,7 @@
       opacity: 0.92;
       z-index: 9999;
       will-change: height, border-radius;
-      border:2px solid gray;
+      border:rgba(255, 255, 255, 0.1);
 
     }
 
@@ -70,7 +59,7 @@
       inset: -2px;
       border-radius: inherit;
       pointer-events: none;
-      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
+      background:#202036;
       opacity: 1;
       transition: opacity 0.2s ease;
       border:2px solid gray;
@@ -78,7 +67,7 @@
 
     .navbar:hover::after {
       opacity: 1;
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
+      background: #202036;
     }
 
     .navbar img {
@@ -246,4 +235,4 @@
     });
 </script>
 
-    <iframe id="framel" src="startl.html"></iframe>
+    <iframe id="framel" src="gim3.html"></iframe>
