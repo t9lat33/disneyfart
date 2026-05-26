@@ -235,27 +235,12 @@
 
       <div id="newtab" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-chrome-content">
         <div class="text-center mb-10">
-          <h1 class="text-7xl font-bold tracking-tight bg-gradient-to-r from-accent via-cyan to-accent bg-clip-text text-transparent drop-shadow-lg">T9</h1>
-          <p class="text-[11px] font-mono text-text-muted tracking-[0.3em] uppercase mt-2">browser</p>
+          <h1 class="text-7xl font-bold tracking-tight bg-gradient-to-r from-accent via-cyan to-accent bg-clip-text text-transparent drop-shadow-lg">T9 LITE</h1>
         </div>
 
-        <div class="w-full max-w-xl relative">
-          <div id="nt-sw" class="flex items-center bg-chrome-input border border-chrome-input-border rounded-full h-14 px-3 gap-3 transition-fast input-glow shadow-xl">
-            <button id="se-toggle" onclick="B.toggleSeDropdownNT(event)" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-border text-text-muted hover:text-white transition-fast">
-              <svg id="se-icon-nt" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
-            </button>
-            <input id="nt-s" type="text" placeholder="Search Google or type a URL" class="flex-1 bg-transparent border-none outline-none text-base text-text-primary placeholder-text-muted font-medium" onkeydown="if(event.key==='Enter')B.navigate(this.value)" />
-            <button id="nt-go" onclick="B.navigate(document.getElementById('nt-s').value)" class="h-10 px-6 rounded-full bg-accent text-white font-semibold text-sm tracking-wide flex items-center gap-2 hover:opacity-90 transition-fast border border-accent/30 shadow-md">
-              Go
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-4-4l4 4-4 4"/></svg>
-            </button>
-          </div>
-          <div id="se-dropdown" class="absolute top-full left-0 mt-3 w-64 bg-glass backdrop-blur-panel rounded-2xl p-2 shadow-xl hidden z-50 border border-border"></div>
-        </div>
+      
 
-        <div id="rc-sec" class="w-full max-w-xl mt-8 hidden">
-          <p class="text-[11px] font-mono text-text-muted tracking-[0.2em] uppercase mb-3 px-2">Recently closed</p>
-          <div id="nt-rc" class="space-y-2"></div>
+        
         </div>
       </div>
     </main>
