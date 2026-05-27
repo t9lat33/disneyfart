@@ -495,11 +495,9 @@
         setProxy(currentProxy); 
         retryLoad(); 
       }
-      renderTabs(); 
-      showNew();
-      B.navigate('https://duckduckgo.com/'); 
-      document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
-
+      renderTabs();
+navigate('https://duckduckgo.com/');
+document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
      return { 
   addTab, closeTab, navigate, back, fwd, reload, home, 
   focusUrl, onFocus, onBlur, onInput, onKey, 
