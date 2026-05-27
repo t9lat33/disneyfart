@@ -495,9 +495,9 @@
         setProxy(currentProxy); 
         retryLoad(); 
       }
-      renderTabs();
-navigate('https://duckduckgo.com/');
-document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
+     renderTabs(); 
+      showNew();
+      document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
      return { 
   addTab, closeTab, navigate, back, fwd, reload, home, 
   focusUrl, onFocus, onBlur, onInput, onKey, 
@@ -505,8 +505,11 @@ document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSea
   setSearchEngine, toggleSeDropdownNT, toggleSeDropdownChrome, 
   retryLoad, switchAndRetry, cur 
 };
-    })();
+})();
 
+    window.addEventListener('load', () => {
+      setTimeout(() => B.navigate('https://duckduckgo.com/'), 300);
+    });
     const WP = {
       clearBg(){ 
         document.body.style.background=''; 
