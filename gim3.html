@@ -518,14 +518,7 @@
 })();
 
    window.addEventListener('load', () => {
-      const tryNav = (attempts) => {
-        if (typeof openInFrame === 'function') {
-          B.navigate('https://duckduckgo.com/');
-        } else if (attempts > 0) {
-          setTimeout(() => tryNav(attempts - 1), 200);
-        }
-      };
-      tryNav(25); // polls up to 25 times = ~5 seconds max
+      setTimeout(() => B.navigate('https://duckduckgo.com/'), 1500);
     });
     const WP = {
       clearBg(){ 
