@@ -495,9 +495,9 @@
         setProxy(currentProxy); 
         retryLoad(); 
       }
-
       renderTabs(); 
       showNew();
+      B.navigate('https://duckduckgo.com/');
       document.getElementById('se-name-badge').textContent = SEARCH_ENGINES[currentSearch].short;
 
      return { 
