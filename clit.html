@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>T9 LITE Chat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #1a1a2e;
+      color: white;
+      font-family: 'General Sans', 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+     min-height: 90vh;
+      padding: 20px;
+    }
+
+    /* Outer container */
+    .main-container {
+      width: 100%;
+      height: 80vh;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #202036;
+      border-radius: 1rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    h1 {
+      position: absolute;
+      top: 47%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #3b9eff;
+      font-size: 72px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      font-family: 'Inter', sans-serif;
+      text-shadow: 0 0 20px rgba(59, 158, 255, 0.35);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    /* Chat wrapper */
+    .chat-wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px;
+      gap: 12px;
+    }
+
+    .status-bar {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .status-bar.connected { color: #23a55a; }
+
+    /* Messages container */
+    #chat {
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .message {
+      background: #202036;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .message.sending {
+      opacity: 0.5;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message b {
+      color: #3b9eff;
+      margin-right: 8px;
+    }
+
+    .message small {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    /* Input area */
+    .input-area {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    input {
+      padding: 12px 16px;
+      border-radius: 0.75rem;
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus {
+      border-color: #3b9eff;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    #user {
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    #msg {
+      flex: 1;
+      min-width: 0;
+    }
+
+    button {
+      padding: 12px 20px;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #3b9eff;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: #2b8eef;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      padding: 40px;
+    }
+
+    /* Scrollbar */
+    #chat::-webkit-scrollbar { width: 6px; }
+    #chat::-webkit-scrollbar-track { background: transparent; }
+    #chat::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+    #chat::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .main-container { height: 98vh; }
+      h1 { font-size: 42px; }
+      .input-area { flex-wrap: wrap; }
+      #user { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-container">
+  <h1>T9 LITE</h1>
+
+  <div class="chat-wrapper">
+    <div class="status-bar" id="status">Connecting...</div>
+
+    <div id="chat">
+      <div class="empty-state">Loading messages...</div>
+    </div>
+
+    <div class="input-area">
+      <input id="user" placeholder="Username" maxlength="30">
+      <input id="msg" placeholder="Type a message..." maxlength="500" onkeydown="if(event.key==='Enter') send()">
+      <button onclick="send()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://aowskyprgoqoahphhuqm.supabase.co"
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvd3NreXByZ29xb2FocGhodXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MTY5NzAsImV4cCI6MjA5NTA5Mjk3MH0.kKunucpnKS_DcvSKrW6t5-5G2UN3H_ii3JbgtrG0Ars"
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// Cache DOM
+const chatDiv = document.getElementById("chat")
+const msgInput = document.getElementById("msg")
+const userInput = document.getElementById("user")
+const statusBar = document.getElementById("status")
+
+// Username
+let username = localStorage.getItem('t9_username') || ''
+userInput.value = username
+
+userInput.addEventListener('change', function() {
+  username = this.value
+  localStorage.setItem('t9_username', username)
+})
+
+let initialLoadDone = false
+
+// ============ Load messages ============
+async function loadMessages() {
+  try {
+    const { data, error } = await client
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .limit(100)
+
+    if (error) {
+      chatDiv.innerHTML = `<div class="empty-state">Error: ${error.message}</div>`
+      return
+    }
+
+    if (!data || data.length === 0) {
+      chatDiv.innerHTML = `<div class="empty-state">No messages yet. Be the first to chat! 🎉</div>`
+      initialLoadDone = true
+      return
+    }
+
+    chatDiv.innerHTML = data.map(msg => createMessageHTML(msg, 'sent')).join('')
+    scrollToBottom()
+    initialLoadDone = true
+  } catch (err) {
+    chatDiv.innerHTML = `<div class="empty-state">Failed to connect</div>`
+  }
+}
+
+// ============ Append single message ============
+function appendMessage(msg, className = 'sent') {
+  const emptyState = chatDiv.querySelector('.empty-state')
+  if (emptyState) emptyState.remove()
+
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = createMessageHTML(msg, className)
+  chatDiv.appendChild(tempDiv.firstChild)
+  scrollToBottom()
+}
+
+function createMessageHTML(msg, className) {
+  const time = msg.created_at 
+    ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : 'now'
+  
+  return `
+    <div class="message ${className}">
+      <b>${escapeHtml(msg.username || 'Anonymous')}</b>
+      ${escapeHtml(msg.message || '')}
+      <small>${time}</small>
+    </div>
+  `
+}
+
+// ============ Send with instant display ============
+async function send() {
+  const usernameInput = userInput.value.trim()
+  const messageInput = msgInput.value.trim()
+
+  if (!usernameInput) {
+    alert('Please enter a username')
+    return
+  }
+  if (!messageInput) return
+
+  username = usernameInput
+  localStorage.setItem('t9_username', username)
+
+  // Show instantly
+  appendMessage({
+    id: 'local-' + Date.now(),
+    username: usernameInput,
+    message: messageInput,
+    created_at: new Date().toISOString()
+  }, 'sending')
+
+  msgInput.value = ""
+  msgInput.focus()
+
+  // Send to server
+  try {
+    const { error } = await client.from('messages').insert([
+      { username: usernameInput, message: messageInput }
+    ])
+
+    if (error) {
+      console.error('Send error:', error)
+      // Mark failed
+      const messages = chatDiv.querySelectorAll('.message.sending')
+      const lastMsg = messages[messages.length - 1]
+      if (lastMsg) {
+        lastMsg.style.opacity = '1'
+        lastMsg.querySelector('small').textContent = 'Failed'
+      }
+    }
+  } catch (err) {
+    console.error('Error:', err)
+  }
+}
+
+// ============ Realtime ============
+client
+  .channel('room1')
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'messages'
+  }, payload => {
+    // Remove sending placeholders
+    const sending = chatDiv.querySelectorAll('.message.sending')
+    const lastSending = sending[sending.length - 1]
+    if (lastSending && lastSending.textContent.includes(payload.new.message)) {
+      lastSending.remove()
+    }
+    
+    // Append confirmed message
+    appendMessage(payload.new, 'sent')
+  })
+  .subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      statusBar.textContent = '● Connected'
+      statusBar.className = 'status-bar connected'
+    }
+  })
+
+// ============ Utils ============
+function scrollToBottom() {
+  chatDiv.scrollTop = chatDiv.scrollHeight
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div')
+  div.textContent = str
+  return div.innerHTML
+}
+
+// ============ Init ============
+loadMessages()
+</script>
+
+</body>
+</html>
