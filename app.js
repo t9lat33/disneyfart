@@ -200,7 +200,8 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 
 let panicKey = getSetting("splash:panicKey", "") || "";
-let wispUrl = getSetting("splash:wispUrl", "wss://wisp.rhw.one/") || "wss://wisp.rhw.one/";
+localStorage.removeItem("splash:wispUrl");
+document.cookie = "splash:wispUrl=; max-age=0; path=/";
 let adblockEnabled = getSetting("splash:adblockEnabled", null);
 adblockEnabled = adblockEnabled === null ? true : adblockEnabled === "true";
 let homeNewTab = getSetting("splash:homeNewTab", null);
