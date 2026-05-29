@@ -1863,17 +1863,7 @@ async function init() {
   navigator.serviceWorker.ready.then(() => {
     sendAdblockSetting();
   });
-  if (!hasStoredWispUrl()) {
-    const localWisp = `wss://${window.location.host}/wisp/`;
-    const available = await checkWispServer(localWisp);
-    if (available) {
-      await setWispUrl(localWisp);
-    } else {
-      await setWispUrl(splashDefaultWisp);
-    }
-  } else {
-    await setWispUrl(wispUrl);
-  }
+  await setWispUrl(splashDefaultWisp);
   try {
     await ensureScramjetDb();
   } catch (error) {
