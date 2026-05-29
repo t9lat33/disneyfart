@@ -1,6 +1,6 @@
 window.SPLASH_CONFIG = window.SPLASH_CONFIG || {
   wisp: {
-    default: "wss://gointospace.app/wisp/",
+    default: "wss://gointospace.app/wisp",
     allowInject: true,
   },
   head: {
