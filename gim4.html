@@ -16,12 +16,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Preserved original proxy scripts -->
-  <script src="./ghost.js"></script>
   <script src="/uv/uv.bundle.js"></script>
   <script src="/uv/uv.config.js"></script>
-  <script src="./index.config.js"></script>
-  <script src="./surf/baremux/index.js"></script>
-  <script src="./surf/scram/scramjet.all.js"></script>
+  <script src="/baremux/index.js"></script>
+  <script src="/scram/scramjet.all.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,19 +276,20 @@
     <span id="toast-msg" class="text-text-secondary">Saving...</span>
   </div>
 
-  <script src="./app.js" defer></script>
-  <script>
-  window.__scramjetReady = false;
-  const _origInit = window.init;
-  document.addEventListener('DOMContentLoaded', () => {
-    const checkInit = setInterval(() => {
-      if (typeof openInFrame === 'function') {
-        window.__scramjetReady = true;
-        clearInterval(checkInit);
-      }
-    }, 100);
-  });
-</script>
+<script>
+    const { ScramjetController } = $scramjetLoadController();
+    window.__vaporScramjet = new ScramjetController({
+      files: {
+        wasm: "/scram/scramjet.wasm.wasm",
+        all: "/scram/scramjet.all.js",
+        sync: "/scram/scramjet.sync.js",
+      },
+    });
+    window.__vaporScramjet.init();
+    navigator.serviceWorker.register("./sw.js");
+    const __vaporConnection = new BareMux.BareMuxConnection("/baremux/worker.js");
+    __vaporConnection.setTransport("/epoxy/index.mjs", [{ wisp: "wss://gointospace.app/wisp/" }]);
+  </script>
 
   <script>
     const SEARCH_ENGINES = {
@@ -391,21 +390,10 @@
         hideOmni();
       }
 
-     async function doLoad(url, updateHash) {
-  startProg(); hideError();
-  const frame = document.getElementById('proxy-frame');
-  if(currentProxy==='scramjet'){
-    if(typeof openInFrame==='function' && window.__scramjetReady) {
-      openInFrame(url);
-    } else {
-      setTimeout(() => doLoad(url, updateHash), 300);
-      return;
-    }
-  } else {
-          try {
-            if(typeof __uv$config !== 'undefined') frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-          } catch(e){ console.warn(e); }
-        }
+ async function doLoad(url, updateHash) {
+        startProg(); hideError();
+        const frame = document.getElementById('proxy-frame');
+        frame.src = window.__vaporScramjet.encodeUrl(url);
         frame.onload = ()=>{ stopProg(); };
       }
 
