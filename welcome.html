@@ -2,11 +2,65 @@
 #202036; border-radius:1rem;">
 
 <h1> T9 LITE </h1>
+<div id="particles"></div>
+
+<script>
+const container = document.getElementById("particles");
+const COUNT = 35; 
+
+for (let i = 0; i < COUNT; i++) {
+  const p = document.createElement("div");
+
+  const size = Math.random() * 4 + 2;
+
+  p.classList.add("particle");
+
+  p.style.width = size + "px";
+  p.style.height = size + "px";
+
+  p.style.left = Math.random() * 100 + "%";
+  p.style.top = Math.random() * 100 + "%";
+
+  const duration = Math.random() * 10 + 10;
+
+  const xMove = (Math.random() - 0.5) * 200;
+  const yMove = (Math.random() - 0.5) * 200;
+
+  const animationName = `float${i}`;
+
+  p.style.animation = `${animationName} ${duration}s linear infinite`;
+
+  const style = document.createElement("style");
+
+  style.innerHTML = `
+    @keyframes ${animationName} {
+      0% {
+        transform: translate(0px, 0px);
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(${xMove}px, ${yMove}px);
+        opacity: 0.2;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+  container.appendChild(p);
+}
+</script>
 </div>
 <style>
 body{
 background-color: 
 #1a1a2e;
+margin: 0;
+overflow: hidden;
 }
 h1{
   position:absolute;
@@ -21,4 +75,20 @@ h1{
   font-family:'Inter', sans-serif;
   text-shadow:0 0 20px rgba(59, 158, 255, 0.35);
 }
+#particles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.7);
+  will-change: transform;
+}
 </style>
+
+
+
