@@ -279,6 +279,18 @@
   </div>
 
   <script src="./app.js" defer></script>
+  <script>
+  window.__scramjetReady = false;
+  const _origInit = window.init;
+  document.addEventListener('DOMContentLoaded', () => {
+    const checkInit = setInterval(() => {
+      if (typeof openInFrame === 'function') {
+        window.__scramjetReady = true;
+        clearInterval(checkInit);
+      }
+    }, 100);
+  });
+</script>
 
   <script>
     const SEARCH_ENGINES = {
@@ -379,12 +391,17 @@
         hideOmni();
       }
 
-      async function doLoad(url, updateHash) {
-        startProg(); hideError();
-        const frame = document.getElementById('proxy-frame');
-        if(currentProxy==='scramjet'){
-          if(typeof openInFrame==='function') openInFrame(url);
-        } else {
+     async function doLoad(url, updateHash) {
+  startProg(); hideError();
+  const frame = document.getElementById('proxy-frame');
+  if(currentProxy==='scramjet'){
+    if(typeof openInFrame==='function' && window.__scramjetReady) {
+      openInFrame(url);
+    } else {
+      setTimeout(() => doLoad(url, updateHash), 300);
+      return;
+    }
+  } else {
           try {
             if(typeof __uv$config !== 'undefined') frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
           } catch(e){ console.warn(e); }
