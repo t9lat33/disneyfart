@@ -2,416 +2,1214 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Fullscreen Terminal Top Input</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 Linux</title>
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    background: black;
-    font-family: monospace;
-    color: #02f50f;
-    transition: background 0.5s;
-  }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  .terminal {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-  }
+html, body {
+  height: 100%;
+  width: 100%;
+  background: #1e1e2e;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  overflow: hidden;
+  user-select: none;
+}
 
-  .output {
-    flex: 1;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    margin-bottom: 10px;
-    font-size: 14px;
-    line-height: 1.4;
-  }
+/* Terminal window — fullscreen */
+.term-win {
+  width: 100%;
+  height: 100vh;
+  background: #1e1e2e;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  user-select: text;
+}
 
-  .input-line {
-    display: flex;
-    align-items: center;
-  }
+/* Title bar */
+.titlebar {
+  height: 36px;
+  background: #181825;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
 
-  .prompt {
-    margin-right: 5px;
-  }
 
-  #commandBox {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #02f50f;
-    font-family: monospace;
-    font-size: 16px;
-  }
 
-  #commandBox::placeholder {
-    color: #02f50faa;
-  }
+.tab-pill {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
 
-  .error {
-    color: #ff4444;
-  }
+.tab-active {
+  background: #1e1e2e;
+  border-radius: 6px;
+  padding: 3px 14px;
+  font-size: 12px;
+  color: #cdd6f4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-  .success {
-    color: #02f50f;
-  }
+.tab-active .ti { font-size: 13px; color: #89b4fa; }
 
-  .info {
-    color: #44aaff;
-  }
+.tb-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #585b70;
+  font-size: 11px;
+}
+
+/* Input bar at TOP */
+.input-bar {
+  background: #181825;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.ps-user    { color: #a6e3a1; font-weight: 700; font-size: 13px; }
+.ps-at      { color: #585b70; font-size: 13px; }
+.ps-host    { color: #89b4fa; font-weight: 700; font-size: 13px; }
+.ps-sep     { color: #585b70; font-size: 13px; }
+.ps-path    { color: #89dceb; font-size: 13px; }
+.ps-git     { color: #cba6f7; font-size: 13px; }
+.ps-dollar  { color: #a6adc8; font-size: 13px; margin: 0 7px 0 3px; }
+
+#cmdInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #cdd6f4;
+  font-family: inherit;
+  font-size: 13px;
+  caret-color: #cba6f7;
+}
+
+/* Output */
+.output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.output::-webkit-scrollbar { width: 4px; }
+.output::-webkit-scrollbar-track { background: transparent; }
+.output::-webkit-scrollbar-thumb { background: #313244; border-radius: 2px; }
+
+/* Output line echo */
+.echo-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin-bottom: 1px;
+  white-space: pre;
+}
+
+/* Text color tokens — Catppuccin Mocha */
+.c-text    { color: #cdd6f4; }
+.c-sub     { color: #a6adc8; }
+.c-green   { color: #a6e3a1; }
+.c-blue    { color: #89b4fa; }
+.c-lavender{ color: #b4befe; }
+.c-mauve   { color: #cba6f7; }
+.c-pink    { color: #f38ba8; }  /* errors */
+.c-yellow  { color: #f9e2af; }
+.c-teal    { color: #94e2d5; }
+.c-sky     { color: #89dceb; }
+.c-sapphire{ color: #74c7ec; }
+.c-peach   { color: #fab387; }
+
+/* Specific semantic roles */
+.ln-err    { color: #f38ba8; }
+.ln-warn   { color: #f9e2af; }
+.ln-info   { color: #89b4fa; }
+.ln-ok     { color: #a6e3a1; }
+.ln-dim    { color: #585b70; }
+.ln-file   { color: #cdd6f4; }
+.ln-dir    { color: #89b4fa; font-weight: 700; }
+.ln-exec   { color: #a6e3a1; font-weight: 700; }
+
+/* Banner styling */
+.banner-pre {
+  color: #cba6f7;
+  font-size: 9.5px;
+  line-height: 1.2;
+  white-space: pre;
+  display: block;
+  margin-bottom: 6px;
+  letter-spacing: 0;
+}
+
+/* Neofetch style layout */
+.nf-wrap {
+  display: flex;
+  gap: 20px;
+  margin: 2px 0 6px;
+}
+
+.nf-logo {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  white-space: pre;
+  color: #89b4fa;
+}
+
+.nf-info {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.nf-label { color: #89b4fa; font-weight: 700; }
+.nf-sep   { color: #585b70; }
+.nf-val   { color: #cdd6f4; }
+
+.nf-divider {
+  color: #cba6f7;
+  font-size: 12px;
+}
+
+.nf-colors {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.nf-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* HTML pane */
+#htmlPane {
+  display: none;
+  position: fixed;
+  bottom: 40px; right: 30px;
+  width: 560px; height: 380px;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  background: #1e1e2e;
+  z-index: 50;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+}
+
+#htmlPane.open { display: flex; flex-direction: column; }
+
+.pane-bar {
+  height: 30px;
+  background: #181825;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 11px;
+  color: #89b4fa;
+  flex-shrink: 0;
+}
+
+.pane-close { cursor: pointer; color: #f38ba8; }
+
+#htmlIframe {
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
+/* Multi-line mode indicator */
+.multi-hint {
+  background: #181825;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 4px 14px;
+  font-size: 11px;
+  color: #585b70;
+  flex-shrink: 0;
+  display: none;
+}
+
+.multi-hint.show { display: block; }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 </head>
 <body>
-<div class="terminal">
-  <div class="output" id="output">Welcome to T9 OS V3! Type "help" for commands.</div>
-  <div class="input-line">
-    <span class="prompt" id="promptText">user/$></span>
-    <input type="text" id="commandBox" placeholder="Type command..." autocomplete="off">
+
+<div class="term-win" id="termWin">
+    <!-- Title bar -->
+    <div class="titlebar">
+      <div style="width:60px"></div>
+      <div class="tab-pill">
+        <div class="tab-active">
+          <i class="ti ti-terminal"></i>
+          <span id="tabLabel">user@t9linux: ~</span>
+        </div>
+      </div>
+      <div class="tb-right" id="clockEl"></div>
+    </div>
+
+    <!-- INPUT AT TOP -->
+    <div class="input-bar">
+      <span class="ps-user" id="psUser">user</span>
+      <span class="ps-at">@</span>
+      <span class="ps-host">t9linux</span>
+      <span class="ps-sep">:</span>
+      <span class="ps-path" id="psPath">~</span>
+      <span class="ps-dollar">❯</span>
+      <input type="text" id="cmdInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    </div>
+
+    <!-- Multi-line hint -->
+    <div class="multi-hint" id="multiHint">-- INSERT -- (type EOF or Ctrl+D to run, Ctrl+C to cancel)</div>
+
+    <!-- Output -->
+    <div class="output" id="output"></div>
   </div>
+
+<!-- HTML preview pane -->
+<div id="htmlPane">
+  <div class="pane-bar">
+    <span><i class="ti ti-browser" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i> HTML Preview</span>
+    <span class="pane-close" onclick="closeHtml()"><i class="ti ti-x"></i></span>
+  </div>
+  <iframe id="htmlIframe" sandbox="allow-scripts"></iframe>
 </div>
 
-<!-- Admin sound -->
-<audio id="adminSound" src="scare.mp3" loop></audio>
+<!-- Skulpt Python -->
+<script src="https://skulpt.org/js/skulpt.min.js"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js"></script>
 
 <script>
-const output = document.getElementById('output');
-const input = document.getElementById('commandBox');
-const adminSound = document.getElementById('adminSound');
-const promptText = document.getElementById('promptText');
+const out      = document.getElementById('output');
+const inp      = document.getElementById('cmdInput');
+const psPath   = document.getElementById('psPath');
+const tabLabel = document.getElementById('tabLabel');
+const multiHint= document.getElementById('multiHint');
 
-// File system simulation
-let currentDir = '/home/user';
-const fileSystem = {
-  '/': {
-    type: 'dir',
-    contents: {
-      'home': {
-        type: 'dir',
-        contents: {
-          'user': {
-            type: 'dir',
-            contents: {
-              'documents': {
-                type: 'dir',
-                contents: {
-                  'readme.txt': { type: 'file', content: 'Welcome to the terminal!\nThis is a simulated file system.' }
-                }
-              },
-              'projects': {
-                type: 'dir',
-                contents: {}
-              },
-              'welcome.txt': { type: 'file', content: 'Hello! This is your home directory.' }
-            }
-          }
-        }
-      },
-      'bin': {
-        type: 'dir',
-        contents: {}
-      },
-      'etc': {
-        type: 'dir',
-        contents: {
-          'config.txt': { type: 'file', content: 'System configuration file' }
-        }
+// ── Clock ──────────────────────────────────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  document.getElementById('clockEl').textContent =
+    n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(tick,1000); tick();
+
+// ── FS ─────────────────────────────────────────────────────────────────────────
+let cwd = '/home/user';
+
+const FS = {
+  '/': { _type:'dir',
+    home: { _type:'dir',
+      user: { _type:'dir',
+        documents: { _type:'dir',
+          'readme.txt':  { _type:'file', data:'Welcome to T9 Linux!\nThis is a simulated filesystem.' },
+          'notes.txt':   { _type:'file', data:'T9 Linux — Fast. Clean. Yours.' }
+        },
+        projects: { _type:'dir',
+          'hello.py':  { _type:'file', data:'print("Hello from T9 Linux!")' },
+          'app.js':    { _type:'file', data:'console.log("T9 JS ready")' },
+          'index.html':{ _type:'file', data:'<!DOCTYPE html><html><body style="background:#1e1e2e;color:#cdd6f4;font-family:monospace;padding:2rem"><h1>T9 HTML Preview</h1><p>It works!</p></body></html>' }
+        },
+        '.bashrc': { _type:'file', data:'# T9 Linux bash config\nexport PS1="\\u@t9linux:\\w❯ "\nalias ll="ls -la"\nalias la="ls -a"' },
+        '.bash_history': { _type:'file', data:'ls\ncd projects\ncat hello.py\npython hello.py' }
       }
-    }
+    },
+    etc: { _type:'dir',
+      'hostname':   { _type:'file', data:'t9linux' },
+      'os-release': { _type:'file', data:'NAME="T9 Linux"\nVERSION="3.0 (Neon)"\nID=t9linux\nPRETTY_NAME="T9 Linux 3.0 Neon"' }
+    },
+    tmp: { _type:'dir' },
+    var: { _type:'dir',
+      log: { _type:'dir',
+        'syslog': { _type:'file', data:'[INFO] T9 Linux boot OK\n[INFO] All services started' }
+      }
+    },
+    usr: { _type:'dir', bin:{ _type:'dir' }, lib:{ _type:'dir' } },
+    bin: { _type:'dir' }
   }
 };
-
-// Command history
-let commandHistory = [];
-let historyIndex = -1;
-
-const commands = { 
-  help: 'Available commands:\n' +
-        '  help          - Show this help\n' +
-        '  ls [dir]      - List directory contents\n' +
-        '  cd <dir>      - Change directory\n' +
-        '  pwd           - Print working directory\n' +
-        '  cat <file>    - Display file contents\n' +
-        '  mkdir <dir>   - Make directory\n' +
-        '  touch <file>  - Create empty file\n' +
-        '  echo <text>   - Print text\n' +
-        '  clear         - Clear terminal\n' +
-        '  whoami        - Display current user\n' +
-        '  date          - Show current date/time\n' +
-        '  js <code>     - Execute JavaScript\n' +
-        '  google        - Open Google\n' +
-        '  version       - Show version\n' +
-        '  !early        - Early access page\n' +
-        '  !gms          - Open games\n' +
-        '  !xploits      - Open xploits\n' +
-        '  !ai           - Open AI\n' +
-        '  !admin        - Admin only (scary!)',
-  google: 'Opening Google...',
-  version: 'WebTerminal version 2.5 - Enhanced Edition',
-  '!early': 'Opening early access page...',
-  '!gms': 'Opening games...',
-  '!xploits': 'Opening xploits...',
-  '!apps': 'Opening games...',
-  '!ai': 'Opening AI......',
-  '!admin': 'DONT LOOK BEHIND YOU!!!!!!!!!!!!'
-};
-
-const redirects = {
-  google: 'https://www.google.com',
-  '!early': 'testing.html',
-  '!gms': 'g2.html',
-  '!ai': '/ai/index.html',
-  '!xploits': '/xploits/index.html',
-};
-
-function printOutput(text, className = '') {
-  const span = document.createElement('span');
-  if (className) span.className = className;
-  span.textContent = text + '\n';
-  output.appendChild(span);
-  output.scrollTop = output.scrollHeight;
-}
 
 function getNode(path) {
-  if (path === '/') return fileSystem['/'];
-  
-  const parts = path.split('/').filter(p => p);
-  let node = fileSystem['/'];
-  
-  for (const part of parts) {
-    if (node.type !== 'dir' || !node.contents[part]) {
-      return null;
-    }
-    node = node.contents[part];
+  if (!path || path === '/') return FS['/'];
+  const parts = path.split('/').filter(Boolean);
+  let n = FS['/'];
+  for (const p of parts) {
+    if (!n || n._type !== 'dir') return null;
+    n = n[p];
+    if (!n) return null;
   }
-  return node;
+  return n;
 }
 
-function resolvePath(path) {
-  if (path.startsWith('/')) {
-    return path;
+function resolvePath(p) {
+  if (!p || p==='.') return cwd;
+  if (p==='~') return '/home/user';
+  if (p.startsWith('~/')) return '/home/user'+p.slice(1);
+  if (p.startsWith('/')) return canonize(p);
+  if (p==='..') {
+    const segs = cwd.split('/').filter(Boolean);
+    segs.pop();
+    return '/'+segs.join('/') || '/';
   }
-  
-  if (path === '..') {
-    const parts = currentDir.split('/').filter(p => p);
-    parts.pop();
-    return '/' + parts.join('/');
+  const segs = cwd.split('/').filter(Boolean);
+  for (const s of p.split('/')) {
+    if (s==='..') segs.pop();
+    else if (s!=='.') segs.push(s);
   }
-  
-  if (path === '.') {
-    return currentDir;
-  }
-  
-  if (currentDir === '/') {
-    return '/' + path;
-  }
-  
-  return currentDir + '/' + path;
+  return '/'+segs.join('/');
 }
 
-function executeCommand(cmd) {
-  const parts = cmd.split(' ');
-  const command = parts[0].toLowerCase();
-  const args = parts.slice(1);
-
-  printOutput(`> ${cmd}`);
-
-  // Check for predefined commands
-  if (commands[command]) {
-    printOutput(commands[command], 'success');
-
-    if (command === '!admin') {
-      document.body.style.backgroundImage = 'url("scare.png")';
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      adminSound.volume = 0.7;
-      adminSound.play().catch(()=>{});
-    }
-
-    if (redirects[command] && command !== '!admin') {
-      setTimeout(() => {
-        window.location.href = redirects[command];
-      }, 1000);
-    }
-    return;
+function canonize(p) {
+  const out=[];
+  for (const s of p.split('/').filter(Boolean)) {
+    if (s==='..') out.pop();
+    else if (s!=='.') out.push(s);
   }
+  return '/'+out.join('/');
+}
 
-  // Unix-like commands
-  switch (command) {
-    case 'ls':
-      const lsPath = args[0] ? resolvePath(args[0]) : currentDir;
-      const lsNode = getNode(lsPath);
-      if (!lsNode) {
-        printOutput(`ls: cannot access '${args[0]}': No such file or directory`, 'error');
-      } else if (lsNode.type !== 'dir') {
-        printOutput(args[0] || lsPath.split('/').pop());
-      } else {
-        const items = Object.keys(lsNode.contents);
-        if (items.length === 0) {
-          printOutput('(empty directory)', 'info');
-        } else {
-          printOutput(items.join('  '));
-        }
-      }
-      break;
-
-    case 'cd':
-      if (!args[0]) {
-        currentDir = '/home/user';
-      } else {
-        const newPath = resolvePath(args[0]);
-        const node = getNode(newPath);
-        if (!node) {
-          printOutput(`cd: ${args[0]}: No such file or directory`, 'error');
-        } else if (node.type !== 'dir') {
-          printOutput(`cd: ${args[0]}: Not a directory`, 'error');
-        } else {
-          currentDir = newPath === '' ? '/' : newPath;
-        }
-      }
-      updatePrompt();
-      break;
-
-    case 'pwd':
-      printOutput(currentDir);
-      break;
-
-    case 'cat':
-      if (!args[0]) {
-        printOutput('cat: missing file operand', 'error');
-      } else {
-        const catPath = resolvePath(args[0]);
-        const catNode = getNode(catPath);
-        if (!catNode) {
-          printOutput(`cat: ${args[0]}: No such file or directory`, 'error');
-        } else if (catNode.type !== 'file') {
-          printOutput(`cat: ${args[0]}: Is a directory`, 'error');
-        } else {
-          printOutput(catNode.content);
-        }
-      }
-      break;
-
-    case 'mkdir':
-      if (!args[0]) {
-        printOutput('mkdir: missing operand', 'error');
-      } else {
-        const mkdirPath = resolvePath(args[0]);
-        const parentPath = mkdirPath.substring(0, mkdirPath.lastIndexOf('/')) || '/';
-        const dirName = mkdirPath.split('/').pop();
-        const parentNode = getNode(parentPath);
-        
-        if (!parentNode || parentNode.type !== 'dir') {
-          printOutput(`mkdir: cannot create directory '${args[0]}': No such file or directory`, 'error');
-        } else if (parentNode.contents[dirName]) {
-          printOutput(`mkdir: cannot create directory '${args[0]}': File exists`, 'error');
-        } else {
-          parentNode.contents[dirName] = { type: 'dir', contents: {} };
-          printOutput(`Created directory: ${args[0]}`, 'success');
-        }
-      }
-      break;
-
-    case 'touch':
-      if (!args[0]) {
-        printOutput('touch: missing file operand', 'error');
-      } else {
-        const touchPath = resolvePath(args[0]);
-        const parentPath = touchPath.substring(0, touchPath.lastIndexOf('/')) || '/';
-        const fileName = touchPath.split('/').pop();
-        const parentNode = getNode(parentPath);
-        
-        if (!parentNode || parentNode.type !== 'dir') {
-          printOutput(`touch: cannot touch '${args[0]}': No such file or directory`, 'error');
-        } else {
-          if (!parentNode.contents[fileName]) {
-            parentNode.contents[fileName] = { type: 'file', content: '' };
-          }
-          printOutput(`Created file: ${args[0]}`, 'success');
-        }
-      }
-      break;
-
-    case 'echo':
-      printOutput(args.join(' '));
-      break;
-
-    case 'clear':
-      output.innerHTML = '';
-      break;
-
-    case 'whoami':
-      printOutput('user');
-      break;
-
-    case 'date':
-      printOutput(new Date().toString());
-      break;
-
-    case 'js':
-      if (!args.length) {
-        printOutput('js: missing JavaScript code', 'error');
-      } else {
-        try {
-          const code = parts.slice(1).join(' ');
-          const result = eval(code);
-          if (result !== undefined) {
-            printOutput(String(result), 'info');
-          }
-        } catch (e) {
-          printOutput(`JavaScript Error: ${e.message}`, 'error');
-        }
-      }
-      break;
-
-    default:
-      printOutput(`Command not found: ${command}`, 'error');
-  }
+function shortPath(p) {
+  if (p==='/home/user') return '~';
+  if (p.startsWith('/home/user/')) return '~/'+p.slice(11);
+  return p;
 }
 
 function updatePrompt() {
-  const shortPath = currentDir === '/home/user' ? '~' : currentDir;
-  promptText.textContent = `user:${shortPath}$>`;
+  const sp = shortPath(cwd);
+  psPath.textContent = sp;
+  tabLabel.textContent = 'user@t9linux: '+sp;
 }
 
-input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    const cmd = input.value.trim();
-    if (cmd) {
-      commandHistory.unshift(cmd);
-      historyIndex = -1;
-      executeCommand(cmd);
+// ── Output helpers ─────────────────────────────────────────────────────────────
+function div(text='', cls='c-text') {
+  const el = document.createElement('div');
+  el.className = cls;
+  el.textContent = text;
+  el.style.whiteSpace = 'pre-wrap';
+  el.style.wordBreak = 'break-all';
+  out.appendChild(el);
+  out.scrollTop = out.scrollHeight;
+  return el;
+}
+
+function blank() { div('',''); }
+
+function echoCmd(raw) {
+  const wrap = document.createElement('div');
+  wrap.className = 'echo-line';
+  wrap.innerHTML =
+    `<span class="c-green" style="font-weight:700">user</span>` +
+    `<span class="c-sub">@</span>` +
+    `<span class="c-blue" style="font-weight:700">t9linux</span>` +
+    `<span class="c-sub">:</span>` +
+    `<span class="c-sky">${esc(shortPath(cwd))}</span>` +
+    `<span class="c-mauve" style="margin:0 6px 0 3px">❯</span>` +
+    `<span class="c-text">${esc(raw)}</span>`;
+  out.appendChild(wrap);
+  out.scrollTop = out.scrollHeight;
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── HTML pane ──────────────────────────────────────────────────────────────────
+function openHtml(code) {
+  document.getElementById('htmlIframe').srcdoc = code;
+  document.getElementById('htmlPane').classList.add('open');
+}
+function closeHtml() {
+  document.getElementById('htmlPane').classList.remove('open');
+  document.getElementById('htmlIframe').srcdoc = '';
+}
+
+// ── Python ─────────────────────────────────────────────────────────────────────
+function runPython(code) {
+  const lines = [];
+  Sk.configure({
+    output: t => lines.push(t),
+    read: n => {
+      if (Sk.builtinFiles?.files?.[n] != null) return Sk.builtinFiles.files[n];
+      throw new Error("File not found: '"+n+"'");
     }
-    input.value = '';
+  });
+  Sk.misceval.asyncToPromise(()=>Sk.importMainWithBody('<stdin>',false,code,true))
+    .then(()=>{
+      const result = lines.join('');
+      if (result) result.split('\n').forEach(l=>div(l,'c-text'));
+      else div('(no output)','ln-dim');
+    })
+    .catch(e => div('Python error: '+e.toString(),'ln-err'));
+}
+
+// ── Multi-line mode ─────────────────────────────────────────────────────────────
+let mMode = null, mBuf = [];
+
+function enterMulti(mode, hint='') {
+  mMode = mode; mBuf = [];
+  multiHint.classList.add('show');
+  div(hint,'ln-info');
+}
+
+function exitMulti() {
+  const code = mBuf.join('\n');
+  const mode = mMode;
+  mMode = null; mBuf = [];
+  multiHint.classList.remove('show');
+  if (mode==='python')     runPython(code);
+  if (mode==='javascript') {
+    try {
+      const lines=[];
+      const fc = {log:(...a)=>lines.push(a.map(String).join(' ')), error:(...a)=>lines.push(a.map(String).join(' ')), warn:(...a)=>lines.push(a.map(String).join(' '))};
+      new Function('console',code)(fc);
+      lines.forEach(l=>div(l,'c-text'));
+      if (!lines.length) div('(script executed, no output)','ln-dim');
+    } catch(e) { div('JS error: '+e.message,'ln-err'); }
+  }
+  if (mode==='html') { openHtml(code); div('Opening in preview pane...','ln-info'); }
+}
+
+// ── History ────────────────────────────────────────────────────────────────────
+let hist=[], hIdx=-1;
+
+// ── Neofetch ───────────────────────────────────────────────────────────────────
+function doNeofetch() {
+  const logo =
+`      _____
+    /      \\
+   |  T  9  |
+   |  ___   |
+   |_|   |  |
+    \\  ___/ /
+     |_____|
+     __|__|__
+    /        \\
+   |__T9Linux_|`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'nf-wrap';
+
+  const logoEl = document.createElement('div');
+  logoEl.className = 'nf-logo';
+  logoEl.textContent = logo;
+
+  const infoEl = document.createElement('div');
+  infoEl.className = 'nf-info';
+  const now = new Date();
+  const upMins = Math.floor(performance.now()/60000);
+  const info = [
+    ['user','@','t9linux'],
+    [null],
+    ['OS',': ','T9 Linux 3.0 x86_64'],
+    ['Host',': ','T9 Virtual Machine'],
+    ['Kernel',': ','5.15.0-t9-generic'],
+    ['Uptime',': ', upMins+' mins'],
+    ['Shell',': ','bash 5.2.15'],
+    ['Resolution',': ','1920x1080'],
+    ['DE',': ','T9 Desktop'],
+    ['WM',': ','T9WM'],
+    ['Theme',': ','Catppuccin Mocha'],
+    ['Terminal',': ','t9term'],
+    ['CPU',': ','T9 Simulated CPU (8) @ 3.60GHz'],
+    ['Memory',': ','2048MiB / 16384MiB'],
+    [null],
+    ['colors'],
+  ];
+
+  for (const row of info) {
+    const line = document.createElement('div');
+    if (!row[0]) { line.innerHTML='<br>'; }
+    else if (row[0]==='colors') {
+      line.className='nf-colors';
+      const swatches=['#45475a','#f38ba8','#a6e3a1','#f9e2af','#89b4fa','#f5c2e7','#94e2d5','#bac2de','#585b70','#f38ba8','#a6e3a1','#f9e2af','#89b4fa','#f5c2e7','#94e2d5','#a6adc8'];
+      for (const c of swatches) {
+        const sw = document.createElement('span');
+        sw.className='nf-swatch';
+        sw.style.background=c;
+        line.appendChild(sw);
+      }
+    } else if (!row[1]) {
+      line.innerHTML = `<span class="nf-label">${esc(row[0])}</span>`;
+    } else {
+      line.innerHTML = `<span class="nf-label">${esc(row[0])}</span><span class="nf-sep">${row[1]}</span><span class="nf-val">${esc(row[2])}</span>`;
+    }
+    infoEl.appendChild(line);
+  }
+
+  wrap.appendChild(logoEl);
+  wrap.appendChild(infoEl);
+  out.appendChild(wrap);
+  out.scrollTop = out.scrollHeight;
+}
+
+// ── Commands ───────────────────────────────────────────────────────────────────
+const REDIRECTS = {
+  '!ai':'/ai/index.html', '!gms':'g2.html',
+  '!xploits':'/xploits/index.html', '!early':'testing.html'
+};
+
+function run(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+
+  if (mMode) {
+    if (trimmed==='EOF') exitMulti();
+    else mBuf.push(raw);
+    echoCmd(raw);
+    return;
+  }
+
+  hist.unshift(trimmed);
+  hIdx = -1;
+  echoCmd(trimmed);
+
+  const toks = trimmed.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)||[];
+  const cmd  = toks[0].toLowerCase();
+  const args = toks.slice(1).map(a=>a.replace(/^["']|["']$/g,''));
+
+  if (REDIRECTS[cmd]) {
+    div('Opening '+cmd+'...','ln-info');
+    setTimeout(()=>window.location.href=REDIRECTS[cmd],700);
+    return;
+  }
+
+  switch(cmd) {
+
+    case 'ls': {
+      const flags  = args.filter(a=>a.startsWith('-')).join('');
+      const target = args.find(a=>!a.startsWith('-'));
+      const showHid= flags.includes('a');
+      const long   = flags.includes('l');
+      const lp = target ? resolvePath(target) : cwd;
+      const n = getNode(lp);
+      if (!n) { div(`ls: cannot access '${target}': No such file or directory`,'ln-err'); break; }
+      if (n._type!=='dir') { div(lp.split('/').pop(),'ln-file'); break; }
+      const items = Object.entries(n).filter(([k])=>k!=='_type'&&(showHid||!k.startsWith('.')));
+      if (!items.length) { div('(empty directory)','ln-dim'); break; }
+      if (long) {
+        const d = new Date().toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+        div(`total ${items.length}`,'ln-dim');
+        for (const [name,node] of items) {
+          const isDir = node._type==='dir';
+          const perm  = isDir?'drwxr-xr-x':'-rw-r--r--';
+          const size  = isDir?4096:(node.data?.length||0);
+          const cls   = isDir?'ln-dir':(name.match(/\.(py|js|html|sh)$/)?'ln-exec':'ln-file');
+          div(`${perm}  1 user user ${String(size).padStart(5)} ${d} ${name}${isDir?'/':''}`,cls);
+        }
+      } else {
+        const row = document.createElement('div');
+        row.style.cssText='display:flex;flex-wrap:wrap;gap:2px 20px;';
+        for (const [name,node] of items) {
+          const sp=document.createElement('span');
+          sp.className = node._type==='dir'?'ln-dir':(name.match(/\.(py|js|html|sh)$/)?'ln-exec':'ln-file');
+          sp.textContent = node._type==='dir'?name+'/':name;
+          row.appendChild(sp);
+        }
+        out.appendChild(row); out.scrollTop=out.scrollHeight;
+      }
+      break;
+    }
+
+    case 'cd': {
+      const t = args[0]||'~';
+      const np = resolvePath(t);
+      const n = getNode(np);
+      if (!n)             { div(`bash: cd: ${t}: No such file or directory`,'ln-err'); break; }
+      if (n._type!=='dir'){ div(`bash: cd: ${t}: Not a directory`,'ln-err'); break; }
+      cwd = np||'/';
+      updatePrompt();
+      break;
+    }
+
+    case 'pwd':  div(cwd); break;
+
+    case 'cat': {
+      if (!args[0]) { div('cat: missing file operand','ln-err'); break; }
+      const n = getNode(resolvePath(args[0]));
+      if (!n)              { div(`cat: ${args[0]}: No such file or directory`,'ln-err'); break; }
+      if (n._type!=='file'){ div(`cat: ${args[0]}: Is a directory`,'ln-err'); break; }
+      n.data.split('\n').forEach(l=>div(l,'ln-file'));
+      break;
+    }
+
+    case 'mkdir': {
+      if (!args[0]) { div('mkdir: missing operand','ln-err'); break; }
+      const np = resolvePath(args[0]);
+      const pp = np.substring(0,np.lastIndexOf('/'))||'/';
+      const dn = np.split('/').pop();
+      const pn = getNode(pp);
+      if (!pn||pn._type!=='dir') { div(`mkdir: cannot create '${args[0]}': No such file or directory`,'ln-err'); break; }
+      if (pn[dn]) { div(`mkdir: cannot create '${args[0]}': File exists`,'ln-err'); break; }
+      pn[dn]={_type:'dir'};
+      break;
+    }
+
+    case 'touch': {
+      if (!args[0]) { div('touch: missing file operand','ln-err'); break; }
+      const np = resolvePath(args[0]);
+      const pp = np.substring(0,np.lastIndexOf('/'))||'/';
+      const fn = np.split('/').pop();
+      const pn = getNode(pp);
+      if (!pn||pn._type!=='dir') { div(`touch: cannot touch '${args[0]}': No such file or directory`,'ln-err'); break; }
+      if (!pn[fn]) pn[fn]={_type:'file',data:''};
+      break;
+    }
+
+    case 'rm': {
+      const rec = args.some(a=>a==='-r'||a==='-rf'||a==='-fr'||a==='-f');
+      const tgts= args.filter(a=>!a.startsWith('-'));
+      if (!tgts.length) { div('rm: missing operand','ln-err'); break; }
+      for (const t of tgts) {
+        const np = resolvePath(t);
+        const pp = np.substring(0,np.lastIndexOf('/'))||'/';
+        const bn = np.split('/').pop();
+        const pn = getNode(pp);
+        if (!pn||!pn[bn]) { div(`rm: cannot remove '${t}': No such file or directory`,'ln-err'); continue; }
+        if (pn[bn]._type==='dir'&&!rec) { div(`rm: cannot remove '${t}': Is a directory`,'ln-err'); continue; }
+        delete pn[bn];
+      }
+      break;
+    }
+
+    case 'cp': {
+      if (args.length<2) { div('cp: missing destination','ln-err'); break; }
+      const sn = getNode(resolvePath(args[0]));
+      if (!sn) { div(`cp: '${args[0]}': No such file or directory`,'ln-err'); break; }
+      const dp = resolvePath(args[1]);
+      const dp2= dp.substring(0,dp.lastIndexOf('/'))||'/';
+      const dn = dp.split('/').pop();
+      const pn = getNode(dp2);
+      if (!pn||pn._type!=='dir') { div(`cp: '${args[1]}': No such file or directory`,'ln-err'); break; }
+      pn[dn]=JSON.parse(JSON.stringify(sn));
+      break;
+    }
+
+    case 'mv': {
+      if (args.length<2) { div('mv: missing destination','ln-err'); break; }
+      const sp2= resolvePath(args[0]);
+      const spp= sp2.substring(0,sp2.lastIndexOf('/'))||'/';
+      const sbn= sp2.split('/').pop();
+      const spn= getNode(spp);
+      if (!spn||!spn[sbn]) { div(`mv: cannot stat '${args[0]}': No such file or directory`,'ln-err'); break; }
+      const dp = resolvePath(args[1]);
+      const dpp= dp.substring(0,dp.lastIndexOf('/'))||'/';
+      const dbn= dp.split('/').pop();
+      const dpn= getNode(dpp);
+      if (!dpn||dpn._type!=='dir') { div(`mv: '${args[1]}': No such file or directory`,'ln-err'); break; }
+      dpn[dbn]=spn[sbn]; delete spn[sbn];
+      break;
+    }
+
+    case 'echo': {
+      const full = args.join(' ');
+      const ri = full.indexOf('>');
+      if (ri>-1) {
+        const txt   = full.slice(0,ri).trim().replace(/^["']|["']$/g,'');
+        const fpart = full.slice(ri+1).trim().replace(/>/,'').trim();
+        const fp    = resolvePath(fpart);
+        const fpp   = fp.substring(0,fp.lastIndexOf('/'))||'/';
+        const fn    = fp.split('/').pop();
+        const fpn   = getNode(fpp);
+        if (!fpn||fpn._type!=='dir') { div(`bash: ${fpart}: No such file or directory`,'ln-err'); break; }
+        fpn[fn] = {_type:'file', data: full[ri+1]==='>'?(fpn[fn]?.data||'')+'\n'+txt : txt};
+      } else {
+        div(full.replace(/^["']|["']$/g,''),'c-text');
+      }
+      break;
+    }
+
+    case 'grep': {
+      if (args.length<2) { div('grep: missing pattern or file','ln-err'); break; }
+      const pat = args[0], gf = args[1];
+      const n = getNode(resolvePath(gf));
+      if (!n||n._type!=='file') { div(`grep: ${gf}: No such file or directory`,'ln-err'); break; }
+      const re = new RegExp(pat,'i');
+      const hits= n.data.split('\n').filter(l=>re.test(l));
+      if (hits.length) hits.forEach(l=>{
+        const el=document.createElement('div');
+        el.innerHTML=l.replace(new RegExp('('+esc(pat)+')','gi'),'<span style="color:#f38ba8;font-weight:700">$1</span>');
+        out.appendChild(el);
+      });
+      else div(`grep: no matches for '${pat}'`,'ln-dim');
+      break;
+    }
+
+    case 'find': {
+      const base  = args[0]&&!args[0].startsWith('-') ? resolvePath(args[0]) : cwd;
+      const ni    = args.indexOf('-name');
+      const pat   = ni>=0 ? args[ni+1] : null;
+      function ff(path,n) {
+        if (!pat||new RegExp('^'+pat.replace(/\*/g,'.*')+'$').test(path.split('/').pop()))
+          div(path,'ln-file');
+        if (n._type==='dir')
+          for (const [k,v] of Object.entries(n))
+            if (k!=='_type') ff(path+'/'+k,v);
+      }
+      const fn2=getNode(base);
+      if (fn2) ff(base,fn2);
+      break;
+    }
+
+    case 'head':
+    case 'tail': {
+      const ni = args.indexOf('-n');
+      const n  = ni>=0?parseInt(args[ni+1])||10:10;
+      const f  = args.find(a=>!a.startsWith('-'));
+      if (!f) { div(`${cmd}: missing file operand`,'ln-err'); break; }
+      const fn2=getNode(resolvePath(f));
+      if (!fn2||fn2._type!=='file') { div(`${cmd}: ${f}: No such file or directory`,'ln-err'); break; }
+      const lines=fn2.data.split('\n');
+      (cmd==='head'?lines.slice(0,n):lines.slice(-n)).forEach(l=>div(l,'ln-file'));
+      break;
+    }
+
+    case 'wc': {
+      const f=args.find(a=>!a.startsWith('-'));
+      if (!f) { div('wc: missing operand','ln-err'); break; }
+      const fn2=getNode(resolvePath(f));
+      if (!fn2||fn2._type!=='file') { div(`wc: ${f}: No such file or directory`,'ln-err'); break; }
+      const l=fn2.data.split('\n').length, w=fn2.data.split(/\s+/).filter(Boolean).length, c=fn2.data.length;
+      div(`${String(l).padStart(6)} ${String(w).padStart(6)} ${String(c).padStart(6)} ${f}`,'c-text');
+      break;
+    }
+
+    case 'nano': case 'vim': case 'vi': {
+      if (!args[0]) { div(`${cmd}: no file specified`,'ln-err'); break; }
+      const np=resolvePath(args[0]);
+      const pp=np.substring(0,np.lastIndexOf('/'))||'/';
+      const fn=np.split('/').pop();
+      const pn=getNode(pp);
+      if (!pn||pn._type!=='dir') { div(`${cmd}: '${args[0]}': No such file or directory`,'ln-err'); break; }
+      if (!pn[fn]) pn[fn]={_type:'file',data:''};
+      const cur=pn[fn].data;
+      const nc=prompt(`[${cmd}] Editing: ${args[0]}\n\nCurrent content:\n${cur}\n\nEnter new content:`,cur);
+      if (nc!==null) { pn[fn].data=nc; div(`"${args[0]}" written`,'ln-dim'); }
+      else            { div(`"${args[0]}" unchanged`,'ln-dim'); }
+      break;
+    }
+
+    case 'python': case 'python3': {
+      if (!args[0]) { enterMulti('python','Python 3 (Skulpt). Enter code, type EOF to run.'); break; }
+      const n=getNode(resolvePath(args[0]));
+      if (!n||n._type!=='file') { div(`python: can't open '${args[0]}': No such file or directory`,'ln-err'); break; }
+      runPython(n.data);
+      break;
+    }
+
+    case 'node': case 'nodejs': {
+      if (!args[0]) { enterMulti('javascript','Node.js JS runtime. Enter code, type EOF to run.'); break; }
+      const n=getNode(resolvePath(args[0]));
+      if (!n||n._type!=='file') { div(`node: cannot open '${args[0]}': No such file or directory`,'ln-err'); break; }
+      try {
+        const lines=[];
+        const fc={log:(...a)=>lines.push(a.map(String).join(' ')),error:(...a)=>lines.push(a.map(String).join(' ')),warn:(...a)=>lines.push(a.map(String).join(' '))};
+        new Function('console',n.data)(fc);
+        lines.forEach(l=>div(l,'c-text'));
+        if (!lines.length) div('(no output)','ln-dim');
+      } catch(e) { div('JS error: '+e.message,'ln-err'); }
+      break;
+    }
+
+    case 'js': {
+      if (!args.length) { enterMulti('javascript','JS eval mode. Type EOF to run.'); break; }
+      try {
+        const r=eval(args.join(' '));
+        if (r!==undefined) div(String(r),'c-peach');
+      } catch(e) { div('JS error: '+e.message,'ln-err'); }
+      break;
+    }
+
+    case 'html': {
+      if (!args[0]) { enterMulti('html','HTML preview mode. Paste HTML, type EOF to render.'); break; }
+      const n=getNode(resolvePath(args[0]));
+      if (!n||n._type!=='file') { div(`html: cannot open '${args[0]}'`,'ln-err'); break; }
+      openHtml(n.data);
+      div('Opened in preview pane','ln-info');
+      break;
+    }
+
+    case 'open': case 'xdg-open': {
+      if (!args[0]) break;
+      if (args[0].endsWith('.html')||args[0].endsWith('.htm')) {
+        const n=getNode(resolvePath(args[0]));
+        if (n&&n._type==='file') { openHtml(n.data); div('Opening '+args[0],'ln-info'); }
+        else div(`open: '${args[0]}': No such file`,'ln-err');
+      } else if (args[0].startsWith('http')) {
+        window.open(args[0],'_blank');
+        div('Opening '+args[0],'ln-info');
+      }
+      break;
+    }
+
+    case 'clear': out.innerHTML=''; break;
+    case 'reset': out.innerHTML=''; printBanner(); break;
+
+    case 'whoami': div('user'); break;
+    case 'id':     div('uid=1000(user) gid=1000(user) groups=1000(user),4(adm),27(sudo)'); break;
+    case 'll': run('ls -la '+args.join(' ')); return;
+    case 'la': run('ls -a '+args.join(' ')); return;
+    case 'hostname': div('t9linux'); break;
+    case 'date': div(new Date().toString()); break;
+
+    case 'uname': {
+      const a=args.includes('-a')||args.includes('--all');
+      div(a?'Linux t9linux 5.15.0-t9-generic #1 SMP x86_64 GNU/Linux':'Linux');
+      break;
+    }
+
+    case 'uptime': {
+      const m=Math.floor(performance.now()/60000);
+      div(` ${new Date().toLocaleTimeString()}  up ${m} min,  1 user,  load average: 0.00, 0.00, 0.00`);
+      break;
+    }
+
+    case 'df': {
+      div('Filesystem      Size  Used Avail Use% Mounted on','ln-dim');
+      div('t9rootfs         50G  3.2G   47G   7% /');
+      div('tmpfs           512M     0  512M   0% /tmp');
+      break;
+    }
+
+    case 'free': {
+      div('               total        used        free','ln-dim');
+      div('Mem:         16777216     2097152    14680064');
+      div('Swap:         2097152           0     2097152');
+      break;
+    }
+
+    case 'ps': {
+      div('  PID TTY          TIME CMD','ln-dim');
+      div('    1 ?        00:00:00 init');
+      div(' 1337 pts/0    00:00:00 bash');
+      div(' 9999 pts/0    00:00:00 ps');
+      break;
+    }
+
+    case 'env': {
+      const env={USER:'user',HOME:'/home/user',SHELL:'/bin/bash',PWD:cwd,TERM:'xterm-256color',LANG:'en_US.UTF-8'};
+      for (const [k,v] of Object.entries(env)) div(`${k}=${v}`,'c-text');
+      break;
+    }
+
+    case 'neofetch': doNeofetch(); break;
+
+    case 'ping': {
+      if (!args[0]) { div('ping: missing host','ln-err'); break; }
+      div(`PING ${args[0]} 56(84) bytes of data.`,'ln-dim');
+      for (let i=0;i<4;i++) {
+        const ms=(Math.random()*18+1).toFixed(3);
+        div(`64 bytes from ${args[0]}: icmp_seq=${i+1} ttl=64 time=${ms} ms`);
+      }
+      div(`--- ${args[0]} ping statistics ---`,'ln-dim');
+      div(`4 packets transmitted, 4 received, 0% packet loss`);
+      break;
+    }
+
+    case 'ifconfig': case 'ip': {
+      div('lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536','c-text');
+      div('        inet 127.0.0.1  netmask 255.0.0.0');
+      div('eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500','c-text');
+      div('        inet 192.168.1.100  netmask 255.255.255.0  broadcast 192.168.1.255');
+      break;
+    }
+
+    case 'curl': case 'wget':
+      div(`${cmd}: network access is sandboxed in this environment`,'ln-warn'); break;
+
+    case 'git': {
+      const sub=args[0];
+      const msgs={
+        init:'Initialized empty Git repository in '+cwd+'/.git/',
+        status:'On branch main\nnothing to commit, working tree clean',
+        add:`Add '${args.slice(1).join(' ')}' to staging area`,
+        commit:`[main (root-commit)] ${args.slice(1).join(' ')}\n 1 file changed, 1 insertion(+)`,
+        log:`commit a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2\nAuthor: user <user@t9linux.local>\nDate:   ${new Date().toDateString()}\n\n    initial commit`,
+        push:'Enumerating objects: 1, done.\nTo t9remote:repo.git\n   a1b2c3d..a1b2c3e  main -> main',
+        pull:'Already up to date.',
+        clone:`Cloning into '${args.slice(-1)[0]?.split('/').pop()||'repo'}'...\nReceiving objects: 100% done.`,
+        branch: args.length>1?`Created branch '${args[1]}'`:'* main',
+      };
+      const m=msgs[sub];
+      if (m) m.split('\n').forEach(l=>div(l,'c-text'));
+      else div(`git: '${sub||''}' is not a git command. See 'git --help'`,'ln-err');
+      break;
+    }
+
+    case 'apt': case 'apt-get': {
+      const sub=args[0];
+      if (sub==='install') {
+        div('Reading package lists... Done','ln-dim');
+        div('Building dependency tree... Done','ln-dim');
+        div(`The following NEW packages will be installed:\n  ${args.slice(1).join(' ')}`,'ln-info');
+        div(`0 upgraded, ${args.slice(1).length} newly installed.`,'ln-dim');
+        setTimeout(()=>div('Done','ln-ok'),300);
+      } else if (sub==='update') {
+        div('Hit:1 https://apt.t9linux.org neon InRelease','ln-dim');
+        div('Reading package lists... Done','ln-dim');
+      } else if (sub==='upgrade') {
+        div('0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.','ln-dim');
+      } else { div(`${cmd}: invalid operation '${sub||''}'`,'ln-err'); }
+      break;
+    }
+
+    case 'pip': case 'pip3': {
+      if (args[0]==='install') {
+        div(`Collecting ${args.slice(1).join(', ')}`,'ln-dim');
+        div(`Installing collected packages: ${args.slice(1).join(', ')}`,'ln-dim');
+        setTimeout(()=>div(`Successfully installed ${args.slice(1).join(' ')}`,'ln-ok'),200);
+      } else div(`${cmd} ${args.join(' ')}`,'ln-dim');
+      break;
+    }
+
+    case 'npm': {
+      if (args[0]==='install'||args[0]==='i') {
+        div(`npm: fetching ${args.slice(1).join(', ')}...`,'ln-dim');
+        setTimeout(()=>div(`added ${args.slice(1).length} package(s) in 0.5s`,'ln-ok'),200);
+      } else if (args[0]==='run') {
+        div(`> ${args[1]}`,'ln-dim');
+        div(`Script '${args[1]}' executed`,'ln-info');
+      } else div(`npm ${args.join(' ')}`,'ln-dim');
+      break;
+    }
+
+    case 'sudo': {
+      if (args[0]==='rm'&&args.some(a=>a.includes('r'))&&args.some(a=>a==='/'||a==='/*')) {
+        div('🔴 Nice try.','ln-err'); break;
+      }
+      div('[sudo] password for user: ','ln-warn');
+      setTimeout(()=>div('Sorry, user is not in the sudoers file. This incident will be reported.','ln-err'),500);
+      break;
+    }
+
+    case 'shutdown': case 'reboot': {
+      div(`Broadcast message from user@t9linux: The system is going down NOW!`,'ln-warn');
+      setTimeout(()=>{out.innerHTML=''; printBanner();},1200);
+      break;
+    }
+
+    case 'history':
+      hist.slice().reverse().forEach((c,i)=>div(`  ${String(i+1).padStart(4)}  ${c}`,'ln-dim'));
+      break;
+
+    case 'which': {
+      const builtins=['ls','cd','pwd','cat','mkdir','touch','rm','cp','mv','echo','grep','find','wc','python','python3','node','git','npm','pip','bash','sh','neofetch'];
+      if (args[0]&&builtins.includes(args[0])) div(`/usr/bin/${args[0]}`);
+      else div(`which: no ${args[0]||''} in ($PATH)`,'ln-err');
+      break;
+    }
+
+    case 'alias':
+      div("alias ll='ls -la'",'c-text');
+      div("alias la='ls -a'",'c-text');
+      break;
+
+    case 'man': {
+      const pages={
+        ls:'ls - list directory contents\n\nUSAGE: ls [OPTION]... [FILE]...\n  -l  use a long listing format\n  -a  do not ignore entries starting with .',
+        cat:'cat - concatenate files and print on the standard output\n\nUSAGE: cat [OPTION]... [FILE]...',
+        python:'python3 - an interpreted, interactive, object-oriented programming language\n\nUSAGE: python3 [file.py]\nIn interactive mode, type EOF to submit code.',
+        node:'node - asynchronous event-driven JavaScript runtime\n\nUSAGE: node [file.js]\nIn interactive mode, type EOF to submit code.',
+        html:'html - T9 HTML preview tool\n\nUSAGE: html [file.html]\nIn interactive mode, paste HTML then type EOF to render.',
+      };
+      const p=pages[args[0]];
+      if (p) p.split('\n').forEach(l=>div(l,l.startsWith('  ')?'ln-dim':'ln-info'));
+      else div(`No manual entry for ${args[0]||'(none)'}`,'ln-err');
+      break;
+    }
+
+    case 'cowsay': {
+      const msg=args.join(' ')||'moo';
+      const bar='-'.repeat(msg.length+2);
+      div(` ${bar}\n< ${msg} >\n ${bar}\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||`,'c-text');
+      break;
+    }
+
+    case 'fortune': {
+      const f=['The answer is 42.','There is no cloud, just other people\'s computers.','It works on my machine.','Have you tried turning it off and on again?','rm -rf is not a solution. Usually.','Debugging is twice as hard as writing the code in the first place.'];
+      div(f[Math.floor(Math.random()*f.length)],'c-mauve');
+      break;
+    }
+
+    case 'cal': {
+      const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+      const mn=now.toLocaleString('default',{month:'long'});
+      const first=new Date(y,m,1).getDay();
+      const days=new Date(y,m+1,0).getDate();
+      div(`    ${mn} ${y}`,'c-blue');
+      div('Su Mo Tu We Th Fr Sa','ln-dim');
+      let row='   '.repeat(first);
+      for (let d=1;d<=days;d++) {
+        const today=d===now.getDate();
+        row+=String(d).padStart(2)+' ';
+        if ((d+first)%7===0||d===days){div(row.trimEnd(),today?'c-mauve':'c-text');row='';}
+      }
+      break;
+    }
+
+    case 'time': {
+      if (!args.length) { div('usage: time <command>','ln-err'); break; }
+      const t0=performance.now();
+      run(args.join(' '));
+      const t1=performance.now();
+      div(`\nreal\t0m${((t1-t0)/1000).toFixed(3)}s\nuser\t0m0.000s\nsys \t0m0.000s`,'ln-dim');
+      return;
+    }
+
+    case 'sleep':
+      div(`Sleeping ${parseFloat(args[0])||1}s...`,'ln-dim'); break;
+
+    case 'yes':
+      div(args[0]||'y'); div('(yes loops forever — stopped after 1)','ln-dim'); break;
+
+    case 'banner':
+      div(args.join(' ').toUpperCase().split('').join(' '),'c-mauve'); break;
+
+    case '!admin': {
+      div('DONT LOOK BEHIND YOU!!!!!!!!!!!!','ln-err');
+      document.body.style.backgroundImage='url("scare.png")';
+      document.body.style.backgroundSize='cover';
+      const snd=document.getElementById('adminSound');
+      if(snd){snd.volume=0.7;snd.play().catch(()=>{});}
+      break;
+    }
+
+    case 'google':
+      div('Opening Google...','ln-info');
+      setTimeout(()=>window.open('https://www.google.com','_blank'),500);
+      break;
+
+    case 'version': case 'lsb_release':
+      div('T9 Linux 3.0 "Neon" — based on Debian GNU/Linux','ln-info'); break;
+
+    case 'exit': case 'logout':
+      div('logout','ln-dim');
+      div('Connection to t9linux closed.','ln-dim');
+      break;
+
+    case 'help': {
+      div('','');
+      div('T9 Linux 3.0 — available commands','c-blue');
+      div('─'.repeat(46),'ln-dim');
+      const sections=[
+        ['Filesystem', 'ls  cd  pwd  cat  mkdir  touch  rm  cp  mv  head  tail  wc  grep  find  nano/vim'],
+        ['System',     'whoami  id  uname  hostname  date  uptime  df  free  ps  env  history  clear  cal'],
+        ['Runtimes',   'python/python3 [file]  —  node [file]  —  html [file]  —  js <expr>'],
+        ['Network',    'ping  ifconfig  ip  curl  wget'],
+        ['Packages',   'apt install/update/upgrade  pip install  npm install/run'],
+        ['Git',        'git init/status/add/commit/log/push/pull/clone/branch'],
+        ['Misc',       'neofetch  man  which  alias  sudo  time  cowsay  fortune  banner  cal'],
+        ['T9 Links',   '!ai  !gms  !xploits  !early  google'],
+      ];
+      for (const [label,cmds] of sections) {
+        div('','');
+        div(label,'c-mauve');
+        div('  '+cmds,'ln-dim');
+      }
+      div('','');
+      div('Interactive modes: python, node, html — type EOF or Ctrl+D to run, Ctrl+C to cancel','c-sub');
+      break;
+    }
+
+    default:
+      div(`bash: ${cmd}: command not found`,'ln-err');
+      div(`Try 'help' for a list of available commands`,'ln-dim');
+  }
+}
+
+// ── Boot banner ────────────────────────────────────────────────────────────────
+function printBanner() {
+  const pre = document.createElement('pre');
+  pre.className = 'banner-pre';
+  pre.textContent = [
+    ' ███████████  ████████     █████       █████ ██████   █████ █████  █████ █████ █████',
+    '░█░░░███░░░█ ███░░░░███   ░░███       ░░███ ░░██████ ░░███ ░░███  ░░███ ░░███ ░░███ ',
+    '░   ░███  ░ ░███   ░███    ░███        ░███  ░███░███ ░███  ░███   ░███  ░░███ ███  ',
+    '    ░███    ░░█████████    ░███        ░███  ░███░░███░███  ░███   ░███   ░░█████   ',
+    '    ░███     ░░░░░░░███    ░███        ░███  ░███ ░░██████  ░███   ░███    ███░███  ',
+    '    ░███     ███   ░███    ░███      █ ░███  ░███  ░░█████  ░███   ░███   ███ ░░███ ',
+    '    █████   ░░████████     ███████████ █████ █████  ░░█████ ░░████████   █████ █████',
+    '   ░░░░░     ░░░░░░░░     ░░░░░░░░░░░ ░░░░░ ░░░░░    ░░░░░   ░░░░░░░░   ░░░░░ ░░░░░',
+  ].join('\n');
+  out.appendChild(pre);
+
+  blank();
+  div('T9 Linux 3.0 "Neon"   kernel 5.15.0-t9-generic   x86_64','ln-info');
+  div(`${new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'})}   Type 'help' for commands. Try 'neofetch'.`,'ln-dim');
+  blank();
+}
+
+// ── Keyboard ───────────────────────────────────────────────────────────────────
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const v = inp.value;
+    run(v);
+    inp.value = '';
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    if (historyIndex < commandHistory.length - 1) {
-      historyIndex++;
-      input.value = commandHistory[historyIndex];
-    }
+    if (hIdx < hist.length-1) { hIdx++; inp.value = hist[hIdx]; }
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
-    if (historyIndex > 0) {
-      historyIndex--;
-      input.value = commandHistory[historyIndex];
-    } else {
-      historyIndex = -1;
-      input.value = '';
+    hIdx > 0 ? (hIdx--, inp.value=hist[hIdx]) : (hIdx=-1, inp.value='');
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    const parts = inp.value.split(' ');
+    const last  = parts[parts.length-1];
+    if (!last) return;
+    const n = getNode(cwd);
+    if (!n) return;
+    const keys = Object.keys(n).filter(k=>k!=='_type'&&k.startsWith(last));
+    if (keys.length===1) { parts[parts.length-1]=keys[0]; inp.value=parts.join(' '); }
+    else if (keys.length>1) {
+      echoCmd(inp.value);
+      const r=document.createElement('div');
+      r.style.cssText='display:flex;flex-wrap:wrap;gap:2px 20px;';
+      for (const k of keys) {
+        const s=document.createElement('span');
+        const node=getNode(cwd+'/'+k);
+        s.className=node&&node._type==='dir'?'ln-dir':'ln-file';
+        s.textContent=k;
+        r.appendChild(s);
+      }
+      out.appendChild(r); out.scrollTop=out.scrollHeight;
     }
+  } else if (e.key==='l'&&e.ctrlKey) {
+    e.preventDefault(); out.innerHTML='';
+  } else if (e.key==='c'&&e.ctrlKey) {
+    if (mMode) { mMode=null; mBuf=[]; multiHint.classList.remove('show'); }
+    echoCmd(inp.value+'^C');
+    inp.value='';
+  } else if (e.key==='d'&&e.ctrlKey) {
+    if (mMode&&mBuf.length) exitMulti();
+    inp.value='';
   }
 });
 
-// Auto-focus input
-input.focus();
-document.addEventListener('click', () => input.focus());
+inp.focus();
+document.addEventListener('click', ()=>inp.focus());
+
+// ── Boot ───────────────────────────────────────────────────────────────────────
+printBanner();
 </script>
+
+<audio id="adminSound" src="scare.mp3" loop></audio>
 </body>
 </html>
