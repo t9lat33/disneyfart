@@ -94,6 +94,7 @@ color: white;
 
     }
   .fpscounter {
+    display:none;
       position: fixed;
       bottom: 12px;
       right: -2%;
@@ -142,6 +143,7 @@ color: white;
       background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
     }
     .musicNav {
+        display:none;
       position: fixed;
       bottom: 12px;
       left: 23%;
@@ -217,9 +219,7 @@ color: white;
 
     }
 
-    .navbar:hover {
-      border: 1px solid rgb(57, 57, 57);
-    }
+    
 
     .navbar::after {
       content: "";
@@ -230,7 +230,6 @@ color: white;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
       transition: opacity 0.2s ease;
-      border:2px solid gray;
     }
 
     .navbar:hover::after {
@@ -2382,13 +2381,14 @@ document.getElementById('day').textContent = day;
 
   var WALLPAPERS = [
     { name:'Minecraft',     file:'minecraftCozy2.mp4', video:true },
+    { name:'LandRover',     file: 'landrover-anime.mp4', video:true },
     { name:'Crimson Blind', file:'crimson-blind.mp4', video:true },
     { name:'Gengar',        file:'gengar.mp4', video:true },
     { name:'Sasuke rainy night', file:'sasuke.mp4', video:true },
     { name:'Silver Surfer', file:'silver.jpeg'   },
     { name:'Locked In',     file:'lockedin.jpg'   },
     { name:'Naruto',        file:'naruto.png'    },
-    { name:'Goku',          file:'goku.jpg'      }
+    { name:'T9 LINUX',          file:'t9linux.png'      }
   ];
 
   // Create video element for wallpaper
