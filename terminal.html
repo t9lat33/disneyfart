@@ -837,7 +837,7 @@ function run(raw) {
 
     case 'uname': {
       const a=args.includes('-a')||args.includes('--all');
-      div(a?'Linux t9linux 5.15.0-t9-generic #1 SMP x86_64 GNU/Linux':'Linux');
+      div(a?'Linux t9linux 4.0.0-t9-generic #1 SMP x86_64 GNU/Linux':'Linux');
       break;
     }
 
@@ -1068,7 +1068,7 @@ function run(raw) {
       break;
 
     case 'version': case 'lsb_release':
-      div('T9 Linux 3.0 "Neon" — based on Debian GNU/Linux','ln-info'); break;
+      div('T9 Linux 4.0 "Neon" — based on Debian GNU/Linux','ln-info'); break;
 
     case 'exit': case 'logout':
       div('logout','ln-dim');
@@ -1123,7 +1123,7 @@ function printBanner() {
 
   const info1 = document.createElement('div');
   info1.className = 'ln-info';
-  info1.textContent = 'T9 Linux 3.0 "Neon"   kernel 5.15.0-t9-generic   x86_64';
+  info1.textContent = 'T9 Linux 4.0 "Neon"   kernel 4.0.0-t9-generic   x86_64';
   outEl.insertBefore(info1, inputBarEl);
 
   const info2 = document.createElement('div');
