@@ -201,7 +201,7 @@ color: white;
         rgb(15, 15, 15),
         rgb(10, 10, 10)
       );
-      border-radius: 1 rem;
+      border-radius:30px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -224,7 +224,7 @@ color: white;
       content: "";
       position: absolute;
       inset: -2px;
-      border-radius: 1 rem;
+      border-radius: 30px;
       pointer-events: none;
       background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
       opacity: 1;
@@ -364,22 +364,23 @@ color: white;
 
   #hiddenDiv {
     display: none;
-  transform: translateY(-50px);
+    margin-top: 20px;
     padding: 10px;
- background: linear-gradient(160deg,
-        rgba(15,15,15,0.65),
-        rgba(10,10,10,0.65)
+    background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
       );
     color: white;
+    inset: 0;
     margin:auto;
-    inset:0;
-    top: -45px;
     position: fixed;
     z-index: 1000;
     border-radius:4px; 
     width:66%;
-    height: 65%; 
+    height: 60%; 
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
@@ -597,29 +598,27 @@ box-shadow: 2px #141414;
   border-bottom: 1px solid white;
 }
   #settingsDiv {
-    display:none;
+    display: none;
     margin-top: 20px;
     padding: 10px;
-     background: linear-gradient(
+    background: linear-gradient(
         145deg,
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-border:2px solid gray;
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
-    border-radius:12px; 
-    opacity:85%; 
-    width:71%;
-    height: 70%; 
+    border-radius:4px; 
+    width:66%;
+    height: 60%; 
     overflow-x: hidden;
+    border:2px solid gray;
     overflow-y: auto;
-    animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
-
-
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
   }
 
   #appsDiv {
@@ -1638,6 +1637,7 @@ background: linear-gradient(
 </style>
 
 </div>
+<!--
 <div onclick="update()" class="notify">
 
   <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
@@ -1663,7 +1663,7 @@ background: linear-gradient(
   </div>
 
 </div>
-
+-->
 
 
 <style>
@@ -1770,7 +1770,6 @@ transform: translateX(0) scale(1);
       left:0;
       border-top: 1px solid rgb(37, 37, 37);
       background-image:url("space2.png");
-      border-top:2px solid gray;
 
     }
     .back {
