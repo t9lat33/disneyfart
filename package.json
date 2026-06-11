@@ -1,0 +1,13 @@
+{
+  "name": "t9-global-chat",
+  "version": "1.0.0",
+  "description": "T9 Global WebSocket Chat Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
