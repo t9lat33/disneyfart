@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Chat - T9OS</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; background: #1a1a2e; color: white; }
+        button { padding: 15px 30px; margin: 10px; font-size: 18px; cursor: pointer; border: none; border-radius: 10px; }
+        #startBtn { background: green; color: white; }
+        #stopBtn { background: red; color: white; }
+        #status { margin-top: 20px; padding: 10px; background: #16213e; border-radius: 10px; }
+        audio { margin-top: 20px; width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body>
+    <h1>🎤 T9OS Voice Chat</h1>
+    <button id="startBtn">🎙️ Start Voice Chat</button>
+    <button id="stopBtn" disabled>⏹️ Stop</button>
+    <div id="status">🔴 Disconnected</div>
+    <audio id="remoteAudio" autoplay controls></audio>
+
+    <script>
+        let localStream = null;
+        let peerConnection = null;
+        const servers = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+        const roomId = "t9os-" + Math.random().toString(36).substring(7);
+        const ws = new WebSocket("ws://" + window.location.hostname + ":8080");
+        
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ type: "join", room: roomId }));
+            document.getElementById("status").innerHTML = "🟢 Connected to: " + roomId;
+        };
+
+        ws.onmessage = async (msg) => {
+            const data = JSON.parse(msg.data);
+            if (data.type === "offer") {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                ws.send(JSON.stringify({ type: "answer", answer: answer, room: roomId }));
+            } else if (data.type === "answer") {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            } else if (data.type === "ice") {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        };
+
+        async function startVoice() {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    ws.send(JSON.stringify({ type: "ice", candidate: event.candidate, room: roomId }));
+                }
+            };
+            
+            peerConnection.ontrack = (event) => {
+                document.getElementById("remoteAudio").srcObject = event.streams[0];
+            };
+            
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            ws.send(JSON.stringify({ type: "offer", offer: offer, room: roomId }));
+            
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("stopBtn").disabled = false;
+            document.getElementById("status").innerHTML = "🟢 Connected - Speaking...";
+        }
+
+        function stopVoice() {
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
+            if (peerConnection) peerConnection.close();
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("stopBtn").disabled = true;
+            document.getElementById("status").innerHTML = "🔴 Disconnected";
+        }
+
+        document.getElementById("startBtn").onclick = startVoice;
+        document.getElementById("stopBtn").onclick = stopVoice;
+    </script>
+</body>
+</html>
