@@ -395,10 +395,7 @@
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────
 // Auto-detect: if served from the same host, use ws(s):// with same host
-const WS_URL = (() => {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  return `${proto}://${location.host}`;
-})();
+const WS_URL = `wss://t9os.space/ws`;
 
 // ── STATE ────────────────────────────────────────────────────────────────
 let ws = null;
