@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mac OS</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15); 
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --blur: blur(25px);
+            --dock-size: 60px;
+            --text-color: #ffffff;
+            --win-header-height: 32px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6dd5ed 100%);
+            height: 100vh;
+            user-select: none;
+            color: var(--text-color);
+        }
+
+        .menubar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: var(--blur);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            font-size: 13px;
+            z-index: 9999;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .desktop {
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        .window {
+            position: absolute;
+            top: 100px;
+            left: 100px;
+            width: 600px;
+            height: 400px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.3s ease, height 0.3s ease, top 0.3s ease, left 0.3s ease, opacity 0.2s, transform 0.2s;
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .window.open {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        .window.minimized {
+            opacity: 0;
+            transform: scale(0.5) translateY(200px);
+            pointer-events: none;
+        }
+
+        .window.maximized {
+            top: 28px !important; 
+            left: 0 !important;
+            width: 100vw !important;
+            height: calc(100vh - 28px - 100px) !important; 
+            border-radius: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .window-header {
+            height: var(--win-header-height);
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            cursor: default;
+        }
+
+        .window-content {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            background: rgba(0,0,0,0.02); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+        }
+        .control:hover { filter: brightness(0.9); }
+        .close-btn { background: #ff5f56; }
+        .min-btn { background: #ffbd2e; }
+        .max-btn { background: #27c93f; }
+
+        .dock-container {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 9998;
+        }
+
+        .dock {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 10px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .app-icon {
+            width: var(--dock-size);
+            height: var(--dock-size);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .app-icon:hover {
+            transform: scale(1.2) translateY(-10px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .app-icon.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 4px white;
+        }
+        
+        /* Button Style for Updates */
+        .btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="menubar">
+        <div style="display:flex; gap:20px;">
+            <span></span>
+            <span style="font-weight:600;">Finder</span>
+            <span>File</span>
+            <span>Edit</span>
+            <span>View</span>
+        </div>
+        <div id="clock">12:00 PM</div>
+    </div>
+
+    <div class="desktop" id="desktop">
+        
+        <!-- UPDATE POPUP -->
+        <!-- This window is pre-styled to be centered and smaller -->
+        <div class="window" id="win-update" style="width: 400px; height: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-update', 'none')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-update')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-update')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <!-- EDIT UPDATE MESSAGE HERE -->
+                <h2 style="margin-top:0;">System Update</h2>
+                <p>Version 14.2 is available.</p>
+                <p>This update includes performance improvements and bug fixes.</p>
+                <button class="btn" onclick="closeWindow('win-update', 'none')">Remind Me Later</button>
+                <!-- END update message stops here-->
+            </div>
+        </div>
+
+        <!-- App 1:  -->
+        <div class="window" id="win-finder" style="top: 50px; left: 50px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-finder', 'icon-finder')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-finder')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-finder')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 2:  -->
+        <div class="window" id="win-browser" style="top: 80px; left: 80px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-browser', 'icon-browser')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-browser')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-browser')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 3:  -->
+        <div class="window" id="win-photos" style="top: 110px; left: 110px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-photos', 'icon-photos')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-photos')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-photos')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 4:  -->
+        <div class="window" id="win-settings" style="top: 140px; left: 140px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-settings', 'icon-settings')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-settings')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-settings')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 5: -->
+        <div class="window" id="win-music" style="top: 170px; left: 170px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-music', 'icon-music')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-music')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-music')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 6:  -->
+        <div class="window" id="win-notes" style="top: 200px; left: 200px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-notes', 'icon-notes')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-notes')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-notes')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+
+        <!-- App 7  -->
+        <div class="window" id="win-terminal" style="top: 230px; left: 230px;">
+            <div class="window-header">
+                <div class="controls">
+                    <div class="control close-btn" onclick="closeWindow('win-terminal', 'icon-terminal')"></div>
+                    <div class="control min-btn" onclick="minimizeWindow('win-terminal')"></div>
+                    <div class="control max-btn" onclick="maximizeWindow('win-terminal')"></div>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+    </div>
+
+    <div class="dock-container">
+        <div class="dock">
+            <div class="app-icon" id="icon-finder" onclick="openApp('win-finder', 'icon-finder')"></div>
+            <div class="app-icon" id="icon-browser" onclick="openApp('win-browser', 'icon-browser')"></div>
+            <div class="app-icon" id="icon-photos" onclick="openApp('win-photos', 'icon-photos')"></div>
+            <div class="app-icon" id="icon-settings" onclick="openApp('win-settings', 'icon-settings')"></div>
+            <div class="app-icon" id="icon-music" onclick="openApp('win-music', 'icon-music')"></div>
+            <div class="app-icon" id="icon-notes" onclick="openApp('win-notes', 'icon-notes')"></div>
+            <div class="app-icon" id="icon-terminal" onclick="openApp('win-terminal', 'icon-terminal')"></div>
+        </div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Window Management
+        let highestZ = 10;
+
+        function openApp(winId, iconId) {
+            const win = document.getElementById(winId);
+            const icon = document.getElementById(iconId);
+            
+            win.classList.remove('minimized');
+            win.classList.add('open');
+            if(icon) icon.classList.add('active');
+            
+            bringToFront(win);
+        }
+
+        function closeWindow(winId, iconId) {
+            const win = document.getElementById(winId);
+            win.classList.remove('open', 'minimized', 'maximized');
+            
+            if(iconId && iconId !== 'none') {
+                const icon = document.getElementById(iconId);
+                if(icon) icon.classList.remove('active');
+            }
+        }
+
+        function minimizeWindow(winId) {
+            const win = document.getElementById(winId);
+            win.classList.add('minimized');
+        }
+
+        function maximizeWindow(winId) {
+            const win = document.getElementById(winId);
+            win.classList.toggle('maximized');
+        }
+
+        function bringToFront(win) {
+            highestZ++;
+            win.style.zIndex = highestZ;
+        }
+
+        // Dragging Logic
+        const windows = document.querySelectorAll('.window');
+        
+        windows.forEach(win => {
+            const header = win.querySelector('.window-header');
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            header.addEventListener("mousedown", (e) => {
+                if(e.target.classList.contains('control')) return;
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                if (win.classList.contains('maximized')) {
+                    win.classList.remove('maximized');
+                    win.style.left = '100px';
+                    win.style.top = '100px';
+                }
+
+                initialLeft = win.offsetLeft;
+                initialTop = win.offsetTop;
+                bringToFront(win);
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                win.style.left = `${initialLeft + dx}px`;
+                win.style.top = `${initialTop + dy}px`;
+            });
+
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+            });
+            
+            win.addEventListener('mousedown', () => {
+                bringToFront(win);
+            });
+        });
+
+        // --- made by the invisible man ---
+        window.onload = function() {
+            // btw this auto opens
+            const updateWin = document.getElementById('win-update');
+            updateWin.classList.add('open');
+            bringToFront(updateWin);
+
+            // Close automatically after 15 seconds (15000 ms)
+            setTimeout(() => {
+                closeWindow('win-update', 'none');
+            }, 15000);
+        };
+    </script>
+</body>
+</html>
