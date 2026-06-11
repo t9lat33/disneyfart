@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 11</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        :root {
+            --accent: #0078d4;
+            --taskbar-bg: rgba(243, 243, 243, 0.85);
+        }
+
+        body {
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        /* this the Lock Screen */
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1920') center/cover;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 100px;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .lock-screen.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        .lock-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .lock-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .lock-time {
+            font-size: 120px;
+            font-weight: 300;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .lock-date {
+            font-size: 28px;
+            font-weight: 400;
+            margin-bottom: 60px;
+        }
+
+        .lock-hint {
+            font-size: 14px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* heres the Login Screen */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1920') center/cover;
+            z-index: 99999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .login-screen.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .login-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-back {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+        }
+
+        .login-back:hover {
+            opacity: 1;
+        }
+
+        /* heres the Account Selection */
+        .account-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .account-list {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .account-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 30px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+        }
+
+        .account-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+
+        .account-card.selected {
+            border-color: white;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .account-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 300;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .account-avatar.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .account-avatar.guest {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .account-name {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .account-type {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+        }
+
+        /* heres the Password Screen t9 pls hide the admin password */
+        .password-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: slideUp 0.4s ease;
+        }
+
+        .password-screen.show {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .password-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            color: white;
+            font-weight: 300;
+        }
+
+        .password-avatar.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .password-avatar.guest {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .password-name {
+            color: white;
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .password-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input {
+            width: 320px;
+            padding: 12px 45px 12px 15px;
+            border: none;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .password-input:focus {
+            background: rgba(0,0,0,0.4);
+            border-bottom-color: white;
+        }
+
+        .password-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .password-hint {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+
+        .password-hint-icon {
+            width: 18px;
+            height: 18px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .password-submit {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .password-submit:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .password-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .password-error.show {
+            opacity: 1;
+        }
+
+        .switch-account {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-top: 30px;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .switch-account:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* this da Desktop */
+        .desktop {
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1920') center/cover;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+
+        .desktop.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .desktop-icons {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-wrap: wrap;
+            height: calc(100% - 80px);
+            width: 100px;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .desktop-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .desktop-icon.selected {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .desktop-icon svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+        }
+
+        .desktop-icon span {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+            padding: 0 4px;
+        }
+
+        /* here da Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--taskbar-bg);
+            backdrop-filter: blur(20px) saturate(125%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .taskbar-center {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+        }
+
+        .taskbar-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .taskbar-icon:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .taskbar-icon.active::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 16px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .taskbar-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .windows-icon {
+            transition: transform 0.2s ease;
+        }
+
+        .windows-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .windows-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .taskbar-right {
+            position: absolute;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-right: 16px;
+            gap: 8px;
+        }
+
+        .system-tray {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .system-tray:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .weather-widget svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .time-date {
+            text-align: right;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .show-desktop {
+            width: 8px;
+            height: 100%;
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            margin-left: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .show-desktop:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* im lowkey not adding anymore personality to these Start Menu */
+        .start-menu {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            width: 640px;
+            height: 720px;
+            background: rgba(243, 243, 243, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .start-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .start-menu-header {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .start-menu-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .start-menu-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .start-menu-btn {
+            padding: 6px 12px;
+            border: none;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .start-menu-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .start-menu-search {
+            padding: 0 32px 16px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent);
+        }
+
+        .start-menu-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 32px;
+        }
+
+        .pinned-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .app-tile {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 8px;
+        }
+
+        .app-tile:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .app-tile svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .app-tile span {
+            font-size: 11px;
+            text-align: center;
+            color: #333;
+        }
+
+        .recommended-section {
+            margin-top: 24px;
+        }
+
+        .recommended-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .recommended-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recommended-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .recommended-item svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .recommended-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recommended-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .recommended-meta {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .start-menu-footer {
+            padding: 16px 32px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .user-profile:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-avatar.admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .user-avatar.guest {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .power-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .power-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            background: #f3f3f3;
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            min-width: 400px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: windowOpen 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes windowOpen {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .window.minimized {
+            display: none;
+        }
+
+        .window.maximized {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: calc(100% - 48px) !important;
+            border-radius: 0;
+        }
+
+        .window-header {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #f3f3f3;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .window-title svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .window-btn {
+            width: 46px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+
+        .window-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .window-btn.close:hover {
+            background: #e81123;
+            color: white;
+        }
+
+        .window-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        /* App Styles */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-toolbar {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar-btn {
+            padding: 6px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .app-body {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        /* Settings App */
+        .settings-sidebar {
+            width: 240px;
+            background: #f9f9f9;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 16px;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .settings-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-item.active {
+            background: rgba(0, 120, 212, 0.1);
+            color: var(--accent);
+        }
+
+        .settings-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .settings-item span {
+            font-size: 13px;
+        }
+
+        .settings-content {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .settings-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        .setting-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .setting-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* this the Toggle Switch */
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle.active {
+            background: var(--accent);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active::after {
+            left: 23px;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            z-index: 100000;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+            transition: all 0.15s;
+        }
+
+        .context-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .context-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s;
+        }
+
+        .context-item:hover {
+            background: rgba(0, 120, 212, 0.1);
+        }
+
+        .context-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 6px 0;
+        }
+
+        /* Widgets Panel */
+        .widgets-panel {
+            position: fixed;
+            left: -400px;
+            top: 0;
+            width: 400px;
+            height: 100%;
+            background: rgba(243, 243, 243, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 9998;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 40px 24px;
+            overflow-y: auto;
+        }
+
+        .widgets-panel.open {
+            left: 0;
+        }
+
+        .widgets-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .widget-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .widget-weather-large {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .weather-temp {
+            font-size: 48px;
+            font-weight: 300;
+        }
+
+        .weather-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Calendar */
+        .calendar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            padding: 16px;
+            position: fixed;
+            bottom: 60px;
+            right: 16px;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .calendar.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-month {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-nav button:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover:not(.empty) {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .calendar-day.today {
+            background: var(--accent);
+            color: white;
+        }
+
+        .calendar-day.empty {
+            cursor: default;
+        }
+
+        .calendar-weekday {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            padding-bottom: 8px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Notification Center */
+        .notification-center {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100%;
+            background: rgba(243, 243, 243, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 9998;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 40px 24px;
+        }
+
+        .notification-center.open {
+            right: 0;
+        }
+
+        .notification-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .notification-item {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .notification-app {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .notification-text {
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Lock Screen -->
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-content">
+            <div class="lock-time" id="lockTime">12:00</div>
+            <div class="lock-date" id="lockDate">Wednesday, January 1</div>
+            <div class="lock-hint">Click or press any key to unlock</div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <button class="login-back" id="loginBack" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+
+            <!-- Account Selection -->
+            <div class="account-selection" id="accountSelection">
+                <div class="account-list">
+                    <div class="account-card" data-account="admin" data-password="blastnit">
+                        <div class="account-avatar admin">A</div>
+                        <div class="account-name">Administrator</div>
+                        <div class="account-type">Local Account</div>
+                    </div>
+                    <div class="account-card" data-account="guest" data-password="0000">
+                        <div class="account-avatar guest">G</div>
+                        <div class="account-name">Guest</div>
+                        <div class="account-type">Guest Account</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Screen -->
+            <div class="password-screen" id="passwordScreen">
+                <div class="password-avatar" id="passwordAvatar">A</div>
+                <div class="password-name" id="passwordName">Administrator</div>
+                <div class="password-container">
+                    <div class="password-input-wrapper">
+                        <input type="password" class="password-input" id="passwordInput" placeholder="Enter password">
+                        <button class="password-submit" id="passwordSubmit">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-hint" id="passwordHint" style="display: none;">
+                        <span class="password-hint-icon">i</span>
+                        <span>Password: <strong>0000</strong></span>
+                    </div>
+                    <div class="password-error" id="passwordError">Incorrect password. Try again.</div>
+                </div>
+                <div class="switch-account" id="switchAccount">Switch account</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop -->
+    <div class="desktop" id="desktop">
+        <div class="desktop-icons" id="desktopIcons"></div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar" id="taskbar">
+        <div class="taskbar-center">
+            <div class="taskbar-icon windows-icon" id="startBtn" title="Start">
+                <svg viewBox="0 0 21 21" fill="none">
+                    <path d="M0 0h10v10H0zm11 0h10v10H11zM0 11h10v10H0zm11 0h10v10H11z" fill="#0078d4"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="searchBtn" title="Search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="widgetsBtn" title="Widgets">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="fileExplorerBtn" title="File Explorer">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" fill="#f8d775"/>
+                    <path d="M4 8h16v10H4z" fill="#f4d03f"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="edgeBtn" title="Microsoft Edge">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#0078d7"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-10V5h2v2h-2z" fill="white" opacity="0.3"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="storeBtn" title="Microsoft Store">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="4" width="7" height="7" fill="#f25022"/>
+                    <rect x="13" y="4" width="7" height="7" fill="#7fba00"/>
+                    <rect x="4" y="13" width="7" height="7" fill="#00a4ef"/>
+                    <rect x="13" y="13" width="7" height="7" fill="#ffb900"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="settingsBtn" title="Settings">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.5.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.63c-.04.34-.07.67-.07 1 0 .33.03.66.07.97l-2.11 1.63c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.63z" fill="#666"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="taskbar-right">
+            <div class="system-tray" id="systemTray">
+                <div class="weather-widget" title="Weather">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="5" fill="#ffb900"/>
+                        <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="#ffb900" stroke-width="2"/>
+                    </svg>
+                    <span>83°F Mostly sunny</span>
+                </div>
+            </div>
+            <div class="time-date" id="timeDate" title="Calendar">
+                <div id="time">12:00 PM</div>
+                <div id="date">1/1/2024</div>
+            </div>
+            <div class="show-desktop" id="showDesktop" title="Show Desktop"></div>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div class="start-menu" id="startMenu">
+        <div class="start-menu-header">
+            <div class="start-menu-title">Pinned</div>
+            <div class="start-menu-actions">
+                <button class="start-menu-btn" id="allAppsBtn">All apps ></button>
+            </div>
+        </div>
+        <div class="start-menu-search">
+            <input type="text" class="search-box" placeholder="Type here to search" id="startSearch">
+        </div>
+        <div class="start-menu-content">
+            <div class="pinned-section">
+                <div class="apps-grid" id="pinnedApps"></div>
+            </div>
+            <div class="recommended-section">
+                <div class="section-title">
+                    <span>Recommended</span>
+                    <button class="start-menu-btn">More ></button>
+                </div>
+                <div class="recommended-list" id="recommendedList"></div>
+            </div>
+        </div>
+        <div class="start-menu-footer">
+            <div class="user-profile" id="startMenuUser">
+                <div class="user-avatar admin" id="userAvatar">A</div>
+                <span class="user-name" id="userNameDisplay">Administrator</span>
+            </div>
+            <button class="power-btn" id="powerBtn" title="Power">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Widgets Panel -->
+    <div class="widgets-panel" id="widgetsPanel">
+        <div class="widgets-header">Widgets</div>
+        <div class="widget-card">
+            <div class="widget-weather-large">
+                <div>
+                    <div class="weather-temp">83°</div>
+                    <div class="weather-desc">Mostly sunny</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 8px;">H:87° L:68°</div>
+                </div>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="6" fill="#ffb900"/>
+                    <path d="M12 3v2m0 14v2M5.64 5.64l1.41 1.41m11.32 11.32l1.41 1.41M3 12h2m14 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="#ffb900" stroke-width="1.5"/>
+                </svg>
+            </div>
+        </div>
+        <div class="widget-card">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Calendar</div>
+            <div style="font-size: 24px; font-weight: 300;">Wednesday, January 1</div>
+        </div>
+        <div class="widget-card">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">To Do</div>
+            <div style="font-size: 13px; color: #666;">No tasks for today</div>
+        </div>
+    </div>
+
+    <!-- Notification Center -->
+    <div class="notification-center" id="notificationCenter">
+        <div class="notification-header">
+            <span>Notifications</span>
+            <button class="start-menu-btn" id="clearNotifications">Clear all</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <div class="notification-item">
+                <div class="notification-app">Settings</div>
+                <div class="notification-text">Windows 11 is up to date</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-app">Weather</div>
+                <div class="notification-text">Expect mostly sunny conditions today</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="calendar" id="calendar">
+        <div class="calendar-header">
+            <span class="calendar-month" id="calendarMonth">January 2024</span>
+            <div class="calendar-nav">
+                <button id="prevMonth">‹</button>
+                <button id="nextMonth">›</button>
+            </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-item" id="ctxView">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            View
+        </div>
+        <div class="context-item" id="ctxSort">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
+            Sort by
+        </div>
+        <div class="context-item" id="ctxRefresh">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item" id="ctxNew">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            New
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item" id="ctxDisplay">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Display settings
+        </div>
+        <div class="context-item" id="ctxPersonalize">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Personalize
+        </div>
+    </div>
+
+    <!-- Windows Container -->
+    <div id="windowsContainer"></div>
+
+    <script>
+        // fah
+        let openWindows = [];
+        let activeWindow = null;
+        let windowCounter = 0;
+        let isStartMenuOpen = false;
+        let isWidgetsOpen = false;
+        let isNotificationsOpen = false;
+        let isCalendarOpen = false;
+        let currentUser = null;
+
+        // App Icon SVGs
+        const appIcons = {
+            edge: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0078d7"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-10V5h2v2h-2z" fill="white" opacity="0.3"/></svg>`,
+            fileExplorer: `<svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" fill="#f8d775"/><path d="M4 8h16v10H4z" fill="#f4d03f"/></svg>`,
+            settings: `<svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.5.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.63c-.04.34-.07.67-.07 1 0 .33.03.66.07.97l-2.11 1.63c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.63z" fill="#666"/></svg>`,
+            store: `<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" fill="#f25022"/><rect x="13" y="4" width="7" height="7" fill="#7fba00"/><rect x="4" y="13" width="7" height="7" fill="#00a4ef"/><rect x="13" y="13" width="7" height="7" fill="#ffb900"/></svg>`,
+            notepad: `<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="#f4d03f"/><line x1="8" y1="8" x2="16" y2="8" stroke="#333" stroke-width="1"/><line x1="8" y1="12" x2="16" y2="12" stroke="#333" stroke-width="1"/><line x1="8" y1="16" x2="12" y2="16" stroke="#333" stroke-width="1"/></svg>`,
+            calculator: `<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="#e0e0e0"/><rect x="6" y="4" width="12" height="4" fill="#666"/><rect x="6" y="10" width="3" height="3" fill="#333"/><rect x="11" y="10" width="3" height="3" fill="#333"/><rect x="16" y="10" width="3" height="3" fill="#333"/><rect x="6" y="15" width="3" height="3" fill="#333"/><rect x="11" y="15" width="3" height="3" fill="#333"/><rect x="16" y="15" width="3" height="3" fill="#333"/></svg>`,
+            photos: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="#9c27b0"/><circle cx="8.5" cy="8.5" r="2" fill="white"/><path d="M3 15l5-5 4 4 6-6 3 3v7H3z" fill="white" opacity="0.6"/></svg>`,
+            mail: `<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="#0078d4"/><path d="M2 7l10 6 10-6" stroke="white" stroke-width="1.5" fill="none"/></svg>`,
+            calendar: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2" fill="#f25022"/><rect x="3" y="8" width="18" height="2" fill="white" opacity="0.3"/><text x="12" y="17" text-anchor="middle" fill="white" font-size="8" font-weight="bold">1</text></svg>`,
+            terminal: `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" fill="#1a1a1a"/><path d="M5 8l4 4-4 4M10 16h6" stroke="#0f0" stroke-width="1.5" fill="none"/></svg>`,
+            vscode: `<svg viewBox="0 0 24 24"><path d="M17 2l5 3v14l-5 3-9-9 9-9zM7 6l5 6-5 6V6z" fill="#007acc"/></svg>`
+        };
+
+        // Desktop Icons
+        const desktopIcons = [
+            { name: 'Recycle Bin', icon: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#666"/></svg>` },
+            { name: 'Edge', icon: appIcons.edge },
+            { name: 'File Explorer', icon: appIcons.fileExplorer },
+            { name: 'Settings', icon: appIcons.settings }
+        ];
+
+        // Start Menu Apps
+        const startApps = [
+            { name: 'Edge', icon: appIcons.edge },
+            { name: 'File Explorer', icon: appIcons.fileExplorer },
+            { name: 'Settings', icon: appIcons.settings },
+            { name: 'Store', icon: appIcons.store },
+            { name: 'Notepad', icon: appIcons.notepad },
+            { name: 'Calculator', icon: appIcons.calculator },
+            { name: 'Photos', icon: appIcons.photos },
+            { name: 'Mail', icon: appIcons.mail },
+            { name: 'Calendar', icon: appIcons.calendar },
+            { name: 'Terminal', icon: appIcons.terminal },
+            { name: 'VS Code', icon: appIcons.vscode },
+            { name: 'Notepad', icon: appIcons.notepad }
+        ];
+
+        // Lock Screen Functions
+        function updateLockScreen() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            document.getElementById('lockTime').textContent = timeStr;
+            document.getElementById('lockDate').textContent = dateStr;
+        }
+
+        function showLoginScreen() {
+            document.getElementById('lockScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('loginScreen').classList.add('show');
+            }, 200);
+        }
+
+        function selectAccount(accountCard) {
+            const accountType = accountCard.dataset.account;
+            const accountName = accountCard.querySelector('.account-name').textContent;
+            const password = accountCard.dataset.password;
+            
+            currentUser = { type: accountType, name: accountName, password: password };
+            
+            // Update password screen
+            document.getElementById('passwordAvatar').textContent = accountType === 'admin' ? 'A' : 'G';
+            document.getElementById('passwordAvatar').className = `password-avatar ${accountType}`;
+            document.getElementById('passwordName').textContent = accountName;
+            
+            // Show/hide password hint for guest only
+            const passwordHint = document.getElementById('passwordHint');
+            if (accountType === 'guest') {
+                passwordHint.style.display = 'flex';
+            } else {
+                passwordHint.style.display = 'none';
+            }
+            
+            // Switch views
+            document.getElementById('accountSelection').style.display = 'none';
+            document.getElementById('passwordScreen').classList.add('show');
+            document.getElementById('loginBack').style.display = 'flex';
+            
+            // Focus password input
+            setTimeout(() => {
+                document.getElementById('passwordInput').focus();
+            }, 100);
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const error = document.getElementById('passwordError');
+            
+            if (input === currentUser.password) {
+                // Successful login
+                error.classList.remove('show');
+                login();
+            } else {
+                // Wrong password
+                error.classList.add('show');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        function login() {
+            // u gay if ur looking at this
+            const avatar = document.getElementById('userAvatar');
+            const nameDisplay = document.getElementById('userNameDisplay');
+            
+            avatar.textContent = currentUser.type === 'admin' ? 'A' : 'G';
+            avatar.className = `user-avatar ${currentUser.type}`;
+            nameDisplay.textContent = currentUser.name;
+            
+            // 
+            document.getElementById('loginScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('desktop').classList.add('show');
+            }, 400);
+        }
+
+        function showAccountSelection() {
+            document.getElementById('passwordScreen').classList.remove('show');
+            document.getElementById('accountSelection').style.display = 'flex';
+            document.getElementById('loginBack').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').classList.remove('show');
+        }
+
+        // 
+        function initDesktop() {
+            const container = document.getElementById('desktopIcons');
+            desktopIcons.forEach((icon, index) => {
+                const div = document.createElement('div');
+                div.className = 'desktop-icon';
+                div.innerHTML = `${icon.icon}<span>${icon.name}</span>`;
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+                    div.classList.add('selected');
+                };
+                div.ondblclick = () => openApp(icon.name);
+                container.appendChild(div);
+            });
+        }
+
+        // 
+        function initStartMenu() {
+            const pinnedContainer = document.getElementById('pinnedApps');
+            startApps.forEach(app => {
+                const tile = document.createElement('div');
+                tile.className = 'app-tile';
+                tile.innerHTML = `${app.icon}<span>${app.name}</span>`;
+                tile.onclick = () => {
+                    openApp(app.name);
+                    toggleStartMenu(false);
+                };
+                pinnedContainer.appendChild(tile);
+            });
+
+            const recommendedContainer = document.getElementById('recommendedList');
+            const recommended = [
+                { name: 'Settings', meta: 'Recently added', icon: appIcons.settings },
+                { name: 'Edge', meta: '2h ago', icon: appIcons.edge },
+                { name: 'File Explorer', meta: 'Yesterday', icon: appIcons.fileExplorer },
+                { name: 'Notepad', meta: 'Last week', icon: appIcons.notepad }
+            ];
+            recommended.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'recommended-item';
+                div.innerHTML = `${item.icon}<div class="recommended-info"><span class="recommended-name">${item.name}</span><span class="recommended-meta">${item.meta}</span></div>`;
+                div.onclick = () => {
+                    openApp(item.name);
+                    toggleStartMenu(false);
+                };
+                recommendedContainer.appendChild(div);
+            });
+        }
+
+        // Window Management
+        function createWindow(title, content, icon = '') {
+            windowCounter++;
+            const windowId = `window-${windowCounter}`;
+            const win = document.createElement('div');
+            win.className = 'window';
+            win.id = windowId;
+            win.style.width = '900px';
+            win.style.height = '600px';
+            win.style.left = `${100 + (openWindows.length * 30)}px`;
+            win.style.top = `${50 + (openWindows.length * 30)}px`;
+            
+            win.innerHTML = `
+                <div class="window-header" onmousedown="startDrag(event, '${windowId}')">
+                    <div class="window-title">
+                        ${icon}
+                        <span>${title}</span>
+                    </div>
+                    <div class="window-controls">
+                        <button class="window-btn minimize" onclick="minimizeWindow('${windowId}')" title="Minimize">─</button>
+                        <button class="window-btn maximize" onclick="maximizeWindow('${windowId}')" title="Maximize">□</button>
+                        <button class="window-btn close" onclick="closeWindow('${windowId}')" title="Close">✕</button>
+                    </div>
+                </div>
+                <div class="window-content">${content}</div>
+            `;
+            
+            document.getElementById('windowsContainer').appendChild(win);
+            openWindows.push({ id: windowId, title, minimized: false });
+            setActiveWindow(windowId);
+            
+            win.addEventListener('mousedown', () => setActiveWindow(windowId));
+            
+            return win;
+        }
+
+        function openApp(appName) {
+            let content = '';
+            let icon = '';
+            
+            switch(appName) {
+                case 'Settings':
+                    icon = appIcons.settings;
+                    content = createSettingsContent();
+                    break;
+                case 'File Explorer':
+                    icon = appIcons.fileExplorer;
+                    content = createFileExplorerContent();
+                    break;
+                case 'Edge':
+                    icon = appIcons.edge;
+                    content = createEdgeContent();
+                    break;
+                case 'Notepad':
+                    icon = appIcons.notepad;
+                    content = createNotepadContent();
+                    break;
+                case 'Calculator':
+                    icon = appIcons.calculator;
+                    content = createCalculatorContent();
+                    break;
+                case 'Terminal':
+                    icon = appIcons.terminal;
+                    content = createTerminalContent();
+                    break;
+                default:
+                    content = createBlankAppContent(appName);
+            }
+            
+            createWindow(appName, content, icon);
+        }
+
+        function createSettingsContent() {
+            return `
+                <div style="display: flex; height: 100%;">
+                    <div class="settings-sidebar">
+                        <div class="settings-item active">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.41 1.41m11.32 11.32l1.41 1.41M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            <span>System</span>
+                        </div>
+                        <div class="settings-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <span>Display</span>
+                        </div>
+                        <div class="settings-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6z"/></svg>
+                            <span>Personalization</span>
+                        </div>
+                        <div class="settings-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Privacy</span>
+                        </div>
+                        <div class="settings-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M20 9h2M20 15h2M2 9h2M2 15h2"/></svg>
+                            <span>Accounts</span>
+                        </div>
+                        <div class="settings-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            <span>Network</span>
+                        </div>
+                    </div>
+                    <div class="settings-content">
+                        <div class="settings-header">System</div>
+                        
+                        <div class="setting-card">
+                            <h3>Display</h3>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Night light</h4>
+                                    <p>Warm up your display for better sleep</p>
+                                </div>
+                                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <h3>Power & battery</h3>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Battery saver</h4>
+                                    <p>Limit background activity to save power</p>
+                                </div>
+                                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <h3>About</h3>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Device name</h4>
+                                    <p>DESKTOP-PC</p>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Windows version</h4>
+                                    <p>Windows 11 Pro 23H2</p>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Processor</h4>
+                                    <p>Intel(R) Core(TM) i7-9700K</p>
+                                </div>
+                            </div>
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <h4>Installed RAM</h4>
+                                    <p>32.0 GB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createFileExplorerContent() {
+            return `
+                <div class="app-container">
+                    <div class="app-toolbar">
+                        <button class="toolbar-btn">New folder</button>
+                        <button class="toolbar-btn">Cut</button>
+                        <button class="toolbar-btn">Copy</button>
+                        <button class="toolbar-btn">Paste</button>
+                        <button class="toolbar-btn">Rename</button>
+                        <button class="toolbar-btn">Share</button>
+                        <button class="toolbar-btn">Delete</button>
+                    </div>
+                    <div class="app-body">
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            ${['Desktop', 'Documents', 'Downloads', 'Pictures', 'Music', 'Videos'].map(folder => `
+                                <div style="width: 100px; text-align: center; cursor: pointer; padding: 10px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="#f8d775">
+                                        <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+                                    </svg>
+                                    <div style="font-size: 12px; margin-top: 5px;">${folder}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createEdgeContent() {
+            return `
+                <div style="height: 100%; display: flex; flex-direction: column; background: white;">
+                    <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid #e0e0e0;">
+                        <button style="border: none; background: transparent; cursor: pointer; padding: 4px;">←</button>
+                        <button style="border: none; background: transparent; cursor: pointer; padding: 4px;">→</button>
+                        <button style="border: none; background: transparent; cursor: pointer; padding: 4px;">↻</button>
+                        <input type="text" placeholder="Search or enter address" style="flex: 1; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 20px; font-size: 13px;">
+                        <button style="border: none; background: transparent; cursor: pointer; padding: 4px;">⋮</button>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #666;">
+                        <svg width="80" height="80" viewBox="0 0 24 24" style="margin-bottom: 20px; opacity: 0.5;">
+                            <circle cx="12" cy="12" r="10" fill="#0078d7"/>
+                        </svg>
+                        <h2 style="font-weight: 400; margin-bottom: 10px;">Welcome to Edge</h2>
+                        <p>Start browsing the web</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createNotepadContent() {
+            return `
+                <div style="height: 100%; display: flex; flex-direction: column;">
+                    <div class="app-toolbar">
+                        <button class="toolbar-btn">File</button>
+                        <button class="toolbar-btn">Edit</button>
+                        <button class="toolbar-btn">Format</button>
+                        <button class="toolbar-btn">View</button>
+                        <button class="toolbar-btn">Help</button>
+                    </div>
+                    <textarea style="flex: 1; border: none; outline: none; padding: 10px; font-family: Consolas, monospace; font-size: 14px; resize: none;" placeholder="Type here..."></textarea>
+                </div>
+            `;
+        }
+
+        function createCalculatorContent() {
+            return `
+                <div style="height: 100%; display: flex; flex-direction: column; background: #f9f9f9;">
+                    <div style="height: 80px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 10px 20px; font-size: 48px; font-weight: 300;">0</div>
+                    <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px;">
+                        ${['C','÷','×','⌫','7','8','9','-','4','5','6','+','1','2','3','=','0','.'].map((btn, i) => {
+                            const isOp = ['÷','×','-','+','='].includes(btn);
+                            const isWide = btn === '0';
+                            const bg = isOp ? '#0078d4' : (btn === 'C' ? '#e0e0e0' : '#f0f0f0');
+                            const color = isOp ? 'white' : '#333';
+                            return `<button style="border: none; background: ${bg}; color: ${color}; font-size: 20px; cursor: pointer; border-radius: 4px; grid-column: ${isWide ? 'span 2' : 'span 1'}; transition: all 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">${btn}</button>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createTerminalContent() {
+            return `
+                <div style="height: 100%; background: #1a1a1a; color: #0f0; font-family: Consolas, monospace; padding: 10px; overflow: auto; font-size: 14px;">
+                    <div>Microsoft Windows [Version 10.0.22621.0]</div>
+                    <div>(c) Microsoft Corporation. All rights reserved.</div>
+                    <br>
+                    <div>C:\\Users\\${currentUser ? currentUser.name : 'User'}> <span style="animation: blink 1s infinite;">_</span></div>
+                    <style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>
+                </div>
+            `;
+        }
+
+        function createBlankAppContent(appName) {
+            return `
+                <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" style="margin-bottom: 20px; opacity: 0.3;">
+                        <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <h2 style="font-weight: 400; margin-bottom: 10px;">${appName}</h2>
+                    <p>This is a blank app template. Add your content here!</p>
+                    <button class="toolbar-btn" style="margin-top: 20px;" onclick="alert('Button clicked! Add your functionality here.')">Sample Button</button>
+                </div>
+            `;
+        }
+
+        // Window Controls
+        function closeWindow(id) {
+            const win = document.getElementById(id);
+            win.style.animation = 'fadeIn 0.2s ease reverse';
+            setTimeout(() => {
+                win.remove();
+                openWindows = openWindows.filter(w => w.id !== id);
+            }, 200);
+        }
+
+        function minimizeWindow(id) {
+            const win = document.getElementById(id);
+            win.classList.add('minimized');
+            const windowData = openWindows.find(w => w.id === id);
+            if (windowData) windowData.minimized = true;
+        }
+
+        function maximizeWindow(id) {
+            const win = document.getElementById(id);
+            win.classList.toggle('maximized');
+        }
+
+        function setActiveWindow(id) {
+            document.querySelectorAll('.window').forEach(w => w.style.zIndex = 1);
+            const win = document.getElementById(id);
+            if (win) {
+                win.style.zIndex = 1000;
+                activeWindow = id;
+            }
+        }
+
+        // Drag functionality
+        let draggedWindow = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        function startDrag(e, windowId) {
+            if (e.target.closest('.window-btn')) return;
+            const win = document.getElementById(windowId);
+            if (win.classList.contains('maximized')) return;
+            
+            draggedWindow = win;
+            const rect = win.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+            setActiveWindow(windowId);
+        }
+
+        function onDrag(e) {
+            if (!draggedWindow) return;
+            draggedWindow.style.left = `${e.clientX - dragOffsetX}px`;
+            draggedWindow.style.top = `${e.clientY - dragOffsetY}px`;
+        }
+
+        function stopDrag() {
+            draggedWindow = null;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // Toggle Menus
+        function toggleStartMenu(show) {
+            const menu = document.getElementById('startMenu');
+            isStartMenuOpen = show !== undefined ? show : !isStartMenuOpen;
+            menu.classList.toggle('open', isStartMenuOpen);
+            document.getElementById('startBtn').classList.toggle('active', isStartMenuOpen);
+        }
+
+        function toggleWidgets(show) {
+            const panel = document.getElementById('widgetsPanel');
+            isWidgetsOpen = show !== undefined ? show : !isWidgetsOpen;
+            panel.classList.toggle('open', isWidgetsOpen);
+            document.getElementById('widgetsBtn').classList.toggle('active', isWidgetsOpen);
+        }
+
+        function toggleCalendar(show) {
+            const cal = document.getElementById('calendar');
+            isCalendarOpen = show !== undefined ? show : !isCalendarOpen;
+            cal.classList.toggle('show', isCalendarOpen);
+        }
+
+        // Calendar
+        function initCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            weekdays.forEach(day => {
+                const div = document.createElement('div');
+                div.className = 'calendar-weekday';
+                div.textContent = day;
+                grid.appendChild(div);
+            });
+            
+            const daysInMonth = 31;
+            const startDay = 3;
+            
+            for (let i = 0; i < startDay; i++) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day empty';
+                grid.appendChild(div);
+            }
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day';
+                if (i === new Date().getDate()) div.classList.add('today');
+                div.textContent = i;
+                grid.appendChild(div);
+            }
+        }
+
+        // Context Menu
+        function showContextMenu(e) {
+            e.preventDefault();
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = `${Math.min(e.clientX, window.innerWidth - 220)}px`;
+            menu.style.top = `${Math.min(e.clientY, window.innerHeight - 250)}px`;
+            menu.classList.add('show');
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.remove('show');
+        }
+
+        // Time/Date
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+            document.getElementById('time').textContent = timeStr;
+            document.getElementById('date').textContent = dateStr;
+        }
+
+        // Event Listeners
+        document.getElementById('lockScreen').addEventListener('click', showLoginScreen);
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('lockScreen').classList.contains('hidden') === false) {
+                showLoginScreen();
+            }
+        });
+
+        // Account selection
+        document.querySelectorAll('.account-card').forEach(card => {
+            card.addEventListener('click', () => selectAccount(card));
+        });
+
+        // Password screen
+        document.getElementById('passwordSubmit').addEventListener('click', checkPassword);
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        document.getElementById('switchAccount').addEventListener('click', showAccountSelection);
+        document.getElementById('loginBack').addEventListener('click', () => {
+            if (document.getElementById('passwordScreen').classList.contains('show')) {
+                showAccountSelection();
+            } else {
+                document.getElementById('loginScreen').classList.remove('show');
+                setTimeout(() => {
+                    document.getElementById('lockScreen').classList.remove('hidden');
+                }, 200);
+            }
+        });
+
+        // Taskbar
+        document.getElementById('startBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleStartMenu();
+        });
+
+        document.getElementById('widgetsBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWidgets();
+        });
+
+        document.getElementById('timeDate').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleCalendar();
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            toggleStartMenu(true);
+            document.getElementById('startSearch').focus();
+        });
+
+        document.getElementById('fileExplorerBtn').addEventListener('click', () => openApp('File Explorer'));
+        document.getElementById('edgeBtn').addEventListener('click', () => openApp('Edge'));
+        document.getElementById('storeBtn').addEventListener('click', () => openApp('Store'));
+        document.getElementById('settingsBtn').addEventListener('click', () => openApp('Settings'));
+
+        document.getElementById('showDesktop').addEventListener('click', () => {
+            document.querySelectorAll('.window').forEach(w => w.classList.add('minimized'));
+        });
+
+        document.getElementById('powerBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to shut down?')) {
+                location.reload();
+            }
+        });
+
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.start-menu')) toggleStartMenu(false);
+            if (!e.target.closest('.widgets-panel')) toggleWidgets(false);
+            if (!e.target.closest('.calendar')) toggleCalendar(false);
+            hideContextMenu();
+        });
+
+        // Desktop context menu
+        document.getElementById('desktop').addEventListener('contextmenu', showContextMenu);
+
+        // Context menu actions
+        document.getElementById('ctxRefresh').addEventListener('click', () => {
+            location.reload();
+        });
+
+        document.getElementById('ctxDisplay').addEventListener('click', () => {
+            openApp('Settings');
+        });
+
+        // Init
+        initDesktop();
+        initStartMenu();
+        initCalendar();
+        setInterval(updateLockScreen, 1000);
+        setInterval(updateTime, 1000);
+        updateLockScreen();
+        updateTime();
+    </script>
+</body>
+</html>
