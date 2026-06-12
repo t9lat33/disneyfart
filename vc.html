@@ -3,82 +3,414 @@
 <head>
     <title>Voice Chat - T9OS</title>
     <style>
-        body { font-family: Arial; text-align: center; padding: 50px; background: #1a1a2e; color: white; }
-        button { padding: 15px 30px; margin: 10px; font-size: 18px; cursor: pointer; border: none; border-radius: 10px; }
-        #startBtn { background: green; color: white; }
-        #stopBtn { background: red; color: white; }
-        #status { margin-top: 20px; padding: 10px; background: #16213e; border-radius: 10px; }
-        audio { margin-top: 20px; width: 100%; max-width: 400px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial; 
+            text-align: center; 
+            padding: 20px; 
+            background: #1a1a2e; 
+            color: white; 
+            min-height: 100vh;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { margin-bottom: 20px; }
+        .room-section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            margin: 10px 0;
+            width: 70%;
+        }
+        button { 
+            padding: 12px 24px; 
+            margin: 10px 5px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 8px; 
+        }
+        #joinBtn { background: #4CAF50; color: white; }
+        #createBtn { background: #2196F3; color: white; }
+        #leaveBtn { background: #f44336; color: white; }
+        #muteBtn { background: #FF9800; color: white; }
+        #status { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #16213e; 
+            border-radius: 10px; 
+        }
+        .users-list {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .users-list h3 { margin-bottom: 10px; }
+        .user-item {
+            padding: 8px;
+            background: #16213e;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .controls {
+            display: none;
+        }
+        .controls.active { display: block; }
+        audio { 
+            margin-top: 20px; 
+            width: 100%; 
+            max-width: 400px; 
+        }
+        #roomId { font-weight: bold; color: #4CAF50; }
     </style>
 </head>
 <body>
-    <h1>🎤 T9OS Voice Chat</h1>
-    <button id="startBtn">🎙️ Start Voice Chat</button>
-    <button id="stopBtn" disabled>⏹️ Stop</button>
-    <div id="status">🔴 Disconnected</div>
-    <audio id="remoteAudio" autoplay controls></audio>
+    <div class="container">
+        <h1>🎤 T9OS Voice Chat</h1>
+        
+        <div class="room-section" id="joinSection">
+            <h2>Join or Create Room</h2>
+            <input type="text" id="roomInput" placeholder="Enter room name..." maxlength="20">
+            <br>
+            <button id="joinBtn">🚪 Join Room</button>
+            <button id="createBtn">✨ Create New Room</button>
+        </div>
+
+        <div class="controls" id="controlsSection">
+            <h2>Room: <span id="roomId"></span></h2>
+            <button id="muteBtn">🔊 Mute</button>
+            <button id="leaveBtn">🚪 Leave Room</button>
+            
+            <div class="users-list">
+                <h3>👥 Users in Room: <span id="userCount">0</span></h3>
+                <div id="usersList"></div>
+            </div>
+            
+            <div id="status">🟢 Connected</div>
+        </div>
+    </div>
 
     <script>
         let localStream = null;
-        let peerConnection = null;
-        const servers = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-
-        const roomId = "t9os-" + Math.random().toString(36).substring(7);
-        const ws = new WebSocket(`ws://${window.location.hostname}:8080`);
+        let peerConnections = new Map();
+        let ws = null;
+        let currentRoom = null;
+        let isMuted = false;
         
-        ws.onopen = () => {
-            ws.send(JSON.stringify({ type: "join", room: roomId }));
-            document.getElementById("status").innerHTML = "🟢 Connected to: " + roomId;
+        const servers = { 
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" }
+            ] 
         };
 
-        ws.onmessage = async (msg) => {
-            const data = JSON.parse(msg.data);
-            if (data.type === "offer") {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                ws.send(JSON.stringify({ type: "answer", answer: answer, room: roomId }));
-            } else if (data.type === "answer") {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-            } else if (data.type === "ice") {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://${window.location.hostname}:8080`);
+            
+            ws.onopen = () => {
+                console.log('Connected to signaling server');
+            };
+
+            ws.onmessage = async (msg) => {
+                const data = JSON.parse(msg.data);
+                
+                if (data.type === 'user-joined') {
+                    addUser(data.userId);
+                    updateStatus(`${data.userId} joined the room`);
+                    createOffer(data.userId);
+                } 
+                else if (data.type === 'user-left') {
+                    removeUser(data.userId);
+                    updateStatus(`${data.userId} left the room`);
+                    if (peerConnections.has(data.userId)) {
+                        peerConnections.get(data.userId).close();
+                        peerConnections.delete(data.userId);
+                    }
+                }
+                else if (data.type === 'offer') {
+                    await handleOffer(data);
+                }
+                else if (data.type === 'answer') {
+                    await handleAnswer(data);
+                }
+                else if (data.type === 'ice-candidate') {
+                    await handleIceCandidate(data);
+                }
+                else if (data.type === 'room-users') {
+                    updateUsersList(data.users);
+                    // Create offers to all existing users
+                    data.users.forEach(userId => {
+                        if (userId !== generateUserId() && !peerConnections.has(userId)) {
+                            createOffer(userId);
+                        }
+                    });
+                }
+            };
+
+            ws.onclose = () => {
+                updateStatus('🔴 Disconnected from server');
+            };
+        }
+
+        function generateUserId() {
+            return 'user-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        const userId = generateUserId();
+
+        async function createOffer(targetUserId) {
+            const pc = new RTCPeerConnection(servers);
+            peerConnections.set(targetUserId, pc);
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+            }
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        candidate: event.candidate,
+                        target: targetUserId,
+                        room: currentRoom
+                    }));
+                }
+            };
+
+            pc.ontrack = (event) => {
+                console.log('Received remote track from', targetUserId);
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            
+            ws.send(JSON.stringify({
+                type: 'offer',
+                offer: offer,
+                target: targetUserId,
+                room: currentRoom
+            }));
+        }
+
+        async function handleOffer(data) {
+            const pc = new RTCPeerConnection(servers);
+            peerConnections.set(data.sender, pc);
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+            }
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    ws.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        candidate: event.candidate,
+                        target: data.sender,
+                        room: currentRoom
+                    }));
+                }
+            };
+
+            pc.ontrack = (event) => {
+                console.log('Received remote track from', data.sender);
+                // Create audio element for this peer
+                let audioElement = document.getElementById(`audio-${data.sender}`);
+                if (!audioElement) {
+                    audioElement = document.createElement('audio');
+                    audioElement.id = `audio-${data.sender}`;
+                    audioElement.autoplay = true;
+                    audioElement.controls = true;
+                    audioElement.style.width = '100%';
+                    audioElement.style.maxWidth = '400px';
+                    audioElement.style.marginTop = '10px';
+                    document.querySelector('.container').appendChild(audioElement);
+                }
+                audioElement.srcObject = event.streams[0];
+            };
+
+            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            
+            ws.send(JSON.stringify({
+                type: 'answer',
+                answer: answer,
+                target: data.sender,
+                room: currentRoom
+            }));
+        }
+
+        async function handleAnswer(data) {
+            const pc = peerConnections.get(data.sender);
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
+        }
+
+        async function handleIceCandidate(data) {
+            const pc = peerConnections.get(data.sender);
+            if (pc) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        }
+
+        function addUser(userId) {
+            const usersList = document.getElementById('usersList');
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-item';
+            userDiv.id = `user-${userId}`;
+            userDiv.textContent = `👤 ${userId}`;
+            usersList.appendChild(userDiv);
+            updateUserCount();
+        }
+
+        function removeUser(userId) {
+            const userDiv = document.getElementById(`user-${userId}`);
+            if (userDiv) userDiv.remove();
+            // Remove audio element for this user
+            const audioElement = document.getElementById(`audio-${userId}`);
+            if (audioElement) audioElement.remove();
+            updateUserCount();
+        }
+
+        function updateUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            users.forEach(userId => {
+                addUser(userId);
+            });
+        }
+
+        function updateUserCount() {
+            const count = document.querySelectorAll('.user-item').length;
+            document.getElementById('userCount').textContent = count;
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = message;
+        }
+
+        async function startVoice() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                return true;
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Could not access microphone. Please check permissions.');
+                return false;
+            }
+        }
+
+        function joinRoom(roomName) {
+            currentRoom = roomName;
+            document.getElementById('roomId').textContent = roomName;
+            
+            ws.send(JSON.stringify({
+                type: 'join',
+                room: roomName,
+                userId: userId
+            }));
+
+            document.getElementById('joinSection').style.display = 'none';
+            document.getElementById('controlsSection').classList.add('active');
+            addUser(userId);
+        }
+
+        function leaveRoom() {
+            if (currentRoom) {
+                ws.send(JSON.stringify({
+                    type: 'leave',
+                    room: currentRoom,
+                    userId: userId
+                }));
+            }
+
+            // Close all peer connections
+            peerConnections.forEach(pc => pc.close());
+            peerConnections.clear();
+
+            // Remove all audio elements except the user list
+            document.querySelectorAll('audio').forEach(audio => audio.remove());
+
+            // Clear users list
+            document.getElementById('usersList').innerHTML = '';
+            updateUserCount();
+
+            currentRoom = null;
+            document.getElementById('joinSection').style.display = 'block';
+            document.getElementById('controlsSection').classList.remove('active');
+        }
+
+        function toggleMute() {
+            if (localStream) {
+                isMuted = !isMuted;
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = !isMuted;
+                });
+                document.getElementById('muteBtn').textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('joinBtn').onclick = async () => {
+            const roomName = document.getElementById('roomInput').value.trim();
+            if (roomName) {
+                if (!localStream) {
+                    const success = await startVoice();
+                    if (!success) return;
+                }
+                connectWebSocket();
+                // Wait for WebSocket to connect
+                setTimeout(() => joinRoom(roomName), 500);
+            } else {
+                alert('Please enter a room name');
             }
         };
 
-        async function startVoice() {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            peerConnection = new RTCPeerConnection(servers);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    ws.send(JSON.stringify({ type: "ice", candidate: event.candidate, room: roomId }));
-                }
-            };
-            
-            peerConnection.ontrack = (event) => {
-                document.getElementById("remoteAudio").srcObject = event.streams[0];
-            };
-            
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            ws.send(JSON.stringify({ type: "offer", offer: offer, room: roomId }));
-            
-            document.getElementById("startBtn").disabled = true;
-            document.getElementById("stopBtn").disabled = false;
-            document.getElementById("status").innerHTML = "🟢 Connected - Speaking...";
-        }
+        document.getElementById('createBtn').onclick = async () => {
+            const roomName = 'room-' + Math.random().toString(36).substr(2, 7);
+            document.getElementById('roomInput').value = roomName;
+            if (!localStream) {
+                const success = await startVoice();
+                if (!success) return;
+            }
+            connectWebSocket();
+            setTimeout(() => joinRoom(roomName), 500);
+        };
 
-        function stopVoice() {
-            if (localStream) localStream.getTracks().forEach(track => track.stop());
-            if (peerConnection) peerConnection.close();
-            document.getElementById("startBtn").disabled = false;
-            document.getElementById("stopBtn").disabled = true;
-            document.getElementById("status").innerHTML = "🔴 Disconnected";
-        }
+        document.getElementById('leaveBtn').onclick = () => {
+            leaveRoom();
+            if (ws) ws.close();
+            ws = null;
+        };
 
-        document.getElementById("startBtn").onclick = startVoice;
-        document.getElementById("stopBtn").onclick = stopVoice;
+        document.getElementById('muteBtn').onclick = toggleMute;
+
+        // Clean up on page unload
+        window.onbeforeunload = () => {
+            leaveRoom();
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+        };
     </script>
 </body>
 </html>
