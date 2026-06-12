@@ -1615,7 +1615,7 @@ background: linear-gradient(
   }
   .timg{
     width:21px;
-    transform: translateY(-3px);
+    transform: translateY(-6px);
     gap:70px;
 
   }
@@ -2128,6 +2128,8 @@ document.addEventListener("click", () => {
     }
 </style>
 </div>
+<h2 class="battery" id="date"></h2>
+<div class="clock" id="day"></div>
 
 <div id="tnav" class="tnav">
 
@@ -2208,8 +2210,7 @@ navigator.getBattery().then(battery => {
   setInterval(updateTime, 1000);
 </script>
  
-<h2 class="battery" id="date"></h2>
-<div class="clock" id="day"></div>
+
 <script>
   const now = new Date();
 
