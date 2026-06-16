@@ -2159,7 +2159,7 @@ document.addEventListener("click", () => {
 
 
 
-<p id="battery2" style="display:flex; align-items:center; gap:8px; color:white;"></p>
+<p id="battery2" style="color:white; margin:0; display:flex; align-items:center; gap:8px;"></p>
 <script>
 navigator.getBattery().then(battery => {
   const el = document.getElementById('battery2');
@@ -2202,7 +2202,7 @@ navigator.getBattery().then(battery => {
   position: fixed;
 }
 </style>
-<p id="weather" style="color:white;"></p>
+<p id="weather" style="color:white; margin:0;"></p>
 
 <script>
 function wmoLabel(code) {
@@ -2226,7 +2226,7 @@ async function getWeather() {
 }
 getWeather();
 </script>
-<p id="clock2" style="color:white;"></p>
+<p id="clock2" style="color:white; margin:0;"></p>
 <script>
   const updateTime = () => {
     const now = new Date();
