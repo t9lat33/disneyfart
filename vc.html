@@ -296,43 +296,56 @@ button.t9-btn:hover { filter: brightness(1.1); }
 
 <script>
 const ROOMS = ['general', 'chill', 'gaming', 'dev'];
-const SIGNAL = `wss://${location.host}/signal/`;
+// Determine WebSocket URL based on current page protocol
+const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+const SIGNAL = `${wsProtocol}//${location.hostname}:3001/`;
 const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 let myName = '', myId = Math.random().toString(36).slice(2, 8);
 let ws, stream, muted = false;
 let currentRoom = null;
 const peers = {}; // id -> RTCPeerConnection
-const users = {}; // id -> { name, speaking }
+const users = {}; // id -> { name, speaking, room }
 const audioEls = {};
 
 // ── speaking detection ──
 let analyser, speakTimer;
-function detectSpeaking(stream) {
-  const ctx = new AudioContext();
-  const src = ctx.createMediaStreamSource(stream);
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 512;
-  src.connect(analyser);
-  const buf = new Uint8Array(analyser.frequencyBinCount);
-  let wasSpeaking = false;
-  function check() {
-    analyser.getByteFrequencyData(buf);
-    const vol = buf.reduce((a, b) => a + b, 0) / buf.length;
-    const speaking = vol > 8;
-    if (speaking !== wasSpeaking) {
-      wasSpeaking = speaking;
-      send({ type: 'speaking', active: speaking });
-      setSpeaking(myId, speaking);
+function detectSpeaking(audioStream) {
+  try {
+    const ctx = new AudioContext();
+    const src = ctx.createMediaStreamSource(audioStream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    src.connect(analyser);
+    const buf = new Uint8Array(analyser.frequencyBinCount);
+    let wasSpeaking = false;
+    function check() {
+      if (!analyser) return;
+      analyser.getByteFrequencyData(buf);
+      const vol = buf.reduce((a, b) => a + b, 0) / buf.length;
+      const speaking = vol > 15;
+      if (speaking !== wasSpeaking) {
+        wasSpeaking = speaking;
+        send({ type: 'speaking', active: speaking });
+        setSpeakingUI(myId, speaking);
+      }
+      speakTimer = requestAnimationFrame(check);
     }
-    speakTimer = requestAnimationFrame(check);
+    check();
+  } catch(e) {
+    console.log('Speaking detection not available:', e);
   }
-  check();
 }
 
 // ── UI ──
+function renderAll() {
+  renderChannels();
+  renderParticipants();
+}
+
 function renderChannels() {
   const el = document.getElementById('channel-list');
+  if (!el) return;
   el.innerHTML = '';
   ROOMS.forEach(room => {
     const members = Object.values(users).filter(u => u.room === room);
@@ -359,35 +372,49 @@ function renderChannels() {
 
 function renderParticipants() {
   const el = document.getElementById('participants');
+  if (!el) return;
   el.innerHTML = '';
   // me first
   addParticipantCard(myId, myName, muted, false);
-  Object.values(users).filter(u => u.room === currentRoom).forEach(u => {
-    addParticipantCard(u.id, u.name, u.muted, u.speaking);
+  // others in current room
+  Object.values(users).forEach(u => {
+    if (u.room === currentRoom) {
+      addParticipantCard(u.id, u.name, u.muted || false, u.speaking || false);
+    }
   });
 }
 
 function addParticipantCard(id, name, isMuted, isSpeaking) {
   const el = document.getElementById('participants');
+  if (!el) return;
+  // Remove existing card for this id
+  const existing = document.getElementById(`participant-${id}`);
+  if (existing) existing.remove();
+  
   const div = document.createElement('div');
   div.className = 'participant';
   div.id = `participant-${id}`;
-  const initial = name.charAt(0).toUpperCase();
+  const initial = (name || '?').charAt(0).toUpperCase();
   div.innerHTML = `
     <div class="av${isSpeaking ? ' speaking' : ''}" id="av-${id}">
       ${initial}
       <div class="mute-icon${isMuted ? ' visible' : ''}" id="mute-icon-${id}">🔇</div>
     </div>
-    <div class="pname">${name}</div>`;
+    <div class="pname">${name || 'Unknown'}</div>`;
   el.appendChild(div);
 }
 
-function setSpeaking(id, active) {
+function setSpeakingUI(id, active) {
   const av = document.getElementById(`av-${id}`);
   if (av) av.classList.toggle('speaking', active);
   const sb = document.getElementById(`sidebar-${id}`);
   if (sb) sb.classList.toggle('speaking', active);
   if (users[id]) users[id].speaking = active;
+}
+
+function updateMuteUI(id, isMuted) {
+  const muteIcon = document.getElementById(`mute-icon-${id}`);
+  if (muteIcon) muteIcon.classList.toggle('visible', isMuted);
 }
 
 // ── Auth ──
@@ -404,76 +431,192 @@ function setName() {
 }
 
 // ── WebSocket ──
-function connectWS() {
-  ws = new WebSocket(SIGNAL);
-  ws.onmessage = async ({ data }) => {
-    const msg = JSON.parse(data);
-    if (msg.from === myId) return;
-    const id = msg.from;
+let reconnectTimer = null;
 
-    if (msg.type === 'room-users') {
-      msg.users.forEach(u => {
-        if (u.id !== myId) { users[u.id] = { ...u, room: currentRoom, speaking: false, muted: false }; }
-      });
-      renderParticipants();
-      renderChannels();
-      // call every existing peer
-      for (const u of msg.users) {
-        if (u.id !== myId) await callPeer(u.id);
-      }
+function connectWS() {
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+  
+  console.log('Connecting to signaling server...');
+  ws = new WebSocket(SIGNAL);
+  
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
     }
-    else if (msg.type === 'user-joined') {
-      users[id] = { id, name: msg.name, room: currentRoom, speaking: false, muted: false };
-      renderParticipants();
-      renderChannels();
-      await callPeer(id);
+    // Re-join room if we were in one
+    if (currentRoom && stream) {
+      send({ type: 'join', name: myName, id: myId, room: currentRoom });
     }
-    else if (msg.type === 'user-left') {
-      delete users[id];
-      peers[id]?.close(); delete peers[id];
-      audioEls[id]?.remove(); delete audioEls[id];
-      document.getElementById(`participant-${id}`)?.remove();
-      renderChannels();
-    }
-    else if (msg.type === 'offer') { await handleOffer(id, msg.sdp); }
-    else if (msg.type === 'answer') { await peers[id]?.setRemoteDescription(msg.sdp); }
-    else if (msg.type === 'ice') { await peers[id]?.addIceCandidate(msg.candidate).catch(() => {}); }
-    else if (msg.type === 'speaking') { setSpeaking(id, msg.active); }
   };
-  ws.onclose = () => setTimeout(connectWS, 2000);
+  
+  ws.onmessage = async ({ data }) => {
+    try {
+      const msg = JSON.parse(data);
+      console.log('Received:', msg.type, msg);
+      
+      if (msg.type === 'room-users') {
+        // Clear existing users in this room and repopulate
+        Object.keys(users).forEach(id => {
+          if (users[id].room === currentRoom) delete users[id];
+        });
+        if (msg.users) {
+          msg.users.forEach(u => {
+            if (u.id !== myId) {
+              users[u.id] = { id: u.id, name: u.name, room: currentRoom, speaking: false, muted: false };
+            }
+          });
+        }
+        renderAll();
+        // Call every existing peer in the room
+        if (msg.users) {
+          for (const u of msg.users) {
+            if (u.id !== myId && !peers[u.id]) {
+              console.log('Calling existing peer:', u.id);
+              await callPeer(u.id);
+            }
+          }
+        }
+      }
+      else if (msg.type === 'user-joined') {
+        console.log('User joined:', msg.id, msg.name);
+        users[msg.id] = { id: msg.id, name: msg.name, room: currentRoom, speaking: false, muted: false };
+        renderAll();
+        // Call the new peer
+        if (!peers[msg.id]) {
+          await callPeer(msg.id);
+        }
+      }
+      else if (msg.type === 'user-left') {
+        console.log('User left:', msg.id);
+        // Remove user
+        delete users[msg.id];
+        // Close peer connection
+        if (peers[msg.id]) {
+          peers[msg.id].close();
+          delete peers[msg.id];
+        }
+        // Remove audio element
+        if (audioEls[msg.id]) {
+          audioEls[msg.id].remove();
+          delete audioEls[msg.id];
+        }
+        // Remove participant card
+        const card = document.getElementById(`participant-${msg.id}`);
+        if (card) card.remove();
+        renderChannels();
+      }
+      else if (msg.type === 'offer') {
+        console.log('Received offer from:', msg.id);
+        await handleOffer(msg.id, msg.sdp);
+      }
+      else if (msg.type === 'answer') {
+        console.log('Received answer from:', msg.id);
+        if (peers[msg.id] && msg.sdp) {
+          await peers[msg.id].setRemoteDescription(new RTCSessionDescription(msg.sdp)).catch(e => console.error('setRemoteDescription error:', e));
+        }
+      }
+      else if (msg.type === 'ice') {
+        if (peers[msg.id] && msg.candidate) {
+          await peers[msg.id].addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(e => console.error('addIceCandidate error:', e));
+        }
+      }
+      else if (msg.type === 'speaking') {
+        setSpeakingUI(msg.id, msg.active);
+      }
+    } catch(e) {
+      console.error('Message handling error:', e);
+    }
+  };
+  
+  ws.onclose = (e) => {
+    console.log('WebSocket closed, reconnecting in 2s...', e.code, e.reason);
+    reconnectTimer = setTimeout(connectWS, 2000);
+  };
+  
+  ws.onerror = (e) => {
+    console.error('WebSocket error:', e);
+  };
 }
 
 function send(msg) {
-  if (ws?.readyState === 1) ws.send(JSON.stringify({ ...msg, from: myId, room: currentRoom }));
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    const payload = { 
+      ...msg, 
+      id: myId, 
+      name: myName,
+      room: currentRoom 
+    };
+    ws.send(JSON.stringify(payload));
+  } else {
+    console.warn('WebSocket not connected, cannot send:', msg.type);
+  }
 }
 
 // ── Channel join/leave ──
 async function joinChannel(room) {
+  if (currentRoom === room) return; // Already in this room
   if (currentRoom) await leaveChannel(true);
+  
   currentRoom = room;
 
-  stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null);
-  if (!stream) { alert('Mic access denied'); return; }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    console.log('Got microphone stream');
+  } catch(e) {
+    alert('Mic access denied or not available');
+    console.error('getUserMedia error:', e);
+    currentRoom = null;
+    return;
+  }
+  
   detectSpeaking(stream);
 
-  send({ type: 'join', name: myName, id: myId });
+  send({ type: 'join', name: myName, id: myId, room: currentRoom });
 
   document.getElementById('call-channel').textContent = '#' + room;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('call-screen').style.display = 'flex';
-  renderParticipants();
-  renderChannels();
+  renderAll();
 }
 
 async function leaveChannel(silent = false) {
   if (!currentRoom) return;
+  
+  console.log('Leaving channel:', currentRoom);
+  
   if (!silent) send({ type: 'leave' });
-  cancelAnimationFrame(speakTimer);
-  Object.keys(peers).forEach(id => { peers[id].close(); delete peers[id]; });
-  Object.keys(audioEls).forEach(id => { audioEls[id].remove(); delete audioEls[id]; });
+  
+  if (speakTimer) {
+    cancelAnimationFrame(speakTimer);
+    speakTimer = null;
+  }
+  if (analyser) {
+    analyser = null;
+  }
+  
+  // Close all peer connections
+  Object.keys(peers).forEach(id => { 
+    peers[id].close(); 
+    delete peers[id]; 
+  });
+  
+  // Remove all audio elements
+  Object.keys(audioEls).forEach(id => { 
+    audioEls[id].remove(); 
+    delete audioEls[id]; 
+  });
+  
+  // Clear users
   Object.keys(users).forEach(id => delete users[id]);
-  stream?.getTracks().forEach(t => t.stop());
-  stream = null;
+  
+  // Stop microphone
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  
   currentRoom = null;
   document.getElementById('call-screen').style.display = 'none';
   renderChannels();
@@ -482,41 +625,97 @@ async function leaveChannel(silent = false) {
 // ── WebRTC ──
 function makePc(id) {
   const pc = new RTCPeerConnection(ICE);
-  stream?.getTracks().forEach(t => pc.addTrack(t, stream));
-  pc.ontrack = e => {
-    let a = audioEls[id];
-    if (!a) { a = new Audio(); a.autoplay = true; audioEls[id] = a; }
-    a.srcObject = e.streams[0];
+  
+  pc.oniceconnectionstatechange = () => {
+    console.log(`ICE connection state with ${id}:`, pc.iceConnectionState);
   };
-  pc.onicecandidate = e => { if (e.candidate) send({ type: 'ice', candidate: e.candidate, to: id }); };
+  
+  pc.onsignalingstatechange = () => {
+    console.log(`Signaling state with ${id}:`, pc.signalingState);
+  };
+  
+  // Add local stream tracks
+  if (stream) {
+    stream.getTracks().forEach(t => {
+      pc.addTrack(t, stream);
+      console.log(`Added track to peer ${id}:`, t.kind);
+    });
+  }
+  
+  pc.ontrack = (e) => {
+    console.log(`Received track from ${id}:`, e.track.kind);
+    let a = audioEls[id];
+    if (!a) { 
+      a = new Audio(); 
+      a.autoplay = true; 
+      a.controls = false;
+      audioEls[id] = a; 
+      document.body.appendChild(a);
+      console.log(`Created audio element for ${id}`);
+    }
+    if (e.streams && e.streams[0]) {
+      a.srcObject = e.streams[0];
+    }
+  };
+  
+  pc.onicecandidate = (e) => { 
+    if (e.candidate) {
+      console.log(`Sending ICE candidate to ${id}`);
+      send({ type: 'ice', candidate: e.candidate, to: id }); 
+    }
+  };
+  
   peers[id] = pc;
   return pc;
 }
 
 async function callPeer(id) {
-  const pc = makePc(id);
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  send({ type: 'offer', sdp: pc.localDescription, to: id });
+  if (peers[id]) {
+    console.log('Already have peer connection for:', id);
+    return;
+  }
+  
+  console.log('Creating offer for:', id);
+  try {
+    const pc = makePc(id);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    send({ type: 'offer', sdp: pc.localDescription, to: id });
+  } catch(e) {
+    console.error('callPeer error:', e);
+  }
 }
 
 async function handleOffer(id, sdp) {
-  const pc = makePc(id);
-  await pc.setRemoteDescription(sdp);
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  send({ type: 'answer', sdp: pc.localDescription, to: id });
+  console.log('Handling offer from:', id);
+  try {
+    // Close existing connection if any
+    if (peers[id]) {
+      peers[id].close();
+      delete peers[id];
+    }
+    
+    const pc = makePc(id);
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    send({ type: 'answer', sdp: pc.localDescription, to: id });
+  } catch(e) {
+    console.error('handleOffer error:', e);
+  }
 }
 
 // ── Mic toggle ──
 function toggleMic() {
   muted = !muted;
-  stream?.getAudioTracks().forEach(t => t.enabled = !muted);
+  if (stream) {
+    stream.getAudioTracks().forEach(t => t.enabled = !muted);
+  }
   document.getElementById('mute-btn').className = 'ctrl-btn' + (muted ? ' muted-btn' : '');
   document.getElementById('mute-btn').textContent = muted ? '🔇' : '🎙';
   document.getElementById('mic-panel-btn').textContent = muted ? '🔇' : '🎙';
   document.getElementById('my-dot').className = 'status-dot' + (muted ? ' muted' : '');
-  document.getElementById(`mute-icon-${myId}`)?.classList.toggle('visible', muted);
+  updateMuteUI(myId, muted);
 }
 
 document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') setName(); });
