@@ -2133,6 +2133,7 @@ document.addEventListener("click", () => {
 <div id="tnav" class="tnav">
 <h2 class="battery" id="date"></h2>
 <div class="clock" id="day"></div>
+
    
 
   <a href="https://discord.gg/tknXENDkzY">
@@ -2194,8 +2195,36 @@ navigator.getBattery().then(battery => {
   top: -10px;
   position: fixed;
 }
+#weather {
+  right: 550px;
+  top: -10px;
+  position: fixed;
+}
 </style>
+<p id="weather" style="color:white;"></p>
 
+<script>
+function wmoLabel(code) {
+  if (code === 0) return 'Clear sky';
+  if (code <= 2) return 'Partly cloudy';
+  if (code === 3) return 'Overcast';
+  if (code <= 49) return 'Foggy';
+  if (code <= 59) return 'Drizzle';
+  if (code <= 69) return 'Rain';
+  if (code <= 79) return 'Snow';
+  if (code <= 84) return 'Rain showers';
+  if (code <= 94) return 'Thunderstorm';
+  return 'Severe thunderstorm';
+}
+
+async function getWeather() {
+  const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph`;
+  const w = (await fetch(url).then(r => r.json())).current_weather;
+  document.getElementById('weather').textContent = `${Math.round(w.temperature)}°F ${wmoLabel(w.weathercode)}`;
+}
+getWeather();
+</script>
 <p id="clock2" style="color:white;"></p>
 <script>
   const updateTime = () => {
