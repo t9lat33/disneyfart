@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/chat.html') {
@@ -20,10 +20,10 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
-const clients = new Map();
+// ── TEXT CHAT state ──
+const textClients = new Map();
 const MESSAGE_HISTORY_LIMIT = 50;
 const messageHistory = [];
-
 let userIdCounter = 1;
 
 const COLORS = [
@@ -31,86 +31,77 @@ const COLORS = [
   '#5865f2','#00b0f4','#57f287','#feb132','#eb459e'
 ];
 
-function broadcast(data, excludeWs = null) {
-  const msg = JSON.stringify(data);
-  wss.clients.forEach(ws => {
-    if (ws !== excludeWs && ws.readyState === WebSocket.OPEN) {
-      ws.send(msg);
-    }
-  });
-}
+// ── VOICE CHAT state ──
+const voiceRooms = {};
+const voiceUsers = new Map(); // ws -> { id, name, room }
 
-function broadcastAll(data) {
-  const msg = JSON.stringify(data);
-  wss.clients.forEach(ws => {
-    if (ws.readyState === WebSocket.OPEN) ws.send(msg);
-  });
-}
-
-function getOnlineCount() {
-  return [...wss.clients].filter(ws => ws.readyState === WebSocket.OPEN).length;
-}
-
-function getUserList() {
-  return [...clients.values()].map(c => ({
+function getTextUsers() {
+  return [...textClients.values()].map(c => ({
     id: c.id,
     username: c.username,
-    color: c.color,
-    avatar: c.avatar
+    color: c.color
   }));
 }
 
 wss.on('connection', (ws, req) => {
+  // ── TEXT CHAT setup ──
   const id = userIdCounter++;
   const color = COLORS[(id - 1) % COLORS.length];
+  const textClient = { id, username: `User${id}`, color, ws };
+  textClients.set(ws, textClient);
 
-  const clientData = {
-    id,
-    username: `User${id}`,
-    color,
-    avatar: null,
-    ws
-  };
-
-  clients.set(ws, clientData);
-
+  // Send init data
   ws.send(JSON.stringify({
     type: 'init',
     userId: id,
     color,
     history: messageHistory,
-    users: getUserList(),
-    onlineCount: getOnlineCount()
+    users: getTextUsers(),
+    onlineCount: textClients.size
   }));
 
-  broadcast({
-    type: 'user_join',
-    userId: id,
-    username: clientData.username,
-    color,
-    users: getUserList(),
-    onlineCount: getOnlineCount()
-  }, ws);
+  // Broadcast join
+  wss.clients.forEach(c => {
+    if (c !== ws && c.readyState === WebSocket.OPEN) {
+      c.send(JSON.stringify({
+        type: 'user_join',
+        userId: id,
+        username: textClient.username,
+        color,
+        users: getTextUsers(),
+        onlineCount: textClients.size
+      }));
+    }
+  });
 
   ws.on('message', raw => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
 
-    const client = clients.get(ws);
-    if (!client) return;
+    const client = textClients.get(ws);
 
+    // ── TEXT CHAT messages ──
     if (data.type === 'set_username') {
       const newName = String(data.username || '').trim().slice(0, 32);
       if (!newName) return;
       const oldName = client.username;
       client.username = newName;
-      broadcastAll({
-        type: 'rename',
-        userId: client.id,
-        oldName,
-        newName,
-        users: getUserList(),
-        onlineCount: getOnlineCount()
+      
+      // Also update voice user if in a room
+      const vu = voiceUsers.get(ws);
+      if (vu) vu.name = newName;
+      
+      wss.clients.forEach(c => {
+        if (c.readyState === WebSocket.OPEN) {
+          c.send(JSON.stringify({
+            type: 'rename',
+            userId: client.id,
+            oldName,
+            newName,
+            users: getTextUsers(),
+            onlineCount: textClients.size
+          }));
+        }
       });
     }
 
@@ -131,37 +122,116 @@ wss.on('connection', (ws, req) => {
       messageHistory.push(msg);
       if (messageHistory.length > MESSAGE_HISTORY_LIMIT) messageHistory.shift();
 
-      broadcastAll(msg);
+      wss.clients.forEach(c => {
+        if (c.readyState === WebSocket.OPEN) {
+          c.send(JSON.stringify(msg));
+        }
+      });
     }
 
-    else if (data.type === 'typing') {
-      broadcast({
-        type: 'typing',
-        userId: client.id,
-        username: client.username,
-        isTyping: !!data.isTyping
-      }, ws);
+    // ── VOICE CHAT messages ──
+    else if (data.type === 'voice_join') {
+      const room = data.room || 'general';
+      const name = client.username;
+      const uid = 'v_' + client.id;
+      
+      if (!voiceRooms[room]) voiceRooms[room] = new Map();
+      voiceRooms[room].set(ws, { id: uid, name });
+      voiceUsers.set(ws, { id: uid, name, room });
+      
+      // Send current room users to the joiner
+      const roomUsers = [...voiceRooms[room].values()].map(u => ({ id: u.id, name: u.name }));
+      ws.send(JSON.stringify({ type: 'voice_users', room, users: roomUsers }));
+      
+      // Tell others in room
+      voiceRooms[room].forEach((info, peer) => {
+        if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+          peer.send(JSON.stringify({ type: 'voice_user_joined', id: uid, name, room }));
+        }
+      });
+    }
+
+    else if (data.type === 'voice_leave') {
+      const vu = voiceUsers.get(ws);
+      if (vu && voiceRooms[vu.room]) {
+        voiceRooms[vu.room].delete(ws);
+        voiceRooms[vu.room].forEach((info, peer) => {
+          if (peer.readyState === WebSocket.OPEN) {
+            peer.send(JSON.stringify({ type: 'voice_user_left', id: vu.id, room: vu.room }));
+          }
+        });
+        if (voiceRooms[vu.room].size === 0) delete voiceRooms[vu.room];
+      }
+      voiceUsers.delete(ws);
+    }
+
+    // WebRTC signaling relay
+    else if (data.type === 'voice_offer' || data.type === 'voice_answer' || data.type === 'voice_ice') {
+      const vu = voiceUsers.get(ws);
+      if (!vu || !voiceRooms[vu.room]) return;
+      
+      voiceRooms[vu.room].forEach((info, peer) => {
+        if (info.id === data.to && peer.readyState === WebSocket.OPEN && peer !== ws) {
+          peer.send(JSON.stringify({
+            ...data,
+            from: vu.id,
+            fromName: vu.name
+          }));
+        }
+      });
+    }
+
+    else if (data.type === 'voice_speaking') {
+      const vu = voiceUsers.get(ws);
+      if (vu && voiceRooms[vu.room]) {
+        voiceRooms[vu.room].forEach((info, peer) => {
+          if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+            peer.send(JSON.stringify({
+              type: 'voice_speaking',
+              id: vu.id,
+              active: data.active
+            }));
+          }
+        });
+      }
     }
   });
 
   ws.on('close', () => {
-    const client = clients.get(ws);
-    if (!client) return;
-    clients.delete(ws);
-    broadcast({
-      type: 'user_leave',
-      userId: client.id,
-      username: client.username,
-      users: getUserList(),
-      onlineCount: getOnlineCount()
+    // Clean up text chat
+    textClients.delete(ws);
+    wss.clients.forEach(c => {
+      if (c.readyState === WebSocket.OPEN) {
+        c.send(JSON.stringify({
+          type: 'user_leave',
+          userId: textClient.id,
+          username: textClient.username,
+          users: getTextUsers(),
+          onlineCount: textClients.size
+        }));
+      }
     });
+
+    // Clean up voice
+    const vu = voiceUsers.get(ws);
+    if (vu && voiceRooms[vu.room]) {
+      voiceRooms[vu.room].delete(ws);
+      voiceRooms[vu.room].forEach((info, peer) => {
+        if (peer.readyState === WebSocket.OPEN) {
+          peer.send(JSON.stringify({ type: 'voice_user_left', id: vu.id, room: vu.room }));
+        }
+      });
+      if (voiceRooms[vu.room].size === 0) delete voiceRooms[vu.room];
+    }
+    voiceUsers.delete(ws);
   });
 
   ws.on('error', () => {
-    clients.delete(ws);
+    textClients.delete(ws);
+    voiceUsers.delete(ws);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`T9 Chat running on port ${PORT}`);
+  console.log(`T9 Chat + Voice running on port ${PORT}`);
 });
