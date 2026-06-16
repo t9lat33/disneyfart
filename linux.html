@@ -41,11 +41,15 @@
   a:focus{
     outline:none;
   }
-  #weather, #battery2, #clock2, #date, #battery{
+ #weather, #battery2, #clock2, #date, #battery {
   position: static;
   margin: 0;
   font-size: 11px;
   white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .clock {
