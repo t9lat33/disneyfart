@@ -41,28 +41,26 @@
   a:focus{
     outline:none;
   }
+  #weather, #battery2, #clock2, #date, #battery{
+  position: static;
+  margin: 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
 
 .clock {
-  color: white;
-  font-size: 45px;
+   text-align: center;
+  top: -10px;
   position: fixed;
-  top: 110px;
-  text-align: center;
-  text-shadow: 0 0 10px #202020;
-  font-family: 'Orbitron', sans-serif;
 }
 
 
   .battery {
     
-color: white;
-  font-size: 25px;
-  position: fixed;
-  top: 145px;
-  text-align: center;
-  text-shadow: 0 0 10px #202020;
-  font-family: 'Orbitron', sans-serif;
 
+  text-align: center;
+  top: -10px;
+  position: fixed;
 
   }
    .musicplayer {
@@ -2131,8 +2129,7 @@ document.addEventListener("click", () => {
 
 
 <div id="tnav" class="tnav">
-<h2 class="battery" id="date"></h2>
-<div class="clock" id="day"></div>
+
 
    
 
@@ -2196,7 +2193,7 @@ navigator.getBattery().then(battery => {
   position: fixed;
 }
 #weather {
-  right: 550px;
+  right: 420px;
   top: -10px;
   position: fixed;
 }
@@ -2238,7 +2235,8 @@ getWeather();
   updateTime();
   setInterval(updateTime, 1000);
 </script>
- 
+ <p class="battery" id="date"></p>
+<p class="clock" id="day"></p>
 
 <script>
   const now = new Date();
