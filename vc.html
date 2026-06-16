@@ -298,7 +298,7 @@ button.t9-btn:hover { filter: brightness(1.1); }
 const ROOMS = ['general', 'chill', 'gaming', 'dev'];
 // Determine WebSocket URL based on current page protocol
 const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const SIGNAL = `${wsProtocol}//${location.hostname}:3001/`;
+const SIGNAL = `wss://${location.host}/signal/`;
 const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 let myName = '', myId = Math.random().toString(36).slice(2, 8);
