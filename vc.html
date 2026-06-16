@@ -1,416 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Voice Chat - T9OS</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial; 
-            text-align: center; 
-            padding: 20px; 
-            background: #1a1a2e; 
-            color: white; 
-            min-height: 100vh;
-        }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 { margin-bottom: 20px; }
-        .room-section {
-            background: #16213e;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        input {
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: none;
-            margin: 10px 0;
-            width: 70%;
-        }
-        button { 
-            padding: 12px 24px; 
-            margin: 10px 5px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 8px; 
-        }
-        #joinBtn { background: #4CAF50; color: white; }
-        #createBtn { background: #2196F3; color: white; }
-        #leaveBtn { background: #f44336; color: white; }
-        #muteBtn { background: #FF9800; color: white; }
-        #status { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background: #16213e; 
-            border-radius: 10px; 
-        }
-        .users-list {
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        .users-list h3 { margin-bottom: 10px; }
-        .user-item {
-            padding: 8px;
-            background: #16213e;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-        .controls {
-            display: none;
-        }
-        .controls.active { display: block; }
-        audio { 
-            margin-top: 20px; 
-            width: 100%; 
-            max-width: 400px; 
-        }
-        #roomId { font-weight: bold; color: #4CAF50; }
-    </style>
+<meta charset="UTF-8">
+<title>T9 Voice Chat</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #1a1a2e;
+  color: #cdd6f4;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+h1 { font-size: 1.1rem; color: #89b4fa; letter-spacing: .05em; }
+input {
+  background: #202036;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  color: #cdd6f4;
+  padding: 8px 14px;
+  font-size: .9rem;
+  outline: none;
+  width: 160px;
+}
+button {
+  background: #202036;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  color: #cdd6f4;
+  padding: 8px 18px;
+  font-size: .9rem;
+  cursor: pointer;
+}
+button:hover { background: #2a2a48; }
+#status { font-size: .8rem; color: #6c7086; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎤 T9OS Voice Chat</h1>
-        
-        <div class="room-section" id="joinSection">
-            <h2>Join or Create Room</h2>
-            <input type="text" id="roomInput" placeholder="Enter room name..." maxlength="20">
-            <br>
-            <button id="joinBtn">🚪 Join Room</button>
-            <button id="createBtn">✨ Create New Room</button>
-        </div>
+<h1>T9 Voice Chat</h1>
+<div style="display:flex;gap:8px">
+  <input id="room" placeholder="Room" value="vc1" />
+  <button onclick="join()">Join</button>
+  <button onclick="leave()">Leave</button>
+  <button onclick="toggleMic()" id="mic">Mute</button>
+</div>
+<div id="status">Not connected</div>
 
-        <div class="controls" id="controlsSection">
-            <h2>Room: <span id="roomId"></span></h2>
-            <button id="muteBtn">🔊 Mute</button>
-            <button id="leaveBtn">🚪 Leave Room</button>
-            
-            <div class="users-list">
-                <h3>👥 Users in Room: <span id="userCount">0</span></h3>
-                <div id="usersList"></div>
-            </div>
-            
-            <div id="status">🟢 Connected</div>
-        </div>
-    </div>
+<script>
+const SIGNAL = `wss://${location.host}/signal/`;
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const myId = Math.random().toString(36).slice(2, 8);
+let ws, stream, muted = false;
+const peers = {};
 
-    <script>
-        let localStream = null;
-        let peerConnections = new Map();
-        let ws = null;
-        let currentRoom = null;
-        let isMuted = false;
-        
-        const servers = { 
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" }
-            ] 
-        };
+function log(s) { document.getElementById('status').textContent = s; }
+function send(msg) { ws.send(JSON.stringify({ ...msg, from: myId, room: document.getElementById('room').value })); }
 
-        function connectWebSocket() {
-            ws = new WebSocket(`ws://${window.location.hostname}:8080`);
-            
-            ws.onopen = () => {
-                console.log('Connected to signaling server');
-            };
+async function join() {
+  stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => { log('Mic denied'); return null; });
+  if (!stream) return;
+  ws = new WebSocket(SIGNAL);
+  ws.onopen = () => { send({ type: 'join' }); log('Connected'); };
+  ws.onmessage = async ({ data }) => {
+    const msg = JSON.parse(data);
+    if (msg.from === myId) return;
+    const id = msg.from;
+    if (msg.type === 'join') await call(id);
+    if (msg.type === 'offer') await answer(id, msg.sdp);
+    if (msg.type === 'answer') await peers[id]?.setRemoteDescription(msg.sdp);
+    if (msg.type === 'ice') await peers[id]?.addIceCandidate(msg.candidate).catch(() => {});
+  };
+  ws.onclose = () => log('Disconnected');
+}
 
-            ws.onmessage = async (msg) => {
-                const data = JSON.parse(msg.data);
-                
-                if (data.type === 'user-joined') {
-                    addUser(data.userId);
-                    updateStatus(`${data.userId} joined the room`);
-                    createOffer(data.userId);
-                } 
-                else if (data.type === 'user-left') {
-                    removeUser(data.userId);
-                    updateStatus(`${data.userId} left the room`);
-                    if (peerConnections.has(data.userId)) {
-                        peerConnections.get(data.userId).close();
-                        peerConnections.delete(data.userId);
-                    }
-                }
-                else if (data.type === 'offer') {
-                    await handleOffer(data);
-                }
-                else if (data.type === 'answer') {
-                    await handleAnswer(data);
-                }
-                else if (data.type === 'ice-candidate') {
-                    await handleIceCandidate(data);
-                }
-                else if (data.type === 'room-users') {
-                    updateUsersList(data.users);
-                    // Create offers to all existing users
-                    data.users.forEach(userId => {
-                        if (userId !== generateUserId() && !peerConnections.has(userId)) {
-                            createOffer(userId);
-                        }
-                    });
-                }
-            };
+function makePc(id) {
+  const pc = new RTCPeerConnection(ICE);
+  stream.getTracks().forEach(t => pc.addTrack(t, stream));
+  pc.ontrack = e => { const a = new Audio(); a.srcObject = e.streams[0]; a.play(); };
+  pc.onicecandidate = e => { if (e.candidate) send({ type: 'ice', candidate: e.candidate }); };
+  peers[id] = pc;
+  return pc;
+}
 
-            ws.onclose = () => {
-                updateStatus('🔴 Disconnected from server');
-            };
-        }
+async function call(id) {
+  const pc = makePc(id);
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  send({ type: 'offer', sdp: pc.localDescription });
+}
 
-        function generateUserId() {
-            return 'user-' + Math.random().toString(36).substr(2, 9);
-        }
+async function answer(id, sdp) {
+  const pc = makePc(id);
+  await pc.setRemoteDescription(sdp);
+  const ans = await pc.createAnswer();
+  await pc.setLocalDescription(ans);
+  send({ type: 'answer', sdp: pc.localDescription });
+}
 
-        const userId = generateUserId();
+function leave() {
+  Object.values(peers).forEach(pc => pc.close());
+  stream?.getTracks().forEach(t => t.stop());
+  ws?.close();
+  log('Not connected');
+}
 
-        async function createOffer(targetUserId) {
-            const pc = new RTCPeerConnection(servers);
-            peerConnections.set(targetUserId, pc);
-
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    pc.addTrack(track, localStream);
-                });
-            }
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    ws.send(JSON.stringify({
-                        type: 'ice-candidate',
-                        candidate: event.candidate,
-                        target: targetUserId,
-                        room: currentRoom
-                    }));
-                }
-            };
-
-            pc.ontrack = (event) => {
-                console.log('Received remote track from', targetUserId);
-            };
-
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            
-            ws.send(JSON.stringify({
-                type: 'offer',
-                offer: offer,
-                target: targetUserId,
-                room: currentRoom
-            }));
-        }
-
-        async function handleOffer(data) {
-            const pc = new RTCPeerConnection(servers);
-            peerConnections.set(data.sender, pc);
-
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    pc.addTrack(track, localStream);
-                });
-            }
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    ws.send(JSON.stringify({
-                        type: 'ice-candidate',
-                        candidate: event.candidate,
-                        target: data.sender,
-                        room: currentRoom
-                    }));
-                }
-            };
-
-            pc.ontrack = (event) => {
-                console.log('Received remote track from', data.sender);
-                // Create audio element for this peer
-                let audioElement = document.getElementById(`audio-${data.sender}`);
-                if (!audioElement) {
-                    audioElement = document.createElement('audio');
-                    audioElement.id = `audio-${data.sender}`;
-                    audioElement.autoplay = true;
-                    audioElement.controls = true;
-                    audioElement.style.width = '100%';
-                    audioElement.style.maxWidth = '400px';
-                    audioElement.style.marginTop = '10px';
-                    document.querySelector('.container').appendChild(audioElement);
-                }
-                audioElement.srcObject = event.streams[0];
-            };
-
-            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            
-            ws.send(JSON.stringify({
-                type: 'answer',
-                answer: answer,
-                target: data.sender,
-                room: currentRoom
-            }));
-        }
-
-        async function handleAnswer(data) {
-            const pc = peerConnections.get(data.sender);
-            if (pc) {
-                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-            }
-        }
-
-        async function handleIceCandidate(data) {
-            const pc = peerConnections.get(data.sender);
-            if (pc) {
-                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-        }
-
-        function addUser(userId) {
-            const usersList = document.getElementById('usersList');
-            const userDiv = document.createElement('div');
-            userDiv.className = 'user-item';
-            userDiv.id = `user-${userId}`;
-            userDiv.textContent = `👤 ${userId}`;
-            usersList.appendChild(userDiv);
-            updateUserCount();
-        }
-
-        function removeUser(userId) {
-            const userDiv = document.getElementById(`user-${userId}`);
-            if (userDiv) userDiv.remove();
-            // Remove audio element for this user
-            const audioElement = document.getElementById(`audio-${userId}`);
-            if (audioElement) audioElement.remove();
-            updateUserCount();
-        }
-
-        function updateUsersList(users) {
-            const usersList = document.getElementById('usersList');
-            usersList.innerHTML = '';
-            users.forEach(userId => {
-                addUser(userId);
-            });
-        }
-
-        function updateUserCount() {
-            const count = document.querySelectorAll('.user-item').length;
-            document.getElementById('userCount').textContent = count;
-        }
-
-        function updateStatus(message) {
-            document.getElementById('status').innerHTML = message;
-        }
-
-        async function startVoice() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    } 
-                });
-                return true;
-            } catch (error) {
-                console.error('Error accessing microphone:', error);
-                alert('Could not access microphone. Please check permissions.');
-                return false;
-            }
-        }
-
-        function joinRoom(roomName) {
-            currentRoom = roomName;
-            document.getElementById('roomId').textContent = roomName;
-            
-            ws.send(JSON.stringify({
-                type: 'join',
-                room: roomName,
-                userId: userId
-            }));
-
-            document.getElementById('joinSection').style.display = 'none';
-            document.getElementById('controlsSection').classList.add('active');
-            addUser(userId);
-        }
-
-        function leaveRoom() {
-            if (currentRoom) {
-                ws.send(JSON.stringify({
-                    type: 'leave',
-                    room: currentRoom,
-                    userId: userId
-                }));
-            }
-
-            // Close all peer connections
-            peerConnections.forEach(pc => pc.close());
-            peerConnections.clear();
-
-            // Remove all audio elements except the user list
-            document.querySelectorAll('audio').forEach(audio => audio.remove());
-
-            // Clear users list
-            document.getElementById('usersList').innerHTML = '';
-            updateUserCount();
-
-            currentRoom = null;
-            document.getElementById('joinSection').style.display = 'block';
-            document.getElementById('controlsSection').classList.remove('active');
-        }
-
-        function toggleMute() {
-            if (localStream) {
-                isMuted = !isMuted;
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = !isMuted;
-                });
-                document.getElementById('muteBtn').textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
-            }
-        }
-
-        // Event Listeners
-        document.getElementById('joinBtn').onclick = async () => {
-            const roomName = document.getElementById('roomInput').value.trim();
-            if (roomName) {
-                if (!localStream) {
-                    const success = await startVoice();
-                    if (!success) return;
-                }
-                connectWebSocket();
-                // Wait for WebSocket to connect
-                setTimeout(() => joinRoom(roomName), 500);
-            } else {
-                alert('Please enter a room name');
-            }
-        };
-
-        document.getElementById('createBtn').onclick = async () => {
-            const roomName = 'room-' + Math.random().toString(36).substr(2, 7);
-            document.getElementById('roomInput').value = roomName;
-            if (!localStream) {
-                const success = await startVoice();
-                if (!success) return;
-            }
-            connectWebSocket();
-            setTimeout(() => joinRoom(roomName), 500);
-        };
-
-        document.getElementById('leaveBtn').onclick = () => {
-            leaveRoom();
-            if (ws) ws.close();
-            ws = null;
-        };
-
-        document.getElementById('muteBtn').onclick = toggleMute;
-
-        // Clean up on page unload
-        window.onbeforeunload = () => {
-            leaveRoom();
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-        };
-    </script>
+function toggleMic() {
+  muted = !muted;
+  stream?.getAudioTracks().forEach(t => t.enabled = !muted);
+  document.getElementById('mic').textContent = muted ? 'Unmute' : 'Mute';
+}
+</script>
 </body>
 </html>
