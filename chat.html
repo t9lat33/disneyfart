@@ -253,74 +253,46 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 
 <div class="modal-overlay" id="modal-create-server">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('create-server')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <button class="modal-close" onclick="closeModal('create-server')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h2>Create a Server</h2>
     <p class="subtitle">Give your server a name and optional icon.</p>
     <div class="avatar-upload">
-      <div class="srv-preview" id="create-icon-preview" onclick="document.getElementById('create-icon-input').click()">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
+      <div class="srv-preview" id="create-icon-preview" onclick="document.getElementById('create-icon-input').click()"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
       <input type="file" id="create-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'create-icon-preview')">
       <span style="font-size:13px;color:var(--muted)">Upload icon (optional)</span>
     </div>
-    <div class="form-group">
-      <label>Server Name</label>
-      <input type="text" id="create-server-name" placeholder="My Server" maxlength="100" onkeydown="if(event.key==='Enter')createServer()">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeModal('create-server')">Cancel</button>
-      <button class="btn btn-primary" onclick="createServer()">Create</button>
-    </div>
+    <div class="form-group"><label>Server Name</label><input type="text" id="create-server-name" placeholder="My Server" maxlength="100" onkeydown="if(event.key==='Enter')createServer()"></div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('create-server')">Cancel</button><button class="btn btn-primary" onclick="createServer()">Create</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-join-server">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('join-server')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <button class="modal-close" onclick="closeModal('join-server')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h2>Join a Server</h2>
     <p class="subtitle">Enter an invite code to join.</p>
-    <div class="form-group">
-      <label>Invite Code</label>
-      <input type="text" id="join-code-input" placeholder="e.g. Y2KDIN" maxlength="8" style="text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center" onkeydown="if(event.key==='Enter')joinServer()">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeModal('join-server')">Cancel</button>
-      <button class="btn btn-primary" onclick="joinServer()">Join</button>
-    </div>
+    <div class="form-group"><label>Invite Code</label><input type="text" id="join-code-input" placeholder="e.g. Y2KDIN" maxlength="8" style="text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center" onkeydown="if(event.key==='Enter')joinServer()"></div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('join-server')">Cancel</button><button class="btn btn-primary" onclick="joinServer()">Join</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-edit-profile">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('edit-profile')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <button class="modal-close" onclick="closeModal('edit-profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h2>Edit Profile</h2>
     <div class="avatar-upload">
       <div class="avatar-preview" id="profile-avatar-preview" onclick="document.getElementById('profile-avatar-input').click()"></div>
       <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewImage(this,'profile-avatar-preview')">
       <span style="font-size:13px;color:var(--muted)">Click to change avatar</span>
     </div>
-    <div class="form-group">
-      <label>Display Name</label>
-      <input type="text" id="profile-name-input" placeholder="Your name" maxlength="32" onkeydown="if(event.key==='Enter')saveProfile()">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeModal('edit-profile')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveProfile()">Save</button>
-    </div>
+    <div class="form-group"><label>Display Name</label><input type="text" id="profile-name-input" placeholder="Your name" maxlength="32" onkeydown="if(event.key==='Enter')saveProfile()"></div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('edit-profile')">Cancel</button><button class="btn btn-primary" onclick="saveProfile()">Save</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-server-settings">
   <div class="modal" style="width:540px">
-    <button class="modal-close" onclick="closeModal('server-settings')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <button class="modal-close" onclick="closeModal('server-settings')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h2 id="ss-title">Server Settings</h2>
     <div class="tab-bar" style="margin-top:12px">
       <button class="tab active" onclick="ssTab('overview',this)">Overview</button>
@@ -334,26 +306,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
         <input type="file" id="ss-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'ss-icon-preview')">
         <span style="font-size:13px;color:var(--muted)">Click to change icon</span>
       </div>
-      <div class="form-group">
-        <label>Server Name</label>
-        <input type="text" id="ss-name-input" maxlength="100">
-      </div>
+      <div class="form-group"><label>Server Name</label><input type="text" id="ss-name-input" maxlength="100"></div>
       <div class="btn-row"><button class="btn btn-primary" onclick="saveServerSettings()">Save Changes</button></div>
-      <div class="danger-zone">
-        <h3>Danger Zone</h3>
-        <button class="btn btn-danger" onclick="deleteServer()">Delete Server</button>
-      </div>
+      <div class="danger-zone"><h3>Danger Zone</h3><button class="btn btn-danger" onclick="deleteServer()">Delete Server</button></div>
     </div>
     <div id="ss-channels" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Text Channels</span>
-        <button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('text')">Add</button>
-      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Text Channels</span><button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('text')">Add</button></div>
       <div id="ss-text-channels" style="margin-bottom:16px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Voice Channels</span>
-        <button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('voice')">Add</button>
-      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Voice Channels</span><button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('voice')">Add</button></div>
       <div id="ss-voice-channels"></div>
     </div>
     <div id="ss-members" style="display:none"><div id="ss-members-list"></div></div>
@@ -378,7 +338,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 </div>
 
 <script>
-const WS_URL = `wss://${location.host}/ws`;
 let ws, myId, myUsername='', myColor='#5865f2', myAvatar=null;
 let servers={}, currentServerId=null, currentChannelId=null;
 let currentView='dm', currentDmUser=null;
@@ -390,19 +349,13 @@ const peers={}, audioEls={};
 let audioCtx=null;
 let lastMsgUser=null, lastMsgTime=0;
 
-const ICE={iceServers:[
-  {urls:'stun:stun.l.google.com:19302'}
-]};
-
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
 let obAvatarData = null;
 
 function obPreviewAvatar(input) {
   const file = input.files[0]; if (!file) return;
   const r = new FileReader();
-  r.onload = e => {
-    obAvatarData = e.target.result;
-    document.getElementById('ob-avatar').innerHTML = `<img src="${obAvatarData}">`;
-  };
+  r.onload = e => { obAvatarData = e.target.result; document.getElementById('ob-avatar').innerHTML = `<img src="${obAvatarData}">`; };
   r.readAsDataURL(file);
 }
 
@@ -416,10 +369,7 @@ function finishOnboarding() {
 
 function checkOnboarding() {
   const saved = localStorage.getItem('t9_profile');
-  if (saved) {
-    document.getElementById('onboarding').classList.add('hidden');
-    connect();
-  }
+  if (saved) { document.getElementById('onboarding').classList.add('hidden'); connect(); }
 }
 
 function connect() {
@@ -440,12 +390,19 @@ function handleMsg(d) {
     case 'init':
       myId=d.id; myUsername=d.username; myColor=d.color; myAvatar=d.avatar;
       servers=d.servers||{}; onlineUsers=d.onlineUsers||{};
+      if(d.dmHistory) {
+        Object.entries(d.dmHistory).forEach(([otherId, msgs]) => {
+          if(!dmConversations[otherId]) dmConversations[otherId]={messages:[]};
+          dmConversations[otherId].messages = msgs;
+        });
+      }
       renderMyProfile(); renderServerBar(); showDMs();
+      const serverList = Object.values(servers);
+      if(serverList.length > 0) selectServer(serverList[0].id);
       break;
     case 'chat': addMessage(d); break;
     case 'dm': addDM(d); break;
-    case 'server_created':
-    case 'server_updated':
+    case 'server_created': case 'server_updated':
       servers[d.server.id]=d.server; renderServerBar();
       if (currentServerId===d.server.id) renderSidebar();
       break;
@@ -465,7 +422,7 @@ function handleMsg(d) {
       if (currentServerId===d.serverId){currentServerId=null;showDMs();}
       renderServerBar(); toast('You were removed from the server.'); break;
     case 'user_join': onlineUsers[d.user.id]=d.user; renderMembers(); if(currentView==='dm')renderDMList(); break;
-    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList(); 
+    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList();
       if(dmVoiceState.peerId===d.userId) cleanupDMCall(); break;
     case 'user_updated':
       onlineUsers[d.user.id]=d.user;
@@ -492,10 +449,7 @@ function handleMsg(d) {
     case 'dm_voice_start': handleDMVoiceStart(d.from); break;
     case 'dm_voice_end': cleanupDMCall(); toast('Call ended'); break;
     case 'dm_voice_decline': cleanupDMCall(); toast('Call declined'); break;
-    case 'dm_voice_accept': 
-      dmVoiceState.peerId=d.from;
-      setTimeout(()=>callPeerDM(d.from),500);
-      break;
+    case 'dm_voice_accept': dmVoiceState.peerId=d.from; setTimeout(()=>callPeerDM(d.from),500); break;
     case 'dm_voice_offer': handleDMVoiceOffer(d.from,d.sdp); break;
     case 'dm_voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
     case 'dm_voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
@@ -548,17 +502,13 @@ function selectServer(id) {
   document.getElementById('dm-icon').classList.remove('active');
   renderServerBar(); renderSidebar();
   const srv=servers[id];
-  if(srv){
-    const first=srv.channels.find(c=>c.type==='text');
-    if(first) selectChannel(first.id); else showWelcome();
-  }
+  if(srv){ const first=srv.channels.find(c=>c.type==='text'); if(first) selectChannel(first.id); else showWelcome(); }
 }
 
 function renderSidebar() {
   const srv=servers[currentServerId]; if(!srv) return;
   document.getElementById('sidebar-title').textContent=srv.name;
-  const el=document.getElementById('channel-list');
-  el.innerHTML='';
+  const el=document.getElementById('channel-list'); el.innerHTML='';
   const isOwner=srv.ownerId===myId;
   const textChs=srv.channels.filter(c=>c.type==='text');
   const voiceChs=srv.channels.filter(c=>c.type==='voice');
@@ -583,10 +533,7 @@ function renderSidebar() {
     el.appendChild(btn);
     if(ch.users&&ch.users.length){
       const vul=document.createElement('div'); vul.className='ch-voice-users';
-      ch.users.forEach(u=>{
-        const ue=document.createElement('div'); ue.className='ch-voice-user';
-        ue.textContent=u.username||u.id; vul.appendChild(ue);
-      });
+      ch.users.forEach(u=>{ const ue=document.createElement('div'); ue.className='ch-voice-user'; ue.textContent=u.username||u.id; vul.appendChild(ue); });
       el.appendChild(vul);
     }
   });
@@ -644,25 +591,21 @@ function openServerSettings() {
 }
 
 function ssTab(name,btn) {
-  ['overview','channels','members','invite'].forEach(t=>{
-    document.getElementById('ss-'+t).style.display=t===name?'block':'none';
-  });
+  ['overview','channels','members','invite'].forEach(t=>{ document.getElementById('ss-'+t).style.display=t===name?'block':'none'; });
   document.querySelectorAll('#modal-server-settings .tab').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
 }
 
 function saveServerSettings() {
   const name=document.getElementById('ss-name-input').value.trim(); if(!name) return;
-  const prev=document.getElementById('ss-icon-preview');
-  const img=prev.querySelector('img');
+  const prev=document.getElementById('ss-icon-preview'); const img=prev.querySelector('img');
   send({type:'update_server',serverId:currentServerId,name,icon:img?img.src:null});
   closeModal('server-settings');
 }
 
 function createServer() {
   const name=document.getElementById('create-server-name').value.trim(); if(!name) return;
-  const prev=document.getElementById('create-icon-preview');
-  const img=prev.querySelector('img');
+  const prev=document.getElementById('create-icon-preview'); const img=prev.querySelector('img');
   send({type:'create_server',name,icon:img?img.src:null});
   closeModal('create-server');
   document.getElementById('create-server-name').value='';
@@ -688,11 +631,7 @@ function copyServerInvite() {
   if(srv){navigator.clipboard.writeText(srv.inviteCode);toast('Invite code copied!');}
 }
 
-function copyInvite() {
-  navigator.clipboard.writeText(document.getElementById('ss-invite-code').textContent);
-  toast('Copied!');
-}
-
+function copyInvite() { navigator.clipboard.writeText(document.getElementById('ss-invite-code').textContent); toast('Copied!'); }
 function regenerateInvite() { send({type:'regenerate_invite',serverId:currentServerId}); }
 
 function addChannel(type) {
@@ -703,8 +642,7 @@ function addChannel(type) {
 function renderChannelManager() {
   const srv=servers[currentServerId]; if(!srv) return;
   ['text','voice'].forEach(t=>{
-    const el=document.getElementById('ss-'+t+'-channels');
-    el.innerHTML='';
+    const el=document.getElementById('ss-'+t+'-channels'); el.innerHTML='';
     srv.channels.filter(c=>c.type===t).forEach(ch=>{
       const div=document.createElement('div'); div.className='ch-mgr-item';
       div.innerHTML=`<span>${esc(ch.name)}</span><button class="ch-mgr-btn" onclick="removeChannel('${ch.id}')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg></button>`;
@@ -713,9 +651,7 @@ function renderChannelManager() {
   });
 }
 
-function removeChannel(channelId) {
-  if(confirm('Delete this channel?')) send({type:'remove_channel',serverId:currentServerId,channelId});
-}
+function removeChannel(channelId) { if(confirm('Delete this channel?')) send({type:'remove_channel',serverId:currentServerId,channelId}); }
 
 function renderMemberManager() {
   const srv=servers[currentServerId]; if(!srv) return;
@@ -724,18 +660,12 @@ function renderMemberManager() {
     const u=onlineUsers[uid]||{id:uid,username:'Unknown',color:'#5865f2'};
     const isOwner=srv.ownerId===uid;
     const div=document.createElement('div'); div.className='mm-item';
-    div.innerHTML=`
-      <div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div>
-      <span class="mm-name">${esc(u.username)}${isOwner?'<span class="owner-tag">Owner</span>':''}</span>
-      ${!isOwner&&srv.ownerId===myId?`<button class="mm-kick" onclick="kickMember(${uid})">Kick</button>`:''}
-    `;
+    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)}${isOwner?'<span class="owner-tag">Owner</span>':''}</span>${!isOwner&&srv.ownerId===myId?`<button class="mm-kick" onclick="kickMember(${uid})">Kick</button>`:''}`;
     el.appendChild(div);
   });
 }
 
-function kickMember(userId) {
-  if(confirm('Kick this member?')) send({type:'kick_member',serverId:currentServerId,userId});
-}
+function kickMember(userId) { if(confirm('Kick this member?')) send({type:'kick_member',serverId:currentServerId,userId}); }
 
 function showDMs() {
   currentView='dm'; currentServerId=null;
@@ -796,11 +726,7 @@ function addMessage(m) {
   } else {
     div.className='msg';
     const av=u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase();
-    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div>
-      <div class="msg-body">
-        <div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-time">${time}</span></div>
-        <div class="msg-text">${esc(m.content)}</div>
-      </div>`;
+    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div><div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-time">${time}</span></div><div class="msg-text">${esc(m.content)}</div></div>`;
   }
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
@@ -818,11 +744,7 @@ function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send
 function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,200)+'px'; }
 
 let membersVisible=false;
-function toggleMembers() {
-  membersVisible=!membersVisible;
-  document.getElementById('members').classList.toggle('visible',membersVisible);
-  renderMembers();
-}
+function toggleMembers() { membersVisible=!membersVisible; document.getElementById('members').classList.toggle('visible',membersVisible); renderMembers(); }
 
 function renderMembers() {
   const el=document.getElementById('members'); if(!membersVisible) return;
@@ -854,10 +776,7 @@ async function joinVoice(channelId, channelName) {
   renderSidebar();
 }
 
-function leaveVoice() {
-  send({type:'voice_leave'});
-  cleanupVoice();
-}
+function leaveVoice() { send({type:'voice_leave'}); cleanupVoice(); }
 
 function cleanupVoice() {
   Object.keys(peers).forEach(cleanupPeer);
@@ -867,32 +786,23 @@ function cleanupVoice() {
   if(currentServerId) renderSidebar();
 }
 
-function disconnectVoice() {
-  if(dmVoiceState.active) endDMCall();
-  else leaveVoice();
-}
+function disconnectVoice() { if(dmVoiceState.active) endDMCall(); else leaveVoice(); }
 
 function toggleMic() {
   muted=!muted;
   if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!muted);
-  const micSvg=muted
-    ?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>`
-    :`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>`;
+  const micSvg=muted?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>`;
   document.getElementById('mic-icon').outerHTML=`<svg id="mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">${muted?'<path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/>'}</svg>`;
-  const vbMute=document.getElementById('vb-mute');
-  vbMute.classList.toggle('muted-on',muted);
+  document.getElementById('vb-mute').classList.toggle('muted-on',muted);
 }
 
 function renderVoiceChannel() { if(currentServerId) renderSidebar(); }
 
-// DM Voice Calls
 async function startDMCall() {
   if(!currentDmUser||dmVoiceState.active) return;
   if(voiceState.channelId) leaveVoice();
-  try { 
-    localStream=await navigator.mediaDevices.getUserMedia({audio:true}); 
-    startSpeakingDetection(localStream);
-  } catch(e) { toast('Microphone access needed'); return; }
+  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
+  catch(e) { toast('Microphone access needed'); return; }
   dmVoiceState={active:true,peerId:currentDmUser};
   send({type:'dm_voice_start',to:currentDmUser});
   document.getElementById('dm-call-btn').style.display='none';
@@ -903,10 +813,7 @@ async function startDMCall() {
   setTimeout(()=>callPeerDM(currentDmUser),500);
 }
 
-function endDMCall() {
-  send({type:'dm_voice_end',to:dmVoiceState.peerId});
-  cleanupDMCall();
-}
+function endDMCall() { send({type:'dm_voice_end',to:dmVoiceState.peerId}); cleanupDMCall(); }
 
 function cleanupDMCall() {
   const peerId=dmVoiceState.peerId;
@@ -927,10 +834,8 @@ function handleDMVoiceStart(fromId) {
 }
 
 async function acceptDMCall(fromId) {
-  try { 
-    localStream=await navigator.mediaDevices.getUserMedia({audio:true}); 
-    startSpeakingDetection(localStream);
-  } catch(e) { toast('Microphone access needed'); return; }
+  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
+  catch(e) { toast('Microphone access needed'); return; }
   dmVoiceState={active:true,peerId:fromId};
   send({type:'dm_voice_accept',to:fromId});
   document.getElementById('dm-call-btn').style.display='none';
@@ -942,14 +847,9 @@ async function acceptDMCall(fromId) {
 }
 
 async function callPeerDM(id) {
-  if(peers[id]){
-    const s=peers[id].connectionState||peers[id].iceConnectionState;
-    if(s==='connected'||s==='connecting') return;
-    cleanupPeer(id);
-  }
+  if(peers[id]){const s=peers[id].connectionState||peers[id].iceConnectionState; if(s==='connected'||s==='connecting') return; cleanupPeer(id);}
   const pc=makePc(id);
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
+  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
   send({type:'dm_voice_offer',sdp:pc.localDescription,to:id});
 }
 
@@ -958,12 +858,10 @@ async function handleDMVoiceOffer(id,sdp) {
   if(peers[id]) cleanupPeer(id);
   const pc=makePc(id);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  const answer=await pc.createAnswer();
-  await pc.setLocalDescription(answer);
+  const answer=await pc.createAnswer(); await pc.setLocalDescription(answer);
   send({type:'dm_voice_answer',sdp:pc.localDescription,to:id});
 }
 
-// WebRTC
 function unlockAudio() {
   if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==='suspended') audioCtx.resume();
@@ -973,9 +871,7 @@ function playAudio(id,stream) {
   let a=audioEls[id];
   if(!a){a=document.createElement('audio');a.autoplay=true;a.playsInline=true;document.body.appendChild(a);audioEls[id]=a;}
   a.srcObject=stream;
-  const tryPlay=()=>a.play().catch(()=>{
-    try{unlockAudio();audioCtx.createMediaStreamSource(stream).connect(audioCtx.destination);}catch(e){}
-  });
+  const tryPlay=()=>a.play().catch(()=>{try{unlockAudio();audioCtx.createMediaStreamSource(stream).connect(audioCtx.destination);}catch(e){}});
   tryPlay();
   document.addEventListener('click',tryPlay,{once:true});
 }
@@ -990,27 +886,14 @@ function makePc(id) {
       else send({type:'voice_ice',candidate:e.candidate,to:id});
     }
   };
-  pc.onconnectionstatechange=()=>{
-    if(pc.connectionState==='failed'){
-      cleanupPeer(id);
-      setTimeout(()=>{
-        if(dmVoiceState.active) callPeerDM(id);
-        else callPeer(id);
-      },1000);
-    }
-  };
+  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>{if(dmVoiceState.active) callPeerDM(id); else callPeer(id);},1000);}};
   peers[id]=pc; return pc;
 }
 
 async function callPeer(id) {
-  if(peers[id]){
-    const s=peers[id].connectionState||peers[id].iceConnectionState;
-    if(s==='connected'||s==='connecting') return;
-    cleanupPeer(id);
-  }
+  if(peers[id]){const s=peers[id].connectionState||peers[id].iceConnectionState; if(s==='connected'||s==='connecting') return; cleanupPeer(id);}
   const pc=makePc(id);
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
+  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
   send({type:'voice_offer',sdp:pc.localDescription,to:id});
 }
 
@@ -1018,8 +901,7 @@ async function handleOffer(id,sdp) {
   if(peers[id]) cleanupPeer(id);
   const pc=makePc(id);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  const answer=await pc.createAnswer();
-  await pc.setLocalDescription(answer);
+  const answer=await pc.createAnswer(); await pc.setLocalDescription(answer);
   send({type:'voice_answer',sdp:pc.localDescription,to:id});
 }
 
@@ -1034,12 +916,7 @@ function startSpeakingDetection(stream) {
     const analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
     audioCtx.createMediaStreamSource(stream).connect(analyser);
     const buf=new Uint8Array(analyser.frequencyBinCount); let was=false;
-    const check=()=>{
-      analyser.getByteFrequencyData(buf);
-      const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;
-      if(s!==was){was=s;send({type:'voice_speaking',active:s});}
-      requestAnimationFrame(check);
-    };
+    const check=()=>{analyser.getByteFrequencyData(buf);const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;if(s!==was){was=s;send({type:'voice_speaking',active:s});}requestAnimationFrame(check);};
     check();
   } catch(e){}
 }
@@ -1051,22 +928,12 @@ function previewImage(input,previewId) {
   r.readAsDataURL(file);
 }
 
-function openModal(id) {
-  if(id==='edit-profile'){openEditProfile();return;}
-  document.getElementById('modal-'+id).classList.add('open');
-}
+function openModal(id) { if(id==='edit-profile'){openEditProfile();return;} document.getElementById('modal-'+id).classList.add('open'); }
 function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
 
-document.addEventListener('click',e=>{
-  if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
-  unlockAudio();
-});
+document.addEventListener('click',e=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); unlockAudio(); });
 
-function toast(msg) {
-  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
-  document.body.appendChild(el); setTimeout(()=>el.remove(),3000);
-}
-
+function toast(msg) { const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),3000); }
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
 checkOnboarding();

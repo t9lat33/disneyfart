@@ -25,9 +25,12 @@ const COLORS = ['#7289da','#43b581','#faa61a','#f47fff','#ed4245','#5865f2','#00
 const clients = new Map();
 const servers = new Map();
 const channelMessages = new Map();
+const dmMessages = new Map(); // userId|userId -> [messages]
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function inviteCode() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
+
+function dmKey(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
 
 function makeServer(name, icon, ownerId) {
   const id = uid();
@@ -105,7 +108,7 @@ function saveData() {
       members: srv.members, channels: srv.channels
     };
   });
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) {}
+  try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
 }
 
 function loadData() {
@@ -155,11 +158,21 @@ function handleMessage(ws, client, data) {
     case 'init':
       if (data.username) client.username = String(data.username).slice(0, 32);
       if (data.avatar) client.avatar = data.avatar;
+      // Send DM history
+      const dmHistory = {};
+      dmMessages.forEach((msgs, key) => {
+        const [a, b] = key.split('|');
+        if (a == client.id || b == client.id) {
+          const otherId = a == client.id ? b : a;
+          dmHistory[otherId] = msgs;
+        }
+      });
       sendTo(ws, {
         type: 'init', id: client.id,
         username: client.username, color: client.color, avatar: client.avatar,
         servers: getUserServers(client.id),
-        onlineUsers: getOnlineUsers()
+        onlineUsers: getOnlineUsers(),
+        dmHistory
       });
       broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
       break;
@@ -201,6 +214,11 @@ function handleMessage(ws, client, data) {
         userId: client.id, username: client.username, color: client.color, avatar: client.avatar,
         content: String(content).slice(0, 2000), timestamp: Date.now()
       };
+      // Save to server history
+      const key = dmKey(client.id, to);
+      if (!dmMessages.has(key)) dmMessages.set(key, []);
+      dmMessages.get(key).push(msg);
+      
       sendTo(ws, msg);
       if (toClient) sendTo(toClient.ws, msg);
       break;
@@ -347,14 +365,20 @@ function handleMessage(ws, client, data) {
     }
 
     case 'voice_speaking': {
-      if (!client.voiceChannel) return;
-      const { serverId, channelId } = client.voiceChannel;
-      const srv = servers.get(serverId);
-      if (!srv) return;
-      broadcast({ type: 'voice_speaking', userId: client.id, active: data.active }, c => srv.members.includes(c.id) && c.id !== client.id);
+      if (!client.voiceChannel && !client.dmVoicePeer) return;
+      if (client.voiceChannel) {
+        const { serverId, channelId } = client.voiceChannel;
+        const srv = servers.get(serverId);
+        if (!srv) return;
+        broadcast({ type: 'voice_speaking', userId: client.id, active: data.active }, c => srv.members.includes(c.id) && c.id !== client.id);
+      } else if (client.dmVoicePeer) {
+        const target = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+        if (target) sendTo(target.ws, { type: 'voice_speaking', userId: client.id, active: data.active });
+      }
       break;
     }
 
+    // DM Voice
     case 'dm_voice_start': {
       const target = [...clients.values()].find(c => c.id === data.to);
       if (!target || target.dmVoicePeer || target.voiceChannel) {
@@ -367,17 +391,28 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    case 'dm_voice_end':
-    case 'dm_voice_decline': {
+    case 'dm_voice_end': {
       if (client.dmVoicePeer) {
         const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
-        if (peer) { sendTo(peer.ws, { ...data, from: client.id }); peer.dmVoicePeer = null; }
+        if (peer) { sendTo(peer.ws, { type: 'dm_voice_end', from: client.id }); peer.dmVoicePeer = null; }
         client.dmVoicePeer = null;
       }
       break;
     }
 
-    case 'dm_voice_accept':
+    case 'dm_voice_decline': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) { target.dmVoicePeer = null; sendTo(target.ws, { type: 'dm_voice_decline', from: client.id }); }
+      client.dmVoicePeer = null;
+      break;
+    }
+
+    case 'dm_voice_accept': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) sendTo(target.ws, { type: 'dm_voice_accept', from: client.id });
+      break;
+    }
+
     case 'dm_voice_offer':
     case 'dm_voice_answer':
     case 'dm_voice_ice': {
