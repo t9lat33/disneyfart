@@ -1121,17 +1121,7 @@ function printBanner() {
   ].join('\n');
   outEl.insertBefore(pre, inputBarEl);
 
-  const info1 = document.createElement('div');
-  info1.className = 'ln-info';
-  info1.textContent = 'T9 Linux 4.0 "Neon"   kernel 4.0.0-t9-generic   x86_64';
-  outEl.insertBefore(info1, inputBarEl);
-
-  const info2 = document.createElement('div');
-  info2.className = 'ln-dim';
-  info2.textContent = `${new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'})}   Type 'help' for commands. Try 'neofetch'.`;
-  outEl.insertBefore(info2, inputBarEl);
-
-  const br = document.createElement('div');
+    const br = document.createElement('div');
   outEl.insertBefore(br, inputBarEl);
 
   outEl.scrollTop = outEl.scrollHeight;
