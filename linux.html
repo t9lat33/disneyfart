@@ -447,8 +447,8 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     position: fixed;
     z-index: 1000;
     border-radius:4px; 
-    width:98%;
-    height: 85%; 
+    width:70%;
+    height: 69; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
@@ -470,11 +470,12 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
     position: fixed;
     z-index: 1000;
     border-radius:4px; 
-    width:98%;
-    height: 85%; 
+    width:70%;
+    height: 69%; 
     overflow-x: hidden;
     overflow-y: auto;
 box-shadow: 2px #141414;
+    border:2px solid gray;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 
   }
@@ -961,6 +962,9 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   <a onclick="movie()">
     <img src="netflix2.png">
   </a>
+   <a onclick="anime()">
+    <img src="anime.png">
+  </a>
    <a onclick="music()">
     <img src="spotify.png">
   </a>
@@ -1292,7 +1296,6 @@ border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius:0px 0px 15px 15px;
       left: 0;
       bottom: 0;
-      border-top:2px solid gray;
 
     }
    
@@ -1336,7 +1339,6 @@ border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius:0px 0px 15px 15px;
       left: 0;
       bottom: 0;
-      border-top:2px solid gray;
 
     }
    
@@ -2124,13 +2126,15 @@ document.addEventListener("click", () => {
     <img class="timg" src="logo.png">
   </a>  
 
+   <a onclick="terminal()">
+    <img class="timg" src="terminal2.png">
+  </a>
+
   <a onclick="settings()">
     <img class="timg" src="settings22.png">
   </a>
 
-  <a href='/'>
-    <img class="timg" src="home.png">
-  </a>
+ 
 
 
   <a id="fullscreen-button">
