@@ -9,27 +9,26 @@
 :root{--bg:#313338;--sidebar:#2b2d31;--server-bar:#1e1f22;--text:#dbdee1;--muted:#949ba4;--accent:#5865f2;--green:#23a55a;--red:#f23f43;--hover:#35373c;--input:#383a40;--border:#1e1f22;--modal:#2b2d31}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;height:100vh;overflow:hidden}
 
-/* Server bar */
+/* SVG icon base */
+.icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.icon svg{display:block}
+
 #server-bar{width:72px;background:var(--server-bar);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;overflow-y:auto;flex-shrink:0}
-.srv-icon{width:48px;height:48px;border-radius:50%;background:var(--hover);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;transition:border-radius 0.15s,background 0.15s;position:relative;overflow:hidden;flex-shrink:0}
+.srv-icon{width:48px;height:48px;border-radius:50%;background:var(--hover);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;transition:border-radius .15s,background .15s;position:relative;overflow:hidden;flex-shrink:0}
 .srv-icon img{width:100%;height:100%;object-fit:cover}
 .srv-icon:hover,.srv-icon.active{border-radius:16px;background:var(--accent)}
-.srv-icon.active{border-radius:16px}
 .srv-separator{width:32px;height:2px;background:#3f4147;border-radius:1px;flex-shrink:0}
-.srv-pip{position:absolute;left:-4px;top:50%;transform:translateY(-50%);width:4px;background:#fff;border-radius:0 4px 4px 0;transition:height 0.15s}
 
-/* Sidebar */
 #sidebar{width:240px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
-#sidebar-header{padding:0 16px;height:48px;display:flex;align-items:center;font-weight:700;font-size:15px;border-bottom:2px solid var(--border);cursor:pointer;flex-shrink:0;gap:8px}
+#sidebar-header{padding:0 16px;height:48px;display:flex;align-items:center;font-weight:700;font-size:15px;border-bottom:2px solid var(--border);cursor:pointer;flex-shrink:0;gap:8px;user-select:none}
 #sidebar-header:hover{background:var(--hover)}
 #channel-list{flex:1;overflow-y:auto;padding:8px 0}
 .ch-section{padding:16px 8px 4px 8px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
-.ch-section button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
-.ch-section button:hover{color:var(--text)}
+.ch-add-btn{background:none;border:none;color:var(--muted);cursor:pointer;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:3px}
+.ch-add-btn:hover{color:var(--text);background:var(--hover)}
 .ch-btn{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 16px;border-radius:4px;cursor:pointer;color:var(--muted);margin:1px 8px;border:none;background:none;width:calc(100% - 16px);text-align:left;font-size:14px;font-family:inherit}
 .ch-btn:hover{background:var(--hover);color:var(--text)}
 .ch-btn.active{background:#404249;color:#fff}
-.ch-btn .ch-icon{font-size:16px;flex-shrink:0}
 .ch-voice-users{padding-left:40px}
 .ch-voice-user{font-size:12px;color:var(--muted);padding:2px 0;display:flex;align-items:center;gap:6px}
 .ch-voice-user.speaking{color:var(--green)}
@@ -39,18 +38,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .up-info{flex:1;min-width:0}
 .up-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .up-tag{font-size:11px;color:var(--muted)}
-.up-btns{display:flex;gap:4px}
-.up-btn{width:32px;height:32px;border-radius:4px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.up-btns{display:flex;gap:2px}
+.up-btn{width:32px;height:32px;border-radius:4px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .up-btn:hover{background:var(--hover);color:var(--text)}
 
-/* Main */
 #main{flex:1;display:flex;flex-direction:column;min-width:0}
 #main-header{height:48px;border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
-#main-header .ch-icon{font-size:18px;color:var(--muted)}
 #main-header .ch-name{font-weight:700;font-size:15px}
-#main-header .ch-topic{font-size:13px;color:var(--muted);margin-left:8px;padding-left:8px;border-left:1px solid #3f4147}
 #messages{flex:1;overflow-y:auto;padding:16px 16px 0}
-.msg{padding:2px 0;display:flex;gap:16px;border-radius:4px}
+.msg{padding:2px 0;display:flex;gap:16px;border-radius:4px;padding:2px 8px}
 .msg:hover{background:rgba(0,0,0,.06)}
 .msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;overflow:hidden;cursor:pointer}
 .msg-avatar img{width:100%;height:100%;object-fit:cover}
@@ -60,29 +56,27 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .msg-name:hover{text-decoration:underline}
 .msg-time{font-size:11px;color:var(--muted)}
 .msg-text{font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap}
-.msg-compact{padding-left:56px}
-.msg-compact .msg-text{font-size:15px}
+.msg-compact{padding:1px 8px 1px 64px}
 .system-msg{text-align:center;color:var(--muted);font-size:13px;padding:8px 0;display:flex;align-items:center;gap:8px}
 .system-msg::before,.system-msg::after{content:'';flex:1;height:1px;background:var(--border)}
 #input-area{padding:0 16px 24px;flex-shrink:0}
 .input-wrap{background:var(--input);border-radius:8px;display:flex;align-items:center;padding:0 16px;gap:8px}
 #msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:11px 0;font-family:inherit;resize:none;max-height:200px}
 #msg-input::placeholder{color:var(--muted)}
-.input-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;border-radius:4px}
+.input-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
 .input-btn:hover{color:var(--text);background:var(--hover)}
 
-/* Voice overlay */
 #voice-bar{display:none;background:#1a1b1e;border-top:1px solid #3f4147;padding:8px 16px;flex-shrink:0}
 #voice-bar.active{display:flex;align-items:center;gap:12px}
-#voice-bar .vb-info{flex:1}
-#voice-bar .vb-room{font-size:13px;font-weight:600;color:var(--green)}
-#voice-bar .vb-server{font-size:11px;color:var(--muted)}
+.vb-info{flex:1}
+.vb-room{font-size:13px;font-weight:600;color:var(--green)}
+.vb-server{font-size:11px;color:var(--muted)}
 .vb-btns{display:flex;gap:4px}
-.vb-btn{width:32px;height:32px;border-radius:4px;border:none;background:var(--hover);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.vb-btn{width:32px;height:32px;border-radius:4px;border:none;background:var(--hover);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .vb-btn:hover{background:#3f4147}
-.vb-btn.active{background:var(--red);color:#fff}
+.vb-btn.danger{background:var(--red);color:#fff}
+.vb-btn.muted-on{background:var(--red);color:#fff}
 
-/* Members sidebar */
 #members{width:240px;background:var(--sidebar);overflow-y:auto;padding:16px 8px;flex-shrink:0;display:none}
 #members.visible{display:block}
 .member-section{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:16px 8px 4px}
@@ -90,12 +84,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .member-item:hover{background:var(--hover)}
 .member-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
 .member-avatar img{width:100%;height:100%;object-fit:cover}
-.member-status{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar)}
+.member-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar)}
 .member-name{font-size:14px;color:var(--muted)}
 .member-item:hover .member-name{color:var(--text)}
 
-/* DM area */
-#dm-list{flex:1;overflow-y:auto;padding:8px 0}
 .dm-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;margin:1px 8px}
 .dm-item:hover{background:var(--hover)}
 .dm-item.active{background:#404249}
@@ -103,28 +95,22 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .dm-avatar img{width:100%;height:100%;object-fit:cover}
 .dm-name{font-size:14px;color:var(--muted);flex:1}
 .dm-item:hover .dm-name,.dm-item.active .dm-name{color:var(--text)}
-.dm-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;display:none;padding:2px 4px}
-.dm-item:hover .dm-close{display:block}
 
-/* Welcome / no channel */
 #welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted);text-align:center;padding:32px}
 #welcome h2{font-size:24px;color:var(--text)}
-#welcome p{font-size:15px;max-width:400px}
 
-/* Modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--modal);border-radius:8px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto;position:relative}
 .modal h2{font-size:20px;font-weight:700;margin-bottom:4px}
 .modal .subtitle{color:var(--muted);font-size:14px;margin-bottom:20px}
-.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
-.modal-close:hover{color:var(--text)}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+.modal-close:hover{color:var(--text);background:var(--hover)}
 .form-group{margin-bottom:16px}
 .form-group label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.form-group input,.form-group textarea{width:100%;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px 12px;color:var(--text);font-size:16px;font-family:inherit;outline:none}
-.form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
-.form-group textarea{resize:vertical;min-height:80px}
-.btn{padding:10px 20px;border-radius:4px;border:none;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.form-group input{width:100%;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px 12px;color:var(--text);font-size:16px;font-family:inherit;outline:none}
+.form-group input:focus{border-color:var(--accent)}
+.btn{padding:10px 20px;border-radius:4px;border:none;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:#4752c4}
 .btn-danger{background:var(--red);color:#fff}
@@ -132,66 +118,101 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .btn-ghost{background:transparent;color:var(--muted)}
 .btn-ghost:hover{color:var(--text);text-decoration:underline}
 .btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
-.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px}
-.avatar-preview{width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147}
-.avatar-preview img{width:100%;height:100%;object-fit:cover}
+.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
+.avatar-preview{width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147;transition:border-color .15s}
 .avatar-preview:hover{border-color:var(--accent)}
-.server-icon-preview{width:80px;height:80px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147}
-.server-icon-preview img{width:100%;height:100%;object-fit:cover}
-.invite-code{background:#1e1f22;border-radius:4px;padding:12px;font-family:monospace;font-size:18px;letter-spacing:4px;text-align:center;color:var(--accent);cursor:pointer;user-select:all;border:1px solid #3f4147}
-.invite-code:hover{border-color:var(--accent)}
-.copy-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
-.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #3f4147;padding-bottom:0}
+.avatar-preview img{width:100%;height:100%;object-fit:cover}
+.srv-preview{width:80px;height:80px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147}
+.srv-preview:hover{border-color:var(--accent)}
+.srv-preview img{width:100%;height:100%;object-fit:cover}
+.invite-box{background:#1e1f22;border-radius:4px;padding:14px;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;color:var(--accent);cursor:pointer;user-select:all;border:1px solid #3f4147}
+.invite-box:hover{border-color:var(--accent)}
+.copy-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.tab-bar{display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid #3f4147}
 .tab{padding:8px 16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab.active{color:var(--text);border-bottom-color:var(--accent)}
-.ch-manage-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:4px;background:#1e1f22;margin-bottom:4px}
-.ch-manage-item span{flex:1;font-size:14px}
-.ch-manage-item button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:4px}
-.ch-manage-item button:hover{background:var(--hover);color:var(--red)}
-.member-manage-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:4px;margin-bottom:4px}
-.member-manage-item:hover{background:#1e1f22}
-.member-manage-item .mm-name{flex:1;font-size:14px}
-.member-manage-item .mm-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px}
-.member-manage-item .mm-btn:hover{background:var(--red);color:#fff}
-.danger-zone{border:1px solid var(--red);border-radius:4px;padding:16px;margin-top:16px}
-.danger-zone h3{color:var(--red);font-size:14px;margin-bottom:8px}
-.tag{background:#4f545c;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:700;color:#fff;margin-left:4px}
-.tag.owner{background:#f0b132;color:#000}
-.toast{position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;animation:fadeIn .2s;pointer-events:none}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.unread-badge{background:var(--red);color:#fff;border-radius:10px;font-size:11px;font-weight:700;padding:1px 5px;min-width:18px;text-align:center}
-.mention-badge{background:var(--red);color:#fff;border-radius:50%;font-size:10px;font-weight:700;width:16px;height:16px;display:flex;align-items:center;justify-content:center;position:absolute;bottom:-2px;right:-2px}
-.srv-icon-wrap{position:relative}
+.ch-mgr-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:4px;background:#1e1f22;margin-bottom:4px}
+.ch-mgr-item span{flex:1;font-size:14px}
+.ch-mgr-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.ch-mgr-btn:hover{background:rgba(242,63,67,.2);color:var(--red)}
+.mm-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:4px;margin-bottom:2px}
+.mm-item:hover{background:#1e1f22}
+.mm-name{flex:1;font-size:14px}
+.mm-kick{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px}
+.mm-kick:hover{background:var(--red);color:#fff}
+.danger-zone{border:1px solid var(--red);border-radius:4px;padding:16px;margin-top:20px}
+.danger-zone h3{color:var(--red);font-size:13px;font-weight:700;margin-bottom:10px}
+.owner-tag{background:#f0b132;color:#000;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;margin-left:4px}
+.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;pointer-events:none;animation:fadeup .2s}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Onboarding */
+#onboarding{position:fixed;inset:0;background:#1e1f22;z-index:2000;display:flex;align-items:center;justify-content:center}
+#onboarding.hidden{display:none}
+.onboarding-card{background:var(--modal);border-radius:12px;padding:40px;width:420px;max-width:90vw;text-align:center}
+.onboarding-card h1{font-size:28px;font-weight:800;margin-bottom:8px;color:#fff}
+.onboarding-card p{color:var(--muted);font-size:15px;margin-bottom:28px}
+.ob-avatar{width:100px;height:100px;border-radius:50%;background:var(--accent);margin:0 auto 20px;cursor:pointer;border:3px dashed #3f4147;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;color:#fff;transition:border-color .15s}
+.ob-avatar:hover{border-color:var(--accent)}
+.ob-avatar img{width:100%;height:100%;object-fit:cover}
+.ob-input{width:100%;background:#1e1f22;border:1px solid #3f4147;border-radius:6px;padding:12px 16px;color:var(--text);font-size:16px;font-family:inherit;outline:none;margin-bottom:20px;text-align:center}
+.ob-input:focus{border-color:var(--accent)}
+.ob-btn{width:100%;padding:14px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.ob-btn:hover{background:#4752c4}
 </style>
 </head>
 <body>
 
+<!-- Onboarding -->
+<div id="onboarding">
+  <div class="onboarding-card">
+    <h1>Welcome to T9 Network</h1>
+    <p>Set up your profile to get started</p>
+    <div class="ob-avatar" id="ob-avatar" onclick="document.getElementById('ob-avatar-input').click()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <input type="file" id="ob-avatar-input" accept="image/*" style="display:none" onchange="obPreviewAvatar(this)">
+    <input class="ob-input" id="ob-name" type="text" placeholder="Your display name" maxlength="32" onkeydown="if(event.key==='Enter')finishOnboarding()">
+    <button class="ob-btn" onclick="finishOnboarding()">Let's go</button>
+  </div>
+</div>
+
 <!-- Server Bar -->
 <div id="server-bar">
-  <div class="srv-icon" id="dm-icon" onclick="showDMs()" title="Direct Messages">💬</div>
+  <div class="srv-icon" id="dm-icon" onclick="showDMs()" title="Direct Messages">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  </div>
   <div class="srv-separator"></div>
   <div id="server-icons"></div>
   <div class="srv-separator"></div>
-  <div class="srv-icon" onclick="openModal('create-server')" title="Add a Server" style="background:#3a3d44;font-size:24px;color:var(--green)">+</div>
-  <div class="srv-icon" onclick="openModal('join-server')" title="Join a Server" style="background:#3a3d44;font-size:16px">🔗</div>
+  <div class="srv-icon" onclick="openModal('create-server')" title="Create Server" style="background:#3a3d44;color:var(--green)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </div>
+  <div class="srv-icon" onclick="openModal('join-server')" title="Join Server" style="background:#3a3d44;color:var(--muted)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </div>
 </div>
 
 <!-- Sidebar -->
 <div id="sidebar">
   <div id="sidebar-header" onclick="openServerMenu()">
-    <span id="sidebar-title">Direct Messages</span>
-    <span style="margin-left:auto;color:var(--muted);font-size:12px">▼</span>
+    <span id="sidebar-title" style="flex:1">Direct Messages</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M7 10l5 5 5-5z"/></svg>
   </div>
   <div id="channel-list"></div>
   <div id="user-panel">
     <div class="up-avatar" id="my-avatar" onclick="openModal('edit-profile')"></div>
     <div class="up-info">
-      <div class="up-name" id="my-name">Loading...</div>
-      <div class="up-tag" id="my-tag">#0000</div>
+      <div class="up-name" id="my-name">...</div>
+      <div class="up-tag">T9 Network</div>
     </div>
     <div class="up-btns">
-      <button class="up-btn" id="mute-btn" onclick="toggleMic()" title="Mute">🎙</button>
-      <button class="up-btn" onclick="openModal('edit-profile')" title="Settings">⚙️</button>
+      <button class="up-btn" id="mute-btn" onclick="toggleMic()" title="Mute/Unmute">
+        <svg id="mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
+      </button>
+      <button class="up-btn" onclick="openModal('edit-profile')" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.4 7.4 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.4 7.4 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -199,56 +220,66 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 <!-- Main -->
 <div id="main">
   <div id="main-header" style="display:none">
-    <span class="ch-icon" id="header-icon">#</span>
+    <span id="header-icon" style="color:var(--muted)"></span>
     <span class="ch-name" id="header-name"></span>
-    <span class="ch-topic" id="header-topic" style="display:none"></span>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <button class="up-btn" onclick="toggleMembers()" title="Members">👥</button>
+    <div style="margin-left:auto;display:flex;gap:4px">
+      <button class="up-btn" onclick="toggleMembers()" title="Members">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      </button>
     </div>
   </div>
   <div id="welcome">
-    <div style="font-size:64px">👋</div>
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
     <h2>Welcome to T9 Network</h2>
-    <p>Join a server or start a direct message to begin chatting.</p>
+    <p style="color:var(--muted);font-size:15px">Select a channel or start a DM to begin.</p>
   </div>
   <div id="messages" style="display:none"></div>
   <div id="input-area" style="display:none">
     <div class="input-wrap">
-      <button class="input-btn" onclick="document.getElementById('file-input').click()">📎</button>
-      <input type="file" id="file-input" accept="image/*" style="display:none" onchange="uploadAvatar(this,'msg')">
-      <textarea id="msg-input" rows="1" placeholder="Message #general" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <textarea id="msg-input" rows="1" placeholder="Message" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="input-btn" onclick="sendText()" title="Send">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
     </div>
   </div>
   <div id="voice-bar">
-    <div style="color:var(--green);font-size:20px">🔊</div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
     <div class="vb-info">
-      <div class="vb-room" id="vb-room-name">general</div>
+      <div class="vb-room" id="vb-room-name"></div>
       <div class="vb-server" id="vb-server-name">Voice Connected</div>
     </div>
     <div class="vb-btns">
-      <button class="vb-btn" id="vb-mute" onclick="toggleMic()" title="Mute">🎙</button>
-      <button class="vb-btn" onclick="leaveVoice()" title="Disconnect" style="background:var(--red);color:#fff">📞</button>
+      <button class="vb-btn" id="vb-mute" onclick="toggleMic()" title="Mute">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
+      </button>
+      <button class="vb-btn danger" onclick="leaveVoice()" title="Disconnect">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Members sidebar -->
+<!-- Members -->
 <div id="members"></div>
 
 <!-- Modals -->
 <div class="modal-overlay" id="modal-create-server">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('create-server')">✕</button>
+    <button class="modal-close" onclick="closeModal('create-server')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <h2>Create a Server</h2>
-    <p class="subtitle">Give your server a name and icon.</p>
+    <p class="subtitle">Give your server a name and optional icon.</p>
     <div class="avatar-upload">
-      <div class="server-icon-preview" id="create-icon-preview" onclick="document.getElementById('create-icon-input').click()">+</div>
+      <div class="srv-preview" id="create-icon-preview" onclick="document.getElementById('create-icon-input').click()">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
       <input type="file" id="create-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'create-icon-preview')">
-      <span style="font-size:13px;color:var(--muted)">Click to upload icon</span>
+      <span style="font-size:13px;color:var(--muted)">Upload icon (optional)</span>
     </div>
     <div class="form-group">
       <label>Server Name</label>
-      <input type="text" id="create-server-name" placeholder="My Awesome Server" maxlength="100">
+      <input type="text" id="create-server-name" placeholder="My Server" maxlength="100" onkeydown="if(event.key==='Enter')createServer()">
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('create-server')">Cancel</button>
@@ -259,12 +290,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 
 <div class="modal-overlay" id="modal-join-server">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('join-server')">✕</button>
+    <button class="modal-close" onclick="closeModal('join-server')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <h2>Join a Server</h2>
-    <p class="subtitle">Enter an invite code to join an existing server.</p>
+    <p class="subtitle">Enter an invite code to join.</p>
     <div class="form-group">
       <label>Invite Code</label>
-      <input type="text" id="join-code-input" placeholder="e.g. ABC123" maxlength="8" style="text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center">
+      <input type="text" id="join-code-input" placeholder="e.g. Y2KDIN" maxlength="8" style="text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center" onkeydown="if(event.key==='Enter')joinServer()">
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('join-server')">Cancel</button>
@@ -275,7 +308,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 
 <div class="modal-overlay" id="modal-edit-profile">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('edit-profile')">✕</button>
+    <button class="modal-close" onclick="closeModal('edit-profile')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <h2>Edit Profile</h2>
     <div class="avatar-upload">
       <div class="avatar-preview" id="profile-avatar-preview" onclick="document.getElementById('profile-avatar-input').click()"></div>
@@ -284,7 +319,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
     </div>
     <div class="form-group">
       <label>Display Name</label>
-      <input type="text" id="profile-name-input" placeholder="Your name" maxlength="32">
+      <input type="text" id="profile-name-input" placeholder="Your name" maxlength="32" onkeydown="if(event.key==='Enter')saveProfile()">
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('edit-profile')">Cancel</button>
@@ -294,10 +329,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 </div>
 
 <div class="modal-overlay" id="modal-server-settings">
-  <div class="modal" style="width:560px">
-    <button class="modal-close" onclick="closeModal('server-settings')">✕</button>
+  <div class="modal" style="width:540px">
+    <button class="modal-close" onclick="closeModal('server-settings')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <h2 id="ss-title">Server Settings</h2>
-    <div class="tab-bar">
+    <div class="tab-bar" style="margin-top:12px">
       <button class="tab active" onclick="ssTab('overview',this)">Overview</button>
       <button class="tab" onclick="ssTab('channels',this)">Channels</button>
       <button class="tab" onclick="ssTab('members',this)">Members</button>
@@ -305,7 +342,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
     </div>
     <div id="ss-overview">
       <div class="avatar-upload">
-        <div class="server-icon-preview" id="ss-icon-preview" onclick="document.getElementById('ss-icon-input').click()"></div>
+        <div class="srv-preview" id="ss-icon-preview" onclick="document.getElementById('ss-icon-input').click()"></div>
         <input type="file" id="ss-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'ss-icon-preview')">
         <span style="font-size:13px;color:var(--muted)">Click to change icon</span>
       </div>
@@ -313,38 +350,38 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
         <label>Server Name</label>
         <input type="text" id="ss-name-input" maxlength="100">
       </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveServerSettings()">Save</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveServerSettings()">Save Changes</button></div>
       <div class="danger-zone">
-        <h3>⚠️ Danger Zone</h3>
+        <h3>Danger Zone</h3>
         <button class="btn btn-danger" onclick="deleteServer()">Delete Server</button>
       </div>
     </div>
     <div id="ss-channels" style="display:none">
-      <div class="ch-section" style="padding:0 0 8px">TEXT CHANNELS <button onclick="addChannel('text')">+</button></div>
-      <div id="ss-text-channels"></div>
-      <div class="ch-section" style="padding:8px 0">VOICE CHANNELS <button onclick="addChannel('voice')">+</button></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Text Channels</span>
+        <button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('text')">Add</button>
+      </div>
+      <div id="ss-text-channels" style="margin-bottom:16px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Voice Channels</span>
+        <button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('voice')">Add</button>
+      </div>
       <div id="ss-voice-channels"></div>
     </div>
-    <div id="ss-members" style="display:none">
-      <div id="ss-members-list"></div>
-    </div>
+    <div id="ss-members" style="display:none"><div id="ss-members-list"></div></div>
     <div id="ss-invite" style="display:none">
       <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Share this code to invite people:</p>
-      <div class="invite-code" id="ss-invite-code" onclick="copyInvite()"></div>
+      <div class="invite-box" id="ss-invite-code" onclick="copyInvite()"></div>
       <div class="copy-hint">Click to copy</div>
-      <div class="btn-row" style="margin-top:12px">
-        <button class="btn btn-ghost" onclick="regenerateInvite()">🔄 Regenerate</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-ghost" onclick="regenerateInvite()">Regenerate Code</button></div>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-server-menu">
-  <div class="modal" style="width:220px;padding:8px">
-    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="openServerSettings()">⚙️ Server Settings</button>
-    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="copyServerInvite()">🔗 Copy Invite Code</button>
+  <div class="modal" style="width:200px;padding:8px">
+    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="openServerSettings()">Server Settings</button>
+    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="copyServerInvite()">Copy Invite Code</button>
     <div style="height:1px;background:var(--border);margin:4px 0"></div>
     <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--red)" id="leave-or-delete-btn"></button>
     <div style="height:1px;background:var(--border);margin:4px 0"></div>
@@ -353,256 +390,216 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 </div>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 const WS_URL = `wss://${location.host}/ws`;
-let ws;
-let myId, myUsername = 'User', myColor = '#5865f2', myAvatar = null;
-let servers = {};       // id -> {id,name,icon,ownerId,inviteCode,channels,members}
-let currentServerId = null;
-let currentChannelId = null;
-let currentView = 'dm'; // 'dm' | 'server'
-let dmConversations = {}; // userId -> {messages:[]}
-let currentDmUser = null;
-let onlineUsers = {};   // id -> {id,username,color,avatar}
-let voiceState = { room: null, serverId: null, channelId: null };
-let muted = false;
-let localStream = null;
-const peers = {};
-const audioEls = {};
-let audioCtx = null;
-let pendingImageData = {}; // temporary image storage
+let ws, myId, myUsername='', myColor='#5865f2', myAvatar=null;
+let servers={}, currentServerId=null, currentChannelId=null;
+let currentView='dm', currentDmUser=null;
+let dmConversations={}, onlineUsers={};
+let voiceState={channelId:null,channelName:null,serverId:null};
+let muted=false, localStream=null;
+const peers={}, audioEls={};
+let audioCtx=null;
+let lastMsgUser=null, lastMsgTime=0;
 
-const ICE = { iceServers: [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'turn:157.173.199.182:3478', username: 't9user', credential: 't9password123' },
-  { urls: 'turns:157.173.199.182:5349', username: 't9user', credential: 't9password123' }
+const ICE={iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'turn:157.173.199.182:3478',username:'t9user',credential:'t9password123'},
+  {urls:'turns:157.173.199.182:5349',username:'t9user',credential:'t9password123'}
 ]};
 
-// ─── WebSocket ────────────────────────────────────────────────────────────────
+// ── Onboarding ────────────────────────────────────────────────────────────────
+let obAvatarData = null;
+
+function obPreviewAvatar(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    obAvatarData = e.target.result;
+    document.getElementById('ob-avatar').innerHTML = `<img src="${obAvatarData}">`;
+  };
+  r.readAsDataURL(file);
+}
+
+function finishOnboarding() {
+  const name = document.getElementById('ob-name').value.trim();
+  if (!name) { document.getElementById('ob-name').focus(); return; }
+  localStorage.setItem('t9_profile', JSON.stringify({ username: name, avatar: obAvatarData }));
+  document.getElementById('onboarding').classList.add('hidden');
+  connect();
+}
+
+function checkOnboarding() {
+  const saved = localStorage.getItem('t9_profile');
+  if (saved) {
+    document.getElementById('onboarding').classList.add('hidden');
+    connect();
+  }
+  // else onboarding stays visible
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
 function connect() {
   ws = new WebSocket(WS_URL);
   ws.onopen = () => {
-    const saved = JSON.parse(localStorage.getItem('t9_profile') || '{}');
-    send({ type: 'init', username: saved.username || null, avatar: saved.avatar || null, color: saved.color || null });
+    const p = JSON.parse(localStorage.getItem('t9_profile') || '{}');
+    send({ type:'init', username: p.username||null, avatar: p.avatar||null });
   };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 2000);
 }
 
-function send(d) { if (ws?.readyState === 1) ws.send(JSON.stringify(d)); }
+function send(d) { if (ws?.readyState===1) ws.send(JSON.stringify(d)); }
 
 function handleMsg(d) {
   switch(d.type) {
     case 'init':
-      myId = d.id;
-      myUsername = d.username;
-      myColor = d.color;
-      myAvatar = d.avatar;
-      servers = d.servers || {};
-      onlineUsers = d.onlineUsers || {};
-      renderMyProfile();
-      renderServerBar();
-      if (currentServerId && servers[currentServerId]) renderSidebar();
+      myId=d.id; myUsername=d.username; myColor=d.color; myAvatar=d.avatar;
+      servers=d.servers||{}; onlineUsers=d.onlineUsers||{};
+      renderMyProfile(); renderServerBar(); showDMs();
+      // Auto-open default server
+      const defSrv = Object.values(servers).find(s=>s.isDefault);
+      if (defSrv) selectServer(defSrv.id);
       break;
-    case 'chat':
-      addMessage(d);
-      break;
-    case 'dm':
-      addDM(d);
-      break;
+    case 'chat': addMessage(d); break;
+    case 'dm': addDM(d); break;
     case 'server_created':
     case 'server_updated':
-      servers[d.server.id] = d.server;
-      renderServerBar();
-      if (currentServerId === d.server.id) renderSidebar();
+      servers[d.server.id]=d.server; renderServerBar();
+      if (currentServerId===d.server.id) renderSidebar();
       break;
     case 'server_deleted':
       delete servers[d.serverId];
-      if (currentServerId === d.serverId) { currentServerId = null; currentChannelId = null; showDMs(); }
-      renderServerBar();
-      break;
-    case 'user_join':
-      onlineUsers[d.user.id] = d.user;
-      renderMembers();
-      break;
-    case 'user_leave':
-      delete onlineUsers[d.userId];
-      renderMembers();
-      break;
-    case 'user_updated':
-      onlineUsers[d.user.id] = d.user;
-      if (d.user.id === myId) { myUsername = d.user.username; myColor = d.user.color; myAvatar = d.user.avatar; renderMyProfile(); }
-      renderMembers();
-      break;
-    case 'channel_added':
-      if (servers[d.serverId]) {
-        servers[d.serverId].channels.push(d.channel);
-        if (currentServerId === d.serverId) renderSidebar();
-      }
-      break;
-    case 'channel_removed':
-      if (servers[d.serverId]) {
-        servers[d.serverId].channels = servers[d.serverId].channels.filter(c => c.id !== d.channelId);
-        if (currentChannelId === d.channelId) { currentChannelId = null; showWelcome(); }
-        if (currentServerId === d.serverId) renderSidebar();
-      }
-      break;
+      if (currentServerId===d.serverId){currentServerId=null;currentChannelId=null;showDMs();}
+      renderServerBar(); break;
     case 'server_joined':
-      servers[d.server.id] = d.server;
-      renderServerBar();
-      toast('Joined ' + d.server.name + '!');
-      selectServer(d.server.id);
-      break;
+      servers[d.server.id]=d.server; renderServerBar();
+      toast('Joined '+d.server.name+'!'); selectServer(d.server.id); break;
     case 'server_left':
       delete servers[d.serverId];
-      if (currentServerId === d.serverId) { currentServerId = null; showDMs(); }
-      renderServerBar();
-      break;
+      if (currentServerId===d.serverId){currentServerId=null;showDMs();}
+      renderServerBar(); break;
     case 'kicked':
       delete servers[d.serverId];
-      if (currentServerId === d.serverId) { currentServerId = null; showDMs(); }
-      renderServerBar();
-      toast('You were removed from the server.');
-      break;
+      if (currentServerId===d.serverId){currentServerId=null;showDMs();}
+      renderServerBar(); toast('You were removed from the server.'); break;
+    case 'user_join': onlineUsers[d.user.id]=d.user; renderMembers(); if(currentView==='dm')renderDMList(); break;
+    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList(); break;
+    case 'user_updated':
+      onlineUsers[d.user.id]=d.user;
+      if (d.user.id===myId){myUsername=d.user.username;myColor=d.user.color;myAvatar=d.user.avatar;renderMyProfile();}
+      renderMembers(); break;
+    case 'channel_added':
+      if (servers[d.serverId]){servers[d.serverId].channels.push(d.channel);if(currentServerId===d.serverId)renderSidebar();}break;
+    case 'channel_removed':
+      if (servers[d.serverId]){
+        servers[d.serverId].channels=servers[d.serverId].channels.filter(c=>c.id!==d.channelId);
+        if (currentChannelId===d.channelId){currentChannelId=null;showWelcome();}
+        if (currentServerId===d.serverId) renderSidebar();
+      } break;
     case 'invite_regenerated':
-      if (servers[d.serverId]) servers[d.serverId].inviteCode = d.inviteCode;
-      document.getElementById('ss-invite-code').textContent = d.inviteCode;
-      break;
-    // Voice
-    case 'voice_users':
-      d.users.filter(u => u.id !== myId).forEach(u => setTimeout(() => callPeer(u.id), 500));
-      renderVoiceChannel();
-      break;
-    case 'voice_user_joined':
-      setTimeout(() => callPeer(d.userId), 1000);
-      renderVoiceChannel();
-      break;
-    case 'voice_user_left':
-      cleanupPeer(d.userId);
-      renderVoiceChannel();
-      break;
-    case 'voice_offer':
-      handleOffer(d.from, d.sdp);
-      break;
-    case 'voice_answer':
-      if (peers[d.from]) peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{});
-      break;
-    case 'voice_ice':
-      if (peers[d.from] && d.candidate) peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{});
-      break;
-    case 'voice_speaking':
-      updateSpeaking(d.userId, d.active);
-      break;
-    case 'error':
-      toast('❌ ' + d.message);
-      break;
+      if (servers[d.serverId]) servers[d.serverId].inviteCode=d.inviteCode;
+      document.getElementById('ss-invite-code').textContent=d.inviteCode; break;
+    case 'voice_users': d.users.filter(u=>u.id!==myId).forEach(u=>setTimeout(()=>callPeer(u.id),500)); break;
+    case 'voice_user_joined': setTimeout(()=>callPeer(d.userId),1000); renderVoiceChannel(); break;
+    case 'voice_user_left': cleanupPeer(d.userId); renderVoiceChannel(); break;
+    case 'voice_offer': handleOffer(d.from,d.sdp); break;
+    case 'voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
+    case 'voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
+    case 'voice_speaking': break;
+    case 'error': toast(d.message); break;
   }
 }
 
-// ─── Profile ──────────────────────────────────────────────────────────────────
+// ── Profile ───────────────────────────────────────────────────────────────────
 function renderMyProfile() {
   document.getElementById('my-name').textContent = myUsername;
   const av = document.getElementById('my-avatar');
-  if (myAvatar) { av.innerHTML = `<img src="${myAvatar}">`; }
-  else { av.textContent = myUsername[0].toUpperCase(); av.style.background = myColor; av.innerHTML = myUsername[0].toUpperCase(); }
+  if (myAvatar) av.innerHTML=`<img src="${myAvatar}">`;
+  else { av.style.background=myColor; av.textContent=myUsername[0]?.toUpperCase()||'?'; }
 }
 
 function openEditProfile() {
-  document.getElementById('profile-name-input').value = myUsername;
-  const prev = document.getElementById('profile-avatar-preview');
-  if (myAvatar) prev.innerHTML = `<img src="${myAvatar}">`;
-  else { prev.textContent = myUsername[0].toUpperCase(); prev.style.background = myColor; }
-  openModal('edit-profile');
+  document.getElementById('profile-name-input').value=myUsername;
+  const prev=document.getElementById('profile-avatar-preview');
+  if (myAvatar) prev.innerHTML=`<img src="${myAvatar}">`;
+  else { prev.textContent=myUsername[0]?.toUpperCase()||'?'; prev.style.background=myColor; }
+  document.getElementById('modal-edit-profile').classList.add('open');
 }
 
 function saveProfile() {
-  const name = document.getElementById('profile-name-input').value.trim();
+  const name=document.getElementById('profile-name-input').value.trim();
   if (!name) return;
-  const prev = document.getElementById('profile-avatar-preview');
-  const img = prev.querySelector('img');
-  const avatar = img ? img.src : null;
-  localStorage.setItem('t9_profile', JSON.stringify({ username: name, avatar, color: myColor }));
-  send({ type: 'update_profile', username: name, avatar });
+  const prev=document.getElementById('profile-avatar-preview');
+  const img=prev.querySelector('img');
+  const avatar=img?img.src:null;
+  localStorage.setItem('t9_profile', JSON.stringify({username:name,avatar}));
+  send({type:'update_profile',username:name,avatar});
   closeModal('edit-profile');
 }
 
-// ─── Servers ──────────────────────────────────────────────────────────────────
+// ── Servers ───────────────────────────────────────────────────────────────────
 function renderServerBar() {
-  const el = document.getElementById('server-icons');
-  el.innerHTML = '';
-  Object.values(servers).forEach(srv => {
-    const wrap = document.createElement('div');
-    wrap.className = 'srv-icon-wrap';
-    const icon = document.createElement('div');
-    icon.className = 'srv-icon' + (currentServerId === srv.id ? ' active' : '');
-    icon.title = srv.name;
-    icon.onclick = () => selectServer(srv.id);
-    if (srv.icon) icon.innerHTML = `<img src="${srv.icon}">`;
-    else icon.textContent = srv.name[0].toUpperCase();
-    wrap.appendChild(icon);
-    el.appendChild(wrap);
+  const el=document.getElementById('server-icons');
+  el.innerHTML='';
+  Object.values(servers).forEach(srv=>{
+    const icon=document.createElement('div');
+    icon.className='srv-icon'+(currentServerId===srv.id?' active':'');
+    icon.title=srv.name;
+    icon.onclick=()=>selectServer(srv.id);
+    if (srv.icon) icon.innerHTML=`<img src="${srv.icon}">`;
+    else icon.textContent=srv.name[0].toUpperCase();
+    el.appendChild(icon);
   });
 }
 
 function selectServer(id) {
-  currentServerId = id;
-  currentView = 'server';
-  currentDmUser = null;
+  currentServerId=id; currentView='server'; currentDmUser=null;
   document.getElementById('dm-icon').classList.remove('active');
-  renderServerBar();
-  renderSidebar();
-  // auto-select first text channel
-  const srv = servers[id];
-  if (srv) {
-    const first = srv.channels.find(c => c.type === 'text');
-    if (first) selectChannel(first.id);
-    else showWelcome();
+  renderServerBar(); renderSidebar();
+  const srv=servers[id];
+  if (srv){
+    const first=srv.channels.find(c=>c.type==='text');
+    if (first) selectChannel(first.id); else showWelcome();
   }
 }
 
 function renderSidebar() {
-  const srv = servers[currentServerId];
-  if (!srv) return;
-  document.getElementById('sidebar-title').textContent = srv.name;
-  const el = document.getElementById('channel-list');
-  el.innerHTML = '';
-  const textChs = srv.channels.filter(c => c.type === 'text');
-  const voiceChs = srv.channels.filter(c => c.type === 'voice');
-  const isOwner = srv.ownerId === myId;
+  const srv=servers[currentServerId]; if (!srv) return;
+  document.getElementById('sidebar-title').textContent=srv.name;
+  const el=document.getElementById('channel-list');
+  el.innerHTML='';
+  const isOwner=srv.ownerId===myId;
+  const textChs=srv.channels.filter(c=>c.type==='text');
+  const voiceChs=srv.channels.filter(c=>c.type==='voice');
 
-  // Text channels
-  const ts = document.createElement('div');
-  ts.className = 'ch-section';
-  ts.innerHTML = `<span>Text Channels</span>${isOwner ? '<button onclick="addChannel(\'text\')">+</button>' : ''}`;
+  // Text
+  const ts=document.createElement('div'); ts.className='ch-section';
+  ts.innerHTML=`<span>Text Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('text')" title="Add text channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
   el.appendChild(ts);
-  textChs.forEach(ch => {
-    const btn = document.createElement('button');
-    btn.className = 'ch-btn' + (currentChannelId === ch.id ? ' active' : '');
-    btn.innerHTML = `<span class="ch-icon">#</span>${esc(ch.name)}`;
-    btn.onclick = () => selectChannel(ch.id);
+  textChs.forEach(ch=>{
+    const btn=document.createElement('button');
+    btn.className='ch-btn'+(currentChannelId===ch.id?' active':'');
+    btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>${esc(ch.name)}`;
+    btn.onclick=()=>selectChannel(ch.id);
     el.appendChild(btn);
   });
 
-  // Voice channels
-  const vs = document.createElement('div');
-  vs.className = 'ch-section';
-  vs.innerHTML = `<span>Voice Channels</span>${isOwner ? '<button onclick="addChannel(\'voice\')">+</button>' : ''}`;
+  // Voice
+  const vs=document.createElement('div'); vs.className='ch-section';
+  vs.innerHTML=`<span>Voice Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('voice')" title="Add voice channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
   el.appendChild(vs);
-  voiceChs.forEach(ch => {
-    const btn = document.createElement('button');
-    btn.className = 'ch-btn' + (voiceState.channelId === ch.id ? ' active' : '');
-    btn.innerHTML = `<span class="ch-icon">🔊</span>${esc(ch.name)}`;
-    btn.onclick = () => joinVoice(ch.id, ch.name);
+  voiceChs.forEach(ch=>{
+    const btn=document.createElement('button');
+    btn.className='ch-btn'+(voiceState.channelId===ch.id?' active':'');
+    btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>${esc(ch.name)}`;
+    btn.onclick=()=>joinVoice(ch.id,ch.name);
     el.appendChild(btn);
-    // show voice users
-    if (ch.users && ch.users.length) {
-      const vul = document.createElement('div');
-      vul.className = 'ch-voice-users';
-      ch.users.forEach(u => {
-        const ue = document.createElement('div');
-        ue.className = 'ch-voice-user';
-        ue.textContent = '🎤 ' + (u.username || u.id);
-        vul.appendChild(ue);
+    if (ch.users&&ch.users.length){
+      const vul=document.createElement('div'); vul.className='ch-voice-users';
+      ch.users.forEach(u=>{
+        const ue=document.createElement('div'); ue.className='ch-voice-user';
+        ue.textContent=u.username||u.id; vul.appendChild(ue);
       });
       el.appendChild(vul);
     }
@@ -610,479 +607,373 @@ function renderSidebar() {
 }
 
 function selectChannel(id) {
-  currentChannelId = id;
-  const srv = servers[currentServerId];
-  const ch = srv?.channels.find(c => c.id === id);
-  if (!ch) return;
-  document.getElementById('header-icon').textContent = '#';
-  document.getElementById('header-name').textContent = ch.name;
-  document.getElementById('msg-input').placeholder = `Message #${ch.name}`;
-  document.getElementById('main-header').style.display = 'flex';
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('messages').style.display = 'block';
-  document.getElementById('input-area').style.display = 'block';
-  document.getElementById('messages').innerHTML = '';
-  send({ type: 'join_channel', serverId: currentServerId, channelId: id });
-  renderSidebar();
-  renderMembers();
+  currentChannelId=id;
+  const srv=servers[currentServerId];
+  const ch=srv?.channels.find(c=>c.id===id); if (!ch) return;
+  document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
+  document.getElementById('header-name').textContent=ch.name;
+  document.getElementById('msg-input').placeholder=`Message #${ch.name}`;
+  document.getElementById('main-header').style.display='flex';
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('messages').style.display='block';
+  document.getElementById('input-area').style.display='block';
+  document.getElementById('messages').innerHTML='';
+  lastMsgUser=null;
+  send({type:'join_channel',serverId:currentServerId,channelId:id});
+  renderSidebar(); renderMembers();
 }
 
 function showWelcome() {
-  currentChannelId = null;
-  document.getElementById('main-header').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
-  document.getElementById('messages').style.display = 'none';
-  document.getElementById('input-area').style.display = 'none';
+  currentChannelId=null;
+  document.getElementById('main-header').style.display='none';
+  document.getElementById('welcome').style.display='flex';
+  document.getElementById('messages').style.display='none';
+  document.getElementById('input-area').style.display='none';
 }
 
 function openServerMenu() {
   if (!currentServerId) return;
-  const srv = servers[currentServerId];
-  if (!srv) return;
-  const btn = document.getElementById('leave-or-delete-btn');
-  if (srv.ownerId === myId) { btn.textContent = '🗑️ Delete Server'; btn.onclick = deleteServer; }
-  else { btn.textContent = '🚪 Leave Server'; btn.onclick = leaveServer; }
+  const srv=servers[currentServerId]; if (!srv) return;
+  const btn=document.getElementById('leave-or-delete-btn');
+  if (srv.ownerId===myId){btn.textContent='Delete Server';btn.onclick=deleteServer;}
+  else{btn.textContent='Leave Server';btn.onclick=leaveServer;}
+  if (srv.isDefault) btn.style.display='none'; else btn.style.display='block';
   openModal('server-menu');
 }
 
 function openServerSettings() {
   closeModal('server-menu');
-  const srv = servers[currentServerId];
-  if (!srv) return;
-  document.getElementById('ss-title').textContent = srv.name + ' — Settings';
-  document.getElementById('ss-name-input').value = srv.name;
-  const prev = document.getElementById('ss-icon-preview');
-  if (srv.icon) prev.innerHTML = `<img src="${srv.icon}">`;
-  else { prev.textContent = srv.name[0].toUpperCase(); prev.innerHTML = srv.name[0].toUpperCase(); }
-  document.getElementById('ss-invite-code').textContent = srv.inviteCode;
-  renderChannelManager();
-  renderMemberManager();
-  ssTab('overview', document.querySelector('.tab'));
+  const srv=servers[currentServerId]; if (!srv) return;
+  document.getElementById('ss-title').textContent=srv.name;
+  document.getElementById('ss-name-input').value=srv.name;
+  const prev=document.getElementById('ss-icon-preview');
+  if (srv.icon) prev.innerHTML=`<img src="${srv.icon}">`;
+  else { prev.textContent=srv.name[0].toUpperCase(); }
+  document.getElementById('ss-invite-code').textContent=srv.inviteCode;
+  renderChannelManager(); renderMemberManager();
+  ssTab('overview',document.querySelector('#modal-server-settings .tab'));
   openModal('server-settings');
 }
 
-function ssTab(name, btn) {
-  ['overview','channels','members','invite'].forEach(t => {
-    document.getElementById('ss-' + t).style.display = t === name ? 'block' : 'none';
+function ssTab(name,btn) {
+  ['overview','channels','members','invite'].forEach(t=>{
+    document.getElementById('ss-'+t).style.display=t===name?'block':'none';
   });
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('#modal-server-settings .tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
 }
 
 function saveServerSettings() {
-  const name = document.getElementById('ss-name-input').value.trim();
-  if (!name) return;
-  const prev = document.getElementById('ss-icon-preview');
-  const img = prev.querySelector('img');
-  const icon = img ? img.src : null;
-  send({ type: 'update_server', serverId: currentServerId, name, icon });
+  const name=document.getElementById('ss-name-input').value.trim(); if(!name) return;
+  const prev=document.getElementById('ss-icon-preview');
+  const img=prev.querySelector('img');
+  send({type:'update_server',serverId:currentServerId,name,icon:img?img.src:null});
   closeModal('server-settings');
 }
 
 function createServer() {
-  const name = document.getElementById('create-server-name').value.trim();
-  if (!name) return;
-  const prev = document.getElementById('create-icon-preview');
-  const img = prev.querySelector('img');
-  const icon = img ? img.src : null;
-  send({ type: 'create_server', name, icon });
+  const name=document.getElementById('create-server-name').value.trim(); if(!name) return;
+  const prev=document.getElementById('create-icon-preview');
+  const img=prev.querySelector('img');
+  send({type:'create_server',name,icon:img?img.src:null});
   closeModal('create-server');
-  document.getElementById('create-server-name').value = '';
-  document.getElementById('create-icon-preview').innerHTML = '+';
+  document.getElementById('create-server-name').value='';
+  document.getElementById('create-icon-preview').innerHTML=`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 }
 
 function joinServer() {
-  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
-  if (!code) return;
-  send({ type: 'join_server', inviteCode: code });
+  const code=document.getElementById('join-code-input').value.trim().toUpperCase(); if(!code) return;
+  send({type:'join_server',inviteCode:code});
   closeModal('join-server');
-  document.getElementById('join-code-input').value = '';
+  document.getElementById('join-code-input').value='';
 }
 
-function leaveServer() {
-  closeModal('server-menu');
-  send({ type: 'leave_server', serverId: currentServerId });
-}
-
+function leaveServer() { closeModal('server-menu'); send({type:'leave_server',serverId:currentServerId}); }
 function deleteServer() {
-  closeModal('server-menu');
-  closeModal('server-settings');
-  if (confirm('Delete server? This cannot be undone.')) send({ type: 'delete_server', serverId: currentServerId });
+  closeModal('server-menu'); closeModal('server-settings');
+  if(confirm('Delete this server? This cannot be undone.')) send({type:'delete_server',serverId:currentServerId});
 }
 
 function copyServerInvite() {
   closeModal('server-menu');
-  const srv = servers[currentServerId];
-  if (srv) { navigator.clipboard.writeText(srv.inviteCode); toast('Invite code copied!'); }
+  const srv=servers[currentServerId];
+  if(srv){navigator.clipboard.writeText(srv.inviteCode);toast('Invite code copied!');}
 }
 
 function copyInvite() {
-  const code = document.getElementById('ss-invite-code').textContent;
-  navigator.clipboard.writeText(code);
+  navigator.clipboard.writeText(document.getElementById('ss-invite-code').textContent);
   toast('Copied!');
 }
 
-function regenerateInvite() {
-  send({ type: 'regenerate_invite', serverId: currentServerId });
-}
+function regenerateInvite() { send({type:'regenerate_invite',serverId:currentServerId}); }
 
 function addChannel(type) {
-  const name = prompt(`New ${type} channel name:`);
-  if (!name?.trim()) return;
-  send({ type: 'add_channel', serverId: currentServerId, channelType: type, name: name.trim() });
+  const name=prompt(`${type==='text'?'Text':'Voice'} channel name:`);
+  if(name?.trim()) send({type:'add_channel',serverId:currentServerId,channelType:type,name:name.trim()});
 }
 
 function renderChannelManager() {
-  const srv = servers[currentServerId];
-  if (!srv) return;
-  const textEl = document.getElementById('ss-text-channels');
-  const voiceEl = document.getElementById('ss-voice-channels');
-  textEl.innerHTML = ''; voiceEl.innerHTML = '';
-  srv.channels.forEach(ch => {
-    const el = ch.type === 'text' ? textEl : voiceEl;
-    const div = document.createElement('div');
-    div.className = 'ch-manage-item';
-    div.innerHTML = `<span>${ch.type === 'text' ? '#' : '🔊'} ${esc(ch.name)}</span>
-      <button onclick="removeChannel('${ch.id}')" title="Delete">🗑️</button>`;
-    el.appendChild(div);
+  const srv=servers[currentServerId]; if(!srv) return;
+  ['text','voice'].forEach(t=>{
+    const el=document.getElementById('ss-'+t+'-channels');
+    el.innerHTML='';
+    srv.channels.filter(c=>c.type===t).forEach(ch=>{
+      const div=document.createElement('div'); div.className='ch-mgr-item';
+      div.innerHTML=`<span>${esc(ch.name)}</span><button class="ch-mgr-btn" onclick="removeChannel('${ch.id}')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg></button>`;
+      el.appendChild(div);
+    });
   });
 }
 
 function removeChannel(channelId) {
-  if (confirm('Delete this channel?')) send({ type: 'remove_channel', serverId: currentServerId, channelId });
+  if(confirm('Delete this channel?')) send({type:'remove_channel',serverId:currentServerId,channelId});
 }
 
 function renderMemberManager() {
-  const srv = servers[currentServerId];
-  if (!srv) return;
-  const el = document.getElementById('ss-members-list');
-  el.innerHTML = '';
-  srv.members.forEach(uid => {
-    const u = onlineUsers[uid] || { id: uid, username: 'Unknown' };
-    const div = document.createElement('div');
-    div.className = 'member-manage-item';
-    const isOwner = srv.ownerId === uid;
-    div.innerHTML = `
-      <div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar ? `<img src="${u.avatar}">` : (u.username||'?')[0].toUpperCase()}</div>
-      <span class="mm-name">${esc(u.username||'Unknown')}${isOwner ? '<span class="tag owner">Owner</span>' : ''}</span>
-      ${!isOwner && srv.ownerId === myId ? `<button class="mm-btn" onclick="kickMember('${uid}')">Kick</button>` : ''}
+  const srv=servers[currentServerId]; if(!srv) return;
+  const el=document.getElementById('ss-members-list'); el.innerHTML='';
+  srv.members.forEach(uid=>{
+    const u=onlineUsers[uid]||{id:uid,username:'Unknown',color:'#5865f2'};
+    const isOwner=srv.ownerId===uid;
+    const div=document.createElement('div'); div.className='mm-item';
+    div.innerHTML=`
+      <div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div>
+      <span class="mm-name">${esc(u.username)}${isOwner?'<span class="owner-tag">Owner</span>':''}</span>
+      ${!isOwner&&srv.ownerId===myId?`<button class="mm-kick" onclick="kickMember(${uid})">Kick</button>`:''}
     `;
     el.appendChild(div);
   });
 }
 
 function kickMember(userId) {
-  if (confirm('Kick this member?')) send({ type: 'kick_member', serverId: currentServerId, userId });
+  if(confirm('Kick this member?')) send({type:'kick_member',serverId:currentServerId,userId});
 }
 
-// ─── DMs ──────────────────────────────────────────────────────────────────────
+// ── DMs ───────────────────────────────────────────────────────────────────────
 function showDMs() {
-  currentServerId = null;
-  currentView = 'dm';
+  currentView='dm'; currentServerId=null;
   document.getElementById('dm-icon').classList.add('active');
-  document.querySelectorAll('.srv-icon').forEach(el => { if (el.id !== 'dm-icon') el.classList.remove('active'); });
-  document.getElementById('sidebar-title').textContent = 'Direct Messages';
+  document.getElementById('sidebar-title').textContent='Direct Messages';
   renderDMList();
-  if (!currentDmUser) showWelcome();
 }
 
 function renderDMList() {
-  const el = document.getElementById('channel-list');
-  el.innerHTML = '';
-  const hdr = document.createElement('div');
-  hdr.className = 'ch-section';
-  hdr.innerHTML = '<span>Direct Messages</span>';
-  el.appendChild(hdr);
-
-  Object.values(onlineUsers).filter(u => u.id !== myId).forEach(u => {
-    const btn = document.createElement('div');
-    btn.className = 'dm-item' + (currentDmUser === u.id ? ' active' : '');
-    const av = u.avatar ? `<img src="${u.avatar}">` : (u.username||'?')[0].toUpperCase();
-    btn.innerHTML = `
-      <div class="dm-avatar" style="background:${u.color||'#5865f2'}">${av}</div>
-      <span class="dm-name">${esc(u.username||'Unknown')}</span>
-      <button class="dm-close" onclick="event.stopPropagation()">✕</button>
-    `;
-    btn.onclick = () => openDM(u.id);
-    el.appendChild(btn);
+  const el=document.getElementById('channel-list'); el.innerHTML='';
+  const hdr=document.createElement('div'); hdr.className='ch-section';
+  hdr.innerHTML='<span>Direct Messages</span>'; el.appendChild(hdr);
+  Object.values(onlineUsers).filter(u=>u.id!==myId).forEach(u=>{
+    const div=document.createElement('div');
+    div.className='dm-item'+(currentDmUser===u.id?' active':'');
+    div.innerHTML=`<div class="dm-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="dm-name">${esc(u.username)}</span>`;
+    div.onclick=()=>openDM(u.id);
+    el.appendChild(div);
   });
 }
 
 function openDM(userId) {
-  currentDmUser = userId;
-  currentChannelId = null;
-  const u = onlineUsers[userId];
-  if (!u) return;
-  document.getElementById('header-icon').textContent = '@';
-  document.getElementById('header-name').textContent = u.username;
-  document.getElementById('msg-input').placeholder = `Message @${u.username}`;
-  document.getElementById('main-header').style.display = 'flex';
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('messages').style.display = 'block';
-  document.getElementById('input-area').style.display = 'block';
-  document.getElementById('messages').innerHTML = '';
-  if (dmConversations[userId]) dmConversations[userId].messages.forEach(addMessage);
+  currentDmUser=userId; currentChannelId=null;
+  const u=onlineUsers[userId]; if(!u) return;
+  document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  document.getElementById('header-name').textContent=u.username;
+  document.getElementById('msg-input').placeholder=`Message @${u.username}`;
+  document.getElementById('main-header').style.display='flex';
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('messages').style.display='block';
+  document.getElementById('input-area').style.display='block';
+  document.getElementById('messages').innerHTML=''; lastMsgUser=null;
+  if(dmConversations[userId]) dmConversations[userId].messages.forEach(addMessage);
   renderDMList();
-  renderMembers();
 }
 
 function addDM(d) {
-  if (!dmConversations[d.from]) dmConversations[d.from] = { messages: [] };
-  if (!dmConversations[d.to]) dmConversations[d.to] = { messages: [] };
-  const otherId = d.from === myId ? d.to : d.from;
+  const otherId=d.from===myId?d.to:d.from;
+  if(!dmConversations[otherId]) dmConversations[otherId]={messages:[]};
   dmConversations[otherId].messages.push(d);
-  if (currentDmUser === otherId) addMessage(d);
+  if(currentDmUser===otherId) addMessage(d);
 }
 
-// ─── Messages ─────────────────────────────────────────────────────────────────
-let lastMsgUser = null, lastMsgTime = 0;
-
+// ── Messages ──────────────────────────────────────────────────────────────────
 function addMessage(m) {
-  if (currentView === 'server' && m.channelId !== currentChannelId) return;
-  const msgs = document.getElementById('messages');
-  const now = m.timestamp || Date.now();
-  const compact = m.userId === lastMsgUser && (now - lastMsgTime) < 300000;
-  lastMsgUser = m.userId; lastMsgTime = now;
-  const u = onlineUsers[m.userId] || { username: m.username || 'Unknown', color: m.color || '#5865f2', avatar: m.avatar };
-  const time = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const div = document.createElement('div');
-  if (compact) {
-    div.className = 'msg msg-compact';
-    div.innerHTML = `<div class="msg-text">${esc(m.content)}</div>`;
+  if(currentView==='server'&&m.channelId!==currentChannelId) return;
+  const msgs=document.getElementById('messages');
+  const now=m.timestamp||Date.now();
+  const compact=m.userId===lastMsgUser&&(now-lastMsgTime)<300000;
+  lastMsgUser=m.userId; lastMsgTime=now;
+  const u=onlineUsers[m.userId]||{username:m.username||'Unknown',color:m.color||'#5865f2',avatar:m.avatar};
+  const time=new Date(now).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const div=document.createElement('div');
+  if(compact){
+    div.className='msg msg-compact';
+    div.innerHTML=`<div class="msg-text">${esc(m.content)}</div>`;
   } else {
-    div.className = 'msg';
-    const av = u.avatar ? `<img src="${u.avatar}">` : (u.username||'?')[0].toUpperCase();
-    div.innerHTML = `
-      <div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div>
+    div.className='msg';
+    const av=u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase();
+    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div>
       <div class="msg-body">
-        <div class="msg-header">
-          <span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span>
-          <span class="msg-time">${time}</span>
-        </div>
+        <div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-time">${time}</span></div>
         <div class="msg-text">${esc(m.content)}</div>
       </div>`;
   }
   msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
 function sendText() {
-  const inp = document.getElementById('msg-input');
-  const content = inp.value.trim();
-  if (!content) return;
-  inp.value = ''; inp.style.height = '';
-  if (currentDmUser) {
-    send({ type: 'dm', to: currentDmUser, content });
-  } else if (currentChannelId) {
-    send({ type: 'chat', serverId: currentServerId, channelId: currentChannelId, content });
-  }
+  const inp=document.getElementById('msg-input');
+  const content=inp.value.trim(); if(!content) return;
+  inp.value=''; inp.style.height='';
+  if(currentDmUser) send({type:'dm',to:currentDmUser,content});
+  else if(currentChannelId) send({type:'chat',serverId:currentServerId,channelId:currentChannelId,content});
 }
 
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
-}
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,200)+'px'; }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
-}
-
-// ─── Members panel ────────────────────────────────────────────────────────────
-let membersVisible = false;
+// ── Members ───────────────────────────────────────────────────────────────────
+let membersVisible=false;
 function toggleMembers() {
-  membersVisible = !membersVisible;
-  document.getElementById('members').classList.toggle('visible', membersVisible);
+  membersVisible=!membersVisible;
+  document.getElementById('members').classList.toggle('visible',membersVisible);
+  renderMembers();
 }
 
 function renderMembers() {
-  const el = document.getElementById('members');
-  if (!membersVisible) return;
-  el.innerHTML = '';
-  const online = Object.values(onlineUsers).filter(u => u.id !== myId);
-  if (online.length) {
-    const hdr = document.createElement('div');
-    hdr.className = 'member-section';
-    hdr.textContent = `Online — ${online.length}`;
-    el.appendChild(hdr);
-    online.forEach(u => {
-      const div = document.createElement('div');
-      div.className = 'member-item';
-      div.onclick = () => openDM(u.id);
-      const av = u.avatar ? `<img src="${u.avatar}">` : (u.username||'?')[0].toUpperCase();
-      div.innerHTML = `
-        <div class="member-avatar" style="background:${u.color||'#5865f2'}">${av}<div class="member-status"></div></div>
-        <span class="member-name">${esc(u.username||'Unknown')}</span>
-      `;
+  const el=document.getElementById('members'); if(!membersVisible) return;
+  el.innerHTML='';
+  const online=Object.values(onlineUsers).filter(u=>u.id!==myId);
+  if(online.length){
+    const hdr=document.createElement('div'); hdr.className='member-section';
+    hdr.textContent=`Online — ${online.length}`; el.appendChild(hdr);
+    online.forEach(u=>{
+      const div=document.createElement('div'); div.className='member-item';
+      div.onclick=()=>{if(currentView==='dm'||true)openDM(u.id);};
+      div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}<div class="member-dot"></div></div><span class="member-name">${esc(u.username)}</span>`;
       el.appendChild(div);
     });
   }
 }
 
-// ─── Voice ────────────────────────────────────────────────────────────────────
+// ── Voice ─────────────────────────────────────────────────────────────────────
 async function joinVoice(channelId, channelName) {
-  if (voiceState.channelId === channelId) return;
-  if (voiceState.channelId) leaveVoice();
-  try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    startSpeakingDetection(localStream);
-  } catch(e) { toast('Microphone access needed'); return; }
-  voiceState = { channelId, channelName, serverId: currentServerId };
-  send({ type: 'voice_join', serverId: currentServerId, channelId });
+  if(voiceState.channelId===channelId) return;
+  if(voiceState.channelId) leaveVoice();
+  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
+  catch(e) { toast('Microphone access needed'); return; }
+  voiceState={channelId,channelName,serverId:currentServerId};
+  send({type:'voice_join',serverId:currentServerId,channelId});
   document.getElementById('voice-bar').classList.add('active');
-  document.getElementById('vb-room-name').textContent = channelName;
-  document.getElementById('vb-server-name').textContent = servers[currentServerId]?.name || '';
+  document.getElementById('vb-room-name').textContent=channelName;
+  document.getElementById('vb-server-name').textContent=servers[currentServerId]?.name||'';
   renderSidebar();
 }
 
 function leaveVoice() {
-  send({ type: 'voice_leave' });
+  send({type:'voice_leave'});
   Object.keys(peers).forEach(cleanupPeer);
-  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-  voiceState = { room: null, serverId: null, channelId: null };
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+  voiceState={channelId:null,channelName:null,serverId:null};
   document.getElementById('voice-bar').classList.remove('active');
-  if (currentServerId) renderSidebar();
+  if(currentServerId) renderSidebar();
 }
 
 function toggleMic() {
-  muted = !muted;
-  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
-  const icon = muted ? '🔇' : '🎙';
-  document.getElementById('mute-btn').textContent = icon;
-  document.getElementById('vb-mute').textContent = icon;
-  document.getElementById('vb-mute').classList.toggle('active', muted);
+  muted=!muted;
+  if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!muted);
+  const micSvg=muted
+    ?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>`
+    :`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>`;
+  document.getElementById('mic-icon').outerHTML=`<svg id="mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">${muted?'<path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>':'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/>'}</svg>`;
+  const vbMute=document.getElementById('vb-mute');
+  vbMute.classList.toggle('muted-on',muted);
 }
 
-function renderVoiceChannel() {
-  if (currentServerId) renderSidebar();
-}
+function renderVoiceChannel() { if(currentServerId) renderSidebar(); }
 
-// ─── WebRTC ───────────────────────────────────────────────────────────────────
+// ── WebRTC ────────────────────────────────────────────────────────────────────
 function unlockAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
 }
 
 function playAudio(id, stream) {
-  let a = audioEls[id];
-  if (!a) {
-    a = document.createElement('audio');
-    a.autoplay = true; a.playsInline = true;
-    document.body.appendChild(a);
-    audioEls[id] = a;
-  }
-  a.srcObject = stream;
-  const tryPlay = () => {
-    a.play().catch(() => {
-      // Fallback: AudioContext routing
-      try {
-        unlockAudio();
-        const src = audioCtx.createMediaStreamSource(stream);
-        src.connect(audioCtx.destination);
-      } catch(e) {}
-    });
-  };
+  let a=audioEls[id];
+  if(!a){a=document.createElement('audio');a.autoplay=true;a.playsInline=true;document.body.appendChild(a);audioEls[id]=a;}
+  a.srcObject=stream;
+  const tryPlay=()=>a.play().catch(()=>{
+    try{unlockAudio();audioCtx.createMediaStreamSource(stream).connect(audioCtx.destination);}catch(e){}
+  });
   tryPlay();
-  document.addEventListener('click', tryPlay, { once: true });
+  document.addEventListener('click',tryPlay,{once:true});
 }
 
 function makePc(id) {
-  const pc = new RTCPeerConnection(ICE);
-  if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-  pc.ontrack = e => { if (e.streams[0]) playAudio(id, e.streams[0]); };
-  pc.onicecandidate = e => { if (e.candidate) send({ type: 'voice_ice', candidate: e.candidate, to: id }); };
-  pc.onconnectionstatechange = () => {
-    if (pc.connectionState === 'failed') { cleanupPeer(id); setTimeout(() => callPeer(id), 1000); }
-  };
-  peers[id] = pc;
-  return pc;
+  const pc=new RTCPeerConnection(ICE);
+  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.ontrack=e=>{if(e.streams[0])playAudio(id,e.streams[0]);};
+  pc.onicecandidate=e=>{if(e.candidate)send({type:'voice_ice',candidate:e.candidate,to:id});};
+  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>callPeer(id),1000);}};
+  peers[id]=pc; return pc;
 }
 
 async function callPeer(id) {
-  if (peers[id]) {
-    const s = peers[id].connectionState || peers[id].iceConnectionState;
-    if (s === 'connected' || s === 'connecting') return;
-    cleanupPeer(id);
-  }
-  const pc = makePc(id);
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  send({ type: 'voice_offer', sdp: pc.localDescription, to: id });
+  if(peers[id]){const s=peers[id].connectionState||peers[id].iceConnectionState;if(s==='connected'||s==='connecting')return;cleanupPeer(id);}
+  const pc=makePc(id);
+  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
+  send({type:'voice_offer',sdp:pc.localDescription,to:id});
 }
 
-async function handleOffer(id, sdp) {
-  if (peers[id]) cleanupPeer(id);
-  const pc = makePc(id);
+async function handleOffer(id,sdp) {
+  if(peers[id]) cleanupPeer(id);
+  const pc=makePc(id);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  send({ type: 'voice_answer', sdp: pc.localDescription, to: id });
+  const answer=await pc.createAnswer(); await pc.setLocalDescription(answer);
+  send({type:'voice_answer',sdp:pc.localDescription,to:id});
 }
 
 function cleanupPeer(id) {
-  if (peers[id]) { try { peers[id].close(); } catch(e){} delete peers[id]; }
-  if (audioEls[id]) { audioEls[id].srcObject = null; audioEls[id].remove(); delete audioEls[id]; }
-}
-
-function updateSpeaking(userId, active) {
-  // highlight in voice channel user list
+  if(peers[id]){try{peers[id].close();}catch(e){}delete peers[id];}
+  if(audioEls[id]){audioEls[id].srcObject=null;audioEls[id].remove();delete audioEls[id];}
 }
 
 function startSpeakingDetection(stream) {
   try {
     unlockAudio();
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 512;
+    const analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
     audioCtx.createMediaStreamSource(stream).connect(analyser);
-    const buf = new Uint8Array(analyser.frequencyBinCount);
-    let was = false;
-    const check = () => {
-      analyser.getByteFrequencyData(buf);
-      const speaking = (buf.reduce((a,b)=>a+b,0)/buf.length) > 15;
-      if (speaking !== was) { was = speaking; send({ type: 'voice_speaking', active: speaking }); }
-      requestAnimationFrame(check);
-    };
+    const buf=new Uint8Array(analyser.frequencyBinCount); let was=false;
+    const check=()=>{analyser.getByteFrequencyData(buf);const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;if(s!==was){was=s;send({type:'voice_speaking',active:s});}requestAnimationFrame(check);};
     check();
-  } catch(e) {}
+  } catch(e){}
 }
 
-// ─── Image / Avatar utils ─────────────────────────────────────────────────────
+// ── Utils ─────────────────────────────────────────────────────────────────────
 function previewImage(input, previewId) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const prev = document.getElementById(previewId);
-    prev.innerHTML = `<img src="${e.target.result}">`;
-  };
-  reader.readAsDataURL(file);
+  const file=input.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{document.getElementById(previewId).innerHTML=`<img src="${e.target.result}">`;};
+  r.readAsDataURL(file);
 }
 
-// ─── Modal utils ──────────────────────────────────────────────────────────────
 function openModal(id) {
-  if (id === 'edit-profile') openEditProfile();
-  else document.getElementById('modal-' + id).classList.add('open');
+  if(id==='edit-profile'){openEditProfile();return;}
+  document.getElementById('modal-'+id).classList.add('open');
 }
-function closeModal(id) { document.getElementById('modal-' + id).classList.remove('open'); }
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('modal-overlay')) {
-    e.target.classList.remove('open');
-  }
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
   unlockAudio();
 });
 
-// ─── Misc ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
-  const el = document.createElement('div');
-  el.className = 'toast'; el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),3000);
 }
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
-// ─── Start ────────────────────────────────────────────────────────────────────
-connect();
-showDMs();
+// ── Start ─────────────────────────────────────────────────────────────────────
+checkOnboarding();
 </script>
 </body>
 </html>
