@@ -184,31 +184,30 @@
     }
 
 .navbar {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      height: 56px;
-         background: linear-gradient(160deg,
-        rgb(15, 15, 15),
-        rgb(10, 10, 10)
-      );
-      border-radius:30px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 12px;
-      padding: 0 10px;
-      backdrop-filter: blur(2px) saturate(140%);
-       box-shadow: 
+  position: fixed;
+  top: 25px; /* Start right below the tnav (tnav height is 25px) */
+  left: 0; /* Position on left side */
+  bottom: 0;
+  width: 56px; /* Fixed width for vertical bar */
+  height: auto; /* Let it stretch */
+  background: linear-gradient(160deg,
+    rgb(15, 15, 15),
+    rgb(10, 10, 10)
+  );
+  border-radius: 0 16px 16px 0; /* Rounded only on right side */
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  backdrop-filter: blur(2px) saturate(140%);
+  box-shadow: 
     0 12px 28px rgba(0,0,0,0.45),
     0 0 0 1px rgba(255,255,255,0.15) inset;
-      transition: height 0.2s ease, border-radius 0.2s ease, border-color 0.2s ease;
-      opacity: 0.92;
-      z-index: 9999;
-      will-change: height, border-radius;
-
-    }
+  opacity: 0.92;
+  z-index: 9999;
+  border: 2px solid gray;
+}
 
     
 
@@ -2171,17 +2170,17 @@ navigator.getBattery().then(battery => {
 <style>
 #battery2 {
   right: 225px;
-  top: 2px;
+  top: 4px;
   position: fixed;
 }
 #clock2 {
   right: 100px;
-  top: 2px;
+  top: 4px;
   position: fixed;
 }
 #weather {
   right: 420px;
-  top: 2px;
+  top: 4px;
   position: fixed;
 }
 </style>
