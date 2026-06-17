@@ -1,1888 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>T9 Voice · VPS Chat</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    :root {
-      --bg-base: #313338;
-      --bg-mid: #2b2d31;
-      --card: #2b2d31;
-      --card-border: #1e1f22;
-      --card-hover: #35373c;
-      --channel-hover: #35373c;
-      --accent: #5865f2;
-      --green: #23a55a;
-      --red: #f23f43;
-      --text: #dbdee1;
-      --text-muted: #949ba4;
-      --text-faint: #6d6f78;
-      --border: #3f4147;
-      --r: 1rem;
-      --r-sm: 0.5rem;
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-    html,
-    body {
-      height: 100%;
-      background: var(--bg-base);
-      color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1a1b1e;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    #app {
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-    #server-rail {
-      width: 72px;
-      background: #1e1f22;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 12px 0;
-      gap: 4px;
-      flex-shrink: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    #channel-sidebar {
-      width: 240px;
-      background: #2b2d31;
-      border-right: 1px solid #1e1f22;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    #main-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      background: #313338;
-      overflow: hidden;
-    }
-    #members-sidebar {
-      width: 240px;
-      background: #2b2d31;
-      border-left: 1px solid #1e1f22;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .server-item {
-      position: relative;
-      cursor: pointer;
-      margin-bottom: 4px;
-      width: 72px;
-      display: flex;
-      justify-content: center;
-    }
-    .server-pill {
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      border-radius: 0 4px 4px 0;
-      background: white;
-      transition: all 0.2s;
-      height: 0;
-    }
-    .server-item:hover .server-pill {
-      height: 20px;
-    }
-    .server-item.active .server-pill {
-      height: 40px;
-    }
-    .server-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #313338;
-      border: 1px solid #1e1f22;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 700;
-      color: #3ba55c;
-      cursor: pointer;
-      transition: all 0.2s;
-      overflow: hidden;
-    }
-    .server-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .server-icon:hover {
-      color: white;
-      background: #5865f2;
-      border-radius: 16px;
-    }
-    .server-item.active .server-icon {
-      border-radius: 16px;
-      background: #5865f2;
-      color: white;
-    }
-    .server-divider {
-      width: 32px;
-      height: 2px;
-      background: #35373c;
-      border-radius: 1px;
-      margin: 4px 0;
-    }
-    .server-add-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #313338;
-      border: 1px solid #1e1f22;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: #3ba55c;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .server-add-btn:hover {
-      color: white;
-      background: #3ba55c;
-      border-radius: 16px;
-    }
-    .sidebar-header {
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #1e1f22;
-      min-height: 48px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .sidebar-header:hover {
-      background: #35373c;
-    }
-    .sidebar-server-name {
-      font-weight: 600;
-      font-size: 15px;
-      color: white;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .channel-sections {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-    }
-    .channel-cat-header {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 16px 16px 4px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-    .channel-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      margin: 1px 8px;
-      border-radius: var(--r-sm);
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-    .channel-item:hover {
-      background: #35373c;
-      color: var(--text);
-    }
-    .channel-item.active {
-      background: #404249;
-      color: white;
-    }
-    .ch-hash {
-      font-size: 20px;
-      font-weight: 300;
-      width: 24px;
-      text-align: center;
-    }
-    .ch-name {
-      font-size: 15px;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .ch-icon-btn {
-      opacity: 0;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: opacity 0.15s;
-    }
-    .channel-cat-header:hover .ch-icon-btn {
-      opacity: 1;
-    }
-    .channel-item:hover .ch-icon-btn {
-      opacity: 1;
-    }
-    .dm-header-label {
-      padding: 16px 16px 4px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .dm-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 8px;
-      margin: 1px 8px;
-      border-radius: var(--r-sm);
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-    .dm-item:hover {
-      background: #35373c;
-      color: var(--text);
-    }
-    .dm-item.active {
-      background: #404249;
-      color: white;
-    }
-    .dm-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-      flex-shrink: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .dm-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .dm-name {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .user-panel {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      background: #232428;
-      border-top: 1px solid #1e1f22;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .up-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--accent);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-      overflow: hidden;
-    }
-    .up-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .up-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .up-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: white;
-    }
-    .up-tag {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .pro-tag {
-      font-size: 10px;
-      font-weight: 700;
-      color: #faa61a;
-      background: rgba(250, 166, 26, 0.15);
-      padding: 1px 4px;
-      border-radius: 3px;
-      margin-left: 4px;
-      vertical-align: middle;
-      display: inline-block;
-    }
-    .user-id-tag {
-      font-size: 10px;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 1px 4px;
-      border-radius: 3px;
-      margin-left: 4px;
-      font-family: monospace;
-      vertical-align: middle;
-      display: inline-block;
-    }
-    #chat-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 16px;
-      height: 48px;
-      border-bottom: 1px solid #1e1f22;
-      flex-shrink: 0;
-      background: #313338;
-    }
-    .chat-header-hash {
-      font-size: 24px;
-      color: var(--text-muted);
-    }
-    .chat-header-name {
-      font-weight: 600;
-      font-size: 16px;
-      color: white;
-    }
-    .chat-header-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 4px;
-      align-items: center;
-    }
-    .header-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--r-sm);
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .header-btn:hover {
-      background: #35373c;
-      color: var(--text);
-    }
-    #messages,
-    #dm-messages {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-    }
-    .msg-group {
-      padding: 4px 16px;
-      display: flex;
-      gap: 16px;
-      position: relative;
-    }
-    .msg-group:hover {
-      background: rgba(0, 0, 0, 0.08);
-    }
-    .msg-group:hover .msg-actions {
-      display: flex;
-    }
-    .msg-avatar-col {
-      width: 40px;
-      flex-shrink: 0;
-      padding-top: 4px;
-    }
-    .msg-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 600;
-      color: white;
-      cursor: pointer;
-      overflow: hidden;
-    }
-    .msg-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .msg-content-col {
-      flex: 1;
-      min-width: 0;
-      padding: 4px 0;
-    }
-    .msg-header {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin-bottom: 2px;
-      flex-wrap: wrap;
-    }
-    .msg-username {
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .msg-username:hover {
-      text-decoration: underline;
-    }
-    .msg-time {
-      font-size: 12px;
-      color: var(--text-faint);
-    }
-    .msg-body {
-      font-size: 16px;
-      line-height: 1.375;
-      color: var(--text);
-      word-break: break-word;
-    }
-    .msg-reply-preview {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-      padding: 2px 8px;
-      border-left: 3px solid var(--text-muted);
-      font-size: 12px;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-radius: 0 4px 4px 0;
-      background: rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .msg-gif {
-      margin-top: 4px;
-      border-radius: 4px;
-      overflow: hidden;
-      max-width: 300px;
-    }
-    .msg-gif img {
-      width: 100%;
-      display: block;
-      border-radius: 4px;
-    }
-    .msg-actions {
-      display: none;
-      position: absolute;
-      right: 16px;
-      top: -20px;
-      background: #2b2d31;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r-sm);
-      box-shadow: var(--shadow);
-      padding: 4px;
-      z-index: 5;
-      gap: 2px;
-    }
-    .msg-action-btn {
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-radius: var(--r-sm);
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-    .msg-action-btn:hover {
-      background: #35373c;
-      color: var(--text);
-    }
-    .welcome-hash {
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      background: #41434a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      font-weight: 300;
-      color: white;
-      margin-bottom: 8px;
-    }
-    .welcome-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: white;
-    }
-    .welcome-sub {
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-    #input-area,
-    .dm-input-area {
-      padding: 0 16px 24px;
-      flex-shrink: 0;
-      position: relative;
-    }
-    .reply-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #383a40;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r) var(--r) 0 0;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: -2px;
-    }
-    .reply-bar .rb-close {
-      margin-left: auto;
-      cursor: pointer;
-      color: var(--text-muted);
-      font-size: 16px;
-      padding: 2px 6px;
-    }
-    .input-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #383a40;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r);
-      padding: 0 16px;
-    }
-    .input-box:focus-within {
-      border-color: #5865f2;
-    }
-    #msg-input,
-    #dm-msg-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #dbdee1;
-      font-size: 15px;
-      font-family: inherit;
-      resize: none;
-      min-height: 44px;
-      padding: 14px 0;
-    }
-    #msg-input::placeholder,
-    #dm-msg-input::placeholder {
-      color: var(--text-faint);
-    }
-    .input-btn {
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-radius: var(--r-sm);
-      font-size: 18px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .input-btn:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .members-header {
-      padding: 16px 16px 8px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-    .members-list {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-      padding: 0 8px;
-    }
-    .member-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 8px;
-      border-radius: var(--r-sm);
-      cursor: pointer;
-      margin: 1px 0;
-    }
-    .member-item:hover {
-      background: #35373c;
-    }
-    .member-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-      flex-shrink: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .member-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .member-status {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 3px solid #2b2d31;
-      background: var(--green);
-    }
-    .member-name {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-    }
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-    }
-    .overlay.visible {
-      display: flex;
-    }
-    .modal {
-      background: #313338;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r);
-      width: 100%;
-      max-width: 440px;
-      box-shadow: var(--shadow);
-      animation: modalIn 0.2s ease;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal.modal-lg {
-      max-width: 560px;
-    }
-    @keyframes modalIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-    .modal-header {
-      padding: 24px 24px 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-    }
-    .modal-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: white;
-    }
-    .modal-close {
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--r-sm);
-    }
-    .modal-close:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    .modal-body {
-      padding: 20px 24px;
-    }
-    .modal-footer {
-      padding: 0 24px 24px;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    .field {
-      margin-bottom: 16px;
-    }
-    .field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-    .field input {
-      width: 100%;
-      background: #1e1f22;
-      border: 1px solid #3f4147;
-      border-radius: var(--r-sm);
-      padding: 10px 12px;
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-      font-family: inherit;
-    }
-    .field input:focus {
-      border-color: var(--accent);
-    }
-    .btn {
-      padding: 10px 20px;
-      border-radius: var(--r-sm);
-      border: none;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #4752c4;
-    }
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-muted);
-    }
-    .btn-ghost:hover {
-      background: #35373c;
-      color: var(--text);
-    }
-    .btn-danger {
-      background: var(--red);
-      color: white;
-    }
-    .btn-danger:hover {
-      background: #c0383b;
-    }
-    .hidden {
-      display: none !important;
-    }
-    #dm-view {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      min-width: 0;
-      min-height: 0;
-      overflow: hidden;
-    }
-    #dm-view.visible {
-      display: flex;
-    }
-    #channel-view {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      min-width: 0;
-      min-height: 0;
-    }
-    .dm-header-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 16px;
-      height: 48px;
-      border-bottom: 1px solid #1e1f22;
-      flex-shrink: 0;
-      background: #313338;
-    }
-    .dm-header-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-      overflow: hidden;
-    }
-    .dm-header-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .dm-header-name {
-      font-weight: 600;
-      font-size: 16px;
-      color: white;
-    }
-    .id-chip {
-      background: #1e1f22;
-      border: 1px solid #3f4147;
-      border-radius: var(--r-sm);
-      padding: 10px 12px;
-      font-family: monospace;
-      font-size: 13px;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .copy-btn {
-      font-size: 12px;
-      color: var(--accent);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    .copy-btn:hover {
-      background: rgba(88, 101, 242, 0.15);
-    }
-    .emoji-picker {
-      position: absolute;
-      bottom: 70px;
-      left: 16px;
-      background: #313338;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r);
-      padding: 8px;
-      z-index: 50;
-      display: none;
-      box-shadow: var(--shadow);
-    }
-    .emoji-picker.visible {
-      display: block;
-    }
-    .emoji-grid {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 2px;
-    }
-    .emoji-btn {
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: transparent;
-      font-size: 20px;
-      cursor: pointer;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .emoji-btn:hover {
-      background: rgba(88, 101, 242, 0.2);
-    }
-    .gif-picker {
-      position: absolute;
-      bottom: 70px;
-      left: 16px;
-      right: 16px;
-      max-height: 320px;
-      background: #313338;
-      border: 1px solid #1e1f22;
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      display: none;
-      flex-direction: column;
-      z-index: 50;
-      overflow: hidden;
-    }
-    .gif-picker.visible {
-      display: flex;
-    }
-    .gif-search-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border-bottom: 1px solid #1e1f22;
-      flex-shrink: 0;
-    }
-    .gif-search-bar input {
-      flex: 1;
-      background: #1e1f22;
-      border: 1px solid #3f4147;
-      border-radius: var(--r-sm);
-      padding: 8px 12px;
-      color: white;
-      font-size: 13px;
-      outline: none;
-      font-family: inherit;
-    }
-    .gif-tabs-bar {
-      display: flex;
-      gap: 4px;
-      padding: 8px 12px 4px;
-      flex-shrink: 0;
-    }
-    .gif-tab {
-      padding: 4px 12px;
-      border-radius: var(--r-sm);
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-    .gif-tab:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .gif-tab.active {
-      color: var(--accent);
-      background: rgba(88, 101, 242, 0.12);
-    }
-    .gif-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      padding: 8px 12px;
-      overflow-y: auto;
-      flex: 1;
-      min-height: 0;
-    }
-    .gif-cell {
-      height: 110px;
-      border-radius: var(--r-sm);
-      overflow: hidden;
-      cursor: pointer;
-      background: #1e1f22;
-    }
-    .gif-cell img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.2s;
-    }
-    .gif-cell:hover img {
-      transform: scale(1.05);
-    }
-    .gif-empty {
-      grid-column: 1/-1;
-      text-align: center;
-      padding: 30px;
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-    .icon-svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .avatar-upload {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .avatar-large {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: 700;
-      color: white;
-      cursor: pointer;
-      border: 3px solid #3f4147;
-      overflow: hidden;
-      position: relative;
-      transition: border-color 0.2s;
-    }
-    .avatar-large:hover {
-      border-color: var(--accent);
-    }
-    .avatar-large img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .avatar-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .avatar-large:hover .avatar-overlay {
-      opacity: 1;
-    }
-    #voice-overlay {
-      display: none;
-      background: #1e1f22;
-      border-top: 1px solid #3f4147;
-      padding: 8px 16px;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-      z-index: 100;
-    }
-    #voice-overlay.active {
-      display: flex;
-    }
-    #voice-participants {
-      display: flex;
-      gap: 12px;
-      flex: 1;
-      overflow-x: auto;
-    }
-    .vp {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      min-width: 50px;
-    }
-    .vp-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--card-hover);
-      border: 2px solid transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-      color: #fff;
-    }
-    .vp-avatar.speaking {
-      border-color: var(--green);
-    }
-    .vp-name {
-      font-size: 11px;
-      color: var(--text-muted);
-      max-width: 60px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 Chat + Voice</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#313338;--sidebar:#2b2d31;--text:#dbdee1;--muted:#949ba4;--accent:#5865f2;--green:#23a55a;--red:#f23f43;--hover:#35373c}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;height:100vh;overflow:hidden}
+#sidebar{width:240px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #1e1f22}
+#sidebar h2{padding:16px;font-size:15px;color:#fff;border-bottom:1px solid #1e1f22;flex-shrink:0}
+#room-list{flex:1;overflow-y:auto;padding:8px}
+.room-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;color:var(--muted);margin:2px 0;transition:all 0.15s;border:none;background:none;width:100%;text-align:left;font-size:14px;font-family:inherit}
+.room-btn:hover{background:var(--hover);color:var(--text)}
+.room-btn.active{background:#404249;color:#fff}
+.room-users{padding-left:32px;font-size:12px;color:var(--muted)}
+.room-user{padding:2px 8px}
+.room-user.speaking{color:var(--green)}
+#voice-controls{padding:12px;border-top:1px solid #1e1f22;display:flex;gap:8px;align-items:center}
+.vc-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--hover);color:var(--text);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.vc-btn.muted{background:var(--red);color:#fff}
+.vc-btn.leave{background:var(--red);color:#fff}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#messages{flex:1;overflow-y:auto;padding:16px}
+.msg{padding:4px 0;display:flex;gap:12px}
+.msg:hover{background:rgba(255,255,255,0.02)}
+.msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.msg-body{flex:1}
+.msg-header{display:flex;gap:8px;align-items:baseline;margin-bottom:2px}
+.msg-name{font-weight:600;font-size:15px}
+.msg-time{font-size:11px;color:var(--muted)}
+.msg-text{font-size:15px;line-height:1.4;word-break:break-word}
+.system-msg{text-align:center;color:var(--muted);font-size:13px;padding:4px 0}
+#input-area{padding:0 16px 24px}
+.input-box{display:flex;background:#383a40;border:1px solid #3f4147;border-radius:8px;padding:0 12px}
+.input-box:focus-within{border-color:var(--accent)}
+#msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:14px 0;font-family:inherit;resize:none}
+#voice-overlay{display:none;position:fixed;bottom:0;left:240px;right:0;background:#1e1f22;border-top:1px solid #3f4147;padding:8px 16px;z-index:100}
+#voice-overlay.active{display:flex;align-items:center;gap:12px}
+#voice-participants{display:flex;gap:12px;flex:1;overflow-x:auto}
+.vp{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px}
+.vp-avatar{width:36px;height:36px;border-radius:50%;background:var(--hover);border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.vp-avatar.speaking{border-color:var(--green)}
+.vp-name{font-size:11px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#online-count{padding:12px 16px;font-size:13px;color:var(--muted);border-bottom:1px solid #1e1f22;flex-shrink:0}
+</style>
 </head>
 <body>
-  <div id="app">
-    <!-- Server Rail -->
-    <div id="server-rail">
-      <div class="server-item active" id="dm-server-btn" onclick="showDmView()">
-        <div class="server-icon">
-          <svg class="icon-svg" viewBox="0 0 24 24" style="width:24px;height:24px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        </div>
-      </div>
-      <div class="server-divider"></div>
-      <div id="server-list-rail"></div>
-      <div class="server-divider"></div>
-      <div class="server-add-btn" id="server-add-btn"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-    </div>
-
-    <!-- Channel Sidebar -->
-    <div id="channel-sidebar">
-      <div class="sidebar-header" onclick="openServerSettings()">
-        <span class="sidebar-server-name" id="sidebar-server-name">T9 Network</span>
-        <svg class="icon-svg" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--text-muted)"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="channel-sections" id="channel-sections"></div>
-      <div id="dm-sections" class="hidden" style="flex:1;overflow-y:auto;overflow-x:hidden;min-height:0">
-        <div class="dm-header-label"><span>Direct Messages</span><span style="cursor:pointer;font-size:18px" onclick="openModal('new-dm-modal')"><svg class="icon-svg" viewBox="0 0 24 24" style="width:18px;height:18px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></div>
-        <div id="dm-list"></div>
-      </div>
-      <div class="user-panel" onclick="openModal('profile-modal')">
-        <div class="up-avatar" id="up-avatar">?</div>
-        <div class="up-info">
-          <div class="up-name" id="up-name">Click to setup</div>
-          <div class="up-tag" id="up-tag"></div>
-        </div>
-        <svg class="icon-svg" viewBox="0 0 24 24" style="width:18px;height:18px;color:var(--text-muted)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      </div>
-    </div>
-
-    <!-- Main Area -->
-    <div id="main-area">
-      <div id="channel-view">
-        <div id="chat-header">
-          <svg class="icon-svg" viewBox="0 0 24 24" style="width:24px;height:24px;color:var(--text-muted)"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
-          <span class="chat-header-name" id="chat-header-name">general</span>
-          <div class="chat-header-actions">
-            <button class="header-btn" id="members-btn" onclick="toggleMembers()" title="Members"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></button>
-          </div>
-        </div>
-        <div id="messages"></div>
-        <div id="voice-overlay">
-          <div id="voice-participants"></div>
-          <button class="vc-btn muted" id="mic-btn" onclick="toggleMic()">🎙</button>
-          <button class="vc-btn leave" onclick="leaveVoice()">📞</button>
-        </div>
-        <div id="input-area">
-          <div id="reply-bar" class="reply-bar hidden"><span>Replying to <strong id="reply-to-name"></strong></span><span class="rb-close" onclick="clearReply()">✕</span></div>
-          <div class="emoji-picker" id="emoji-picker"></div>
-          <div class="gif-picker" id="gif-picker">
-            <div class="gif-search-bar"><input id="gif-search" placeholder="Search GIFs..." oninput="debouncedGifSearch(this.value)"><button class="modal-close" onclick="toggleGifPicker()" style="position:static;width:28px;height:28px">✕</button></div>
-            <div class="gif-tabs-bar"><button class="gif-tab active" onclick="switchGifTab('trending',this)">Trending</button><button class="gif-tab" onclick="switchGifTab('reactions',this)">Reactions</button></div>
-            <div class="gif-grid" id="gif-grid"><div class="gif-empty">Loading...</div></div>
-          </div>
-          <div class="input-box">
-            <button class="input-btn" onclick="toggleGifPicker()" title="GIF"><svg class="icon-svg" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 12h20"/></svg></button>
-            <button class="input-btn" onclick="toggleEmojiPicker(false)" title="Emoji"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
-            <textarea id="msg-input" rows="1" placeholder="Message #general..." onkeydown="handleKeyDown(event)"></textarea>
-          </div>
-        </div>
-      </div>
-      <div id="dm-view">
-        <div class="dm-header-bar"><div class="dm-header-avatar" id="dm-header-avatar"></div><div class="dm-header-name" id="dm-header-name"></div></div>
-        <div id="dm-messages"></div>
-        <div class="dm-input-area">
-          <div class="emoji-picker" id="dm-emoji-picker"></div>
-          <div class="input-box">
-            <button class="input-btn" onclick="toggleEmojiPicker(true)" title="Emoji"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
-            <textarea id="dm-msg-input" rows="1" placeholder="Message..." onkeydown="handleDmKeyDown(event)"></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Members Sidebar -->
-    <div id="members-sidebar">
-      <div class="members-header">Members — <span id="member-count">0</span></div>
-      <div class="members-list" id="members-list"></div>
+<div id="sidebar">
+  <h2>🔊 T9 Voice Chat</h2>
+  <div id="online-count">Online — 0</div>
+  <div id="room-list"></div>
+  <div id="voice-controls">
+    <span style="font-size:13px;color:var(--muted);flex:1" id="vc-status">Not connected</span>
+    <button class="vc-btn muted" id="mic-btn" onclick="toggleMic()" title="Mute">🎙</button>
+    <button class="vc-btn leave" onclick="leaveVoice()" title="Leave">📞</button>
+  </div>
+</div>
+<div id="main">
+  <div id="messages"></div>
+  <div id="input-area">
+    <div class="input-box">
+      <textarea id="msg-input" rows="1" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText()}"></textarea>
     </div>
   </div>
+</div>
+<div id="voice-overlay">
+  <div id="voice-participants"></div>
+  <button class="vc-btn muted" onclick="toggleMic()">🎙</button>
+  <button class="vc-btn leave" onclick="leaveVoice()">📞</button>
+</div>
 
-  <!-- Modals -->
-  <div class="overlay" id="profile-modal">
-    <div class="modal">
-      <div class="modal-header"><div class="modal-title">Your Profile</div><button class="modal-close" onclick="closeModal('profile-modal')">✕</button></div>
-      <div class="modal-body">
-        <div class="avatar-upload">
-          <div class="avatar-large" id="profile-avatar-preview" onclick="document.getElementById('avatar-file-input').click()"><span id="profile-avatar-initial">?</span><div class="avatar-overlay">Change</div></div>
-          <input type="file" id="avatar-file-input" accept="image/*" onchange="previewAvatar(this)" style="display:none">
-        </div>
-        <div class="field"><label>Username</label><input id="profile-username" placeholder="Choose a username"></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('profile-modal')">Cancel</button><button class="btn btn-primary" id="save-profile-btn" onclick="saveProfile()">Save</button></div>
-    </div>
-  </div>
-  <div class="overlay" id="create-server-modal"><div class="modal"><div class="modal-header"><div class="modal-title">Create Server</div><button class="modal-close" onclick="closeModal('create-server-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Server Name</label><input id="new-server-name" placeholder="My Server"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('create-server-modal')">Cancel</button><button class="btn btn-primary" onclick="createServer()">Create</button></div></div></div>
-  <div class="overlay" id="join-server-modal"><div class="modal"><div class="modal-header"><div class="modal-title">Join Server</div><button class="modal-close" onclick="closeModal('join-server-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Invite Code</label><input id="join-invite-code" placeholder="Enter invite code"></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('join-server-modal')">Cancel</button><button class="btn btn-primary" onclick="joinServer()">Join</button></div></div></div>
-  <div class="overlay" id="new-dm-modal"><div class="modal"><div class="modal-header"><div class="modal-title">New Message</div><button class="modal-close" onclick="closeModal('new-dm-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Search Users</label><input id="dm-user-search" placeholder="Type a username..." oninput="searchUsers(this.value)"></div><div id="dm-user-results" style="max-height:240px;overflow-y:auto"></div></div></div></div>
-  <div class="overlay" id="server-settings-modal"><div class="modal modal-lg"><div class="modal-header"><div class="modal-title" id="ss-title">Server Settings</div><button class="modal-close" onclick="closeModal('server-settings-modal')">✕</button></div><div class="modal-body" id="ss-body"></div><div class="modal-footer" id="ss-footer"></div></div></div>
-  <div class="overlay" id="add-channel-modal"><div class="modal"><div class="modal-header"><div class="modal-title">Create Channel</div><button class="modal-close" onclick="closeModal('add-channel-modal')">✕</button></div><div class="modal-body"><div class="field"><label>Channel Name</label><input id="new-channel-name" placeholder="new-channel" oninput="this.value=this.value.replace(/\s+/g,'-').toLowerCase()"></div><div class="field"><label>Channel Type</label><div style="display:flex;gap:8px;margin-top:4px"><button id="ch-type-text" class="btn btn-primary" onclick="setNewChannelType('text')" style="flex:1"># Text</button><button id="ch-type-voice" class="btn btn-ghost" onclick="setNewChannelType('voice')" style="flex:1">🔊 Voice</button></div></div></div><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('add-channel-modal')">Cancel</button><button class="btn btn-primary" onclick="createChannel()">Create</button></div></div></div>
+<script>
+const WS_URL = `wss://${location.host}/ws`;
+let ws, myId, myColor, myUsername, muted = false;
+let currentVoiceRoom = null;
+let localStream = null;
+const peers = {};
+const audioEls = {};
+const voiceRoomUsers = {};
+const ROOMS = ['general', 'chill', 'gaming', 'dev'];
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-  <script>
-    // ---------- VPS WebSocket configuration ----------
-    const WS_URL = `wss://${location.host}/ws`;
-    const GIPHY_KEY = 'B0ZKtpjbGjSaNXxlcrgxCH0U3K2f9qCx'; // public demo key
-    const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-    // ---------- Global state ----------
-    let ws, myId, myColor, myUsername, myProfile = null;
-    let currentServer = null, currentChannel = null, currentDmPartner = null;
-    let viewMode = 'channel'; // 'channel' | 'dm'
-    let servers = [], channels = [], members = [];
-    let dmConversations = [];
-    let membersVisible = true;
-    let emojiOpen = false, emojiForDm = false, gifOpen = false, gifForDm = false;
-    let replyingTo = null, pendingAvatar = null;
-    let newChannelType = 'text';
-
-    // Voice state
-    let currentVoiceRoom = null;
-    let localStream = null;
-    let muted = false;
-    const peers = {};
-    const audioEls = {};
-    const voiceRoomUsers = {};
-
-    // ---------- Helpers ----------
-    function $(id) { return document.getElementById(id); }
-    function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-    function fmtTime(ts) { if (!ts) return ''; const d = new Date(ts); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-    function openModal(id) { $(id).classList.add('visible'); if (id === 'profile-modal' && myProfile) { $('profile-username').value = myProfile.username || ''; updateAvatarPreview(myProfile.avatar_url); } }
-    function closeModal(id) { $(id).classList.remove('visible'); }
-    function scrollBottom(el) { if (el) el.scrollTop = el.scrollHeight; }
-    function userColor(u) { const c = ['#5865f2', '#57f287', '#fee75c', '#eb459e', '#ed4245', '#9b59b6', '#3498db', '#e67e22']; let h = 0; for (let x of (u || '')) h = x.charCodeAt(0) + ((h << 5) - h); return c[Math.abs(h) % c.length]; }
-    function genInvite() { const ch = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; let r = ''; for (let i = 0; i < 8; i++) r += ch[Math.floor(Math.random() * ch.length)]; return r; }
-    function isServerOwner() { return currentServer && (currentServer.owner === myUsername); }
-    function buildAvatar(prof, fallback) { if (prof?.avatar_url) return '<img src="' + esc(prof.avatar_url) + '" alt="">'; const n = prof?.display_name || fallback || '?'; return n[0].toUpperCase(); }
-    function updateAvatarPreview(url) { const el = $('profile-avatar-preview'); if (url) { el.innerHTML = '<img src="' + esc(url) + '" alt=""><div class="avatar-overlay">Change</div>'; } else { el.innerHTML = '<span id="profile-avatar-initial">?</span><div class="avatar-overlay">Change</div>'; } }
-    function previewAvatar(input) { const file = input.files[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { alert('Image must be under 5MB'); return; } pendingAvatar = file; const reader = new FileReader(); reader.onload = function (e) { $('profile-avatar-preview').innerHTML = '<img src="' + e.target.result + '" alt=""><div class="avatar-overlay">Change</div>'; }; reader.readAsDataURL(file); }
-
-    // ---------- WebSocket ----------
-    function connectWs() {
-      ws = new WebSocket(WS_URL);
-      ws.onmessage = e => {
-        const data = JSON.parse(e.data);
-        if (data.type === 'init') {
-          myId = data.userId;
-          myColor = data.color;
-          myUsername = data.username;
-          if (!myProfile) myProfile = { username: myUsername, display_name: myUsername, avatar_url: null };
-          updateUI();
-          data.history?.forEach(addMessage);
-          updateOnline(data.users, data.onlineCount);
-        } else if (data.type === 'message') addMessage(data);
-        else if (data.type === 'user_join') { addSystem(`${data.username} joined`); updateOnline(data.users, data.onlineCount); }
-        else if (data.type === 'user_leave') { addSystem(`${data.username} left`); updateOnline(data.users, data.onlineCount); }
-        else if (data.type === 'rename') { addSystem(`${data.oldName} → ${data.newName}`); updateOnline(data.users, data.onlineCount); }
-        else if (data.type === 'server_list') { servers = data.servers || []; renderServers(); }
-        else if (data.type === 'server_created') { servers.push(data.server); renderServers(); }
-        else if (data.type === 'server_joined') { if (!servers.find(s => s.id === data.server.id)) servers.push(data.server); renderServers(); if (!currentServer) selectServer(data.server); }
-        else if (data.type === 'channel_list') { channels = data.channels || []; renderChannels(); }
-        else if (data.type === 'channel_created') { channels.push(data.channel); renderChannels(); }
-        else if (data.type === 'channel_deleted') { channels = channels.filter(c => c.id !== data.id); if (currentChannel?.id === data.id) { const first = channels.find(c => !c.type || c.type === 'text'); if (first) selectChannel(first); else { $('messages').innerHTML = ''; currentChannel = null; } } renderChannels(); }
-        else if (data.type === 'member_list') { members = data.members || []; renderMembers(); }
-        else if (data.type === 'dm_list') { dmConversations = data.conversations || []; renderDmList(); }
-        else if (data.type === 'dm_message') addDmMessage(data);
-        else if (data.type === 'voice_users') {
-          data.users.forEach(u => { if (u.id !== 'v_' + myId) voiceRoomUsers[u.id] = u; });
-          renderVoiceOverlay();
-          data.users.forEach(u => { if (u.id !== 'v_' + myId) callPeer(u.id); });
-        } else if (data.type === 'voice_user_joined') {
-          voiceRoomUsers[data.id] = { id: data.id, name: data.name };
-          renderVoiceOverlay();
-          callPeer(data.id);
-        } else if (data.type === 'voice_user_left') {
-          delete voiceRoomUsers[data.id];
-          if (peers[data.id]) { peers[data.id].close(); delete peers[data.id]; }
-          if (audioEls[data.id]) { audioEls[data.id].remove(); delete audioEls[data.id]; }
-          renderVoiceOverlay();
-        } else if (data.type === 'voice_offer') handleOffer(data.from, data.sdp);
-        else if (data.type === 'voice_answer') { if (peers[data.from]) peers[data.from].setRemoteDescription(new RTCSessionDescription(data.sdp)).catch(() => {}); }
-        else if (data.type === 'voice_ice') { if (peers[data.from] && data.candidate) peers[data.from].addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {}); }
-        else if (data.type === 'voice_speaking') {
-          const av = document.querySelector(`[data-vid="${data.id}"] .vp-avatar`);
-          if (av) av.classList.toggle('speaking', data.active);
-        }
-      };
-      ws.onclose = () => setTimeout(connectWs, 2000);
+// ── Connect ──
+function connect() {
+  ws = new WebSocket(WS_URL);
+  ws.onmessage = e => {
+    const data = JSON.parse(e.data);
+    
+    if (data.type === 'init') {
+      myId = data.userId;
+      myColor = data.color;
+      myUsername = `User${myId}`;
+      data.history.forEach(addMessage);
+      updateOnline(data.users, data.onlineCount);
     }
-
-    function send(d) { if (ws?.readyState === 1) ws.send(JSON.stringify(d)); }
-
-    // ---------- Text chat ----------
-    function sendText() {
-      const inp = $('msg-input');
-      const content = inp.value.trim();
-      if (!content || !currentChannel) return;
-      inp.value = '';
-      const payload = { type: 'message', content, channelId: currentChannel.id };
-      if (replyingTo) { payload.replyTo = replyingTo.id; payload.replyToUser = replyingTo.username; }
-      clearReply();
-      send(payload);
+    else if (data.type === 'message') addMessage(data);
+    else if (data.type === 'user_join') { addSystem(`${data.username} joined`); updateOnline(data.users, data.onlineCount); }
+    else if (data.type === 'user_leave') { addSystem(`${data.username} left`); updateOnline(data.users, data.onlineCount); }
+    else if (data.type === 'rename') { addSystem(`${data.oldName} → ${data.newName}`); updateOnline(data.users, data.onlineCount); }
+    
+    // Voice
+    else if (data.type === 'voice_users') {
+      data.users.forEach(u => { if (u.id !== 'v_' + myId) voiceRoomUsers[u.id] = u; });
+      renderRooms(); renderVoiceOverlay();
+      data.users.forEach(u => { if (u.id !== 'v_' + myId) callPeer(u.id); });
     }
-
-    function addMessage(m) {
-      const div = document.createElement('div');
-      div.className = 'msg-group';
-      div.id = 'msg-' + (m.id || '');
-      const time = fmtTime(m.timestamp || m.created_at);
-      const color = m.color || userColor(m.username);
-      const av = buildAvatar(m, m.username);
-      const isGif = m.is_gif || (m.content && (m.content.includes('giphy.com') || m.content.includes('media.')));
-      let bodyContent = isGif ? '<div class="msg-gif"><img src="' + esc(m.content) + '" alt="GIF"></div>' : '<div class="msg-body">' + esc(m.content || '') + '</div>';
-      let replyHtml = '';
-      if (m.replyTo || m.reply_to_id) replyHtml = '<div class="msg-reply-preview">↩ Replying to <strong>' + esc(m.replyToUser || m.reply_to_user || '') + '</strong></div>';
-      div.innerHTML = '<div class="msg-avatar-col"><div class="msg-avatar" style="background:' + (m.avatar_url ? 'transparent' : color) + '">' + av + '</div></div><div class="msg-content-col">' + replyHtml + '<div class="msg-header"><span class="msg-username" style="color:' + color + '">' + esc(m.display_name || m.username) + '</span><span class="msg-time">' + time + '</span></div>' + bodyContent + '</div><div class="msg-actions"><button class="msg-action-btn" onclick="setReply(\'' + m.id + '\',\'' + esc(m.username) + '\')">↩</button>' + (m.username === myUsername ? '<button class="msg-action-btn" onclick="deleteMessage(\'' + m.id + '\')" style="color:#f23f43">✕</button>' : '') + '</div>';
-      $('messages').appendChild(div);
-      scrollBottom($('messages'));
+    else if (data.type === 'voice_user_joined') {
+      voiceRoomUsers[data.id] = { id: data.id, name: data.name };
+      renderRooms(); renderVoiceOverlay();
+      callPeer(data.id);
     }
-
-    function addSystem(text) {
-      const div = document.createElement('div');
-      div.className = 'system-msg';
-      div.textContent = text;
-      $('messages').appendChild(div);
+    else if (data.type === 'voice_user_left') {
+      delete voiceRoomUsers[data.id];
+      if (peers[data.id]) { peers[data.id].close(); delete peers[data.id]; }
+      if (audioEls[data.id]) { audioEls[data.id].remove(); delete audioEls[data.id]; }
+      renderRooms(); renderVoiceOverlay();
     }
-
-    function updateOnline(users, count) {
-      // optional online count display
+    else if (data.type === 'voice_offer') handleOffer(data.from, data.sdp);
+    else if (data.type === 'voice_answer') { if (peers[data.from]) peers[data.from].setRemoteDescription(new RTCSessionDescription(data.sdp)).catch(()=>{}); }
+    else if (data.type === 'voice_ice') { if (peers[data.from] && data.candidate) peers[data.from].addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{}); }
+    else if (data.type === 'voice_speaking') {
+      const av = document.querySelector(`[data-vid="${data.id}"] .vp-avatar`);
+      if (av) av.classList.toggle('speaking', data.active);
     }
+  };
+  ws.onclose = () => setTimeout(connect, 2000);
+}
 
-    function setReply(id, username) { replyingTo = { id, username }; $('reply-bar').classList.remove('hidden'); $('reply-to-name').textContent = username; $('msg-input').focus(); }
-    function clearReply() { replyingTo = null; $('reply-bar').classList.add('hidden'); }
-    function deleteMessage(id) { send({ type: 'delete_message', id }); }
+function send(d) { if (ws?.readyState === 1) ws.send(JSON.stringify(d)); }
 
-    function handleKeyDown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); } if (e.key === 'Escape') clearReply(); }
-    function handleDmKeyDown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDmMessage(); } }
+// ── Text Chat ──
+function sendText() {
+  const inp = document.getElementById('msg-input');
+  const content = inp.value.trim();
+  if (!content) return;
+  inp.value = '';
+  send({ type: 'message', content });
+}
 
-    // ---------- Profile ----------
-    function saveProfile() {
-      const u = $('profile-username').value.trim();
-      if (!u) return;
-      myUsername = u;
-      if (!myProfile) myProfile = {};
-      myProfile.username = u;
-      myProfile.display_name = u;
-      if (pendingAvatar) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          myProfile.avatar_url = e.target.result;
-          send({ type: 'profile_update', profile: myProfile });
-          updateUI();
-          closeModal('profile-modal');
-        };
-        reader.readAsDataURL(pendingAvatar);
-      } else {
-        send({ type: 'profile_update', profile: myProfile });
-        updateUI();
-        closeModal('profile-modal');
+function addMessage(m) {
+  const div = document.createElement('div');
+  div.className = 'msg';
+  const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  div.innerHTML = `<div class="msg-avatar" style="background:${m.color}">${(m.username||'?')[0].toUpperCase()}</div>
+    <div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${m.color}">${esc(m.username)}</span><span class="msg-time">${time}</span></div>
+    <div class="msg-text">${esc(m.content)}</div></div>`;
+  document.getElementById('messages').appendChild(div);
+  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+
+function addSystem(text) {
+  const div = document.createElement('div');
+  div.className = 'system-msg';
+  div.textContent = text;
+  document.getElementById('messages').appendChild(div);
+}
+
+function updateOnline(users, count) {
+  document.getElementById('online-count').textContent = `Online — ${count}`;
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
+
+// ── Voice ──
+async function joinVoice(room) {
+  if (currentVoiceRoom === room) return;
+  if (currentVoiceRoom) leaveVoice();
+  currentVoiceRoom = room;
+  
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    startSpeakingDetection(localStream);
+  } catch(e) { alert('Mic needed'); currentVoiceRoom = null; return; }
+  
+  send({ type: 'voice_join', room });
+  document.getElementById('vc-status').textContent = '#' + room;
+  document.getElementById('voice-overlay').classList.add('active');
+  renderRooms();
+}
+
+function leaveVoice() {
+  if (!currentVoiceRoom) return;
+  send({ type: 'voice_leave' });
+  Object.keys(peers).forEach(id => { peers[id].close(); delete peers[id]; });
+  Object.keys(audioEls).forEach(id => { audioEls[id].remove(); delete audioEls[id]; });
+  Object.keys(voiceRoomUsers).forEach(id => delete voiceRoomUsers[id]);
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  currentVoiceRoom = null;
+  document.getElementById('vc-status').textContent = 'Not connected';
+  document.getElementById('voice-overlay').classList.remove('active');
+  renderRooms();
+}
+
+function toggleMic() {
+  muted = !muted;
+  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
+  document.getElementById('mic-btn').textContent = muted ? '🔇' : '🎙';
+  document.getElementById('mic-btn').className = 'vc-btn' + (muted ? ' muted' : '');
+}
+
+// ── WebRTC ──
+function makePc(id) {
+  const pc = new RTCPeerConnection(ICE);
+  if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  pc.ontrack = e => {
+    let a = audioEls[id];
+    if (!a) { a = new Audio(); a.autoplay = true; audioEls[id] = a; }
+    if (e.streams[0]) a.srcObject = e.streams[0];
+  };
+  pc.onicecandidate = e => { if (e.candidate) send({ type: 'voice_ice', candidate: e.candidate, to: id }); };
+  peers[id] = pc;
+  return pc;
+}
+
+async function callPeer(id) {
+  if (peers[id]) return;
+  const pc = makePc(id);
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  send({ type: 'voice_offer', sdp: pc.localDescription, to: id });
+}
+
+async function handleOffer(id, sdp) {
+  if (peers[id]) { peers[id].close(); delete peers[id]; }
+  const pc = makePc(id);
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  send({ type: 'voice_answer', sdp: pc.localDescription, to: id });
+}
+
+function startSpeakingDetection(stream) {
+  try {
+    const ctx = new AudioContext();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    const buf = new Uint8Array(analyser.frequencyBinCount);
+    let wasSpeaking = false;
+    function check() {
+      analyser.getByteFrequencyData(buf);
+      const speaking = (buf.reduce((a,b)=>a+b,0)/buf.length) > 15;
+      if (speaking !== wasSpeaking) {
+        wasSpeaking = speaking;
+        send({ type: 'voice_speaking', active: speaking });
       }
+      requestAnimationFrame(check);
     }
+    check();
+  } catch(e) {}
+}
 
-    function updateUI() {
-      const n = myProfile?.display_name || myUsername || 'Click to setup';
-      $('up-name').textContent = n;
-      $('up-tag').textContent = 'ID: ' + myId;
-      const av = $('up-avatar');
-      if (myProfile?.avatar_url) { av.innerHTML = '<img src="' + esc(myProfile.avatar_url) + '" alt="">'; }
-      else { av.textContent = n[0].toUpperCase(); }
-      if (myProfile) updateAvatarPreview(myProfile.avatar_url);
-    }
+// ── UI ──
+function renderRooms() {
+  const el = document.getElementById('room-list');
+  el.innerHTML = '';
+  ROOMS.forEach(room => {
+    const usersInRoom = Object.values(voiceRoomUsers).length;
+    const btn = document.createElement('button');
+    btn.className = 'room-btn' + (room === currentVoiceRoom ? ' active' : '');
+    btn.innerHTML = `🔊 ${room}${usersInRoom ? ` (${usersInRoom})` : ''}`;
+    btn.onclick = () => joinVoice(room);
+    el.appendChild(btn);
+  });
+}
 
-    // ---------- Servers ----------
-    function renderServers() {
-      const rail = $('server-list-rail');
-      rail.innerHTML = '';
-      servers.forEach(s => {
-        const d = document.createElement('div');
-        d.className = 'server-item' + (currentServer?.id === s.id && viewMode === 'channel' ? ' active' : '');
-        d.onclick = () => selectServer(s);
-        d.innerHTML = '<div class="server-pill"></div><div class="server-icon">' + (s.icon_url ? '<img src="' + esc(s.icon_url) + '">' : (s.name || '?')[0].toUpperCase()) + '</div>';
-        rail.appendChild(d);
-      });
-    }
+function renderVoiceOverlay() {
+  const el = document.getElementById('voice-participants');
+  el.innerHTML = '';
+  // Self
+  const me = document.createElement('div');
+  me.className = 'vp';
+  me.setAttribute('data-vid', 'v_' + myId);
+  me.innerHTML = `<div class="vp-avatar" style="background:${myColor}">${myUsername[0].toUpperCase()}</div><div class="vp-name">You</div>`;
+  el.appendChild(me);
+  // Others
+  Object.values(voiceRoomUsers).forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'vp';
+    div.setAttribute('data-vid', u.id);
+    div.innerHTML = `<div class="vp-avatar">${u.name[0].toUpperCase()}</div><div class="vp-name">${u.name}</div>`;
+    el.appendChild(div);
+  });
+}
 
-    function selectServer(srv) {
-      currentServer = srv;
-      currentChannel = null;
-      viewMode = 'channel';
-      $('channel-view').style.display = 'flex';
-      $('dm-view').classList.remove('visible');
-      $('channel-sections').classList.remove('hidden');
-      $('dm-sections').classList.add('hidden');
-      $('sidebar-server-name').textContent = srv.name;
-      $('members-sidebar').style.display = membersVisible ? 'flex' : 'none';
-      document.querySelectorAll('.server-item').forEach(e => e.classList.remove('active'));
-      $('dm-server-btn').classList.remove('active');
-      send({ type: 'join_server', serverId: srv.id });
-    }
-
-    function createServer() {
-      const name = $('new-server-name').value.trim();
-      if (!name) return;
-      const invite = genInvite();
-      send({ type: 'create_server', name, invite_code: invite, owner: myUsername });
-      closeModal('create-server-modal');
-      $('new-server-name').value = '';
-    }
-
-    function joinServer() {
-      const code = $('join-invite-code').value.trim();
-      if (!code) return;
-      send({ type: 'join_server_by_invite', invite_code: code });
-      closeModal('join-server-modal');
-      $('join-invite-code').value = '';
-    }
-
-    // ---------- Channels ----------
-    function renderChannels() {
-      const sec = $('channel-sections');
-      sec.innerHTML = '';
-      const textChannels = channels.filter(c => !c.type || c.type === 'text');
-      const voiceChannels = channels.filter(c => c.type === 'voice');
-      if (textChannels.length) {
-        sec.innerHTML += '<div class="channel-cat-header"><span>Text Channels</span>' + (isServerOwner() ? '<span class="ch-icon-btn" onclick="openAddChannel(\'text\')">+</span>' : '') + '</div>';
-        textChannels.forEach(ch => {
-          const item = document.createElement('div');
-          item.className = 'channel-item' + (ch.id === currentChannel?.id ? ' active' : '');
-          item.onclick = () => selectChannel(ch);
-          item.innerHTML = '<span class="ch-hash">#</span><span class="ch-name">' + esc(ch.name) + '</span>' + (isServerOwner() ? '<span class="ch-icon-btn" onclick="event.stopPropagation();deleteChannel(' + ch.id + ')">✕</span>' : '');
-          sec.appendChild(item);
-        });
-      }
-      if (voiceChannels.length) {
-        sec.innerHTML += '<div class="channel-cat-header"><span>Voice Channels</span>' + (isServerOwner() ? '<span class="ch-icon-btn" onclick="openAddChannel(\'voice\')">+</span>' : '') + '</div>';
-        voiceChannels.forEach(ch => {
-          const item = document.createElement('div');
-          item.className = 'channel-item' + (ch.id === currentVoiceRoom ? ' active' : '');
-          item.onclick = () => joinVoice(ch);
-          item.innerHTML = '<span style="font-size:20px">🔊</span><span class="ch-name">' + esc(ch.name) + '</span>';
-          sec.appendChild(item);
-        });
-      }
-    }
-
-    function openAddChannel(type) { newChannelType = type; setNewChannelType(type); openModal('add-channel-modal'); }
-    function setNewChannelType(t) { newChannelType = t; $('ch-type-text').className = 'btn ' + (t === 'text' ? 'btn-primary' : 'btn-ghost'); $('ch-type-voice').className = 'btn ' + (t === 'voice' ? 'btn-primary' : 'btn-ghost'); }
-
-    function createChannel() {
-      if (!currentServer || !isServerOwner()) { alert('Only the server owner can create channels.'); return; }
-      const n = $('new-channel-name').value.trim().replace(/\s+/g, '-').toLowerCase();
-      if (!n) return;
-      send({ type: 'create_channel', serverId: currentServer.id, name: n, channelType: newChannelType });
-      closeModal('add-channel-modal');
-      $('new-channel-name').value = '';
-    }
-
-    function deleteChannel(id) {
-      if (!confirm('Delete this channel?')) return;
-      send({ type: 'delete_channel', channelId: id });
-    }
-
-    function selectChannel(ch) {
-      currentChannel = ch;
-      $('chat-header-name').textContent = ch.name;
-      $('msg-input').placeholder = 'Message #' + ch.name + '...';
-      document.querySelectorAll('.channel-item').forEach(e => e.classList.toggle('active', e.querySelector('.ch-name')?.textContent === ch.name));
-      $('messages').innerHTML = '<div style="padding:24px 16px"><div class="welcome-hash">#</div><div class="welcome-title">Welcome to #' + esc(ch.name) + '!</div></div>';
-      send({ type: 'join_channel', channelId: ch.id });
-    }
-
-    // ---------- Members ----------
-    function renderMembers() {
-      const list = $('members-list');
-      list.innerHTML = '';
-      let total = 0;
-      members.forEach(m => {
-        total++;
-        const d = document.createElement('div');
-        d.className = 'member-item';
-        d.onclick = () => { if (m.username !== myUsername) openDm(m.username); };
-        d.innerHTML = '<div class="member-avatar" style="background:' + userColor(m.username) + '">' + (m.username || '?')[0].toUpperCase() + '<div class="member-status"></div></div><div class="member-name">' + esc(m.username) + (m.role === 'owner' ? ' 👑' : '') + '</div>';
-        list.appendChild(d);
-      });
-      $('member-count').textContent = total;
-    }
-
-    function toggleMembers() { membersVisible = !membersVisible; $('members-sidebar').style.display = membersVisible ? 'flex' : 'none'; }
-
-    // ---------- Direct Messages ----------
-    function showDmView() {
-      viewMode = 'dm';
-      currentServer = null;
-      currentChannel = null;
-      $('channel-view').style.display = 'none';
-      $('dm-view').classList.add('visible');
-      $('channel-sections').classList.add('hidden');
-      $('dm-sections').classList.remove('hidden');
-      $('sidebar-server-name').textContent = 'Direct Messages';
-      $('members-sidebar').style.display = 'none';
-      document.querySelectorAll('.server-item').forEach(e => e.classList.remove('active'));
-      $('dm-server-btn').classList.add('active');
-      send({ type: 'get_dm_list' });
-    }
-
-    function openDm(u) {
-      if (u === myUsername) return;
-      currentDmPartner = u;
-      viewMode = 'dm';
-      $('channel-view').style.display = 'none';
-      $('dm-view').classList.add('visible');
-      $('dm-header-avatar').innerHTML = u[0].toUpperCase();
-      $('dm-header-avatar').style.background = userColor(u);
-      $('dm-header-name').textContent = u;
-      $('dm-messages').innerHTML = '<div style="padding:24px 16px"><div class="welcome-hash" style="background:' + userColor(u) + '">' + u[0] + '</div><div class="welcome-title">' + esc(u) + '</div><div class="welcome-sub">Send a message to start the conversation!</div></div>';
-      send({ type: 'join_dm', partner: u });
-    }
-
-    function addDmMessage(m) {
-      const div = document.createElement('div');
-      div.className = 'msg-group';
-      const time = fmtTime(m.timestamp || m.created_at);
-      const color = userColor(m.sender);
-      div.innerHTML = '<div class="msg-avatar-col"><div class="msg-avatar" style="background:' + color + '">' + (m.sender || '?')[0].toUpperCase() + '</div></div><div class="msg-content-col"><div class="msg-header"><span class="msg-username" style="color:' + color + '">' + esc(m.sender) + '</span><span class="msg-time">' + time + '</span></div><div class="msg-body">' + esc(m.message || m.content || '') + '</div></div>';
-      $('dm-messages').appendChild(div);
-      scrollBottom($('dm-messages'));
-    }
-
-    function sendDmMessage() {
-      if (!currentDmPartner) return;
-      const inp = $('dm-msg-input');
-      const content = inp.value.trim();
-      if (!content) return;
-      inp.value = '';
-      send({ type: 'dm_message', recipient: currentDmPartner, content });
-    }
-
-    function renderDmList() {
-      const list = $('dm-list');
-      list.innerHTML = '';
-      dmConversations.forEach(c => {
-        const d = document.createElement('div');
-        d.className = 'dm-item' + (currentDmPartner === c.partner ? ' active' : '');
-        d.onclick = () => { showDmView(); openDm(c.partner); };
-        d.innerHTML = '<div class="dm-avatar" style="background:' + userColor(c.partner) + '">' + (c.partner || '?')[0].toUpperCase() + '</div><div class="dm-name">' + esc(c.partner) + '</div>';
-        list.appendChild(d);
-      });
-    }
-
-    function searchUsers(q) {
-      const res = $('dm-user-results');
-      res.innerHTML = '';
-      if (!q || q.length < 2) return;
-      send({ type: 'search_users', query: q });
-      // handle response via ws message (simplified: just show if server echoes)
-    }
-
-    // ---------- Voice Chat ----------
-    async function joinVoice(ch) {
-      if (currentVoiceRoom === ch.id) return;
-      if (currentVoiceRoom) leaveVoice();
-      currentVoiceRoom = ch.id;
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        startSpeakingDetection(localStream);
-      } catch (e) { alert('Microphone access required'); currentVoiceRoom = null; return; }
-      send({ type: 'voice_join', room: ch.id.toString() });
-      $('voice-overlay').classList.add('active');
-    }
-
-    function leaveVoice() {
-      if (!currentVoiceRoom) return;
-      send({ type: 'voice_leave' });
-      Object.keys(peers).forEach(id => { peers[id].close(); delete peers[id]; });
-      Object.keys(audioEls).forEach(id => { audioEls[id].remove(); delete audioEls[id]; });
-      Object.keys(voiceRoomUsers).forEach(id => delete voiceRoomUsers[id]);
-      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-      currentVoiceRoom = null;
-      $('voice-overlay').classList.remove('active');
-    }
-
-    function toggleMic() {
-      muted = !muted;
-      if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
-      $('mic-btn').textContent = muted ? '🔇' : '🎙';
-      $('mic-btn').className = 'vc-btn' + (muted ? ' muted' : '');
-    }
-
-    function makePc(id) {
-      const pc = new RTCPeerConnection(ICE);
-      if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-      pc.ontrack = e => {
-        let a = audioEls[id];
-        if (!a) { a = new Audio(); a.autoplay = true; audioEls[id] = a; }
-        if (e.streams[0]) a.srcObject = e.streams[0];
-      };
-      pc.onicecandidate = e => { if (e.candidate) send({ type: 'voice_ice', candidate: e.candidate, to: id }); };
-      peers[id] = pc;
-      return pc;
-    }
-
-    async function callPeer(id) {
-      if (peers[id]) return;
-      const pc = makePc(id);
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      send({ type: 'voice_offer', sdp: pc.localDescription, to: id });
-    }
-
-    async function handleOffer(id, sdp) {
-      if (peers[id]) { peers[id].close(); delete peers[id]; }
-      const pc = makePc(id);
-      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      send({ type: 'voice_answer', sdp: pc.localDescription, to: id });
-    }
-
-    function startSpeakingDetection(stream) {
-      try {
-        const ctx = new AudioContext();
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 512;
-        ctx.createMediaStreamSource(stream).connect(analyser);
-        const buf = new Uint8Array(analyser.frequencyBinCount);
-        let wasSpeaking = false;
-        function check() {
-          analyser.getByteFrequencyData(buf);
-          const speaking = (buf.reduce((a, b) => a + b, 0) / buf.length) > 15;
-          if (speaking !== wasSpeaking) {
-            wasSpeaking = speaking;
-            send({ type: 'voice_speaking', active: speaking });
-          }
-          requestAnimationFrame(check);
-        }
-        check();
-      } catch (e) {}
-    }
-
-    function renderVoiceOverlay() {
-      const el = $('voice-participants');
-      el.innerHTML = '';
-      const me = document.createElement('div');
-      me.className = 'vp';
-      me.setAttribute('data-vid', 'v_' + myId);
-      me.innerHTML = '<div class="vp-avatar" style="background:' + myColor + '">' + (myUsername || '?')[0].toUpperCase() + '</div><div class="vp-name">You</div>';
-      el.appendChild(me);
-      Object.values(voiceRoomUsers).forEach(u => {
-        const div = document.createElement('div');
-        div.className = 'vp';
-        div.setAttribute('data-vid', u.id);
-        div.innerHTML = '<div class="vp-avatar">' + (u.name || '?')[0].toUpperCase() + '</div><div class="vp-name">' + esc(u.name) + '</div>';
-        el.appendChild(div);
-      });
-    }
-
-    // ---------- GIF / Emoji ----------
-    function toggleEmojiPicker(forDm) {
-      emojiForDm = forDm;
-      emojiOpen = !emojiOpen;
-      const picker = forDm ? $('dm-emoji-picker') : $('emoji-picker');
-      if (gifOpen) { $('gif-picker').classList.remove('visible'); gifOpen = false; }
-      if (emojiOpen) {
-        picker.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'emoji-grid';
-        ['😀','😂','❤️','🔥','👍','👀','😮','🎉','💀','😢','🤔','😍','🚀','⭐','✅','❌','💯','✨','👋','🎮','💪','🙏','🍕','🎵'].forEach(e => {
-          const btn = document.createElement('button');
-          btn.className = 'emoji-btn';
-          btn.textContent = e;
-          btn.onclick = () => insertEmoji(e);
-          grid.appendChild(btn);
-        });
-        picker.appendChild(grid);
-        picker.classList.add('visible');
-      } else {
-        picker.classList.remove('visible');
-      }
-    }
-
-    function insertEmoji(emoji) {
-      const inp = emojiForDm ? $('dm-msg-input') : $('msg-input');
-      const s = inp.selectionStart, end = inp.selectionEnd;
-      inp.value = inp.value.slice(0, s) + emoji + inp.value.slice(end);
-      inp.selectionStart = inp.selectionEnd = s + emoji.length;
-      inp.focus();
-      emojiOpen = false;
-      (emojiForDm ? $('dm-emoji-picker') : $('emoji-picker')).classList.remove('visible');
-    }
-
-    function toggleGifPicker(forDm) {
-      gifForDm = !!forDm;
-      gifOpen = !gifOpen;
-      if (emojiOpen) { document.querySelectorAll('.emoji-picker').forEach(p => p.classList.remove('visible')); emojiOpen = false; }
-      $('gif-picker').classList.toggle('visible', gifOpen);
-      if (gifOpen && $('gif-grid').children.length <= 1) loadTrendingGifs();
-    }
-
-    function switchGifTab(tab, btn) {
-      document.querySelectorAll('.gif-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      if (tab === 'trending') loadTrendingGifs();
-      else loadGifSearch(tab);
-    }
-
-    async function loadTrendingGifs() {
-      $('gif-grid').innerHTML = '<div class="gif-empty">Loading...</div>';
-      try {
-        const r = await fetch('https://api.giphy.com/v1/gifs/trending?api_key=' + GIPHY_KEY + '&limit=18&rating=g');
-        const j = await r.json();
-        renderGifGrid(j.data || []);
-      } catch (e) { $('gif-grid').innerHTML = '<div class="gif-empty">Failed to load GIFs</div>'; }
-    }
-
-    async function loadGifSearch(q) {
-      $('gif-grid').innerHTML = '<div class="gif-empty">Searching...</div>';
-      try {
-        const r = await fetch('https://api.giphy.com/v1/gifs/search?api_key=' + GIPHY_KEY + '&q=' + encodeURIComponent(q) + '&limit=18&rating=g');
-        const j = await r.json();
-        renderGifGrid(j.data || []);
-      } catch (e) { $('gif-grid').innerHTML = '<div class="gif-empty">Search failed</div>'; }
-    }
-
-    function renderGifGrid(gifs) {
-      const g = $('gif-grid');
-      g.innerHTML = '';
-      if (!gifs.length) { g.innerHTML = '<div class="gif-empty">No GIFs found</div>'; return; }
-      gifs.forEach(gf => {
-        const url = gf.images?.fixed_height?.url || gf.images?.fixed_height_downsampled?.url || gf.images?.downsized?.url;
-        if (!url) return;
-        const cell = document.createElement('div');
-        cell.className = 'gif-cell';
-        cell.onclick = () => sendGif(url);
-        cell.innerHTML = '<img src="' + url + '" alt="GIF" loading="lazy">';
-        g.appendChild(cell);
-      });
-    }
-
-    let gifDebounce;
-    function debouncedGifSearch(q) {
-      clearTimeout(gifDebounce);
-      gifDebounce = setTimeout(() => {
-        if (q.trim()) loadGifSearch(q.trim());
-        else loadTrendingGifs();
-      }, 400);
-    }
-
-    function sendGif(url) {
-      if (!myUsername) return;
-      toggleGifPicker();
-      if (gifForDm && currentDmPartner) {
-        send({ type: 'dm_message', recipient: currentDmPartner, content: url, is_gif: true });
-        return;
-      }
-      if (!currentChannel) return;
-      const payload = { type: 'message', content: url, channelId: currentChannel.id, is_gif: true };
-      if (replyingTo) { payload.replyTo = replyingTo.id; payload.replyToUser = replyingTo.username; }
-      clearReply();
-      send(payload);
-    }
-
-    // ---------- Server Settings ----------
-    function openServerSettings() {
-      if (!currentServer || viewMode === 'dm') return;
-      const srv = currentServer;
-      $('ss-title').textContent = srv.name + ' Settings';
-      let html = '';
-      if (isServerOwner()) html += '<div class="field"><label>Server Name</label><input id="ss-name" value="' + esc(srv.name || '') + '"></div>';
-      html += '<div class="field"><label>Invite Code</label><div class="id-chip"><span>' + esc(srv.invite_code || 'None') + '</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + srv.invite_code + '\')">Copy</button></div></div>';
-      $('ss-body').innerHTML = html;
-      $('ss-footer').innerHTML = (isServerOwner() ? '<button class="btn btn-primary" onclick="saveServerSettings()">Save</button>' : '') + '<button class="btn btn-ghost" onclick="closeModal(\'server-settings-modal\')">Close</button>';
-      openModal('server-settings-modal');
-    }
-
-    function saveServerSettings() {
-      if (!isServerOwner()) return;
-      const name = $('ss-name')?.value.trim();
-      if (!name) return;
-      send({ type: 'update_server', serverId: currentServer.id, name });
-      closeModal('server-settings-modal');
-    }
-
-    // ---------- Context menu ----------
-    function showContextMenu(e) {
-      e.preventDefault();
-      const menu = document.createElement('div');
-      menu.style.cssText = 'position:fixed;background:#111214;border-radius:4px;padding:6px;z-index:400;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.4)';
-      menu.style.left = e.clientX + 'px';
-      menu.style.top = e.clientY + 'px';
-      menu.innerHTML = '<div style="padding:8px 12px;cursor:pointer;color:#dbdee1;border-radius:4px" onmouseover="this.style.background=\'#5865f2\'" onmouseout="this.style.background=\'transparent\'" onclick="openModal(\'create-server-modal\');this.parentElement.remove()">Create Server</div><div style="padding:8px 12px;cursor:pointer;color:#dbdee1;border-radius:4px" onmouseover="this.style.background=\'#5865f2\'" onmouseout="this.style.background=\'transparent\'" onclick="openModal(\'join-server-modal\');this.parentElement.remove()">Join Server</div>';
-      document.body.appendChild(menu);
-      setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 50);
-    }
-
-    $('server-add-btn').addEventListener('click', showContextMenu);
-    $('server-add-btn').addEventListener('contextmenu', showContextMenu);
-
-    // ---------- Global click handlers ----------
-    document.addEventListener('click', e => {
-      if (!e.target.closest('.emoji-picker') && !e.target.closest('.input-btn')) {
-        document.querySelectorAll('.emoji-picker').forEach(p => p.classList.remove('visible'));
-        emojiOpen = false;
-      }
-      if (!e.target.closest('.gif-picker') && !e.target.closest('.input-btn')) {
-        $('gif-picker').classList.remove('visible');
-        gifOpen = false;
-      }
-    });
-    $('gif-picker').addEventListener('click', e => e.stopPropagation());
-    $('emoji-picker').addEventListener('click', e => e.stopPropagation());
-    document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('visible'); }));
-
-    // ---------- Initialization ----------
-    function init() {
-      const savedUsername = localStorage.getItem('t9_username');
-      if (savedUsername) {
-        myUsername = savedUsername;
-        if (!myProfile) myProfile = { username: savedUsername, display_name: savedUsername, avatar_url: null };
-        updateUI();
-      } else {
-        openModal('profile-modal');
-      }
-      connectWs();
-      renderServers();
-    }
-
-    init();
-  </script>
+// ── Start ──
+connect();
+renderRooms();
+</script>
 </body>
-</html>
+</html> 
