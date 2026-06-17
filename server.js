@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+const DATA_FILE = path.join(__dirname, 't9_data.json');
 
 // ─── HTTP ─────────────────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
@@ -47,6 +48,7 @@ function makeServer(name, icon, ownerId) {
     voiceState: {}  // channelId -> [userId]
   };
   servers.set(id, srv);
+  saveDataDebounced();
   return srv;
 }
 
@@ -98,6 +100,58 @@ function getUserServers(userId) {
   return out;
 }
 
+// ─── Persistence ──────────────────────────────────────────────────────────────
+function saveData() {
+  const data = {
+    servers: {},
+    userIdCounter
+  };
+  servers.forEach((srv, id) => {
+    data.servers[id] = {
+      id: srv.id,
+      name: srv.name,
+      icon: srv.icon,
+      ownerId: srv.ownerId,
+      inviteCode: srv.inviteCode,
+      members: srv.members,
+      channels: srv.channels
+    };
+  });
+  
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error('Failed to save data:', err);
+  }
+}
+
+function loadData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+      userIdCounter = data.userIdCounter || 1;
+      
+      if (data.servers) {
+        Object.entries(data.servers).forEach(([id, srv]) => {
+          srv.voiceState = {}; // Reset voice state on load
+          servers.set(id, srv);
+        });
+      }
+      
+      console.log(`Loaded ${servers.size} servers from disk`);
+    } else {
+      console.log('No saved data found, starting fresh');
+    }
+  } catch (err) {
+    console.error('Failed to load data:', err);
+  }
+}
+
+function saveDataDebounced() {
+  clearTimeout(saveDataDebounced.timeout);
+  saveDataDebounced.timeout = setTimeout(saveData, 1000);
+}
+
 // ─── Connection ───────────────────────────────────────────────────────────────
 wss.on('connection', (ws) => {
   const id = userIdCounter++;
@@ -109,6 +163,7 @@ wss.on('connection', (ws) => {
     avatar: null,
     currentChannel: null,  // { serverId, channelId }
     voiceChannel: null,    // { serverId, channelId }
+    dmVoicePeer: null,     // userId of DM voice call partner
   };
   clients.set(ws, client);
 
@@ -122,6 +177,14 @@ wss.on('connection', (ws) => {
     // Leave voice
     if (client.voiceChannel) {
       leaveVoice(client);
+    }
+    // End DM voice call
+    if (client.dmVoicePeer) {
+      const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+      if (peer) {
+        sendTo(peer.ws, { type: 'dm_voice_end', from: client.id });
+        peer.dmVoicePeer = null;
+      }
     }
     clients.delete(ws);
     broadcast({ type: 'user_leave', userId: client.id },
@@ -233,6 +296,7 @@ function handleMessage(ws, client, data) {
       const srv = makeServer(name.trim().slice(0, 100), icon || null, client.id);
       sendTo(ws, { type: 'server_created', server: serializeServer(srv) });
       console.log(`Server created: ${srv.name} by ${client.username}`);
+      saveDataDebounced();
       break;
     }
 
@@ -246,6 +310,7 @@ function handleMessage(ws, client, data) {
         { type: 'server_updated', server: serializeServer(srv) },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -259,6 +324,7 @@ function handleMessage(ws, client, data) {
         c => srv.members.includes(c.id)
       );
       console.log(`Server deleted: ${serverId}`);
+      saveDataDebounced();
       break;
     }
 
@@ -276,6 +342,7 @@ function handleMessage(ws, client, data) {
         c => srv.members.includes(c.id) && c.id !== client.id
       );
       console.log(`${client.username} joined server ${srv.name}`);
+      saveDataDebounced();
       break;
     }
 
@@ -290,6 +357,7 @@ function handleMessage(ws, client, data) {
         { type: 'server_updated', server: serializeServer(srv) },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -305,6 +373,7 @@ function handleMessage(ws, client, data) {
         { type: 'server_updated', server: serializeServer(srv) },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -319,6 +388,7 @@ function handleMessage(ws, client, data) {
         { type: 'channel_added', serverId, channel: ch },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -331,6 +401,7 @@ function handleMessage(ws, client, data) {
         { type: 'channel_removed', serverId, channelId },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -343,6 +414,7 @@ function handleMessage(ws, client, data) {
         { type: 'invite_regenerated', serverId, inviteCode: srv.inviteCode },
         c => srv.members.includes(c.id)
       );
+      saveDataDebounced();
       break;
     }
 
@@ -355,6 +427,14 @@ function handleMessage(ws, client, data) {
       if (!ch) return;
 
       if (client.voiceChannel) leaveVoice(client);
+      if (client.dmVoicePeer) {
+        const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+        if (peer) {
+          sendTo(peer.ws, { type: 'dm_voice_end', from: client.id });
+          peer.dmVoicePeer = null;
+        }
+        client.dmVoicePeer = null;
+      }
 
       if (!srv.voiceState[channelId]) srv.voiceState[channelId] = [];
       srv.voiceState[channelId].push(client.id);
@@ -405,6 +485,61 @@ function handleMessage(ws, client, data) {
       );
       break;
     }
+
+    // ── DM Voice ───────────────────────────────────────────────────────────────
+    case 'dm_voice_start': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (!target) {
+        sendTo(ws, { type: 'dm_voice_decline', from: data.to });
+        return;
+      }
+      if (target.dmVoicePeer || target.voiceChannel) {
+        sendTo(ws, { type: 'dm_voice_decline', from: data.to });
+        return;
+      }
+      client.dmVoicePeer = data.to;
+      target.dmVoicePeer = client.id;
+      sendTo(target.ws, { type: 'dm_voice_start', from: client.id });
+      break;
+    }
+
+    case 'dm_voice_end': {
+      if (client.dmVoicePeer) {
+        const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+        if (peer) {
+          sendTo(peer.ws, { type: 'dm_voice_end', from: client.id });
+          peer.dmVoicePeer = null;
+        }
+        client.dmVoicePeer = null;
+      }
+      break;
+    }
+
+    case 'dm_voice_decline': {
+      if (client.dmVoicePeer) {
+        const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+        if (peer) {
+          sendTo(peer.ws, { type: 'dm_voice_decline', from: client.id });
+          peer.dmVoicePeer = null;
+        }
+        client.dmVoicePeer = null;
+      }
+      break;
+    }
+
+    case 'dm_voice_accept': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) sendTo(target.ws, { type: 'dm_voice_accept', from: client.id });
+      break;
+    }
+
+    case 'dm_voice_offer':
+    case 'dm_voice_answer':
+    case 'dm_voice_ice': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) sendTo(target.ws, { ...data, from: client.id });
+      break;
+    }
   }
 }
 
@@ -426,5 +561,8 @@ function leaveVoice(client) {
   }
   client.voiceChannel = null;
 }
+
+// Load saved data on startup
+loadData();
 
 server.listen(PORT, () => console.log(`T9 Network running on port ${PORT}`));

@@ -223,6 +223,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
     <span id="header-icon" style="color:var(--muted)"></span>
     <span class="ch-name" id="header-name"></span>
     <div style="margin-left:auto;display:flex;gap:4px">
+      <button class="up-btn" id="dm-call-btn" onclick="startDMCall()" title="Start Voice Call" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+      </button>
+      <button class="up-btn" id="dm-end-call-btn" onclick="endDMCall()" title="End Call" style="display:none;color:var(--red)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      </button>
       <button class="up-btn" onclick="toggleMembers()" title="Members">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       </button>
@@ -252,7 +258,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
       <button class="vb-btn" id="vb-mute" onclick="toggleMic()" title="Mute">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
       </button>
-      <button class="vb-btn danger" onclick="leaveVoice()" title="Disconnect">
+      <button class="vb-btn danger" onclick="disconnectVoice()" title="Disconnect">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
       </button>
     </div>
@@ -397,6 +403,7 @@ let servers={}, currentServerId=null, currentChannelId=null;
 let currentView='dm', currentDmUser=null;
 let dmConversations={}, onlineUsers={};
 let voiceState={channelId:null,channelName:null,serverId:null};
+let dmVoiceState={active:false,peerId:null};
 let muted=false, localStream=null;
 const peers={}, audioEls={};
 let audioCtx=null;
@@ -435,7 +442,6 @@ function checkOnboarding() {
     document.getElementById('onboarding').classList.add('hidden');
     connect();
   }
-  // else onboarding stays visible
 }
 
 // ── WebSocket ─────────────────────────────────────────────────────────────────
@@ -457,7 +463,6 @@ function handleMsg(d) {
       myId=d.id; myUsername=d.username; myColor=d.color; myAvatar=d.avatar;
       servers=d.servers||{}; onlineUsers=d.onlineUsers||{};
       renderMyProfile(); renderServerBar(); showDMs();
-      // Auto-open default server
       const defSrv = Object.values(servers).find(s=>s.isDefault);
       if (defSrv) selectServer(defSrv.id);
       break;
@@ -484,7 +489,9 @@ function handleMsg(d) {
       if (currentServerId===d.serverId){currentServerId=null;showDMs();}
       renderServerBar(); toast('You were removed from the server.'); break;
     case 'user_join': onlineUsers[d.user.id]=d.user; renderMembers(); if(currentView==='dm')renderDMList(); break;
-    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList(); break;
+    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList(); 
+      if (dmVoiceState.peerId === d.userId) cleanupDMCall();
+      break;
     case 'user_updated':
       onlineUsers[d.user.id]=d.user;
       if (d.user.id===myId){myUsername=d.user.username;myColor=d.user.color;myAvatar=d.user.avatar;renderMyProfile();}
@@ -507,6 +514,20 @@ function handleMsg(d) {
     case 'voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
     case 'voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
     case 'voice_speaking': break;
+    case 'dm_voice_start': handleDMVoiceStart(d.from); break;
+    case 'dm_voice_end': cleanupDMCall(); toast('Call ended'); break;
+    case 'dm_voice_decline': cleanupDMCall(); toast('Call declined'); break;
+    case 'dm_voice_accept': 
+      dmVoiceState.peerId = d.from;
+      setTimeout(() => callPeerDM(d.from), 500);
+      break;
+    case 'dm_voice_offer': handleDMVoiceOffer(d.from, d.sdp); break;
+    case 'dm_voice_answer': 
+      if(peers[d.from]) peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); 
+      break;
+    case 'dm_voice_ice': 
+      if(peers[d.from] && d.candidate) peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); 
+      break;
     case 'error': toast(d.message); break;
   }
 }
@@ -573,7 +594,6 @@ function renderSidebar() {
   const textChs=srv.channels.filter(c=>c.type==='text');
   const voiceChs=srv.channels.filter(c=>c.type==='voice');
 
-  // Text
   const ts=document.createElement('div'); ts.className='ch-section';
   ts.innerHTML=`<span>Text Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('text')" title="Add text channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
   el.appendChild(ts);
@@ -585,7 +605,6 @@ function renderSidebar() {
     el.appendChild(btn);
   });
 
-  // Voice
   const vs=document.createElement('div'); vs.className='ch-section';
   vs.innerHTML=`<span>Voice Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('voice')" title="Add voice channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
   el.appendChild(vs);
@@ -614,6 +633,8 @@ function selectChannel(id) {
   document.getElementById('header-name').textContent=ch.name;
   document.getElementById('msg-input').placeholder=`Message #${ch.name}`;
   document.getElementById('main-header').style.display='flex';
+  document.getElementById('dm-call-btn').style.display='none';
+  document.getElementById('dm-end-call-btn').style.display='none';
   document.getElementById('welcome').style.display='none';
   document.getElementById('messages').style.display='block';
   document.getElementById('input-area').style.display='block';
@@ -626,6 +647,8 @@ function selectChannel(id) {
 function showWelcome() {
   currentChannelId=null;
   document.getElementById('main-header').style.display='none';
+  document.getElementById('dm-call-btn').style.display='none';
+  document.getElementById('dm-end-call-btn').style.display='none';
   document.getElementById('welcome').style.display='flex';
   document.getElementById('messages').style.display='none';
   document.getElementById('input-area').style.display='none';
@@ -754,6 +777,8 @@ function showDMs() {
   currentView='dm'; currentServerId=null;
   document.getElementById('dm-icon').classList.add('active');
   document.getElementById('sidebar-title').textContent='Direct Messages';
+  document.getElementById('dm-call-btn').style.display='none';
+  document.getElementById('dm-end-call-btn').style.display='none';
   renderDMList();
 }
 
@@ -777,6 +802,8 @@ function openDM(userId) {
   document.getElementById('header-name').textContent=u.username;
   document.getElementById('msg-input').placeholder=`Message @${u.username}`;
   document.getElementById('main-header').style.display='flex';
+  document.getElementById('dm-call-btn').style.display=dmVoiceState.active?'none':'flex';
+  document.getElementById('dm-end-call-btn').style.display=dmVoiceState.active&&dmVoiceState.peerId===userId?'flex':'none';
   document.getElementById('welcome').style.display='none';
   document.getElementById('messages').style.display='block';
   document.getElementById('input-area').style.display='block';
@@ -846,17 +873,18 @@ function renderMembers() {
     hdr.textContent=`Online — ${online.length}`; el.appendChild(hdr);
     online.forEach(u=>{
       const div=document.createElement('div'); div.className='member-item';
-      div.onclick=()=>{if(currentView==='dm'||true)openDM(u.id);};
+      div.onclick=()=>{openDM(u.id);};
       div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}<div class="member-dot"></div></div><span class="member-name">${esc(u.username)}</span>`;
       el.appendChild(div);
     });
   }
 }
 
-// ── Voice ─────────────────────────────────────────────────────────────────────
+// ── Server Voice ─────────────────────────────────────────────────────────────
 async function joinVoice(channelId, channelName) {
   if(voiceState.channelId===channelId) return;
   if(voiceState.channelId) leaveVoice();
+  if(dmVoiceState.active) cleanupDMCall();
   try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
   catch(e) { toast('Microphone access needed'); return; }
   voiceState={channelId,channelName,serverId:currentServerId};
@@ -869,11 +897,20 @@ async function joinVoice(channelId, channelName) {
 
 function leaveVoice() {
   send({type:'voice_leave'});
+  cleanupVoice();
+}
+
+function cleanupVoice() {
   Object.keys(peers).forEach(cleanupPeer);
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   voiceState={channelId:null,channelName:null,serverId:null};
   document.getElementById('voice-bar').classList.remove('active');
   if(currentServerId) renderSidebar();
+}
+
+function disconnectVoice() {
+  if(dmVoiceState.active) endDMCall();
+  else leaveVoice();
 }
 
 function toggleMic() {
@@ -888,6 +925,104 @@ function toggleMic() {
 }
 
 function renderVoiceChannel() { if(currentServerId) renderSidebar(); }
+
+// ── DM Voice Calls ───────────────────────────────────────────────────────────
+async function startDMCall() {
+  if (!currentDmUser || dmVoiceState.active) return;
+  if (voiceState.channelId) leaveVoice();
+  
+  try { 
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+    startSpeakingDetection(localStream);
+  }
+  catch(e) { toast('Microphone access needed'); return; }
+  
+  dmVoiceState = { active: true, peerId: currentDmUser };
+  send({ type: 'dm_voice_start', to: currentDmUser });
+  
+  updateDMCallUI();
+  document.getElementById('voice-bar').classList.add('active');
+  document.getElementById('vb-room-name').textContent = `Calling ${onlineUsers[currentDmUser]?.username || 'User'}...`;
+  document.getElementById('vb-server-name').textContent = 'DM Voice Call';
+  
+  setTimeout(() => callPeerDM(currentDmUser), 500);
+}
+
+function endDMCall() {
+  send({ type: 'dm_voice_end', to: dmVoiceState.peerId });
+  cleanupDMCall();
+}
+
+function cleanupDMCall() {
+  const peerId = dmVoiceState.peerId;
+  if (peerId) cleanupPeer(peerId);
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  dmVoiceState = { active: false, peerId: null };
+  updateDMCallUI();
+  document.getElementById('voice-bar').classList.remove('active');
+}
+
+function updateDMCallUI() {
+  if (currentDmUser) {
+    document.getElementById('dm-call-btn').style.display = dmVoiceState.active ? 'none' : 'flex';
+    document.getElementById('dm-end-call-btn').style.display = dmVoiceState.active && dmVoiceState.peerId === currentDmUser ? 'flex' : 'none';
+  }
+}
+
+function handleDMVoiceStart(fromId) {
+  if (dmVoiceState.active) {
+    send({ type: 'dm_voice_decline', to: fromId });
+    return;
+  }
+  if (voiceState.channelId) leaveVoice();
+  
+  const callerName = onlineUsers[fromId]?.username || 'User';
+  if (confirm(`${callerName} is calling you. Accept?`)) {
+    acceptDMCall(fromId);
+  } else {
+    send({ type: 'dm_voice_decline', to: fromId });
+  }
+}
+
+async function acceptDMCall(fromId) {
+  try { 
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+    startSpeakingDetection(localStream);
+  }
+  catch(e) { toast('Microphone access needed'); return; }
+  
+  dmVoiceState = { active: true, peerId: fromId };
+  send({ type: 'dm_voice_accept', to: fromId });
+  
+  updateDMCallUI();
+  document.getElementById('voice-bar').classList.add('active');
+  document.getElementById('vb-room-name').textContent = `Call with ${onlineUsers[fromId]?.username || 'User'}`;
+  document.getElementById('vb-server-name').textContent = 'DM Voice Call';
+  
+  setTimeout(() => callPeerDM(fromId), 500);
+}
+
+async function callPeerDM(id) {
+  if (peers[id]) { 
+    const s = peers[id].connectionState || peers[id].iceConnectionState;
+    if (s === 'connected' || s === 'connecting') return; 
+    cleanupPeer(id); 
+  }
+  const pc = makePc(id);
+  const offer = await pc.createOffer(); 
+  await pc.setLocalDescription(offer);
+  send({ type: 'dm_voice_offer', sdp: pc.localDescription, to: id });
+}
+
+async function handleDMVoiceOffer(id, sdp) {
+  if (!dmVoiceState.active || dmVoiceState.peerId !== id) return;
+  if (peers[id]) cleanupPeer(id);
+  const pc = makePc(id);
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  const answer = await pc.createAnswer(); 
+  await pc.setLocalDescription(answer);
+  send({ type: 'dm_voice_answer', sdp: pc.localDescription, to: id });
+}
 
 // ── WebRTC ────────────────────────────────────────────────────────────────────
 function unlockAudio() {
@@ -910,8 +1045,16 @@ function makePc(id) {
   const pc=new RTCPeerConnection(ICE);
   if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
   pc.ontrack=e=>{if(e.streams[0])playAudio(id,e.streams[0]);};
-  pc.onicecandidate=e=>{if(e.candidate)send({type:'voice_ice',candidate:e.candidate,to:id});};
-  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>callPeer(id),1000);}};
+  pc.onicecandidate=e=>{
+    if(e.candidate) {
+      if(dmVoiceState.active) send({type:'dm_voice_ice',candidate:e.candidate,to:id});
+      else send({type:'voice_ice',candidate:e.candidate,to:id});
+    }
+  };
+  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>{
+    if(dmVoiceState.active) callPeerDM(id);
+    else callPeer(id);
+  },1000);}};
   peers[id]=pc; return pc;
 }
 
