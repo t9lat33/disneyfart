@@ -3825,8 +3825,8 @@ window.addEventListener("blur",stopAll);
   // NAVBAR HARD FIX
   // ============================================
   
-  const navFix=document.createElement('style');
-  navFix.textContent=`
+const navFix=document.createElement('style');
+navFix.textContent=`
    .navbar {
       position: fixed;
       bottom: 12px;
@@ -3854,7 +3854,7 @@ window.addEventListener("blur",stopAll);
 
     }
   `;
-  document.head.appendChild(navFix);
+document.head.appendChild(navFix);
 
   console.log('✅ Smart Performance Optimizer loaded successfully!');
 })();
