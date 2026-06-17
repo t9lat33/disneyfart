@@ -1,238 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>T9 Chat + Voice + Servers</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    :root { --bg:#313338; --sidebar:#2b2d31; --server-bar:#1e1f22; --text:#dbdee1; --muted:#949ba4; --accent:#5865f2; --green:#23a55a; --red:#f23f43; --hover:#35373c; }
-    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif; display:flex; height:100vh; overflow:hidden; }
-    
-    /* Layout */
-    #app { display:flex; width:100%; height:100%; }
-    
-    /* Server List */
-    #server-bar { width:72px; background:var(--server-bar); display:flex; flex-direction:column; align-items:center; padding:12px 0; gap:8px; overflow-y:auto; flex-shrink:0; }
-    .server-icon { width:48px; height:48px; border-radius:50%; background:var(--sidebar); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; font-weight:bold; color:var(--text); position:relative; overflow:hidden;}
-    .server-icon img { width:100%; height:100%; object-fit:cover; }
-    .server-icon:hover, .server-icon.active { border-radius:16px; background:var(--accent); color:#fff; }
-    .server-icon.add-btn { color:var(--green); background:var(--hover); }
-    .server-icon.add-btn:hover { background:var(--green); color:#fff; }
-    
-    /* Sidebar */
-    #sidebar { width:240px; background:var(--sidebar); display:flex; flex-direction:column; flex-shrink:0; border-right:1px solid var(--server-bar); }
-    #sidebar-header { padding:16px; font-size:15px; font-weight:bold; color:#fff; border-bottom:1px solid var(--server-bar); display:flex; justify-content:space-between; cursor:pointer;}
-    #sidebar-header:hover { background:var(--hover); }
-    
-    /* Channels */
-    .channel-section { flex:1; overflow-y:auto; padding:8px; }
-    .channel-category { font-size:12px; font-weight:bold; color:var(--muted); text-transform:uppercase; margin:12px 8px 4px; display:flex; justify-content:space-between; }
-    .channel-category span.add { cursor:pointer; }
-    .channel-category span.add:hover { color:var(--text); }
-    
-    .room-btn { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:6px; cursor:pointer; color:var(--muted); margin:2px 0; transition:all 0.15s; border:none; background:none; width:100%; text-align:left; font-size:14px; font-family:inherit; }
-    .room-btn:hover { background:var(--hover); color:var(--text); }
-    .room-btn.active { background:#404249; color:#fff; }
-    
-    /* User Profile Area */
-    #user-area { padding:12px; background:#232428; display:flex; align-items:center; gap:8px; flex-shrink:0; cursor:pointer; }
-    #user-area:hover { background:var(--hover); }
-    .user-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:bold; overflow:hidden;}
-    .user-avatar img { width:100%; height:100%; object-fit:cover; }
-    .user-info { flex:1; overflow:hidden; }
-    .user-name { font-size:14px; font-weight:bold; color:#fff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;}
-    .user-status { font-size:11px; color:var(--muted); }
-    
-    /* Main Chat */
-    #main { flex:1; display:flex; flex-direction:column; min-width:0; position:relative; }
-    #chat-header { padding:16px; font-size:16px; font-weight:bold; border-bottom:1px solid var(--server-bar); display:flex; justify-content:space-between;}
-    #invite-btn { background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;}
-    #invite-btn:hover { background:#4752c4; }
-    #messages { flex:1; overflow-y:auto; padding:16px; }
-    .msg { padding:4px 0; display:flex; gap:12px; margin-bottom:8px;}
-    .msg-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden;}
-    .msg-avatar img { width:100%; height:100%; object-fit:cover; }
-    .msg-body { flex:1; }
-    .msg-header { display:flex; gap:8px; align-items:baseline; margin-bottom:2px; }
-    .msg-name { font-weight:600; font-size:15px; }
-    .msg-time { font-size:11px; color:var(--muted); }
-    .msg-text { font-size:15px; line-height:1.4; word-break:break-word; }
-    
-    /* Inputs */
-    #input-area { padding:0 16px 24px; }
-    .input-box { display:flex; background:#383a40; border-radius:8px; padding:0 12px; }
-    #msg-input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:15px; padding:14px 0; font-family:inherit; resize:none; }
-    
-    /* Modals */
-    .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
-    .modal { background:var(--bg); border-radius:8px; width:400px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
-    .modal h2 { margin-bottom:16px; color:#fff; text-align:center;}
-    .modal input { width:100%; padding:10px; margin-bottom:16px; background:#1e1f22; border:1px solid #000; color:#fff; border-radius:4px; outline:none;}
-    .modal button { width:100%; padding:10px; background:var(--accent); color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom:8px;}
-    .modal button.secondary { background:var(--hover); }
-    .close-modal { text-align:center; font-size:12px; color:var(--muted); cursor:pointer; margin-top:8px;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 Chat + Voice</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#313338;--sidebar:#2b2d31;--text:#dbdee1;--muted:#949ba4;--accent:#5865f2;--green:#23a55a;--red:#f23f43;--hover:#35373c}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;height:100vh;overflow:hidden}
+#sidebar{width:240px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #1e1f22}
+#sidebar h2{padding:16px;font-size:15px;color:#fff;border-bottom:1px solid #1e1f22;flex-shrink:0}
+#room-list{flex:1;overflow-y:auto;padding:8px}
+.room-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;color:var(--muted);margin:2px 0;transition:all 0.15s;border:none;background:none;width:100%;text-align:left;font-size:14px;font-family:inherit}
+.room-btn:hover{background:var(--hover);color:var(--text)}
+.room-btn.active{background:#404249;color:#fff}
+.room-users{padding-left:32px;font-size:12px;color:var(--muted)}
+.room-user{padding:2px 8px}
+.room-user.speaking{color:var(--green)}
+#voice-controls{padding:12px;border-top:1px solid #1e1f22;display:flex;gap:8px;align-items:center}
+.vc-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--hover);color:var(--text);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.vc-btn.muted{background:var(--red);color:#fff}
+.vc-btn.leave{background:var(--red);color:#fff}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#messages{flex:1;overflow-y:auto;padding:16px}
+.msg{padding:4px 0;display:flex;gap:12px}
+.msg:hover{background:rgba(255,255,255,0.02)}
+.msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.msg-body{flex:1}
+.msg-header{display:flex;gap:8px;align-items:baseline;margin-bottom:2px}
+.msg-name{font-weight:600;font-size:15px}
+.msg-time{font-size:11px;color:var(--muted)}
+.msg-text{font-size:15px;line-height:1.4;word-break:break-word}
+.system-msg{text-align:center;color:var(--muted);font-size:13px;padding:4px 0}
+#input-area{padding:0 16px 24px}
+.input-box{display:flex;background:#383a40;border:1px solid #3f4147;border-radius:8px;padding:0 12px}
+.input-box:focus-within{border-color:var(--accent)}
+#msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:14px 0;font-family:inherit;resize:none}
+#voice-overlay{display:none;position:fixed;bottom:0;left:240px;right:0;background:#1e1f22;border-top:1px solid #3f4147;padding:8px 16px;z-index:100}
+#voice-overlay.active{display:flex;align-items:center;gap:12px}
+#voice-participants{display:flex;gap:12px;flex:1;overflow-x:auto}
+.vp{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px}
+.vp-avatar{width:36px;height:36px;border-radius:50%;background:var(--hover);border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.vp-avatar.speaking{border-color:var(--green)}
+.vp-name{font-size:11px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#online-count{padding:12px 16px;font-size:13px;color:var(--muted);border-bottom:1px solid #1e1f22;flex-shrink:0}
+</style>
 </head>
 <body>
-
-<div id="app">
-  <div id="server-bar">
-    <div class="server-icon active" onclick="switchServer('home')" title="Direct Messages">🏠</div>
-    <div class="server-icon" onclick="switchServer('server1')" title="My Awesome Server"><img src="https://via.placeholder.com/48/5865f2/ffffff?text=MS"></div>
-    <div class="server-icon add-btn" onclick="openModal('add-server-modal')" title="Add Server">+</div>
+<div id="sidebar">
+  <h2>🔊 T9 Voice Chat</h2>
+  <div id="online-count">Online — 0</div>
+  <div id="room-list"></div>
+  <div id="voice-controls">
+    <span style="font-size:13px;color:var(--muted);flex:1" id="vc-status">Not connected</span>
+    <button class="vc-btn muted" id="mic-btn" onclick="toggleMic()" title="Mute">🎙</button>
+    <button class="vc-btn leave" onclick="leaveVoice()" title="Leave">📞</button>
   </div>
-
-  <div id="sidebar">  
-    <div id="sidebar-header" onclick="openModal('server-settings-modal')">
-      My Awesome Server ⚙️
-    </div>
-    
-    <div class="channel-section">
-      <div class="channel-category">Text Channels <span class="add" onclick="openModal('add-channel-modal')">+</span></div>
-      <div id="text-channels">
-        <button class="room-btn active" onclick="switchChannel('general')"># general</button>
-        <button class="room-btn" onclick="switchChannel('gaming')"># gaming</button>
-      </div>
-
-      <div class="channel-category">Voice Channels <span class="add" onclick="openModal('add-channel-modal')">+</span></div>
-      <div id="voice-channels">
-        <button class="room-btn" onclick="joinVoice('Lounge')">🔊 Lounge</button>
-      </div>
-    </div>
-
-    <div id="user-area" onclick="openModal('profile-modal')">
-      <div class="user-avatar" id="my-avatar">T</div>
-      <div class="user-info">
-        <div class="user-name" id="my-name">User1234</div>
-        <div class="user-status">Online</div>
-      </div>
-      <div style="color:var(--muted)">⚙️</div>
-    </div>
-  </div>
-
-  <div id="main">
-    <div id="chat-header">
-      <span id="current-channel-name"># general</span>
-      <button id="invite-btn" onclick="openModal('invite-modal')">Invite Friends</button>
-    </div>
-    <div id="messages"></div>
-    <div id="input-area">
-      <div class="input-box">
-        <textarea id="msg-input" rows="1" placeholder="Message #general..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText()}"></textarea>
-      </div>
+</div>
+<div id="main">
+  <div id="messages"></div>
+  <div id="input-area">
+    <div class="input-box">
+      <textarea id="msg-input" rows="1" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText()}"></textarea>
     </div>
   </div>
 </div>
-
-<div class="modal-overlay" id="profile-modal">
-  <div class="modal">
-    <h2>Edit Profile</h2>
-    <label>Username</label>
-    <input type="text" id="edit-username" placeholder="Enter new username">
-    <label>Profile Picture URL</label>
-    <input type="text" id="edit-pfp" placeholder="https://image.url/...">
-    <button onclick="saveProfile()">Save Changes</button>
-    <div class="close-modal" onclick="closeModals()">Cancel</div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="add-server-modal">
-  <div class="modal">
-    <h2>Create or Join Server</h2>
-    <input type="text" id="join-code" placeholder="Enter Invite Code (e.g. XyZ123)">
-    <button onclick="joinServer()">Join Server</button>
-    <hr style="border-color:#1e1f22; margin:16px 0;">
-    <input type="text" id="create-server-name" placeholder="New Server Name">
-    <button class="secondary" onclick="createServer()">Create My Own</button>
-    <div class="close-modal" onclick="closeModals()">Cancel</div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="invite-modal">
-  <div class="modal">
-    <h2>Invite Friends</h2>
-    <p style="font-size:13px; color:var(--muted); margin-bottom:8px;">Send this unique code to your friends to let them join!</p>
-    <input type="text" id="invite-code-display" value="T9-X7K9-P2Q" readonly style="text-align:center; font-weight:bold; font-size:18px;">
-    <button onclick="copyInvite()">Copy Code</button>
-    <div class="close-modal" onclick="closeModals()">Close</div>
-  </div>
+<div id="voice-overlay">
+  <div id="voice-participants"></div>
+  <button class="vc-btn muted" onclick="toggleMic()">🎙</button>
+  <button class="vc-btn leave" onclick="leaveVoice()">📞</button>
 </div>
 
 <script>
-// Mock Data (In reality, this comes from your WebSocket/Backend)
-let myProfile = { name: "User1234", avatar: null };
+const WS_URL = `wss://${location.host}/ws`;
+let ws, myId, myColor, myUsername, muted = false;
+let currentVoiceRoom = null;
+let localStream = null;
+const peers = {};
+const audioEls = {};
+const voiceRoomUsers = {};
+const ROOMS = ['general', 'chill', 'gaming', 'dev'];
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-// --- UI Logic ---
-function openModal(id) {
-  closeModals();
-  document.getElementById(id).style.display = 'flex';
+// ── Connect ──
+function connect() {
+  ws = new WebSocket(WS_URL);
+  ws.onmessage = e => {
+    const data = JSON.parse(e.data);
+    
+    if (data.type === 'init') {
+      myId = data.userId;
+      myColor = data.color;
+      myUsername = `User${myId}`;
+      data.history.forEach(addMessage);
+      updateOnline(data.users, data.onlineCount);
+    }
+    else if (data.type === 'message') addMessage(data);
+    else if (data.type === 'user_join') { addSystem(`${data.username} joined`); updateOnline(data.users, data.onlineCount); }
+    else if (data.type === 'user_leave') { addSystem(`${data.username} left`); updateOnline(data.users, data.onlineCount); }
+    else if (data.type === 'rename') { addSystem(`${data.oldName} → ${data.newName}`); updateOnline(data.users, data.onlineCount); }
+    
+    // Voice
+    else if (data.type === 'voice_users') {
+      data.users.forEach(u => { if (u.id !== 'v_' + myId) voiceRoomUsers[u.id] = u; });
+      renderRooms(); renderVoiceOverlay();
+      data.users.forEach(u => { if (u.id !== 'v_' + myId) callPeer(u.id); });
+    }
+    else if (data.type === 'voice_user_joined') {
+      voiceRoomUsers[data.id] = { id: data.id, name: data.name };
+      renderRooms(); renderVoiceOverlay();
+      callPeer(data.id);
+    }
+    else if (data.type === 'voice_user_left') {
+      delete voiceRoomUsers[data.id];
+      if (peers[data.id]) { peers[data.id].close(); delete peers[data.id]; }
+      if (audioEls[data.id]) { audioEls[data.id].remove(); delete audioEls[data.id]; }
+      renderRooms(); renderVoiceOverlay();
+    }
+    else if (data.type === 'voice_offer') handleOffer(data.from, data.sdp);
+    else if (data.type === 'voice_answer') { if (peers[data.from]) peers[data.from].setRemoteDescription(new RTCSessionDescription(data.sdp)).catch(()=>{}); }
+    else if (data.type === 'voice_ice') { if (peers[data.from] && data.candidate) peers[data.from].addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{}); }
+    else if (data.type === 'voice_speaking') {
+      const av = document.querySelector(`[data-vid="${data.id}"] .vp-avatar`);
+      if (av) av.classList.toggle('speaking', data.active);
+    }
+  };
+  ws.onclose = () => setTimeout(connect, 2000);
 }
 
-function closeModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-}
+function send(d) { if (ws?.readyState === 1) ws.send(JSON.stringify(d)); }
 
-function saveProfile() {
-  const newName = document.getElementById('edit-username').value;
-  const newPfp = document.getElementById('edit-pfp').value;
-  if(newName) myProfile.name = newName;
-  if(newPfp) myProfile.avatar = newPfp;
-  
-  // Update UI
-  document.getElementById('my-name').textContent = myProfile.name;
-  const avatarEl = document.getElementById('my-avatar');
-  if(myProfile.avatar) {
-    avatarEl.innerHTML = `<img src="${myProfile.avatar}" alt="PFP">`;
-  } else {
-    avatarEl.textContent = myProfile.name[0].toUpperCase();
-  }
-  
-  // TODO: Send { type: "update_profile", ... } over WebSocket to save to DB
-  closeModals();
-}
-
-function copyInvite() {
-  const code = document.getElementById('invite-code-display');
-  code.select();
-  document.execCommand('copy');
-  alert("Invite code copied!");
-}
-
+// ── Text Chat ──
 function sendText() {
   const inp = document.getElementById('msg-input');
-  if (!inp.value.trim()) return;
-  
-  // Simulating sending a message to the UI directly
+  const content = inp.value.trim();
+  if (!content) return;
+  inp.value = '';
+  send({ type: 'message', content });
+}
+
+function addMessage(m) {
   const div = document.createElement('div');
   div.className = 'msg';
-  
-  let avatarHTML = myProfile.avatar 
-    ? `<img src="${myProfile.avatar}">` 
-    : myProfile.name[0].toUpperCase();
-
-  div.innerHTML = `
-    <div class="msg-avatar" style="background:var(--accent)">${avatarHTML}</div>
-    <div class="msg-body">
-      <div class="msg-header">
-        <span class="msg-name">${myProfile.name}</span>
-        <span class="msg-time">Just now</span>
-      </div>
-      <div class="msg-text">${inp.value.replace(/</g, "&lt;")}</div>
-    </div>`;
-    
+  const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  div.innerHTML = `<div class="msg-avatar" style="background:${m.color}">${(m.username||'?')[0].toUpperCase()}</div>
+    <div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${m.color}">${esc(m.username)}</span><span class="msg-time">${time}</span></div>
+    <div class="msg-text">${esc(m.content)}</div></div>`;
   document.getElementById('messages').appendChild(div);
   document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-  
-  // TODO: Send { type: "message", serverId: currentServer, channelId: currentChannel, content: inp.value } via WS
-  inp.value = '';
 }
 
-function switchChannel(channelName) {
-  document.getElementById('current-channel-name').textContent = "# " + channelName;
-  document.getElementById('msg-input').placeholder = "Message #" + channelName + "...";
-  // TODO: Fetch channel history from backend
+function addSystem(text) {
+  const div = document.createElement('div');
+  div.className = 'system-msg';
+  div.textContent = text;
+  document.getElementById('messages').appendChild(div);
 }
+
+function updateOnline(users, count) {
+  document.getElementById('online-count').textContent = `Online — ${count}`;
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
+
+// ── Voice ──
+async function joinVoice(room) {
+  if (currentVoiceRoom === room) return;
+  if (currentVoiceRoom) leaveVoice();
+  currentVoiceRoom = room;
+  
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    startSpeakingDetection(localStream);
+  } catch(e) { alert('Mic needed'); currentVoiceRoom = null; return; }
+  
+  send({ type: 'voice_join', room });
+  document.getElementById('vc-status').textContent = '#' + room;
+  document.getElementById('voice-overlay').classList.add('active');
+  renderRooms();
+}
+
+function leaveVoice() {
+  if (!currentVoiceRoom) return;
+  send({ type: 'voice_leave' });
+  Object.keys(peers).forEach(id => { peers[id].close(); delete peers[id]; });
+  Object.keys(audioEls).forEach(id => { audioEls[id].remove(); delete audioEls[id]; });
+  Object.keys(voiceRoomUsers).forEach(id => delete voiceRoomUsers[id]);
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  currentVoiceRoom = null;
+  document.getElementById('vc-status').textContent = 'Not connected';
+  document.getElementById('voice-overlay').classList.remove('active');
+  renderRooms();
+}
+
+function toggleMic() {
+  muted = !muted;
+  if (localStream) localStream.getAudioTracks().forEach(t => t.enabled = !muted);
+  document.getElementById('mic-btn').textContent = muted ? '🔇' : '🎙';
+  document.getElementById('mic-btn').className = 'vc-btn' + (muted ? ' muted' : '');
+}
+
+// ── WebRTC ──
+function makePc(id) {
+  const pc = new RTCPeerConnection(ICE);
+  if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  pc.ontrack = e => {
+    let a = audioEls[id];
+    if (!a) { a = new Audio(); a.autoplay = true; audioEls[id] = a; }
+    if (e.streams[0]) a.srcObject = e.streams[0];
+  };
+  pc.onicecandidate = e => { if (e.candidate) send({ type: 'voice_ice', candidate: e.candidate, to: id }); };
+  peers[id] = pc;
+  return pc;
+}
+
+async function callPeer(id) {
+  if (peers[id]) return;
+  const pc = makePc(id);
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  send({ type: 'voice_offer', sdp: pc.localDescription, to: id });
+}
+
+async function handleOffer(id, sdp) {
+  if (peers[id]) { peers[id].close(); delete peers[id]; }
+  const pc = makePc(id);
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  send({ type: 'voice_answer', sdp: pc.localDescription, to: id });
+}
+
+function startSpeakingDetection(stream) {
+  try {
+    const ctx = new AudioContext();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    const buf = new Uint8Array(analyser.frequencyBinCount);
+    let wasSpeaking = false;
+    function check() {
+      analyser.getByteFrequencyData(buf);
+      const speaking = (buf.reduce((a,b)=>a+b,0)/buf.length) > 15;
+      if (speaking !== wasSpeaking) {
+        wasSpeaking = speaking;
+        send({ type: 'voice_speaking', active: speaking });
+      }
+      requestAnimationFrame(check);
+    }
+    check();
+  } catch(e) {}
+}
+
+// ── UI ──
+function renderRooms() {
+  const el = document.getElementById('room-list');
+  el.innerHTML = '';
+  ROOMS.forEach(room => {
+    const usersInRoom = Object.values(voiceRoomUsers).length;
+    const btn = document.createElement('button');
+    btn.className = 'room-btn' + (room === currentVoiceRoom ? ' active' : '');
+    btn.innerHTML = `🔊 ${room}${usersInRoom ? ` (${usersInRoom})` : ''}`;
+    btn.onclick = () => joinVoice(room);
+    el.appendChild(btn);
+  });
+}
+
+function renderVoiceOverlay() {
+  const el = document.getElementById('voice-participants');
+  el.innerHTML = '';
+  // Self
+  const me = document.createElement('div');
+  me.className = 'vp';
+  me.setAttribute('data-vid', 'v_' + myId);
+  me.innerHTML = `<div class="vp-avatar" style="background:${myColor}">${myUsername[0].toUpperCase()}</div><div class="vp-name">You</div>`;
+  el.appendChild(me);
+  // Others
+  Object.values(voiceRoomUsers).forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'vp';
+    div.setAttribute('data-vid', u.id);
+    div.innerHTML = `<div class="vp-avatar">${u.name[0].toUpperCase()}</div><div class="vp-name">${u.name}</div>`;
+    el.appendChild(div);
+  });
+}
+
+// ── Start ──
+connect();
+renderRooms();
 </script>
 </body>
-</html>
+</html> 
