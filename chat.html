@@ -377,7 +377,12 @@ function connect() {
   ws = new WebSocket(`${protocol}//${location.host}/ws`);
   ws.onopen = () => {
     const p = JSON.parse(localStorage.getItem('t9_profile') || '{}');
-    send({ type:'init', username: p.username||null, avatar: p.avatar||null });
+    let clientId = localStorage.getItem('t9_user_id');
+    if (!clientId) {
+      clientId = 'u_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+      localStorage.setItem('t9_user_id', clientId);
+    }
+    send({ type:'init', username: p.username||null, avatar: p.avatar||null, clientId: clientId });
   };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 2000);
