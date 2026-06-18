@@ -30,6 +30,14 @@ const dmMessages = new Map(); // userId|userId -> [messages]
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function inviteCode() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
 
+function hashString(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
 function dmKey(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
 
 function makeServer(name, icon, ownerId) {
@@ -99,16 +107,24 @@ function getUserServers(userId) {
   return out;
 }
 
+let saveTimeout = null;
 function saveData() {
-  const data = { servers: {}, userIdCounter };
-  servers.forEach((srv, id) => {
-    data.servers[id] = {
-      id: srv.id, name: srv.name, icon: srv.icon,
-      ownerId: srv.ownerId, inviteCode: srv.inviteCode,
-      members: srv.members, channels: srv.channels
-    };
-  });
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    const data = { servers: {}, dms: {}, userIdCounter };
+    servers.forEach((srv, id) => {
+      data.servers[id] = {
+        id: srv.id, name: srv.name, icon: srv.icon,
+        ownerId: srv.ownerId, inviteCode: srv.inviteCode,
+        members: srv.members, channels: srv.channels
+      };
+    });
+    dmMessages.forEach((msgs, key) => {
+      data.dms[key] = msgs;
+    });
+    try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
+    saveTimeout = null;
+  }, 500);
 }
 
 function loadData() {
@@ -122,27 +138,34 @@ function loadData() {
           servers.set(id, srv);
         });
       }
-      console.log(`Loaded ${servers.size} servers`);
+      if (data.dms) {
+        Object.entries(data.dms).forEach(([key, msgs]) => {
+          dmMessages.set(key, msgs);
+        });
+      }
+      console.log(`Loaded ${servers.size} servers and ${dmMessages.size} DM histories`);
     }
   } catch(e) { console.error('Load error:', e); }
 }
 
 wss.on('connection', (ws) => {
-  const id = userIdCounter++;
-  const color = COLORS[(id - 1) % COLORS.length];
-  const client = {
-    id, ws, username: `User${id}`, color, avatar: null,
-    currentChannel: null, voiceChannel: null, dmVoicePeer: null,
-  };
-  clients.set(ws, client);
-
   ws.on('message', raw => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
-    handleMessage(ws, client, data);
+    const client = clients.get(ws);
+    
+    // Handle init separately to establish identity before processing other messages
+    if (data.type === 'init' && !client) {
+      handleInit(ws, data);
+    } else if (client) {
+      handleMessage(ws, client, data);
+    }
   });
 
   ws.on('close', () => {
+    const client = clients.get(ws);
+    if (!client) return;
+    
     if (client.voiceChannel) leaveVoice(client);
     if (client.dmVoicePeer) {
       const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
@@ -153,30 +176,39 @@ wss.on('connection', (ws) => {
   });
 });
 
+function handleInit(ws, data) {
+  let id = data.clientId || uid();
+  const color = COLORS[Math.abs(hashString(id)) % COLORS.length];
+  const client = {
+    id, ws, 
+    username: data.username ? String(data.username).slice(0, 32) : `User${id.slice(0,4)}`,
+    color, avatar: data.avatar || null,
+    currentChannel: null, voiceChannel: null, dmVoicePeer: null,
+  };
+  clients.set(ws, client);
+
+  const dmHistory = {};
+  dmMessages.forEach((msgs, key) => {
+    const [a, b] = key.split('|');
+    if (a == client.id || b == client.id) {
+      const otherId = a == client.id ? b : a;
+      dmHistory[otherId] = msgs;
+    }
+  });
+
+  sendTo(ws, {
+    type: 'init', id: client.id,
+    username: client.username, color: client.color, avatar: client.avatar,
+    servers: getUserServers(client.id),
+    onlineUsers: getOnlineUsers(),
+    dmHistory
+  });
+  
+  broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
+}
+
 function handleMessage(ws, client, data) {
   switch (data.type) {
-    case 'init':
-      if (data.username) client.username = String(data.username).slice(0, 32);
-      if (data.avatar) client.avatar = data.avatar;
-      // Send DM history
-      const dmHistory = {};
-      dmMessages.forEach((msgs, key) => {
-        const [a, b] = key.split('|');
-        if (a == client.id || b == client.id) {
-          const otherId = a == client.id ? b : a;
-          dmHistory[otherId] = msgs;
-        }
-      });
-      sendTo(ws, {
-        type: 'init', id: client.id,
-        username: client.username, color: client.color, avatar: client.avatar,
-        servers: getUserServers(client.id),
-        onlineUsers: getOnlineUsers(),
-        dmHistory
-      });
-      broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
-      break;
-
     case 'update_profile':
       if (data.username) client.username = String(data.username).slice(0, 32);
       if (data.avatar !== undefined) client.avatar = data.avatar;
@@ -214,10 +246,10 @@ function handleMessage(ws, client, data) {
         userId: client.id, username: client.username, color: client.color, avatar: client.avatar,
         content: String(content).slice(0, 2000), timestamp: Date.now()
       };
-      // Save to server history
       const key = dmKey(client.id, to);
       if (!dmMessages.has(key)) dmMessages.set(key, []);
       dmMessages.get(key).push(msg);
+      saveData(); // Save DMs to disk
       
       sendTo(ws, msg);
       if (toClient) sendTo(toClient.ws, msg);
