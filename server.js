@@ -6,6 +6,14 @@ const path = require('path');
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 't9_data.json');
 
+const mimeTypes = {
+  '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
+  '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
+  '.gif': 'image/gif', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+  '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf',
+  '.wasm': 'application/wasm', '.mjs': 'application/javascript'
+};
+
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/chat.html') {
     fs.readFile(path.join(__dirname, 'chat.html'), (err, data) => {
@@ -13,9 +21,15 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(data);
     });
-  } else {
-    res.writeHead(404); res.end('Not found');
+    return;
   }
+  const filePath = path.join(__dirname, req.url);
+  const ext = path.extname(filePath).toLowerCase();
+  fs.readFile(filePath, (err, data) => {
+    if (err) { res.writeHead(404); res.end('Not found'); return; }
+    res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+    res.end(data);
+  });
 });
 
 const wss = new WebSocket.Server({ server });
@@ -25,7 +39,7 @@ const COLORS = ['#7289da','#43b581','#faa61a','#f47fff','#ed4245','#5865f2','#00
 const clients = new Map();
 const servers = new Map();
 const channelMessages = new Map();
-const dmMessages = new Map(); // userId|userId -> [messages]
+const dmMessages = new Map();
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function inviteCode() { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
@@ -154,7 +168,6 @@ wss.on('connection', (ws) => {
     try { data = JSON.parse(raw); } catch { return; }
     const client = clients.get(ws);
     
-    // Handle init separately to establish identity before processing other messages
     if (data.type === 'init' && !client) {
       handleInit(ws, data);
     } else if (client) {
@@ -249,7 +262,7 @@ function handleMessage(ws, client, data) {
       const key = dmKey(client.id, to);
       if (!dmMessages.has(key)) dmMessages.set(key, []);
       dmMessages.get(key).push(msg);
-      saveData(); // Save DMs to disk
+      saveData();
       
       sendTo(ws, msg);
       if (toClient) sendTo(toClient.ws, msg);
@@ -410,7 +423,6 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    // DM Voice
     case 'dm_voice_start': {
       const target = [...clients.values()].find(c => c.id === data.to);
       if (!target || target.dmVoicePeer || target.voiceChannel) {
