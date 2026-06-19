@@ -133,7 +133,7 @@ header{
 .action-pills{display:flex;gap:8px}
 .pill{display:flex;align-items:center;gap:6px;background:var(--chip-bg);border:none;color:var(--text);padding:9px 14px;border-radius:18px;cursor:pointer;font-size:14px;font-weight:500}
 .pill:hover{background:#3f3f3f}
-.player-desc{background:var(--card);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--text);line-height:1.5}
+.player-desc{background:var(--card);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--text);line-height:1.5;white-space:pre-wrap}
 
 .up-next{width:402px;flex-shrink:0}
 .up-next-title{font-size:16px;font-weight:600;margin-bottom:12px}
@@ -286,68 +286,14 @@ header{
 </div>
 
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js"></script>
 <script>
 /* ================================================================
-   T9 TUBE - REWRITTEN API LAYER
-   Primary: Piped (CORS-friendly, proxied streams)
-   Fallback: Invidious with CORS proxies
+   T9 TUBE - SELF-HOSTED API LAYER
+   Backend: your own yt-dlp powered server, proxied via nginx at /ytapi/
+   No more public Piped/Invidious instances, no more CORS proxy chains.
    ================================================================ */
 
-const PIPED_APIS = [
-  'https://pipedapi.moomoo.me',
-  'https://pipedapi.adminforge.de',
-  'https://pipedapi.mint.lgbt',
-  'https://pipedapi.garudalinux.org',
-  'https://pipedapi-libre.kavin.rocks',
-  'https://api.piped.projectsegfault.com',
-  'https://pipedapi.palveluntarjoaja.eu',
-  'https://pipedapi.mha.fi',
-  'https://pipedapi.nosebs.ru',
-  'https://pipedapi.drgns.space',
-  'https://pipedapi.frontendfriendly.xyz',
-  'https://pipedapi.owo.si',
-  'https://pipedapi.simpleprivacy.fr',
-  'https://pipedapi.drgns.space',
-  'https://pipedapi.moomoo.me',
-  'https://pipedapi.adminforge.de'
-];
-
-const INVIDIOUS_APIS = [
-  'https://iv.melmac.space/api/v1',
-  'https://inv.nadeko.net/api/v1',
-  'https://invidious.privacyredirect.com/api/v1',
-  'https://invidious.nerdvpn.de/api/v1',
-  'https://invidious.io.lol/api/v1',
-  'https://invidious.f5.si/api/v1',
-  'https://invidious.qwik.space/api/v1',
-  'https://iv.ggtyler.dev/api/v1',
-  'https://invidious.projectsegfau.lt/api/v1',
-  'https://invidious.tiekoetter.com/api/v1',
-  'https://yewtu.be/api/v1',
-  'https://invidious.adminforge.de/api/v1',
-  'https://inv.in.projectsegfau.lt/api/v1',
-  'https://invidious.perennialte.ch/api/v1',
-  'https://inv.tux.pizza/api/v1',
-  'https://invidious.protokolla.fi/api/v1',
-  'https://invidious.jing.rocks/api/v1',
-  'https://invidious.darkness.service/api/v1',
-  'https://invidious.incogniweb.net/api/v1',
-  'https://invidious.fdn.fr/api/v1',
-  'https://invidious.0011.lt/api/v1',
-  'https://yt.artemislena.eu/api/v1',
-  'https://invidious.dhusch.de/api/v1',
-  'https://invidious.einfachzocken.eu/api/v1',
-  'https://inv.vern.cc/api/v1',
-];
-
-const PROXIES = [
-  { name: 'direct',   prefix: '',                                encode: false },
-  { name: 'corsproxy.io', prefix: 'https://corsproxy.io/?',      encode: false },
-  { name: 'allorigins',   prefix: 'https://api.allorigins.win/raw?url=', encode: true },
-  { name: 'codetabs',     prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true }
-];
+const API_BASE = '/ytapi';
 
 let currentVideos = [];
 let player = null;
@@ -359,164 +305,26 @@ function cacheVideos(list){
   (list||[]).forEach(v=>{ if(v && v.videoId) videoCache.set(v.videoId, v); });
 }
 
-/* ===== PIPED API HELPERS ===== */
-function extractVideoId(url) {
-  if (!url) return null;
-  const m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-  if (m) return m[1];
-  const m2 = url.match(/^\/watch\?v=([a-zA-Z0-9_-]{11})/);
-  if (m2) return m2[1];
-  if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
-  return null;
+/* ===== API CALLS ===== */
+async function apiSearch(query, limit = 24) {
+  const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+  if (!res.ok) throw new Error('search request failed: ' + res.status);
+  const data = await res.json();
+  return (data.items || []).filter(v => v.videoId);
 }
 
-async function racePiped(path, timeoutMs = 8000) {
-  const controllers = [];
-  const promises = PIPED_APIS.map(api => {
-    const controller = new AbortController();
-    controllers.push(controller);
-    const url = api + path;
-    return fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } })
-      .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json().then(data => ({ data, api }));
-      })
-      .catch(err => ({ error: err, api }));
-  });
-
-  const timeout = setTimeout(() => controllers.forEach(c => c.abort()), timeoutMs);
-  try {
-    const results = await Promise.all(promises);
-    const success = results.find(r => r.data);
-    if (success) return success;
-    throw results.find(r => r.error)?.error || new Error('All Piped instances failed');
-  } finally {
-    clearTimeout(timeout);
-  }
+async function apiStream(videoId) {
+  const res = await fetch(`${API_BASE}/stream/${encodeURIComponent(videoId)}`);
+  if (!res.ok) throw new Error('stream request failed: ' + res.status);
+  return await res.json();
 }
 
-/* ===== INVIDIOUS FALLBACK (with proxies) ===== */
-async function fetchInvidiousJson(url, timeoutMs = 8000) {
-  for (const proxy of PROXIES) {
-    try {
-      const target = proxy.prefix
-        ? (proxy.encode ? proxy.prefix + encodeURIComponent(url) : proxy.prefix + url)
-        : url;
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), proxy.name === 'direct' ? timeoutMs : timeoutMs + 4000);
-      const r = await fetch(target, { signal: c.signal });
-      clearTimeout(t);
-      if (r.ok) return await r.json();
-    } catch (e) {}
-  }
-  return null;
-}
-
-async function raceInvidious(path, timeoutMs = 8000) {
-  for (let i = 0; i < INVIDIOUS_APIS.length; i++) {
-    const api = INVIDIOUS_APIS[i];
-    const data = await fetchInvidiousJson(api + path, timeoutMs);
-    if (data) return { data, api };
-  }
-  throw new Error('All Invidious instances failed');
-}
-
-/* ===== UNIFIED FETCH ===== */
 async function fetchSearchResults(query, maxResults = 24) {
-  // Try Piped first
-  try {
-    const { data } = await racePiped(`/search?q=${encodeURIComponent(query)}&filter=videos`);
-    if (data && data.items && data.items.length > 0) {
-      return data.items.map(item => ({
-        videoId: extractVideoId(item.url),
-        title: item.title,
-        author: item.uploaderName,
-        lengthSeconds: item.duration,
-        viewCount: item.views,
-        publishedText: item.uploadedDate,
-        thumbnail: item.thumbnail,
-        _source: 'piped'
-      })).filter(v => v.videoId);
-    }
-  } catch (e) {
-    console.warn('Piped search failed, trying Invidious...', e);
-  }
-
-  // Fallback to Invidious
-  const { data } = await raceInvidious(`/search?q=${encodeURIComponent(query)}&type=video&maxResults=${maxResults}`);
-  return (data || []).map(item => ({
-    videoId: item.videoId,
-    title: item.title,
-    author: item.author,
-    lengthSeconds: item.lengthSeconds,
-    viewCount: item.viewCount,
-    publishedText: item.publishedText,
-    thumbnail: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
-    _source: 'invidious'
-  })).filter(v => v.videoId);
+  return await apiSearch(query, maxResults);
 }
 
 async function fetchVideoInfo(videoId) {
-  // Try Piped first
-  try {
-    const { data } = await racePiped(`/streams/${videoId}`);
-    if (data && data.title) {
-      // Normalize Piped data to match our expected format
-      const formatStreams = [];
-      // Piped videoStreams are already proxied URLs
-      // Prefer muxed streams (videoOnly: false) for direct playback
-      const muxed = (data.videoStreams || []).filter(s => !s.videoOnly && s.url);
-      const videoOnly = (data.videoStreams || []).filter(s => s.videoOnly && s.url);
-      const audioStreams = (data.audioStreams || []).filter(s => s.url);
-
-      // Add muxed as formatStreams (direct MP4 playback)
-      muxed.forEach(s => {
-        formatStreams.push({
-          url: s.url,
-          type: s.mimeType || 'video/mp4',
-          quality: s.quality,
-          bitrate: s.bitrate,
-          width: s.width,
-          height: s.height
-        });
-      });
-
-      return {
-        videoId,
-        title: data.title,
-        author: data.uploader,
-        description: data.description,
-        viewCount: data.views,
-        lengthSeconds: data.duration,
-        thumbnailUrl: data.thumbnailUrl,
-        formatStreams,
-        // Keep raw Piped streams for advanced playback
-        _pipedVideoStreams: videoOnly,
-        _pipedAudioStreams: audioStreams,
-        _relatedStreams: data.relatedStreams || [],
-        _source: 'piped'
-      };
-    }
-  } catch (e) {
-    console.warn('Piped streams failed, trying Invidious...', e);
-  }
-
-  // Fallback to Invidious
-  const { data } = await raceInvidious(`/videos/${videoId}`);
-  return {
-    videoId: data.videoId,
-    title: data.title,
-    author: data.author,
-    description: data.description,
-    viewCount: data.viewCount,
-    lengthSeconds: data.lengthSeconds,
-    thumbnailUrl: `https://i.ytimg.com/vi/${data.videoId}/hqdefault.jpg`,
-    formatStreams: data.formatStreams || [],
-    hlsUrl: data.hlsUrl,
-    dashManifestUrl: data.dashManifestUrl,
-    adaptiveFormats: data.adaptiveFormats,
-    _source: 'invidious'
-  };
+  return await apiStream(videoId);
 }
 
 /* ===== PERSISTENCE ===== */
@@ -666,7 +474,7 @@ async function search() {
     renderResults(data, {title:`Results for "${q}"`});
   }catch(e){
     console.error(e);
-    el.innerHTML = '<div class="status">All video APIs failed. The network may be unreachable or every instance is down.<br>Wait a moment and try again.</div>';
+    el.innerHTML = '<div class="status">Search failed — the backend may be down. Check that the t9-ytdlp PM2 process is running.<br>Wait a moment and try again.</div>';
   }
 }
 
@@ -718,7 +526,7 @@ async function fetchVideoAndPlay(videoId) {
       throw new Error('Invalid video data');
     }
   } catch(e) {
-    alert('Could not load video. All APIs and proxies failed.');
+    alert('Could not load video. Backend may be down or the video is unavailable.');
     console.error(e);
   }
 }
@@ -810,10 +618,6 @@ document.addEventListener('DOMContentLoaded', () => {
   player = new Plyr('#player', {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
     settings: ['quality', 'speed'],
-    quality: {
-      default: 1080,
-      options: [4320, 2160, 1440, 1080, 720, 480, 360, 240]
-    },
     speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
   });
   renderTrendingTopics();
@@ -822,14 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ===== CLEANUP PLAYER ===== */
 function cleanupPlayer() {
-  if (window.hlsInstance) {
-    try { window.hlsInstance.destroy(); } catch(e) {}
-    window.hlsInstance = null;
-  }
-  if (window.dashPlayer) {
-    try { window.dashPlayer.reset(); window.dashPlayer.destroy(); } catch(e) {}
-    window.dashPlayer = null;
-  }
   const videoElement = document.getElementById('player');
   if (videoElement) {
     videoElement.pause();
@@ -876,135 +672,20 @@ function setQualityBadge(text) {
 
 /* ===== FIND BEST SOURCE ===== */
 function findBestSource(videoData) {
-  if (!videoData) return null;
-
-  // Piped formatStreams (proxied, most reliable)
-  if (videoData.formatStreams && videoData.formatStreams.length > 0) {
-    const sorted = videoData.formatStreams
-      .filter(s => s.url)
-      .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0));
-    if (sorted.length > 0) {
-      return {
-        url: sorted[0].url,
-        type: sorted[0].type || 'video/mp4',
-        quality: sorted[0].quality || (sorted[0].height + 'p'),
-        mode: 'direct'
-      };
-    }
-  }
-
-  // Invidious HLS
-  if (videoData.hlsUrl) {
-    return { url: videoData.hlsUrl, type: 'application/x-mpegURL', quality: 'HLS', mode: 'hls' };
-  }
-
-  // Invidious DASH
-  if (videoData.dashManifestUrl) {
-    return { url: videoData.dashManifestUrl, type: 'application/dash+xml', quality: 'DASH', mode: 'dash' };
-  }
-
-  // Invidious adaptiveFormats
-  if (videoData.adaptiveFormats && videoData.adaptiveFormats.length > 0) {
-    const videoStreams = videoData.adaptiveFormats
-      .filter(s => s.url && s.type && s.type.startsWith('video/'))
-      .sort((a, b) => {
-        const qa = parseQualityLabel(a.qualityLabel);
-        const qb = parseQualityLabel(b.qualityLabel);
-        return qb - qa;
-      });
-    const audioStreams = videoData.adaptiveFormats
-      .filter(s => s.url && s.type && s.type.startsWith('audio/'))
-      .sort((a, b) => (parseInt(b.bitrate) || 0) - (parseInt(a.bitrate) || 0));
-
-    if (videoStreams.length > 0 && audioStreams.length > 0 && typeof dashjs !== 'undefined') {
-      try {
-        const dashManifest = buildDashManifest(videoStreams, audioStreams);
-        const blob = new Blob([dashManifest], { type: 'application/dash+xml' });
-        const objUrl = URL.createObjectURL(blob);
-        return {
-          url: objUrl,
-          type: 'application/dash+xml',
-          quality: videoStreams[0].qualityLabel || 'Adaptive',
-          mode: 'dash',
-          _isBlob: true
-        };
-      } catch(e) {}
-    }
-    if (videoStreams.length > 0) {
-      return {
-        url: videoStreams[0].url,
-        type: videoStreams[0].type || 'video/mp4',
-        quality: videoStreams[0].qualityLabel || '',
-        mode: 'direct'
-      };
-    }
-  }
-
-  return null;
+  if (!videoData || !videoData.formatStreams || !videoData.formatStreams.length) return null;
+  const sorted = videoData.formatStreams
+    .filter(s => s.url)
+    .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0));
+  if (!sorted.length) return null;
+  return {
+    url: sorted[0].url,
+    type: sorted[0].type || 'video/mp4',
+    quality: sorted[0].quality || (sorted[0].height ? sorted[0].height + 'p' : ''),
+    mode: 'direct'
+  };
 }
 
-function parseQualityLabel(label) {
-  if (!label) return 0;
-  const s = (label + '').toLowerCase().trim();
-  if (s.includes('8k')) return 4320;
-  if (s.includes('4k')) return 2160;
-  if (s.includes('1440') || s.includes('2k')) return 1440;
-  const m = s.match(/(\d{2,4})/);
-  return m ? parseInt(m[1]) : 0;
-}
-
-function buildDashManifest(videoStreams, audioStreams) {
-  const duration = videoStreams[0].duration || 0;
-  const durationStr = duration ? `duration="PT${Math.floor(duration/3600)}H${Math.floor((duration%3600)/60)}M${(duration%60).toFixed(1)}S"` : '';
-
-  let videoSets = '';
-  videoStreams.forEach((s, idx) => {
-    const codecs = (s.type || '').replace('video/', '').replace(/;.*/, '').trim();
-    const bw = s.bitrate || 0;
-    const w = s.width || 0;
-    const h = s.height || 0;
-    if (!s.url) return;
-    videoSets += `
-      <Representation id="v${idx}" codecs="${codecs}" bandwidth="${bw}" width="${w}" height="${h}">
-        <BaseURL>${escapeXml(s.url)}</BaseURL>
-        <SegmentBase indexRange="${s.indexRange || '0-1000'}">
-          <Initialization range="0-1000"/>
-        </SegmentBase>
-      </Representation>`;
-  });
-
-  let audioSets = '';
-  audioStreams.forEach((s, idx) => {
-    const codecs = (s.type || '').replace('audio/', '').replace(/;.*/, '').trim();
-    const bw = s.bitrate || 0;
-    if (!s.url) return;
-    audioSets += `
-      <Representation id="a${idx}" codecs="${codecs}" bandwidth="${bw}">
-        <BaseURL>${escapeXml(s.url)}</BaseURL>
-        <SegmentBase indexRange="${s.indexRange || '0-1000'}">
-          <Initialization range="0-1000"/>
-        </SegmentBase>
-      </Representation>`;
-  });
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" ${durationStr} minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-main:2011">
-  <Period>
-    <AdaptationSet mimeType="video/mp4" contentType="video" subsegmentAlignment="true" subsegmentStartsWithSAP="1">
-      ${videoSets}
-    </AdaptationSet>
-    <AdaptationSet mimeType="audio/mp4" contentType="audio" subsegmentAlignment="true" subsegmentStartsWithSAP="1">
-      ${audioSets}
-    </AdaptationSet>
-  </Period>
-</MPD>`;
-}
-
-function escapeXml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-/* ===== PLAYBACK MODES ===== */
+/* ===== DIRECT PLAYBACK ===== */
 function tryDirectPlayback(videoElement, source) {
   return new Promise((resolve) => {
     let resolved = false;
@@ -1039,165 +720,8 @@ function tryDirectPlayback(videoElement, source) {
     videoElement.src = source.url;
     videoElement.play().catch(() => {});
 
-    const q = parseQualityLabel(source.quality);
-    const badgeText = q > 0 ? q + 'p' : (source.quality || '');
-    if (badgeText) setQualityBadge(badgeText);
+    if (source.quality) setQualityBadge(source.quality);
   });
-}
-
-function tryHlsPlayback(videoElement, source) {
-  return new Promise((resolve) => {
-    let resolved = false;
-    const doResolve = (success) => {
-      if (resolved) return;
-      resolved = true;
-      if (!success && window.hlsInstance) {
-        try { window.hlsInstance.destroy(); } catch(e) {}
-        window.hlsInstance = null;
-      }
-      resolve(success);
-    };
-
-    if (!Hls.isSupported()) {
-      if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-        videoElement.src = source.url;
-        const onCanPlay = () => {
-          videoElement.removeEventListener('canplay', onCanPlay);
-          videoElement.removeEventListener('error', onError);
-          clearTimeout(timeout);
-          doResolve(true);
-        };
-        const onError = () => {
-          videoElement.removeEventListener('canplay', onCanPlay);
-          videoElement.removeEventListener('error', onError);
-          clearTimeout(timeout);
-          doResolve(false);
-        };
-        videoElement.addEventListener('canplay', onCanPlay);
-        videoElement.addEventListener('error', onError);
-        const timeout = setTimeout(() => {
-          videoElement.removeEventListener('canplay', onCanPlay);
-          videoElement.removeEventListener('error', onError);
-          doResolve(false);
-        }, 15000);
-        videoElement.play().catch(() => {});
-        return;
-      }
-      doResolve(false);
-      return;
-    }
-
-    const hls = new Hls({
-      maxBufferLength: 30,
-      maxMaxBufferLength: 600,
-      maxBufferSize: 60 * 1000 * 1000,
-      startLevel: -1,
-      capLevelToPlayerSize: false,
-      autoStartLoad: true,
-    });
-    window.hlsInstance = hls;
-
-    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-      if (data.levels && data.levels.length > 0) {
-        const bestLevel = data.levels.reduce((best, lvl, idx) =>
-          (lvl.height || 0) > (data.levels[best].height || 0) ? idx : best, 0);
-        hls.currentLevel = bestLevel;
-      }
-      videoElement.play().catch(() => {});
-      doResolve(true);
-    });
-
-    hls.on(Hls.Events.ERROR, (event, data) => {
-      if (data.fatal) {
-        console.error('HLS fatal error:', data.type, data.details);
-        doResolve(false);
-      }
-    });
-
-    const timeout = setTimeout(() => {
-      doResolve(false);
-    }, 15000);
-
-    hls.loadSource(source.url);
-    hls.attachMedia(videoElement);
-  });
-}
-
-function tryDashPlayback(videoElement, source) {
-  return new Promise((resolve) => {
-    let resolved = false;
-    const doResolve = (success) => {
-      if (resolved) return;
-      resolved = true;
-      if (!success && window.dashPlayer) {
-        try { window.dashPlayer.reset(); window.dashPlayer.destroy(); } catch(e) {}
-        window.dashPlayer = null;
-      }
-      resolve(success);
-    };
-
-    try {
-      const dashPlayer = dashjs.MediaPlayer().create();
-      window.dashPlayer = dashPlayer;
-
-      dashPlayer.initialize(videoElement, source.url, true);
-      dashPlayer.setPlaybackRate(1);
-      dashPlayer.updateSettings({
-        streaming: {
-          abr: { autoSwitchBitrate: { video: true, audio: true }, limitBitrateByPortal: false },
-          buffer: { fastSwitchEnabled: true }
-        }
-      });
-
-      const onCanPlay = () => {
-        videoElement.removeEventListener('canplay', onCanPlay);
-        videoElement.removeEventListener('error', onError);
-        clearTimeout(timeout);
-        doResolve(true);
-      };
-      const onError = () => {
-        videoElement.removeEventListener('canplay', onCanPlay);
-        videoElement.removeEventListener('error', onError);
-        clearTimeout(timeout);
-        doResolve(false);
-      };
-      videoElement.addEventListener('canplay', onCanPlay);
-      videoElement.addEventListener('error', onError);
-
-      const timeout = setTimeout(() => {
-        videoElement.removeEventListener('canplay', onCanPlay);
-        videoElement.removeEventListener('error', onError);
-        doResolve(false);
-      }, 15000);
-
-      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, (e) => {
-        console.error('DASH error event:', e);
-        onError();
-      });
-
-    } catch (e) {
-      doResolve(false);
-    }
-  });
-}
-
-async function attemptPlayback(videoElement, source) {
-  try {
-    if (source.mode === 'hls') {
-      return await tryHlsPlayback(videoElement, source);
-    } else if (source.mode === 'dash') {
-      const ok = await tryDashPlayback(videoElement, source);
-      if (ok && source.quality) setQualityBadge(source.quality);
-      if (ok && source._isBlob) {
-        setTimeout(() => { try { URL.revokeObjectURL(source.url); } catch(e) {} }, 30000);
-      }
-      return ok;
-    } else {
-      return await tryDirectPlayback(videoElement, source);
-    }
-  } catch (e) {
-    return false;
-  }
 }
 
 /* ===== MAIN PLAY VIDEO FUNCTION ===== */
@@ -1221,7 +745,7 @@ async function playVideo(video) {
   document.getElementById('player-desc').textContent = video.description || 'No description available.';
   document.getElementById('player-error').innerHTML = '';
 
-  renderUpNext(videoId);
+  renderUpNext(videoId, video.relatedVideoIds);
 
   const videoElement = document.getElementById('player');
   const loader = document.getElementById('player-loader');
@@ -1229,12 +753,12 @@ async function playVideo(video) {
 
   let loaded = false;
 
-  // If we already have formatStreams from Piped, try them immediately
+  // If we already have formatStreams (from a previous fetch), try them immediately
   if (video.formatStreams && video.formatStreams.length > 0) {
     const source = findBestSource(video);
     if (source) {
       console.log('[Cache] Trying playback from cached formatStreams:', source.quality);
-      const success = await attemptPlayback(videoElement, source);
+      const success = await tryDirectPlayback(videoElement, source);
       if (success) {
         loaded = true;
         loader.classList.add('hidden');
@@ -1242,13 +766,12 @@ async function playVideo(video) {
     }
   }
 
-  // If not loaded, fetch full video info and try again
+  // If not loaded, fetch full video info from our backend and try again
   if (!loaded) {
     try {
       const videoData = await fetchVideoInfo(videoId);
       cacheVideos([videoData]);
 
-      // Update UI with fresh data
       document.getElementById('player-title').textContent = videoData.title || title || 'Untitled';
       document.getElementById('player-channel').textContent = videoData.author || video.author || '';
       document.getElementById('player-views').textContent = fmtViews(videoData.viewCount) || '';
@@ -1259,11 +782,15 @@ async function playVideo(video) {
         throw new Error('No playable source found');
       }
 
-      console.log('[Fetch] Trying playback:', source.mode, source.quality);
-      const success = await attemptPlayback(videoElement, source);
+      console.log('[Fetch] Trying playback:', source.quality);
+      const success = await tryDirectPlayback(videoElement, source);
       if (success) {
         loaded = true;
         loader.classList.add('hidden');
+      }
+
+      if (videoData.relatedVideoIds && videoData.relatedVideoIds.length) {
+        renderUpNext(videoId, videoData.relatedVideoIds);
       }
     } catch (e) {
       console.error('Playback failed:', e);
@@ -1273,34 +800,36 @@ async function playVideo(video) {
   loader.classList.add('hidden');
 
   if (!loaded) {
-    showPlayerError('Could not load this video. The video may be restricted, removed, or no sources are currently available.');
+    showPlayerError('Could not load this video. It may be restricted, age-gated, or the backend is temporarily unreachable.');
   }
 }
 
 /* ===== UP NEXT / SIDEBAR ===== */
-async function renderUpNext(currentId){
+async function renderUpNext(currentId, relatedIds){
   const wrap = document.getElementById('up-next-list');
   wrap.innerHTML = '<div class="status" style="padding:20px 0">Loading suggestions...</div>';
 
-  // Try to get related from cache first
-  const cached = videoCache.get(currentId);
-  if (cached && cached._relatedStreams && cached._relatedStreams.length > 0) {
-    const related = cached._relatedStreams
-      .map(item => ({
-        videoId: extractVideoId(item.url),
-        title: item.title,
-        author: item.uploaderName,
-        lengthSeconds: item.duration,
-        viewCount: item.views,
-        thumbnail: item.thumbnail
-      }))
-      .filter(v => v.videoId && v.videoId !== currentId)
-      .slice(0, 8);
-
-    if (related.length > 0) {
-      cacheVideos(related);
-      renderUpNextList(related);
-      return;
+  if (relatedIds && relatedIds.length) {
+    const ids = relatedIds.filter(id => id && id !== currentId).slice(0, 8);
+    if (ids.length) {
+      try {
+        const results = await Promise.all(ids.map(id =>
+          fetchVideoInfo(id).catch(() => null)
+        ));
+        const related = results.filter(Boolean).map(d => ({
+          videoId: d.videoId,
+          title: d.title,
+          author: d.author,
+          lengthSeconds: d.lengthSeconds,
+          viewCount: d.viewCount,
+          thumbnail: d.thumbnailUrl
+        }));
+        if (related.length) {
+          cacheVideos(related);
+          renderUpNextList(related);
+          return;
+        }
+      } catch (e) {}
     }
   }
 
