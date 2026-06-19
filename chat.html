@@ -835,7 +835,6 @@ async function startDMCall() {
   document.getElementById('voice-bar').classList.add('active');
   document.getElementById('vb-room-name').textContent=`Calling ${onlineUsers[currentDmUser]?.username||'User'}...`;
   document.getElementById('vb-server-name').textContent='DM Voice Call';
-  setTimeout(()=>callPeerDM(currentDmUser),500);
 }
 
 function endDMCall() { send({type:'dm_voice_end',to:dmVoiceState.peerId}); cleanupDMCall(); }
@@ -919,7 +918,6 @@ async function acceptDMCall(fromId) {
   document.getElementById('voice-bar').classList.add('active');
   document.getElementById('vb-room-name').textContent=`Call with ${onlineUsers[fromId]?.username||'User'}`;
   document.getElementById('vb-server-name').textContent='DM Voice Call';
-  setTimeout(()=>callPeerDM(fromId),500);
 }
 
 async function callPeerDM(id) {
