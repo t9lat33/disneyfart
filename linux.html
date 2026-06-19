@@ -1401,10 +1401,17 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     }
   };
 
-  window.acceptLinuxCall = function(){
+   window.acceptLinuxCall = function(){
     stopSound(); 
     document.getElementById('linux-call-overlay').style.display='none';
-    if(incomingFrom) window.open(`chat.html?acceptCall=${encodeURIComponent(incomingFrom)}`,'_blank');
+    if(incomingFrom){
+      const chatDiv = document.getElementById('ChatDiv');
+      const iframe = document.getElementById('framechat');
+      if(chatDiv && iframe){
+        iframe.src = `chat.html?acceptCall=${encodeURIComponent(incomingFrom)}`;
+        chatDiv.style.display = 'block';
+      }
+    }
     incomingFrom=null;
   };
   
