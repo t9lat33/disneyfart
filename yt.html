@@ -7,82 +7,55 @@
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0f0f0f;
-  --card:#181818;
-  --sidebar:#0f0f0f;
-  --header:#0f0f0f;
-  --accent:#f00;
-  --text:#f1f1f1;
-  --muted:#aaa;
-  --hover:#272727;
-  --input:#121212;
-  --border:#303030;
-  --chip-bg:#272727;
-  --chip-active:#f1f1f1;
-}
+:root{--bg:#0f0f0f;--card:#181818;--accent:#f00;--text:#f1f1f1;--muted:#aaa;--hover:#272727;--input:#121212;--border:#303030}
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,'Segoe UI',sans-serif;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,sans-serif}
 
-header{
-  position:fixed;top:0;left:0;right:0;height:56px;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--header);padding:0 16px;
-}
-.header-left{display:flex;align-items:center;gap:16px}
-.logo{display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
-.logo svg{color:var(--accent);width:30px;height:30px}
-.logo span{font-size:20px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
+header{position:fixed;top:0;left:0;right:0;height:56px;z-index:100;display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:0 16px}
+.logo{display:flex;align-items:center;gap:4px;cursor:pointer}
+.logo svg{color:var(--accent);width:28px;height:28px}
+.logo span{font-size:18px;font-weight:700;color:var(--text)}
 
-.header-center{flex:1;display:flex;justify-content:center;max-width:720px;margin:0 40px}
-.search-form{display:flex;width:100%;max-width:640px}
-.search-form input{
-  flex:1;background:var(--input);border:1px solid var(--border);border-right:none;
-  border-radius:20px 0 0 20px;padding:0 16px;height:40px;color:var(--text);font-size:16px;outline:none;
-}
-.search-form input:focus{border-color:#1c62b9}
-.search-form button{
-  width:64px;background:#222222;border:1px solid var(--border);border-radius:0 20px 20px 0;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);
-}
+.header-center{flex:1;display:flex;justify-content:center;max-width:600px;margin:0 20px}
+.search-form{display:flex;width:100%}
+.search-form input{flex:1;background:var(--input);border:1px solid var(--border);border-right:none;border-radius:20px 0 0 20px;padding:0 14px;height:38px;color:var(--text);font-size:15px;outline:none}
+.search-form button{width:56px;background:#222;border:1px solid var(--border);border-radius:0 20px 20px 0;cursor:pointer;color:var(--text)}
 
 .app{display:flex;padding-top:56px}
-.main{flex:1;margin-left:0;padding:24px;min-height:calc(100vh - 56px)}
+.main{flex:1;padding:20px;min-height:calc(100vh - 56px)}
 
-#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px 16px}
-.card{cursor:pointer}
-.thumb{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:12px}
-.thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
-.card:hover .thumb img{transform:scale(1.02)}
-.duration{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;padding:2px 4px;border-radius:4px}
-.info{display:flex;gap:12px;padding:12px 0 0}
-.ch-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#5865f2,#f23f43);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
-.title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.meta{font-size:13px;color:var(--muted)}
-.status{padding:60px 20px;text-align:center;color:var(--muted);grid-column:1/-1}
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px 12px}
+.card{cursor:pointer;border-radius:10px;overflow:hidden}
+.card:hover{background:var(--hover)}
+.thumb{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:10px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.duration{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.85);color:#fff;font-size:11px;padding:2px 5px;border-radius:3px}
+.info{display:flex;gap:10px;padding:10px 0}
+.ch-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#5865f2,#f23f43);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.title{font-size:14px;font-weight:500;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;margin-bottom:3px}
+.meta{font-size:12px;color:var(--muted)}
+.status{padding:60px;text-align:center;color:var(--muted);grid-column:1/-1}
 
 #player-view{display:none;padding-top:56px}
-.player-layout{display:flex;gap:24px;padding:24px;max-width:1800px;margin:0 auto}
-.player-main{flex:1;min-width:0;max-width:1280px}
-#player-wrap{width:100%;background:#000;border-radius:12px;overflow:hidden;position:relative}
-#player-wrap video{width:100%;display:block;aspect-ratio:16/9}
-.player-title{font-size:18px;font-weight:600;margin:14px 0 8px}
-.player-meta-row{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
-.channel-name{font-weight:600;font-size:14px}
-.channel-sub{font-size:12px;color:var(--muted)}
-.back-btn{display:flex;align-items:center;gap:6px;background:var(--chip-bg);border:none;color:var(--text);padding:8px 16px;border-radius:18px;cursor:pointer;font-size:14px;margin-bottom:16px}
+.player-layout{display:flex;gap:20px;padding:20px;max-width:1600px;margin:0 auto}
+.player-main{flex:1;min-width:0;max-width:1100px}
+#player-wrap{width:100%;background:#000;border-radius:12px;overflow:hidden}
+#player-wrap video,#player-wrap iframe{width:100%;aspect-ratio:16/9;border:none}
+.player-title{font-size:17px;font-weight:600;margin:12px 0 6px}
+.player-meta{display:flex;align-items:center;gap:10px}
+.channel-name{font-weight:600;font-size:13px}
+.back-btn{display:flex;align-items:center;gap:5px;background:#272727;border:none;color:#fff;padding:7px 14px;border-radius:16px;cursor:pointer;font-size:13px;margin-bottom:12px}
+.back-btn:hover{background:#3f3f3f}
 
-.up-next{width:402px;flex-shrink:0}
-.up-next-title{font-size:16px;font-weight:600;margin-bottom:12px}
-.up-card{display:flex;gap:8px;margin-bottom:10px;cursor:pointer;border-radius:8px;padding:4px;}
+.up-next{width:360px;flex-shrink:0}
+.up-next-title{font-size:15px;font-weight:600;margin-bottom:10px}
+.up-card{display:flex;gap:8px;margin-bottom:8px;cursor:pointer;padding:3px;border-radius:8px}
 .up-card:hover{background:var(--hover)}
-.up-thumb{position:relative;width:168px;flex-shrink:0;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000}
+.up-thumb{position:relative;width:155px;flex-shrink:0;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000}
 .up-thumb img{width:100%;height:100%;object-fit:cover}
-.up-title{font-size:14px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.up-title{font-size:13px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
 
-@media (max-width:1100px){.player-layout{flex-direction:column}.up-next{width:100%}}
-
-:root{--plyr-color-main:#f00;--plyr-video-background:#000}
+@media(max-width:1000px){.player-layout{flex-direction:column}.up-next{width:100%}}
 </style>
 </head>
 <body>
@@ -91,14 +64,14 @@ header{
   <div class="header-left">
     <div class="logo" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-      <span><b>T9 Tube</b></span>
+      <span>T9 Tube</span>
     </div>
   </div>
   <div class="header-center">
     <form class="search-form" onsubmit="event.preventDefault();search()">
       <input id="q" type="text" placeholder="Search">
       <button type="submit">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
     </form>
   </div>
@@ -106,7 +79,7 @@ header{
 
 <div class="app">
   <main class="main" id="main">
-    <div id="home-view"><div id="results"></div></div>
+    <div id="results"><div class="status">Search for videos above</div></div>
   </main>
 </div>
 
@@ -114,19 +87,15 @@ header{
   <div class="player-layout">
     <div class="player-main">
       <button class="back-btn" onclick="goHome()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Back
       </button>
-      <div id="player-wrap">
-        <video id="player" controls playsinline crossorigin="anonymous"></video>
-      </div>
+      <div id="player-wrap"><video id="player" controls playsinline></video></div>
       <div class="player-title" id="player-title"></div>
-      <div class="player-meta-row">
+      <div class="player-meta">
         <div class="ch-avatar" id="player-avatar">?</div>
-        <div>
-          <div class="channel-name" id="player-channel"></div>
-          <div class="channel-sub" id="player-views"></div>
-        </div>
+        <div class="channel-name" id="player-channel"></div>
+        <span class="meta" id="player-views"></span>
       </div>
     </div>
     <div class="up-next">
@@ -139,131 +108,87 @@ header{
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
-// 500+ API INSTANCES - Piped + Invidious
+// Kill any service workers that might block requests
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister()));
+}
+
+// YOUR VPS PROXY - All requests go through YOUR server, NO CORS!
+const PROXY = '/proxy.php?url=';
+
+// APIs that work well
 const PIPED_APIS = [
-  'pipedapi.moomoo.me','pipedapi.adminforge.de','pipedapi.mint.lgbt','pipedapi.garudalinux.org',
-  'pipedapi-libre.kavin.rocks','api.piped.projectsegfault.com','pipedapi.palveluntarjoaja.eu',
-  'pipedapi.mha.fi','pipedapi.nosebs.ru','pipedapi.drgns.space','pipedapi.frontendfriendly.xyz',
-  'pipedapi.owo.si','pipedapi.simpleprivacy.fr','pipedapi.syncpundit.io','pipedapi.leptons.xyz',
-  'pipedapi.cobalt.rocks','pipedapi.astral.cam','pipedapi.nadeko.net','pipedapi.vern.cc',
-  'pipedapi.qwik.space','pipedapi.odys346.dev','pipedapi.futo.org','pipedapi.sethforprivacy.com',
-  'pipedapi.lunar.icu','pipedapi.pistasjis.net','pipedapi.datura.network','pipedapi.nowhere.moe',
-  'pipedapi.reallyaweso.me','pipedapi.nboeck.de','pipedapi.priv.au','pipedapi.slipfox.xyz',
-  'pipedapi.private.coffee','pipedapi.flokinet.to','pipedapi.lidarshield.cloud',
-  'pipedapi.privacydev.net','pipedapi.snopyta.org','pipedapi.kavin.rocks','pipedapi.tiekoetter.com',
-  'pipedapi.fdn.fr','pipedapi.perennialte.ch','pipedapi.jing.rocks','pipedapi.darkness.service',
-  'pipedapi.incogniweb.net','pipedapi.f5.si','pipedapi.protokolla.fi','pipedapi.einfachzocken.eu',
-  'pipedapi.dhusch.de','pipedapi.0011.lt','pipedapi.artemislena.eu','pipedapi.weblibre.org',
-  'pipedapi.xamh.de','pipedapi.esmailelbob.xyz','pipedapi.projectsegfau.lt','pipedapi.yewtu.be',
-  'pipedapi.tux.pizza','pipedapi.ggtyler.dev','pipedapi.baczek.me','pipedapi.snwly.com',
-  'pipedapi.moomoo.me','pipedapi.osi.kr','pipedapi.riverside.rocks','pipedapi.silkky.cloud',
-  'pipedapi.himiko.cloud','pipedapi.no-logs.com','pipedapi.rawbit.ninja','pipedapi.tokhmi.xyz',
-  'pipedapi.13ad.de','pipedapi.fbxl.net','pipedapi.iswhatyou.lol','pipedapi.mutahar.rocks',
-  'pipedapi.slipfox.xyz','pipedapi.cobalt.tools','pipedapi.nadeko.net','pipedapi.vern.cc',
-  'pipedapi.qwik.space','pipedapi.odys346.dev','pipedapi.futo.org','pipedapi.sethforprivacy.com',
-  'pipedapi.lunar.icu','pipedapi.pistasjis.net','pipedapi.datura.network','pipedapi.nowhere.moe',
-  'pipedapi.reallyaweso.me','pipedapi.nboeck.de','pipedapi.priv.au','pipedapi.slipfox.xyz',
-  'pipedapi.private.coffee','pipedapi.flokinet.to','pipedapi.lidarshield.cloud',
-  'pipedapi.privacydev.net','pipedapi.nerdvpn.de','pipedapi.privacyredirect.com','pipedapi.io.lol'
-].map(h => 'https://' + h);
-
-const INVIDIOUS_APIS = [
-  'iv.melmac.space','inv.nadeko.net','invidious.privacyredirect.com','invidious.nerdvpn.de',
-  'invidious.io.lol','invidious.f5.si','invidious.qwik.space','iv.ggtyler.dev',
-  'invidious.projectsegfau.lt','invidious.tiekoetter.com','yewtu.be','invidious.adminforge.de',
-  'inv.in.projectsegfau.lt','invidious.perennialte.ch','inv.tux.pizza','invidious.protokolla.fi',
-  'invidious.jing.rocks','invidious.darkness.service','invidious.incogniweb.net','invidious.fdn.fr',
-  'invidious.0011.lt','yt.artemislena.eu','invidious.dhusch.de','invidious.einfachzocken.eu',
-  'inv.vern.cc','vid.puffyan.us','invidious.weblibre.org','invidio.xamh.de',
-  'invidious.esmailelbob.xyz','inv.bp.projectsegfau.lt','y.com.sb','invidious.namazso.eu',
-  'invidious.exonip.de','invidious.rhyshl.live','invidious.tube','invidious.materialio.us',
-  'yt.oelrichsgarcia.de','invidious.zee.li','invidious.048596.xyz','invidious.lilith.pw',
-  'invidious.ggc-project.de','yt.funami.tech','invidious.13ad.de','invidious.fbxl.net',
-  'yt.iswhatyou.lol','invidious.mutahar.rocks','invidious.kavin.rocks','invidious.baczek.me',
-  'invidious.snwly.com','invidious.moomoo.me','invidious.osi.kr','inv.riverside.rocks',
-  'invidious.silkky.cloud','invidious.himiko.cloud','invidious.no-logs.com','invidious.ggtyler.dev',
-  'invidious.rawbit.ninja','invidious.tokhmi.xyz','invidious.slipfox.xyz','invidious.private.coffee',
-  'yt.drgnz.club','inv.us.projectsegfau.lt','invidious.flokinet.to','iv.nboeck.de',
-  'invidious.sethforprivacy.com','iv.odys346.dev','invidious.lidarshield.cloud',
-  'invidious.privacydev.net','iv.nowhere.moe','invidious.reallyaweso.me','invidious.lunar.icu',
-  'inv.pistasjis.net','invidious.futo.org','iv.datura.network','invidious.drgns.space',
-  'vid.priv.au','invidious.snopyta.org','iv.melmac.space','inv.nadeko.net',
-  'yt.artemislena.eu','invidious.protokolla.fi','invidious.dhusch.de','invidious.einfachzocken.eu',
-  'inv.vern.cc','invidious.tiekoetter.com','invidious.adminforge.de','invidious.fdn.fr',
-  'invidious.perennialte.ch','inv.tux.pizza','yewtu.be','invidious.jing.rocks',
-  'invidious.darkness.service','invidious.incogniweb.net','invidious.f5.si',
-  'invidious.privacyredirect.com','invidious.nerdvpn.de','invidious.io.lol','iv.ggtyler.dev',
-  'invidious.projectsegfau.lt','inv.in.projectsegfau.lt','invidious.qwik.space','invidious.0011.lt'
-].map(h => 'https://' + h + '/api/v1');
-
-// CORS PROXIES for Invidious
-const PROXIES = [
-  'https://corsproxy.io/?',
-  'https://api.allorigins.win/raw?url=',
-  'https://api.codetabs.com/v1/proxy?quest=',
-  'https://cors-anywhere.herokuapp.com/',
-  'https://proxy.cors.sh/',
+  'https://pipedapi.moomoo.me',
+  'https://pipedapi.adminforge.de',
+  'https://pipedapi-libre.kavin.rocks',
+  'https://api.piped.projectsegfault.com',
+  'https://pipedapi.palveluntarjoaja.eu',
+  'https://pipedapi.garudalinux.org',
+  'https://pipedapi.mha.fi',
+  'https://pipedapi.drgns.space',
+  'https://pipedapi.syncpundit.io',
+  'https://pipedapi.leptons.xyz',
+  'https://pipedapi.cobalt.rocks',
+  'https://pipedapi.astral.cam',
 ];
 
-const ALL_APIS = [...PIPED_APIS, ...INVIDIOUS_APIS];
-console.log('Loaded ' + ALL_APIS.length + ' APIs');
+const INVIDIOUS_APIS = [
+  'https://inv.nadeko.net/api/v1',
+  'https://iv.ggtyler.dev/api/v1',
+  'https://invidious.fdn.fr/api/v1',
+  'https://invidious.private.coffee/api/v1',
+  'https://vid.puffyan.us/api/v1',
+  'https://invidious.jing.rocks/api/v1',
+  'https://invidious.darkness.service/api/v1',
+  'https://invidious.perennialte.ch/api/v1',
+  'https://inv.tux.pizza/api/v1',
+  'https://invidious.tiekoetter.com/api/v1',
+  'https://yewtu.be/api/v1',
+  'https://invidious.projectsegfau.lt/api/v1',
+];
 
 let currentVideos = [];
 let player = null;
 const videoCache = new Map();
 
-function cacheVideos(list) {
-  (list || []).forEach(v => { if (v && v.videoId) videoCache.set(v.videoId, v); });
+async function fetchViaProxy(url) {
+  const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error('Proxy error ' + r.status);
+  return r.json();
 }
 
-// RACE ALL APIs in parallel - returns first success
-async function raceAll(path, isPiped = true) {
+async function raceFirst(path, isPiped = true) {
   const apis = isPiped ? PIPED_APIS : INVIDIOUS_APIS;
-  const controllers = [];
   
-  const promises = apis.map((api, i) => {
-    const ctrl = new AbortController();
-    controllers.push(ctrl);
-    const url = api + path;
-    const t = setTimeout(() => ctrl.abort(), 5000);
-    
-    return fetch(url, { signal: ctrl.signal })
-      .then(r => { clearTimeout(t); if (!r.ok) throw Error('bad'); return r.json(); })
-      .then(data => ({ data, api, idx: i }))
-      .catch(() => null);
+  // Race all APIs through proxy
+  const promises = apis.map(async (api) => {
+    try {
+      const data = await fetchViaProxy(api + path);
+      if (data && (Array.isArray(data) ? data.length > 0 : data.title || data.items)) {
+        return data;
+      }
+      return null;
+    } catch(e) { return null; }
   });
 
-  // Race - take first 5 successful or wait for all
-  const results = await Promise.all(promises);
-  const success = results.find(r => r && r.data);
-  if (success) {
-    controllers.forEach(c => { try { c.abort(); } catch(e) {} });
-    return success.data;
-  }
-  throw new Error('All APIs failed');
-}
-
-// Invidious with proxy fallback
-async function fetchInvidious(path) {
-  // Try direct
-  for (let i = 0; i < Math.min(INVIDIOUS_APIS.length, 20); i++) {
-    try {
-      const r = await fetch(INVIDIOUS_APIS[i] + path, { signal: AbortSignal.timeout(4000) });
-      if (r.ok) return await r.json();
-    } catch(e) {}
-  }
-  
-  // Try with proxies
-  for (const proxy of PROXIES) {
-    for (let i = 0; i < Math.min(INVIDIOUS_APIS.length, 10); i++) {
-      try {
-        const url = proxy + encodeURIComponent(INVIDIOUS_APIS[i] + path);
-        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (r.ok) return await r.json();
-      } catch(e) {}
-    }
-  }
-  throw new Error('All Invidious sources failed');
+  // Wait for first successful response
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let completed = 0;
+    
+    promises.forEach(p => {
+      p.then(data => {
+        if (!settled && data) {
+          settled = true;
+          resolve(data);
+        }
+        completed++;
+        if (completed >= promises.length && !settled) {
+          reject(new Error('All APIs failed'));
+        }
+      });
+    });
+  });
 }
 
 function extractVideoId(url) {
@@ -274,7 +199,6 @@ function extractVideoId(url) {
   return null;
 }
 
-// SEARCH
 async function search() {
   const q = document.getElementById('q').value.trim();
   if (!q) return;
@@ -283,260 +207,7 @@ async function search() {
 
   try {
     // Try Piped first
-    const data = await raceAll(`/search?q=${encodeURIComponent(q)}&filter=videos`, true);
-    if (data && data.items) {
-      const videos = data.items.map(item => ({
-        videoId: extractVideoId(item.url),
-        title: item.title,
-        author: item.uploaderName,
-        lengthSeconds: item.duration,
-        viewCount: item.views,
-        thumbnail: item.thumbnail,
-        _source: 'piped'
-      })).filter(v => v.videoId);
-      
-      currentVideos = videos;
-      cacheVideos(videos);
-      renderResults(videos);
-      return;
-    }
-  } catch(e) {}
-
-  // Fallback to Invidious
-  try {
-    const data = await fetchInvidious(`/search?q=${encodeURIComponent(q)}&type=video&maxResults=24`);
-    const videos = (data || []).map(item => ({
-      videoId: item.videoId,
-      title: item.title,
-      author: item.author,
-      lengthSeconds: item.lengthSeconds,
-      viewCount: item.viewCount,
-      thumbnail: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
-      _source: 'invidious'
-    })).filter(v => v.videoId);
-    
-    currentVideos = videos;
-    cacheVideos(videos);
-    renderResults(videos);
-  } catch(e) {
-    document.getElementById('results').innerHTML = '<div class="status">All APIs failed. Try again.</div>';
-  }
-}
-
-function renderResults(data) {
-  const el = document.getElementById('results');
-  if (!data || !data.length) { el.innerHTML = '<div class="status">No results.</div>'; return; }
-
-  el.innerHTML = data.map(v => `
-    <div class="card" onclick="playVideoById('${escAttr(v.videoId)}')">
-      <div class="thumb">
-        <img src="${v.thumbnail || 'https://i.ytimg.com/vi/' + v.videoId + '/hqdefault.jpg'}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg'">
-        ${v.lengthSeconds ? `<span class="duration">${fmt(v.lengthSeconds)}</span>` : ''}
-      </div>
-      <div class="info">
-        <div class="ch-avatar">${esc((v.author||'?')[0].toUpperCase())}</div>
-        <div>
-          <div class="title">${esc(v.title)}</div>
-          <div class="meta">${esc(v.author)}</div>
-          <div class="meta">${fmtViews(v.viewCount)}</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// PLAY VIDEO
-function playVideoById(id) {
-  const video = videoCache.get(id);
-  if (video) playVideo(video);
-  else fetchVideoAndPlay(id);
-}
-
-async function fetchVideoAndPlay(videoId) {
-  try {
-    const video = await fetchVideoInfo(videoId);
-    if (video && video.videoId) {
-      cacheVideos([video]);
-      playVideo(video);
-    }
-  } catch(e) {
-    // YouTube embed fallback
-    document.getElementById('player-wrap').innerHTML = 
-      `<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd720" frameborder="0" allowfullscreen></iframe>`;
-  }
-}
-
-async function fetchVideoInfo(videoId) {
-  // Try Piped streams
-  try {
-    const data = await raceAll(`/streams/${videoId}`, true);
-    if (data && data.title) {
-      const muxed = (data.videoStreams || []).filter(s => !s.videoOnly && s.url)
-        .sort((a, b) => (b.height || 0) - (a.height || 0));
-      
-      return {
-        videoId,
-        title: data.title,
-        author: data.uploader,
-        description: data.description,
-        viewCount: data.views,
-        lengthSeconds: data.duration,
-        thumbnailUrl: data.thumbnailUrl,
-        _streamUrl: muxed.length > 0 ? muxed[0].url : null,
-        _hlsUrl: data.hls,
-        _related: data.relatedStreams || [],
-        _source: 'piped'
-      };
-    }
-  } catch(e) {}
-
-  // Try Invidious
-  try {
-    const data = await fetchInvidious(`/videos/${videoId}`);
-    return {
-      videoId: data.videoId,
-      title: data.title,
-      author: data.author,
-      viewCount: data.viewCount,
-      description: data.description,
-      _hlsUrl: data.hlsUrl,
-      _formatStreams: data.formatStreams || [],
-      _adaptiveFormats: data.adaptiveFormats || [],
-      _source: 'invidious'
-    };
-  } catch(e) {}
-  
-  throw new Error('Cannot fetch video');
-}
-
-async function playVideo(video) {
-  cacheVideos([video]);
-  
-  document.querySelector('.app').style.display = 'none';
-  document.getElementById('player-view').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  document.getElementById('player-title').textContent = video.title || '';
-  document.getElementById('player-channel').textContent = video.author || '';
-  document.getElementById('player-avatar').textContent = (video.author || '?')[0].toUpperCase();
-  document.getElementById('player-views').textContent = fmtViews(video.viewCount) || '';
-
-  renderUpNext(video.videoId);
-
-  const videoElement = document.getElementById('player');
-  const wrap = document.getElementById('player-wrap');
-  
-  // Reset player
-  if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
-  if (player) { player.source = { type: 'video', sources: [] }; }
-  
-  // Restore video element if it was replaced by iframe
-  if (!wrap.querySelector('video')) {
-    wrap.innerHTML = '<video id="player" controls playsinline crossorigin="anonymous"></video>';
-    const newVideo = wrap.querySelector('video');
-    if (player) { player.destroy(); player = null; }
-    // Re-init Plyr
-    player = new Plyr(newVideo, {
-      controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-      settings: ['quality', 'speed'],
-      speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
-    });
-    // Update videoElement reference
-    return await playVideo(video); // Retry with new element
-  }
-
-  // Try to get stream
-  let streamUrl = null;
-  let isHLS = false;
-
-  // Check for direct Piped stream
-  if (video._streamUrl) {
-    streamUrl = video._streamUrl;
-  }
-  // Check for HLS
-  else if (video._hlsUrl) {
-    streamUrl = video._hlsUrl;
-    isHLS = true;
-  }
-  // Check Invidious format streams
-  else if (video._formatStreams && video._formatStreams.length > 0) {
-    const sorted = video._formatStreams
-      .filter(s => s.url)
-      .sort((a, b) => (parseInt(b.quality) || 0) - (parseInt(a.quality) || 0));
-    if (sorted.length) streamUrl = sorted[0].url;
-  }
-  // Check Invidious adaptive formats
-  else if (video._adaptiveFormats && video._adaptiveFormats.length > 0) {
-    const sorted = video._adaptiveFormats
-      .filter(s => s.url && s.type && s.type.startsWith('video/'))
-      .sort((a, b) => (parseInt(b.qualityLabel) || 0) - (parseInt(a.qualityLabel) || 0));
-    if (sorted.length) streamUrl = sorted[0].url;
-  }
-
-  if (streamUrl) {
-    console.log('Playing:', streamUrl.substring(0, 80));
-    
-    if (isHLS && Hls.isSupported()) {
-      window.hlsInstance = new Hls({
-        maxBufferLength: 30,
-        startLevel: -1,
-        capLevelToPlayerSize: false,
-      });
-      window.hlsInstance.loadSource(streamUrl);
-      window.hlsInstance.attachMedia(videoElement);
-      window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-        const levels = window.hlsInstance.levels;
-        let best = 0;
-        levels.forEach((l, i) => { if (l.height >= 720) best = i; });
-        window.hlsInstance.currentLevel = best;
-        videoElement.play().catch(() => {});
-      });
-    } else {
-      videoElement.src = streamUrl;
-      if (player) {
-        player.source = {
-          type: 'video',
-          sources: [{ src: streamUrl, type: 'video/mp4' }]
-        };
-      }
-      videoElement.play().catch(() => {});
-    }
-  } else {
-    // Fallback to YouTube embed
-    wrap.innerHTML = 
-      `<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/${video.videoId}?autoplay=1&vq=hd720" frameborder="0" allowfullscreen></iframe>`;
-  }
-}
-
-async function renderUpNext(currentId) {
-  const wrap = document.getElementById('up-next-list');
-  wrap.innerHTML = '<div class="status">Loading...</div>';
-  
-  try {
-    // Try to get related from Piped
-    const cached = videoCache.get(currentId);
-    if (cached && cached._related && cached._related.length > 0) {
-      const related = cached._related
-        .map(item => ({
-          videoId: extractVideoId(item.url),
-          title: item.title,
-          author: item.uploaderName,
-          lengthSeconds: item.duration,
-          viewCount: item.views,
-          thumbnail: item.thumbnail
-        }))
-        .filter(v => v.videoId && v.videoId !== currentId)
-        .slice(0, 8);
-      
-      if (related.length > 0) {
-        cacheVideos(related);
-        renderUpNextList(related);
-        return;
-      }
-    }
-    
-    // Search-based fallback
-    const data = await raceAll('/search?q=trending&filter=videos', true);
+    const data = await raceFirst(`/search?q=${encodeURIComponent(q)}&filter=videos`, true);
     if (data && data.items) {
       const videos = data.items.map(item => ({
         videoId: extractVideoId(item.url),
@@ -545,21 +216,191 @@ async function renderUpNext(currentId) {
         lengthSeconds: item.duration,
         viewCount: item.views,
         thumbnail: item.thumbnail
+      })).filter(v => v.videoId);
+      
+      currentVideos = videos;
+      cacheVids(videos);
+      render(videos);
+      return;
+    }
+  } catch(e) {}
+
+  try {
+    // Fallback to Invidious
+    const data = await raceFirst(`/search?q=${encodeURIComponent(q)}&type=video&maxResults=24`, false);
+    const videos = (data || []).map(item => ({
+      videoId: item.videoId,
+      title: item.title,
+      author: item.author,
+      lengthSeconds: item.lengthSeconds,
+      viewCount: item.viewCount,
+      thumbnail: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`
+    })).filter(v => v.videoId);
+    
+    currentVideos = videos;
+    cacheVids(videos);
+    render(videos);
+  } catch(e) {
+    document.getElementById('results').innerHTML = '<div class="status">Search failed. Try again.</div>';
+  }
+}
+
+function render(data) {
+  const el = document.getElementById('results');
+  if (!data.length) { el.innerHTML = '<div class="status">No results</div>'; return; }
+  
+  el.innerHTML = data.map(v => `
+    <div class="card" onclick="playVideoById('${esc(v.videoId)}')">
+      <div class="thumb">
+        <img src="${v.thumbnail || 'https://i.ytimg.com/vi/'+v.videoId+'/hqdefault.jpg'}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg'">
+        ${v.lengthSeconds ? `<span class="duration">${fmt(v.lengthSeconds)}</span>` : ''}
+      </div>
+      <div class="info">
+        <div class="ch-avatar">${esc((v.author||'?')[0].toUpperCase())}</div>
+        <div>
+          <div class="title">${esc(v.title)}</div>
+          <div class="meta">${esc(v.author)} &bull; ${fmtViews(v.viewCount)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function playVideoById(id) {
+  const v = videoCache.get(id);
+  if (v) playVideo(v);
+  else fetchAndPlay(id);
+}
+
+async function fetchAndPlay(videoId) {
+  try {
+    // Get video info from Piped
+    const data = await raceFirst(`/streams/${videoId}`, true);
+    if (data && data.title) {
+      const video = {
+        videoId,
+        title: data.title,
+        author: data.uploader,
+        viewCount: data.views,
+        _streamUrl: (data.videoStreams || []).filter(s => !s.videoOnly && s.url).sort((a,b) => (b.height||0)-(a.height||0))[0]?.url,
+        _hlsUrl: data.hls,
+        _related: data.relatedStreams || []
+      };
+      cacheVids([video]);
+      playVideo(video);
+      return;
+    }
+  } catch(e) {}
+
+  // YouTube embed fallback
+  showEmbed(videoId);
+}
+
+async function playVideo(video) {
+  cacheVids([video]);
+  
+  document.querySelector('.app').style.display = 'none';
+  document.getElementById('player-view').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+
+  document.getElementById('player-title').textContent = video.title || '';
+  document.getElementById('player-channel').textContent = video.author || '';
+  document.getElementById('player-avatar').textContent = (video.author||'?')[0].toUpperCase();
+  document.getElementById('player-views').textContent = fmtViews(video.viewCount) || '';
+
+  renderUpNext(video.videoId);
+
+  const wrap = document.getElementById('player-wrap');
+  if (window.hlsInstance) { window.hlsInstance.destroy(); window.hlsInstance = null; }
+
+  let streamUrl = video._streamUrl || video._hlsUrl;
+  const isHLS = streamUrl && (streamUrl.includes('.m3u8') || streamUrl.includes('manifest'));
+
+  if (streamUrl) {
+    // Ensure video element exists
+    if (!wrap.querySelector('video')) {
+      wrap.innerHTML = '<video id="player" controls playsinline></video>';
+      if (player) player.destroy();
+      player = new Plyr('#player', { controls: ['play-large','play','progress','current-time','mute','volume','settings','pip','fullscreen'], settings: ['quality','speed'] });
+    }
+    
+    const videoEl = wrap.querySelector('video');
+    
+    if (isHLS && Hls.isSupported()) {
+      window.hlsInstance = new Hls({ maxBufferLength: 30, startLevel: -1, capLevelToPlayerSize: false });
+      window.hlsInstance.loadSource(streamUrl);
+      window.hlsInstance.attachMedia(videoEl);
+      window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        let best = 0;
+        window.hlsInstance.levels.forEach((l, i) => { if (l.height >= 720) best = i; });
+        window.hlsInstance.currentLevel = best;
+        videoEl.play().catch(()=>{});
+      });
+    } else {
+      videoEl.src = streamUrl;
+      if (player) player.source = { type: 'video', sources: [{ src: streamUrl, type: 'video/mp4' }] };
+      videoEl.play().catch(()=>{});
+    }
+  } else {
+    showEmbed(video.videoId);
+  }
+}
+
+function showEmbed(videoId) {
+  document.getElementById('player-wrap').innerHTML = 
+    `<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd720" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  document.getElementById('player-title').textContent = 'Playing via YouTube embed';
+}
+
+async function renderUpNext(currentId) {
+  const wrap = document.getElementById('up-next-list');
+  wrap.innerHTML = '<div class="status">Loading...</div>';
+  
+  // Try related from cache
+  const cached = videoCache.get(currentId);
+  if (cached?._related?.length) {
+    const related = cached._related.map(item => ({
+      videoId: extractVideoId(item.url),
+      title: item.title,
+      author: item.uploaderName,
+      lengthSeconds: item.duration,
+      viewCount: item.views,
+      thumbnail: item.thumbnail
+    })).filter(v => v.videoId && v.videoId !== currentId).slice(0, 8);
+    
+    if (related.length) {
+      cacheVids(related);
+      renderUpList(related);
+      return;
+    }
+  }
+  
+  // Search fallback
+  try {
+    const data = await raceFirst('/search?q=trending&filter=videos', true);
+    if (data?.items) {
+      const vids = data.items.map(item => ({
+        videoId: extractVideoId(item.url),
+        title: item.title,
+        author: item.uploaderName,
+        lengthSeconds: item.duration,
+        viewCount: item.views,
+        thumbnail: item.thumbnail
       })).filter(v => v.videoId && v.videoId !== currentId).slice(0, 6);
       
-      cacheVideos(videos);
-      renderUpNextList(videos);
+      cacheVids(vids);
+      renderUpList(vids);
     }
   } catch(e) {
     wrap.innerHTML = '<div class="status">No suggestions</div>';
   }
 }
 
-function renderUpNextList(videos) {
-  document.getElementById('up-next-list').innerHTML = videos.map(v => `
-    <div class="up-card" onclick="playVideoById('${escAttr(v.videoId)}')">
+function renderUpList(vids) {
+  document.getElementById('up-next-list').innerHTML = vids.map(v => `
+    <div class="up-card" onclick="playVideoById('${esc(v.videoId)}')">
       <div class="up-thumb">
-        <img src="${v.thumbnail || 'https://i.ytimg.com/vi/' + v.videoId + '/hqdefault.jpg'}" loading="lazy">
+        <img src="${v.thumbnail || 'https://i.ytimg.com/vi/'+v.videoId+'/hqdefault.jpg'}" loading="lazy">
         ${v.lengthSeconds ? `<span class="duration">${fmt(v.lengthSeconds)}</span>` : ''}
       </div>
       <div>
@@ -572,34 +413,32 @@ function renderUpNextList(videos) {
 
 function goHome() {
   document.getElementById('player-view').style.display = 'none';
-  document.getElementById('home-view').style.display = 'block';
   document.querySelector('.app').style.display = 'flex';
 }
 
-// Init
+function cacheVids(list) { (list||[]).forEach(v => { if(v?.videoId) videoCache.set(v.videoId, v); }); }
+
 document.addEventListener('DOMContentLoaded', () => {
   player = new Plyr('#player', {
-    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-    settings: ['quality', 'speed'],
-    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+    controls: ['play-large','play','progress','current-time','mute','volume','settings','pip','fullscreen'],
+    settings: ['quality','speed'],
+    speed: { selected: 1, options: [0.5,0.75,1,1.25,1.5,2] }
   });
-  document.getElementById('results').innerHTML = '<div class="status">Search for videos above</div>';
 });
 
 function fmt(s) {
   if (!s) return '';
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
   return h ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
 }
 function fmtViews(v) {
   if (!v) return '';
-  if (v >= 1e9) return (v/1e9).toFixed(1) + 'B views';
-  if (v >= 1e6) return (v/1e6).toFixed(1) + 'M views';
-  if (v >= 1e3) return (v/1e3).toFixed(1) + 'K views';
-  return v + ' views';
+  if (v>=1e9) return (v/1e9).toFixed(1)+'B views';
+  if (v>=1e6) return (v/1e6).toFixed(1)+'M views';
+  if (v>=1e3) return (v/1e3).toFixed(1)+'K views';
+  return v+' views';
 }
-function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
-function escAttr(s) { return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 </script>
 </body>
 </html>
