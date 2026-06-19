@@ -3,1300 +3,1372 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T9 Network</title>
+<title>T9 Tube</title>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#313338;--sidebar:#2b2d31;--server-bar:#1e1f22;--text:#dbdee1;--muted:#949ba4;--accent:#5865f2;--green:#23a55a;--red:#f23f43;--hover:#35373c;--input:#383a40;--border:#1e1f22;--modal:#2b2d31}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;height:100vh;overflow:hidden}
-.icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.icon svg{display:block}
-#server-bar{width:72px;background:var(--server-bar);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;overflow-y:auto;flex-shrink:0}
-.srv-icon{width:48px;height:48px;border-radius:50%;background:var(--hover);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;transition:border-radius .15s,background .15s;position:relative;overflow:hidden;flex-shrink:0}
-.srv-icon img{width:100%;height:100%;object-fit:cover}
-.srv-icon:hover,.srv-icon.active{border-radius:16px;background:var(--accent)}
-.srv-separator{width:32px;height:2px;background:#3f4147;border-radius:1px;flex-shrink:0}
-#sidebar{width:240px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
-#sidebar-header{padding:0 16px;height:48px;display:flex;align-items:center;font-weight:700;font-size:15px;border-bottom:2px solid var(--border);cursor:pointer;flex-shrink:0;gap:8px;user-select:none}
-#sidebar-header:hover{background:var(--hover)}
-#channel-list{flex:1;overflow-y:auto;padding:8px 0}
-.ch-section{padding:16px 8px 4px 8px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
-.ch-add-btn{background:none;border:none;color:var(--muted);cursor:pointer;width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:3px}
-.ch-add-btn:hover{color:var(--text);background:var(--hover)}
-.ch-btn{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 16px;border-radius:4px;cursor:pointer;color:var(--muted);margin:1px 8px;border:none;background:none;width:calc(100% - 16px);text-align:left;font-size:14px;font-family:inherit}
-.ch-btn:hover{background:var(--hover);color:var(--text)}
-.ch-btn.active{background:#404249;color:#fff}
-.ch-voice-users{padding-left:40px}
-.ch-voice-user{font-size:12px;color:var(--muted);padding:2px 0;display:flex;align-items:center;gap:6px}
-.ch-voice-user.speaking{color:var(--green)}
-#user-panel{padding:8px;background:#232428;display:flex;align-items:center;gap:8px;flex-shrink:0}
-.up-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;cursor:pointer;overflow:hidden;flex-shrink:0}
-.up-avatar img{width:100%;height:100%;object-fit:cover}
-.up-info{flex:1;min-width:0}
-.up-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.up-tag{font-size:11px;color:var(--muted)}
-.up-btns{display:flex;gap:2px}
-.up-btn{width:32px;height:32px;border-radius:4px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.up-btn:hover{background:var(--hover);color:var(--text)}
-#main{flex:1;display:flex;flex-direction:column;min-width:0}
-#main-header{height:48px;border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
-#main-header .ch-name{font-weight:700;font-size:15px}
-#messages{flex:1;overflow-y:auto;padding:16px 16px 0}
-.msg{padding:2px 0;display:flex;gap:16px;border-radius:4px;padding:2px 8px}
-.msg:hover{background:rgba(0,0,0,.06)}
-.msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;overflow:hidden;cursor:pointer}
-.msg-avatar img{width:100%;height:100%;object-fit:cover}
-.msg-body{flex:1;min-width:0}
-.msg-header{display:flex;gap:8px;align-items:baseline;margin-bottom:2px}
-.msg-name{font-weight:600;font-size:15px;cursor:pointer}
-.msg-name:hover{text-decoration:underline}
-.msg-time{font-size:11px;color:var(--muted)}
-.msg-text{font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap}
-.msg-compact{padding:1px 8px 1px 64px}
-.system-msg{text-align:center;color:var(--muted);font-size:13px;padding:8px 0;display:flex;align-items:center;gap:8px}
-.system-msg::before,.system-msg::after{content:'';flex:1;height:1px;background:var(--border)}
-#input-area{padding:0 16px 24px;flex-shrink:0}
-.input-wrap{background:var(--input);border-radius:8px;display:flex;align-items:center;padding:0 16px;gap:8px}
-#msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:11px 0;font-family:inherit;resize:none;max-height:200px}
-#msg-input::placeholder{color:var(--muted)}
-.input-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
-.input-btn:hover{color:var(--text);background:var(--hover)}
-#voice-bar{display:none;background:#1a1b1e;border-top:1px solid #3f4147;padding:8px 16px;flex-shrink:0}
-#voice-bar.active{display:flex;align-items:center;gap:12px}
-.vb-info{flex:1}
-.vb-room{font-size:13px;font-weight:600;color:var(--green)}
-.vb-server{font-size:11px;color:var(--muted)}
-.vb-btns{display:flex;gap:4px}
-.vb-btn{width:32px;height:32px;border-radius:4px;border:none;background:var(--hover);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.vb-btn:hover{background:#3f4147}
-.vb-btn.danger{background:var(--red);color:#fff}
-.vb-btn.muted-on{background:var(--red);color:#fff}
-#members{width:240px;background:var(--sidebar);overflow-y:auto;padding:16px 8px;flex-shrink:0;display:none}
-#members.visible{display:block}
-.member-section{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:16px 8px 4px}
-.member-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer}
-.member-item:hover{background:var(--hover)}
-.member-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
-.member-avatar img{width:100%;height:100%;object-fit:cover}
-.member-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar)}
-.member-name{font-size:14px;color:var(--muted)}
-.member-item:hover .member-name{color:var(--text)}
-.dm-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;margin:1px 8px}
-.dm-item:hover{background:var(--hover)}
-.dm-item.active{background:#404249}
-.dm-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
-.dm-avatar img{width:100%;height:100%;object-fit:cover}
-.dm-name{font-size:14px;color:var(--muted);flex:1}
-.dm-item:hover .dm-name,.dm-item.active .dm-name{color:var(--text)}
-#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted);text-align:center;padding:32px}
-#welcome h2{font-size:24px;color:var(--text)}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:var(--modal);border-radius:8px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto;position:relative}
-.modal h2{font-size:20px;font-weight:700;margin-bottom:4px}
-.modal .subtitle{color:var(--muted);font-size:14px;margin-bottom:20px}
-.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px}
-.modal-close:hover{color:var(--text);background:var(--hover)}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.form-group input{width:100%;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px 12px;color:var(--text);font-size:16px;font-family:inherit;outline:none}
-.form-group input:focus{border-color:var(--accent)}
-.btn{padding:10px 20px;border-radius:4px;border:none;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#4752c4}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger:hover{background:#a12d2f}
-.btn-ghost{background:transparent;color:var(--muted)}
-.btn-ghost:hover{color:var(--text);text-decoration:underline}
-.btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
-.avatar-upload{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
-.avatar-preview{width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147;transition:border-color .15s}
-.avatar-preview:hover{border-color:var(--accent)}
-.avatar-preview img{width:100%;height:100%;object-fit:cover}
-.srv-preview{width:80px;height:80px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;border:2px dashed #3f4147}
-.srv-preview:hover{border-color:var(--accent)}
-.srv-preview img{width:100%;height:100%;object-fit:cover}
-.invite-box{background:#1e1f22;border-radius:4px;padding:14px;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;color:var(--accent);cursor:pointer;user-select:all;border:1px solid #3f4147}
-.invite-box:hover{border-color:var(--accent)}
-.copy-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
-.tab-bar{display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid #3f4147}
-.tab{padding:8px 16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab.active{color:var(--text);border-bottom-color:var(--accent)}
-.ch-mgr-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:4px;background:#1e1f22;margin-bottom:4px}
-.ch-mgr-item span{flex:1;font-size:14px}
-.ch-mgr-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
-.ch-mgr-btn:hover{background:rgba(242,63,67,.2);color:var(--red)}
-.mm-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:4px;margin-bottom:2px}
-.mm-item:hover{background:#1e1f22}
-.mm-name{flex:1;font-size:14px}
-.mm-kick{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px}
-.mm-kick:hover{background:var(--red);color:#fff}
-.danger-zone{border:1px solid var(--red);border-radius:4px;padding:16px;margin-top:20px}
-.danger-zone h3{color:var(--red);font-size:13px;font-weight:700;margin-bottom:10px}
-.owner-tag{background:#f0b132;color:#000;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;margin-left:4px}
-.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;pointer-events:none;animation:fadeup .2s}
-@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-#onboarding{position:fixed;inset:0;background:#1e1f22;z-index:2000;display:flex;align-items:center;justify-content:center}
-#onboarding.hidden{display:none}
-.onboarding-card{background:var(--modal);border-radius:12px;padding:40px;width:420px;max-width:90vw;text-align:center}
-.onboarding-card h1{font-size:28px;font-weight:800;margin-bottom:8px;color:#fff}
-.onboarding-card p{color:var(--muted);font-size:15px;margin-bottom:28px}
-.ob-avatar{width:100px;height:100px;border-radius:50%;background:var(--accent);margin:0 auto 20px;cursor:pointer;border:3px dashed #3f4147;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;color:#fff;transition:border-color .15s}
-.ob-avatar:hover{border-color:var(--accent)}
-.ob-avatar img{width:100%;height:100%;object-fit:cover}
-.ob-input{width:100%;background:#1e1f22;border:1px solid #3f4147;border-radius:6px;padding:12px 16px;color:var(--text);font-size:16px;font-family:inherit;outline:none;margin-bottom:20px;text-align:center}
-.ob-input:focus{border-color:var(--accent)}
-.ob-btn{width:100%;padding:14px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
-.ob-btn:hover{background:#4752c4}
+:root{
+  --bg:#0f0f0f;
+  --card:#181818;
+  --sidebar:#0f0f0f;
+  --header:#0f0f0f;
+  --accent:#f00;
+  --text:#f1f1f1;
+  --muted:#aaa;
+  --hover:#272727;
+  --input:#121212;
+  --border:#303030;
+  --chip-bg:#272727;
+  --chip-active:#f1f1f1;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:Roboto,Arial,'Segoe UI',sans-serif;overflow-x:hidden}
 
-/* YouTube Player Styles */
-.yt-player{margin:8px 0;max-width:560px}
-.yt-search-container{padding:16px}
-.yt-search-input{width:100%;padding:8px 12px;background:var(--input);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;margin-bottom:12px}
-.yt-results{display:flex;flex-direction:column;gap:8px}
-.yt-result-item{display:flex;gap:12px;padding:8px;border-radius:4px;cursor:pointer;background:#2b2d31}
-.yt-result-item:hover{background:#35373c}
-.yt-result-thumb{width:168px;height:94px;border-radius:4px;object-fit:cover;flex-shrink:0}
-.yt-result-info{flex:1;min-width:0}
-.yt-result-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.yt-result-channel{font-size:12px;color:var(--muted)}
-.yt-result-meta{font-size:12px;color:var(--muted)}
+/* ===== HEADER ===== */
+header{
+  position:fixed;top:0;left:0;right:0;height:56px;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--header);padding:0 16px;border-bottom:1px solid transparent;
+}
+.header-left{display:flex;align-items:center;gap:16px;min-width:160px}
+.menu-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;display:flex;color:var(--text)}
+.menu-btn:hover{background:var(--hover)}
+.logo{display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
+.logo svg{color:var(--accent);width:30px;height:30px}
+.logo span{font-size:20px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
+.logo span b{font-weight:700}
+
+.header-center{flex:1;display:flex;justify-content:center;max-width:720px;margin:0 40px}
+.search-form{display:flex;width:100%;max-width:640px}
+.search-form input{
+  flex:1;background:var(--input);border:1px solid var(--border);border-right:none;
+  border-radius:20px 0 0 20px;padding:0 16px;height:40px;color:var(--text);font-size:16px;outline:none;
+}
+.search-form input:focus{border-color:#1c62b9}
+.search-form button{
+  width:64px;background:#222222;border:1px solid var(--border);border-radius:0 20px 20px 0;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);
+}
+.search-form button:hover{background:#3f3f3f}
+
+.header-right{display:flex;align-items:center;gap:8px;min-width:160px;justify-content:flex-end}
+.icon-btn{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--hover)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f23f43,#5865f2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  position:fixed;top:56px;left:0;bottom:0;width:240px;background:var(--sidebar);
+  overflow-y:auto;padding:12px 0;z-index:90;transition:transform .2s ease;
+}
+.sidebar.collapsed{width:72px}
+.sidebar.collapsed .sec-label, .sidebar.collapsed .nav-item span{display:none}
+.sidebar.collapsed .nav-item{flex-direction:column;gap:2px;padding:14px 0;border-radius:8px;margin:0 4px}
+.sidebar.collapsed .nav-item svg{width:24px;height:24px}
+.sidebar.collapsed .nav-item .mini-label{display:block;font-size:10px}
+.nav-item .mini-label{display:none}
+
+.nav-section{padding:0 0 8px 0;border-bottom:1px solid var(--border);margin-bottom:8px}
+.nav-section:last-child{border-bottom:none}
+.nav-item{
+  display:flex;align-items:center;gap:24px;padding:0 24px;height:40px;cursor:pointer;
+  color:var(--text);font-size:14px;border-radius:0 20px 20px 0;
+}
+.sidebar.collapsed .nav-item{border-radius:8px}
+.nav-item:hover{background:var(--hover)}
+.nav-item.active{background:var(--hover);font-weight:600}
+.nav-item.active svg{color:var(--text)}
+.nav-item svg{flex-shrink:0;width:24px;height:24px;color:var(--text)}
+.sec-label{font-size:16px;font-weight:600;padding:8px 24px;color:var(--text)}
+
+/* ===== MAIN LAYOUT ===== */
+.app{display:flex;padding-top:56px}
+.main{flex:1;margin-left:240px;padding:24px;transition:margin .2s ease;min-height:calc(100vh - 56px)}
+.main.expanded{margin-left:72px}
+
+/* ===== CHIPS (categories) ===== */
+.chips{display:flex;gap:12px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;background:var(--chip-bg);color:var(--text);border:none;border-radius:8px;
+  padding:7px 12px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;
+}
+.chip:hover{background:#3f3f3f}
+.chip.active{background:var(--chip-active);color:#0f0f0f}
+
+/* ===== GRID ===== */
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px 16px}
+.card{cursor:pointer;border-radius:0}
+.thumb{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:12px}
+.thumb img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
+.card:hover .thumb img{transform:scale(1.02)}
+.duration{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:500;padding:2px 4px;border-radius:4px}
+.fyp-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.75);color:#fff;font-size:10px;font-weight:600;padding:3px 6px;border-radius:4px;display:flex;align-items:center;gap:4px}
+.fyp-badge svg{width:10px;height:10px}
+.info{display:flex;gap:12px;padding:12px 0 0}
+.ch-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#5865f2,#f23f43);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.info-text{min-width:0}
+.title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+.meta{font-size:13px;color:var(--muted);line-height:1.4}
+.status{padding:60px 20px;text-align:center;color:var(--muted);grid-column:1/-1;font-size:16px}
+
+.section-title{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600;margin:0 0 16px;color:var(--text)}
+.section-title svg{width:20px;height:20px;color:var(--accent)}
+.section-sub{color:var(--muted);font-size:13px;font-weight:400;margin-left:4px}
+
+/* ===== PLAYER VIEW ===== */
+#player-view{display:none;padding-top:56px}
+.player-layout{display:flex;gap:24px;padding:24px;max-width:1800px;margin:0 auto;align-items:flex-start}
+.player-main{flex:1;min-width:0;max-width:1280px}
+#player-wrap{width:100%;background:#000;border-radius:12px;overflow:hidden;position:relative}
+#player-wrap video{width:100%;display:block;aspect-ratio:16/9}
+.player-title{font-size:18px;font-weight:600;margin:14px 0 8px;line-height:1.3}
+.player-meta-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.channel-row{display:flex;align-items:center;gap:12px}
+.channel-name{font-weight:600;font-size:14px}
+.channel-sub{font-size:12px;color:var(--muted)}
+.back-btn{display:flex;align-items:center;gap:6px;background:var(--chip-bg);border:none;color:var(--text);padding:8px 16px;border-radius:18px;cursor:pointer;font-size:14px;font-weight:500;margin-bottom:16px}
+.back-btn:hover{background:#3f3f3f}
+.subscribe-btn{background:#f1f1f1;color:#0f0f0f;border:none;padding:9px 16px;border-radius:18px;font-weight:600;font-size:14px;cursor:pointer}
+.action-pills{display:flex;gap:8px}
+.pill{display:flex;align-items:center;gap:6px;background:var(--chip-bg);border:none;color:var(--text);padding:9px 14px;border-radius:18px;cursor:pointer;font-size:14px;font-weight:500}
+.pill:hover{background:#3f3f3f}
+.player-desc{background:var(--card);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--text);line-height:1.5}
+
+.up-next{width:402px;flex-shrink:0}
+.up-next-title{font-size:16px;font-weight:600;margin-bottom:12px}
+.up-card{display:flex;gap:8px;margin-bottom:10px;cursor:pointer;border-radius:8px;padding:4px;}
+.up-card:hover{background:var(--hover)}
+.up-thumb{position:relative;width:168px;flex-shrink:0;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#000}
+.up-thumb img{width:100%;height:100%;object-fit:cover}
+.up-info{min-width:0}
+.up-title{font-size:14px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;margin-bottom:4px}
+.up-meta{font-size:12px;color:var(--muted)}
+
+.quality-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:8px;text-transform:uppercase;vertical-align:middle}
+.player-error{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;color:var(--muted);margin-top:16px}
+.player-error svg{color:var(--accent);margin-bottom:12px}
+
+/* Player loading overlay */
+.player-loader{
+  position:absolute;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:10;color:#fff;gap:12px;
+}
+.player-loader.hidden{display:none}
+.player-loader .spinner{
+  width:48px;height:48px;border:3px solid rgba(255,255,255,.2);border-top-color:#f00;
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:1100px){
+  .player-layout{flex-direction:column}
+  .up-next{width:100%}
+}
+@media (max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .main.expanded{margin-left:0}
+  .header-center{margin:0 12px}
+  .logo span{display:none}
+}
+
+:root{--plyr-color-main:#f00;--plyr-video-background:#000}
 </style>
+<base target="_blank">
 </head>
 <body>
 
-<div id="onboarding">
-  <div class="onboarding-card">
-    <h1>Welcome to T9 Network</h1>
-    <p>Set up your profile to get started</p>
-    <div class="ob-avatar" id="ob-avatar" onclick="document.getElementById('ob-avatar-input').click()">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+<header>
+  <div class="header-left">
+    <button class="menu-btn" onclick="toggleSidebar()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+    </button>
+    <div class="logo" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+      <span>T9 <b>Tube</b></span>
     </div>
-    <input type="file" id="ob-avatar-input" accept="image/*" style="display:none" onchange="obPreviewAvatar(this)">
-    <input class="ob-input" id="ob-name" type="text" placeholder="Your display name" maxlength="32" onkeydown="if(event.key==='Enter')finishOnboarding()">
-    <button class="ob-btn" onclick="finishOnboarding()">Let's go</button>
   </div>
-</div>
 
-<div id="server-bar">
-  <div class="srv-icon" id="dm-icon" onclick="showDMs()" title="Direct Messages">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  <div class="header-center">
+    <form class="search-form" onsubmit="event.preventDefault();search()">
+      <input id="q" type="text" placeholder="Search">
+      <button type="submit">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </form>
   </div>
-  <div class="srv-separator"></div>
-  <div id="server-icons"></div>
-  <div class="srv-separator"></div>
-  <div class="srv-icon" onclick="openModal('create-server')" title="Create Server" style="background:#3a3d44;color:var(--green)">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  </div>
-  <div class="srv-icon" onclick="openModal('join-server')" title="Join Server" style="background:#3a3d44;color:var(--muted)">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </div>
-  <div class="srv-separator"></div>
-  <div class="srv-icon" onclick="toggleYT()" title="YouTube" style="background:#ff0000;color:#fff">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-  </div>
-</div>
 
-<div id="sidebar">
-  <div id="sidebar-header" onclick="openServerMenu()">
-    <span id="sidebar-title" style="flex:1">Direct Messages</span>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M7 10l5 5 5-5z"/></svg>
+  <div class="header-right">
+    <button class="icon-btn" title="Clear watch history" onclick="clearHistory()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0v14a1 1 0 01-1 1H6a1 1 0 01-1-1V6h14z"/></svg>
+    </button>
+    <div class="avatar" title="T9">T9</div>
   </div>
-  <div id="channel-list"></div>
-  <div id="user-panel">
-    <div class="up-avatar" id="my-avatar" onclick="openModal('edit-profile')"></div>
-    <div class="up-info">
-      <div class="up-name" id="my-name">...</div>
-      <div class="up-tag">T9 Network</div>
-    </div>
-    <div class="up-btns">
-      <button class="up-btn" id="mute-btn" onclick="toggleMic()" title="Mute/Unmute">
-        <svg id="mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
-      </button>
-      <button class="up-btn" onclick="openModal('edit-profile')" title="Settings">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.4 7.4 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.4 7.4 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
-      </button>
-    </div>
-  </div>
-</div>
+</header>
 
-<div id="main">
-  <div id="main-header" style="display:none">
-    <span id="header-icon" style="color:var(--muted)"></span>
-    <span class="ch-name" id="header-name"></span>
-    <div style="margin-left:auto;display:flex;gap:4px">
-      <button class="up-btn" id="dm-call-btn" onclick="startDMCall()" title="Start Voice Call" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-      </button>
-      <button class="up-btn" id="dm-end-call-btn" onclick="endDMCall()" title="End Call" style="display:none;color:var(--red)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
-      </button>
-      <button class="up-btn" onclick="toggleMembers()" title="Members">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      </button>
-    </div>
-  </div>
-  <div id="welcome">
-    <svg width="72" height="72" viewBox="0 0 24 24" fill="var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-    <h2>Welcome to T9 Network</h2>
-    <p style="color:var(--muted);font-size:15px">Select a channel or start a DM to begin.</p>
-  </div>
-  <div id="messages" style="display:none"></div>
-  <div id="yt-panel" style="display:none;flex:1;overflow-y:auto;padding:16px">
-    <div class="yt-search-container">
-      <input class="yt-search-input" id="yt-search-input" type="text" placeholder="Search YouTube..." onkeydown="if(event.key==='Enter')searchYT()">
-      <div class="yt-results" id="yt-results"></div>
-    </div>
-  </div>
-  <div id="input-area" style="display:none">
-    <div class="input-wrap">
-      <textarea id="msg-input" rows="1" placeholder="Message" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-      <button class="input-btn" onclick="sendText()" title="Send">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
-    </div>
-  </div>
-  <div id="voice-bar">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-    <div class="vb-info">
-      <div class="vb-room" id="vb-room-name"></div>
-      <div class="vb-server" id="vb-server-name">Voice Connected</div>
-    </div>
-    <div class="vb-btns">
-      <button class="vb-btn" id="vb-mute" onclick="toggleMic()" title="Mute">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
-      </button>
-      <button class="vb-btn danger" onclick="disconnectVoice()" title="Disconnect">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
-      </button>
-    </div>
-  </div>
-</div>
-
-<div id="members"></div>
-
-<div class="modal-overlay" id="modal-create-server">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('create-server')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h2>Create a Server</h2>
-    <p class="subtitle">Give your server a name and optional icon.</p>
-    <div class="avatar-upload">
-      <div class="srv-preview" id="create-icon-preview" onclick="document.getElementById('create-icon-input').click()"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-      <input type="file" id="create-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'create-icon-preview')">
-      <span style="font-size:13px;color:var(--muted)">Upload icon (optional)</span>
-    </div>
-    <div class="form-group"><label>Server Name</label><input type="text" id="create-server-name" placeholder="My Server" maxlength="100" onkeydown="if(event.key==='Enter')createServer()"></div>
-    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('create-server')">Cancel</button><button class="btn btn-primary" onclick="createServer()">Create</button></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-join-server">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('join-server')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h2>Join a Server</h2>
-    <p class="subtitle">Enter an invite code to join.</p>
-    <div class="form-group"><label>Invite Code</label><input type="text" id="join-code-input" placeholder="e.g. Y2KDIN" maxlength="8" style="text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center" onkeydown="if(event.key==='Enter')joinServer()"></div>
-    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('join-server')">Cancel</button><button class="btn btn-primary" onclick="joinServer()">Join</button></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-edit-profile">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('edit-profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h2>Edit Profile</h2>
-    <div class="avatar-upload">
-      <div class="avatar-preview" id="profile-avatar-preview" onclick="document.getElementById('profile-avatar-input').click()"></div>
-      <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewImage(this,'profile-avatar-preview')">
-      <span style="font-size:13px;color:var(--muted)">Click to change avatar</span>
-    </div>
-    <div class="form-group"><label>Display Name</label><input type="text" id="profile-name-input" placeholder="Your name" maxlength="32" onkeydown="if(event.key==='Enter')saveProfile()"></div>
-    <div class="btn-row"><button class="btn btn-ghost" onclick="closeModal('edit-profile')">Cancel</button><button class="btn btn-primary" onclick="saveProfile()">Save</button></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-server-settings">
-  <div class="modal" style="width:540px">
-    <button class="modal-close" onclick="closeModal('server-settings')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h2 id="ss-title">Server Settings</h2>
-    <div class="tab-bar" style="margin-top:12px">
-      <button class="tab active" onclick="ssTab('overview',this)">Overview</button>
-      <button class="tab" onclick="ssTab('channels',this)">Channels</button>
-      <button class="tab" onclick="ssTab('members',this)">Members</button>
-      <button class="tab" onclick="ssTab('invite',this)">Invite</button>
-    </div>
-    <div id="ss-overview">
-      <div class="avatar-upload">
-        <div class="srv-preview" id="ss-icon-preview" onclick="document.getElementById('ss-icon-input').click()"></div>
-        <input type="file" id="ss-icon-input" accept="image/*" style="display:none" onchange="previewImage(this,'ss-icon-preview')">
-        <span style="font-size:13px;color:var(--muted)">Click to change icon</span>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="nav-section">
+      <div class="nav-item active" data-view="home" onclick="setView('home')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+        <span>Home</span><span class="mini-label">Home</span>
       </div>
-      <div class="form-group"><label>Server Name</label><input type="text" id="ss-name-input" maxlength="100"></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="saveServerSettings()">Save Changes</button></div>
-      <div class="danger-zone"><h3>Danger Zone</h3><button class="btn btn-danger" onclick="deleteServer()">Delete Server</button></div>
+      <div class="nav-item" data-view="fyp" onclick="setView('fyp')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C17.15 17.81 14.75 19 12 19z"/></svg>
+        <span>For You</span><span class="mini-label">For You</span>
+      </div>
+      <div class="nav-item" data-view="subs" onclick="setView('subs')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 18v-6l5 3-5 3zm9-15H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V5h14v14z"/></svg>
+        <span>Subscriptions</span><span class="mini-label">Subs</span>
+      </div>
     </div>
-    <div id="ss-channels" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Text Channels</span><button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('text')">Add</button></div>
-      <div id="ss-text-channels" style="margin-bottom:16px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Voice Channels</span><button class="btn btn-primary" style="padding:4px 12px;font-size:12px" onclick="addChannel('voice')">Add</button></div>
-      <div id="ss-voice-channels"></div>
+    <div class="nav-section">
+      <div class="nav-item" data-view="history" onclick="setView('history')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7v2a9 9 0 000-18z"/><path d="M12 8v5l4.28 2.54.72-1.21-3.5-2.08V8z"/></svg>
+        <span>History</span><span class="mini-label">History</span>
+      </div>
     </div>
-    <div id="ss-members" style="display:none"><div id="ss-members-list"></div></div>
-    <div id="ss-invite" style="display:none">
-      <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Share this code to invite people:</p>
-      <div class="invite-box" id="ss-invite-code" onclick="copyInvite()"></div>
-      <div class="copy-hint">Click to copy</div>
-      <div class="btn-row"><button class="btn btn-ghost" onclick="regenerateInvite()">Regenerate Code</button></div>
+    <div class="nav-section" id="trending-topics-section" style="display:none">
+      <div class="sec-label">Based on your searches</div>
+      <div id="trending-topics"></div>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="chips" id="chips"></div>
+
+    <div id="home-view">
+      <div id="results"></div>
+    </div>
+  </main>
+</div>
+
+<!-- PLAYER VIEW -->
+<div id="player-view">
+  <div class="player-layout">
+    <div class="player-main">
+      <button class="back-btn" onclick="goHome()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+      <div id="player-wrap">
+        <video id="player" controls playsinline></video>
+        <div class="player-loader hidden" id="player-loader">
+          <div class="spinner"></div>
+          <div style="font-size:14px;color:var(--muted)">Loading video...</div>
+        </div>
+      </div>
+      <div id="player-error"></div>
+      <div class="player-title" id="player-title"></div>
+      <div class="player-meta-row">
+        <div class="channel-row">
+          <div class="ch-avatar" id="player-avatar">?</div>
+          <div>
+            <div class="channel-name" id="player-channel"></div>
+            <div class="channel-sub" id="player-views"></div>
+          </div>
+          <button class="subscribe-btn" style="margin-left:8px">Subscribe</button>
+        </div>
+        <div class="action-pills">
+          <button class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/></svg> Like</button>
+          <button class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 10-3-3c0 .24.04.47.09.7L7.04 9.81A2.99 2.99 0 002 12a2.99 2.99 0 005.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 105.84 0 2.92 2.92 0 00-2.92-2.92z"/></svg> Share</button>
+        </div>
+      </div>
+      <div class="player-desc" id="player-desc"></div>
+    </div>
+    <div class="up-next" id="up-next">
+      <div class="up-next-title">Up next</div>
+      <div id="up-next-list"></div>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-server-menu">
-  <div class="modal" style="width:200px;padding:8px">
-    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="openServerSettings()">Server Settings</button>
-    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--text)" onclick="copyServerInvite()">Copy Invite Code</button>
-    <div style="height:1px;background:var(--border);margin:4px 0"></div>
-    <button class="btn" style="width:100%;text-align:left;padding:10px 12px;border-radius:4px;color:var(--red)" id="leave-or-delete-btn"></button>
-    <div style="height:1px;background:var(--border);margin:4px 0"></div>
-    <button class="btn btn-ghost" style="width:100%;text-align:left;padding:10px 12px" onclick="closeModal('server-menu')">Cancel</button>
-  </div>
-</div>
-
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js"></script>
 <script>
-// ============ YOUTUBE SCRAPER (yt.js integrated) ============
-const yt = {
-    apis: [
-        'https://invidious.snopyta.org/api/v1',
-        'https://invidious.kavin.rocks/api/v1',
-        'https://invidious.tiekoetter.com/api/v1',
-        'https://vid.puffyan.us/api/v1',
-        'https://yt.funami.tech/api/v1',
-        'https://inv.riverside.rocks/api/v1',
-    ],
-    
-    currentApi: 0,
-    
-    async search(query, maxResults = 20) {
-        for (let i = 0; i < this.apis.length; i++) {
-            try {
-                const api = this.apis[(this.currentApi + i) % this.apis.length];
-                const response = await fetch(
-                    `${api}/search?q=${encodeURIComponent(query)}&type=video&maxResults=${maxResults}`
-                );
-                
-                if (!response.ok) continue;
-                
-                const data = await response.json();
-                this.currentApi = (this.currentApi + i) % this.apis.length;
-                
-                return data.map(item => ({
-                    id: item.videoId,
-                    title: item.title,
-                    thumbnail: item.videoThumbnails?.[item.videoThumbnails.length - 1]?.url || 
-                              `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
-                    duration: this.formatDuration(item.lengthSeconds),
-                    views: this.formatViews(item.viewCount),
-                    channel: item.author,
-                    channelId: item.authorId,
-                    published: item.publishedText,
-                    description: item.description
-                }));
-                
-            } catch (error) {
-                console.warn(`API ${this.apis[(this.currentApi + i) % this.apis.length]} failed:`, error);
-            }
-        }
-        
-        return await this.scrapeYouTube(query, maxResults);
-    },
-    
-    async scrapeYouTube(query, maxResults = 20) {
-        try {
-            const response = await fetch(
-                `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
-                {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                }
-            );
-            
-            const html = await response.text();
-            const match = html.match(/var ytInitialData = (.+?);<\/script>/);
-            if (!match) return [];
-            
-            const data = JSON.parse(match[1]);
-            const videos = [];
-            
-            const contents = data?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-            if (!contents) return [];
-            
-            for (const section of contents) {
-                const items = section?.itemSectionRenderer?.contents;
-                if (!items) continue;
-                
-                for (const item of items) {
-                    const video = item?.videoRenderer;
-                    if (!video || videos.length >= maxResults) continue;
-                    
-                    videos.push({
-                        id: video.videoId,
-                        title: video.title?.runs?.[0]?.text || 'Unknown',
-                        thumbnail: video.thumbnail?.thumbnails?.slice(-1)[0]?.url || 
-                                  `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`,
-                        duration: video.lengthText?.simpleText || '',
-                        views: video.viewCountText?.simpleText || '',
-                        channel: video.ownerText?.runs?.[0]?.text || 'Unknown',
-                        channelId: video.ownerText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId || '',
-                        published: video.publishedTimeText?.simpleText || '',
-                    });
-                }
-            }
-            
-            return videos;
-            
-        } catch (error) {
-            console.error('YouTube scraping failed:', error);
-            return [];
-        }
-    },
-    
-    async getVideoUrls(videoId) {
-        try {
-            const response = await fetch('https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    context: {
-                        client: {
-                            clientName: 'ANDROID_VR',
-                            clientVersion: '1.53.0',
-                            androidSdkVersion: 31,
-                            hl: 'en',
-                            gl: 'US',
-                            utcOffsetMinutes: 0
-                        }
-                    },
-                    videoId: videoId
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.playabilityStatus?.status !== 'OK') {
-                throw new Error('Video not playable');
-            }
-            
-            const formats = data.streamingData?.formats || [];
-            const adaptiveFormats = data.streamingData?.adaptiveFormats || [];
-            const allFormats = [...formats, ...adaptiveFormats];
-            
-            return {
-                id: videoId,
-                title: data.videoDetails?.title || '',
-                duration: parseInt(data.videoDetails?.lengthSeconds) || 0,
-                thumbnail: data.videoDetails?.thumbnail?.thumbnails?.slice(-1)[0]?.url ||
-                          `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                formats: allFormats.map(format => ({
-                    itag: format.itag,
-                    quality: format.qualityLabel || format.quality || 'audio',
-                    mimeType: format.mimeType,
-                    url: format.url,
-                    bitrate: format.bitrate,
-                    width: format.width,
-                    height: format.height,
-                    contentLength: format.contentLength
-                })),
-                directUrls: {
-                    best: allFormats.find(f => f.qualityLabel === '720p')?.url ||
-                          allFormats.find(f => f.qualityLabel === '360p')?.url ||
-                          formats[formats.length - 1]?.url,
-                    audio: adaptiveFormats.find(f => f.mimeType?.startsWith('audio/'))?.url,
-                    video: adaptiveFormats.find(f => f.mimeType?.startsWith('video/') && !f.mimeType?.includes('audio'))?.url
-                }
-            };
-            
-        } catch (error) {
-            console.error('Failed to get video URLs:', error);
-            return null;
-        }
-    },
-    
-    async playVideo(videoId) {
-        const details = await this.getVideoUrls(videoId);
-        if (details?.directUrls?.best) {
-            return details.directUrls.best;
-        }
-        return null;
-    },
-    
-    formatDuration(seconds) {
-        if (!seconds) return '0:00';
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = Math.floor(seconds % 60);
-        
-        if (h > 0) {
-            return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-        return `${m}:${s.toString().padStart(2, '0')}`;
-    },
-    
-    formatViews(views) {
-        if (!views) return '0 views';
-        if (views >= 1000000) {
-            return (views / 1000000).toFixed(1) + 'M views';
-        }
-        if (views >= 1000) {
-            return (views / 1000).toFixed(1) + 'K views';
-        }
-        return views.toString() + ' views';
-    },
-    
-    getWatchUrl(videoId) {
-        return `https://www.youtube.com/watch?v=${videoId}`;
-    },
-    
-    getEmbedUrl(videoId) {
-        return `https://www.youtube.com/embed/${videoId}`;
-    }
-};
+/* ================================================================
+   T9 TUBE - REWRITTEN API LAYER
+   Primary: Piped (CORS-friendly, proxied streams)
+   Fallback: Invidious with CORS proxies
+   ================================================================ */
 
-// ============ YOUTUBE UI FUNCTIONS ============
-let youtubeVisible = false;
+const PIPED_APIS = [
+  'https://pipedapi.moomoo.me',
+  'https://pipedapi.adminforge.de',
+  'https://pipedapi.mint.lgbt',
+  'https://pipedapi.garudalinux.org',
+  'https://pipedapi-libre.kavin.rocks',
+  'https://api.piped.projectsegfault.com',
+  'https://pipedapi.palveluntarjoaja.eu',
+  'https://pipedapi.mha.fi',
+  'https://pipedapi.nosebs.ru',
+  'https://pipedapi.drgns.space',
+  'https://pipedapi.frontendfriendly.xyz',
+  'https://pipedapi.owo.si',
+  'https://pipedapi.simpleprivacy.fr',
+  'https://pipedapi.drgns.space',
+  'https://pipedapi.moomoo.me',
+  'https://pipedapi.adminforge.de'
+];
 
-function toggleYT() {
-    youtubeVisible = !youtubeVisible;
-    const ytPanel = document.getElementById('yt-panel');
-    const welcome = document.getElementById('welcome');
-    const messages = document.getElementById('messages');
-    const inputArea = document.getElementById('input-area');
-    const mainHeader = document.getElementById('main-header');
-    
-    if (youtubeVisible) {
-        ytPanel.style.display = 'flex';
-        welcome.style.display = 'none';
-        messages.style.display = 'none';
-        inputArea.style.display = 'none';
-        mainHeader.style.display = 'flex';
-        document.getElementById('header-icon').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>`;
-        document.getElementById('header-name').textContent = 'YouTube';
-        document.getElementById('dm-call-btn').style.display = 'none';
-        document.getElementById('dm-end-call-btn').style.display = 'none';
-        document.getElementById('yt-search-input').focus();
-    } else {
-        ytPanel.style.display = 'none';
-        showWelcome();
-    }
+const INVIDIOUS_APIS = [
+  'https://iv.melmac.space/api/v1',
+  'https://inv.nadeko.net/api/v1',
+  'https://invidious.privacyredirect.com/api/v1',
+  'https://invidious.nerdvpn.de/api/v1',
+  'https://invidious.io.lol/api/v1',
+  'https://invidious.f5.si/api/v1',
+  'https://invidious.qwik.space/api/v1',
+  'https://iv.ggtyler.dev/api/v1',
+  'https://invidious.projectsegfau.lt/api/v1',
+  'https://invidious.tiekoetter.com/api/v1',
+  'https://yewtu.be/api/v1',
+  'https://invidious.adminforge.de/api/v1',
+  'https://inv.in.projectsegfau.lt/api/v1',
+  'https://invidious.perennialte.ch/api/v1',
+  'https://inv.tux.pizza/api/v1',
+  'https://invidious.protokolla.fi/api/v1',
+  'https://invidious.jing.rocks/api/v1',
+  'https://invidious.darkness.service/api/v1',
+  'https://invidious.incogniweb.net/api/v1',
+  'https://invidious.fdn.fr/api/v1',
+  'https://invidious.0011.lt/api/v1',
+  'https://yt.artemislena.eu/api/v1',
+  'https://invidious.dhusch.de/api/v1',
+  'https://invidious.einfachzocken.eu/api/v1',
+  'https://inv.vern.cc/api/v1',
+];
+
+const PROXIES = [
+  { name: 'direct',   prefix: '',                                encode: false },
+  { name: 'corsproxy.io', prefix: 'https://corsproxy.io/?',      encode: false },
+  { name: 'allorigins',   prefix: 'https://api.allorigins.win/raw?url=', encode: true },
+  { name: 'codetabs',     prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true }
+];
+
+let currentVideos = [];
+let player = null;
+let currentView = 'home';
+
+/* ===== VIDEO CACHE ===== */
+const videoCache = new Map();
+function cacheVideos(list){
+  (list||[]).forEach(v=>{ if(v && v.videoId) videoCache.set(v.videoId, v); });
 }
 
-async function searchYT() {
-    const query = document.getElementById('yt-search-input').value.trim();
-    if (!query) return;
-    
-    const resultsDiv = document.getElementById('yt-results');
-    resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Searching...</div>';
-    
-    try {
-        const results = await yt.search(query);
-        
-        if (results.length === 0) {
-            resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">No results found</div>';
-            return;
-        }
-        
-        resultsDiv.innerHTML = results.map(video => `
-            <div class="yt-result-item" onclick="playYTVideo('${video.id}','${escapeHtml(video.title)}')">
-                <img class="yt-result-thumb" src="${video.thumbnail}" alt="${escapeHtml(video.title)}" loading="lazy">
-                <div class="yt-result-info">
-                    <div class="yt-result-title">${escapeHtml(video.title)}</div>
-                    <div class="yt-result-channel">${escapeHtml(video.channel)}</div>
-                    <div class="yt-result-meta">${video.views} • ${video.duration} • ${video.published}</div>
-                </div>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Error searching YouTube. Try again.</div>';
-        console.error('Search error:', error);
-    }
+/* ===== PIPED API HELPERS ===== */
+function extractVideoId(url) {
+  if (!url) return null;
+  const m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  const m2 = url.match(/^\/watch\?v=([a-zA-Z0-9_-]{11})/);
+  if (m2) return m2[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+  return null;
 }
 
-async function playYTVideo(videoId, title) {
-    const resultsDiv = document.getElementById('yt-results');
-    resultsDiv.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--muted)">
-            <div class="yt-player" style="margin:0 auto">
-                <div style="font-weight:600;margin-bottom:8px;color:var(--text)">${escapeHtml(title)}</div>
-                <video id="yt-player-${videoId}" controls autoplay style="width:100%;max-width:560px;background:#000;border-radius:8px" playsinline>
-                    <source src="" type="video/mp4">
-                </video>
-                <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
-                    <button class="btn btn-primary" onclick="playYTVideo('${videoId}','${escapeHtml(title)}')">Try Direct Play</button>
-                    <button class="btn btn-ghost" onclick="embedYTVideo('${videoId}')">Use Embed</button>
-                    <button class="btn btn-ghost" onclick="openYTLink('${videoId}')">Open in YouTube</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Try to get direct URL
-    try {
-        const directUrl = await yt.playVideo(videoId);
-        const videoEl = document.getElementById(`yt-player-${videoId}`);
-        if (videoEl && directUrl) {
-            videoEl.src = directUrl;
-            videoEl.load();
-            videoEl.play().catch(() => {
-                // If direct play fails, use embed
-                embedYTVideo(videoId);
-            });
-        } else {
-            // Fallback to embed
-            embedYTVideo(videoId);
-        }
-    } catch (error) {
-        embedYTVideo(videoId);
-    }
-}
-
-function embedYTVideo(videoId) {
-    const resultsDiv = document.getElementById('yt-results');
-    resultsDiv.innerHTML = `
-        <div style="text-align:center">
-            <iframe width="100%" height="400" 
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
-                    frameborder="0" 
-                    allow="autoplay; encrypted-media" 
-                    allowfullscreen
-                    style="border-radius:8px;max-width:720px">
-            </iframe>
-            <div style="margin-top:12px">
-                <button class="btn btn-ghost" onclick="searchYT()">Back to Search</button>
-            </div>
-        </div>
-    `;
-}
-
-function openYTLink(videoId) {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
-}
-
-// ============ ORIGINAL APP CODE ============
-let ws, myId, myUsername='', myColor='#5865f2', myAvatar=null;
-let servers={}, currentServerId=null, currentChannelId=null;
-let currentView='dm', currentDmUser=null;
-let dmConversations={}, onlineUsers={};
-let voiceState={channelId:null,channelName:null,serverId:null};
-let dmVoiceState={active:false,peerId:null};
-let muted=false, localStream=null;
-const peers={}, audioEls={};
-let audioCtx=null;
-let lastMsgUser=null, lastMsgTime=0;
-
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
-let obAvatarData = null;
-
-function obPreviewAvatar(input) {
-  const file = input.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = e => { obAvatarData = e.target.result; document.getElementById('ob-avatar').innerHTML = `<img src="${obAvatarData}">`; };
-  r.readAsDataURL(file);
-}
-
-function finishOnboarding() {
-  const name = document.getElementById('ob-name').value.trim();
-  if (!name) { document.getElementById('ob-name').focus(); return; }
-  localStorage.setItem('t9_profile', JSON.stringify({ username: name, avatar: obAvatarData }));
-  document.getElementById('onboarding').classList.add('hidden');
-  connect();
-}
-
-function checkOnboarding() {
-  const saved = localStorage.getItem('t9_profile');
-  if (saved) { document.getElementById('onboarding').classList.add('hidden'); connect(); }
-}
-
-function connect() {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${protocol}//${location.host}/ws`);
-  ws.onopen = () => {
-    const p = JSON.parse(localStorage.getItem('t9_profile') || '{}');
-    let clientId = localStorage.getItem('t9_user_id');
-    if (!clientId) {
-      clientId = 'u_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
-      localStorage.setItem('t9_user_id', clientId);
-    }
-    send({ type:'init', username: p.username||null, avatar: p.avatar||null, clientId: clientId });
-  };
-  ws.onmessage = e => handleMsg(JSON.parse(e.data));
-  ws.onclose = () => setTimeout(connect, 2000);
-}
-
-function send(d) { if (ws?.readyState===1) ws.send(JSON.stringify(d)); }
-
-function handleMsg(d) {
-  switch(d.type) {
-    case 'init':
-      myId=d.id; myUsername=d.username; myColor=d.color; myAvatar=d.avatar;
-      servers=d.servers||{}; onlineUsers=d.onlineUsers||{};
-      if(d.dmHistory) {
-        Object.entries(d.dmHistory).forEach(([otherId, msgs]) => {
-          if(!dmConversations[otherId]) dmConversations[otherId]={messages:[]};
-          dmConversations[otherId].messages = msgs;
-        });
-      }
-      renderMyProfile(); renderServerBar(); showDMs();
-      const serverList = Object.values(servers);
-      if(serverList.length > 0) selectServer(serverList[0].id);
-      break;
-    case 'chat': addMessage(d); break;
-    case 'dm': addDM(d); break;
-    case 'server_created': case 'server_updated':
-      servers[d.server.id]=d.server; renderServerBar();
-      if (currentServerId===d.server.id) renderSidebar();
-      break;
-    case 'server_deleted':
-      delete servers[d.serverId];
-      if (currentServerId===d.serverId){currentServerId=null;currentChannelId=null;showDMs();}
-      renderServerBar(); break;
-    case 'server_joined':
-      servers[d.server.id]=d.server; renderServerBar();
-      toast('Joined '+d.server.name+'!'); selectServer(d.server.id); break;
-    case 'server_left':
-      delete servers[d.serverId];
-      if (currentServerId===d.serverId){currentServerId=null;showDMs();}
-      renderServerBar(); break;
-    case 'kicked':
-      delete servers[d.serverId];
-      if (currentServerId===d.serverId){currentServerId=null;showDMs();}
-      renderServerBar(); toast('You were removed from the server.'); break;
-    case 'user_join': onlineUsers[d.user.id]=d.user; renderMembers(); if(currentView==='dm')renderDMList(); break;
-    case 'user_leave': delete onlineUsers[d.userId]; renderMembers(); if(currentView==='dm')renderDMList();
-      if(dmVoiceState.peerId===d.userId) cleanupDMCall(); break;
-    case 'user_updated':
-      onlineUsers[d.user.id]=d.user;
-      if(d.user.id===myId){myUsername=d.user.username;myColor=d.user.color;myAvatar=d.user.avatar;renderMyProfile();}
-      renderMembers(); break;
-    case 'channel_added':
-      if(servers[d.serverId]){servers[d.serverId].channels.push(d.channel);if(currentServerId===d.serverId)renderSidebar();}break;
-    case 'channel_removed':
-      if(servers[d.serverId]){
-        servers[d.serverId].channels=servers[d.serverId].channels.filter(c=>c.id!==d.channelId);
-        if(currentChannelId===d.channelId){currentChannelId=null;showWelcome();}
-        if(currentServerId===d.serverId) renderSidebar();
-      } break;
-    case 'invite_regenerated':
-      if(servers[d.serverId]) servers[d.serverId].inviteCode=d.inviteCode;
-      document.getElementById('ss-invite-code').textContent=d.inviteCode; break;
-    case 'voice_users': d.users.filter(u=>u.id!==myId).forEach(u=>setTimeout(()=>callPeer(u.id),500)); break;
-    case 'voice_user_joined': setTimeout(()=>callPeer(d.userId),1000); renderVoiceChannel(); break;
-    case 'voice_user_left': cleanupPeer(d.userId); renderVoiceChannel(); break;
-    case 'voice_offer': handleOffer(d.from,d.sdp); break;
-    case 'voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
-    case 'voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
-    case 'voice_speaking': break;
-    case 'dm_voice_start': handleDMVoiceStart(d.from); break;
-    case 'dm_voice_end': cleanupDMCall(); toast('Call ended'); break;
-    case 'dm_voice_decline': cleanupDMCall(); toast('Call declined'); break;
-    case 'dm_voice_accept': dmVoiceState.peerId=d.from; setTimeout(()=>callPeerDM(d.from),500); break;
-    case 'dm_voice_offer': handleDMVoiceOffer(d.from,d.sdp); break;
-    case 'dm_voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
-    case 'dm_voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
-    case 'error': toast(d.message); break;
-  }
-}
-
-function renderMyProfile() {
-  document.getElementById('my-name').textContent = myUsername;
-  const av = document.getElementById('my-avatar');
-  if(myAvatar) av.innerHTML=`<img src="${myAvatar}">`;
-  else { av.style.background=myColor; av.textContent=myUsername[0]?.toUpperCase()||'?'; }
-}
-
-function openEditProfile() {
-  document.getElementById('profile-name-input').value=myUsername;
-  const prev=document.getElementById('profile-avatar-preview');
-  if(myAvatar) prev.innerHTML=`<img src="${myAvatar}">`;
-  else { prev.textContent=myUsername[0]?.toUpperCase()||'?'; prev.style.background=myColor; }
-  document.getElementById('modal-edit-profile').classList.add('open');
-}
-
-function saveProfile() {
-  const name=document.getElementById('profile-name-input').value.trim();
-  if(!name) return;
-  const prev=document.getElementById('profile-avatar-preview');
-  const img=prev.querySelector('img');
-  const avatar=img?img.src:null;
-  localStorage.setItem('t9_profile', JSON.stringify({username:name,avatar}));
-  send({type:'update_profile',username:name,avatar});
-  closeModal('edit-profile');
-}
-
-function renderServerBar() {
-  const el=document.getElementById('server-icons');
-  el.innerHTML='';
-  Object.values(servers).forEach(srv=>{
-    const icon=document.createElement('div');
-    icon.className='srv-icon'+(currentServerId===srv.id?' active':'');
-    icon.title=srv.name;
-    icon.onclick=()=>selectServer(srv.id);
-    if(srv.icon) icon.innerHTML=`<img src="${srv.icon}">`;
-    else icon.textContent=srv.name[0].toUpperCase();
-    el.appendChild(icon);
+async function racePiped(path, timeoutMs = 8000) {
+  const controllers = [];
+  const promises = PIPED_APIS.map(api => {
+    const controller = new AbortController();
+    controllers.push(controller);
+    const url = api + path;
+    return fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } })
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json().then(data => ({ data, api }));
+      })
+      .catch(err => ({ error: err, api }));
   });
-}
 
-function selectServer(id) {
-  currentServerId=id; currentView='server'; currentDmUser=null;
-  document.getElementById('dm-icon').classList.remove('active');
-  renderServerBar(); renderSidebar();
-  const srv=servers[id];
-  if(srv){ const first=srv.channels.find(c=>c.type==='text'); if(first) selectChannel(first.id); else showWelcome(); }
-}
-
-function renderSidebar() {
-  const srv=servers[currentServerId]; if(!srv) return;
-  document.getElementById('sidebar-title').textContent=srv.name;
-  const el=document.getElementById('channel-list'); el.innerHTML='';
-  const isOwner=srv.ownerId===myId;
-  const textChs=srv.channels.filter(c=>c.type==='text');
-  const voiceChs=srv.channels.filter(c=>c.type==='voice');
-  const ts=document.createElement('div'); ts.className='ch-section';
-  ts.innerHTML=`<span>Text Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('text')" title="Add text channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
-  el.appendChild(ts);
-  textChs.forEach(ch=>{
-    const btn=document.createElement('button');
-    btn.className='ch-btn'+(currentChannelId===ch.id?' active':'');
-    btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>${esc(ch.name)}`;
-    btn.onclick=()=>selectChannel(ch.id);
-    el.appendChild(btn);
-  });
-  const vs=document.createElement('div'); vs.className='ch-section';
-  vs.innerHTML=`<span>Voice Channels</span>${isOwner?`<button class="ch-add-btn" onclick="addChannel('voice')" title="Add voice channel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`:''}`;
-  el.appendChild(vs);
-  voiceChs.forEach(ch=>{
-    const btn=document.createElement('button');
-    btn.className='ch-btn'+(voiceState.channelId===ch.id?' active':'');
-    btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>${esc(ch.name)}`;
-    btn.onclick=()=>joinVoice(ch.id,ch.name);
-    el.appendChild(btn);
-    if(ch.users&&ch.users.length){
-      const vul=document.createElement('div'); vul.className='ch-voice-users';
-      ch.users.forEach(u=>{ const ue=document.createElement('div'); ue.className='ch-voice-user'; ue.textContent=u.username||u.id; vul.appendChild(ue); });
-      el.appendChild(vul);
-    }
-  });
-}
-
-function selectChannel(id) {
-  currentChannelId=id;
-  const srv=servers[currentServerId];
-  const ch=srv?.channels.find(c=>c.id===id); if(!ch) return;
-  document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>`;
-  document.getElementById('header-name').textContent=ch.name;
-  document.getElementById('msg-input').placeholder=`Message #${ch.name}`;
-  document.getElementById('main-header').style.display='flex';
-  document.getElementById('dm-call-btn').style.display='none';
-  document.getElementById('dm-end-call-btn').style.display='none';
-  document.getElementById('welcome').style.display='none';
-  document.getElementById('messages').style.display='block';
-  document.getElementById('input-area').style.display='block';
-  document.getElementById('yt-panel').style.display='none';
-  document.getElementById('messages').innerHTML='';
-  lastMsgUser=null;
-  send({type:'join_channel',serverId:currentServerId,channelId:id});
-  renderSidebar(); renderMembers();
-}
-
-function showWelcome() {
-  currentChannelId=null;
-  document.getElementById('main-header').style.display='none';
-  document.getElementById('welcome').style.display='flex';
-  document.getElementById('messages').style.display='none';
-  document.getElementById('input-area').style.display='none';
-  document.getElementById('yt-panel').style.display='none';
-  youtubeVisible = false;
-}
-
-function openServerMenu() {
-  if(!currentServerId) return;
-  const srv=servers[currentServerId]; if(!srv) return;
-  const btn=document.getElementById('leave-or-delete-btn');
-  if(srv.ownerId===myId){btn.textContent='Delete Server';btn.onclick=deleteServer;}
-  else{btn.textContent='Leave Server';btn.onclick=leaveServer;}
-  btn.style.display='block';
-  openModal('server-menu');
-}
-
-function openServerSettings() {
-  closeModal('server-menu');
-  const srv=servers[currentServerId]; if(!srv) return;
-  document.getElementById('ss-title').textContent=srv.name;
-  document.getElementById('ss-name-input').value=srv.name;
-  const prev=document.getElementById('ss-icon-preview');
-  if(srv.icon) prev.innerHTML=`<img src="${srv.icon}">`;
-  else prev.textContent=srv.name[0].toUpperCase();
-  document.getElementById('ss-invite-code').textContent=srv.inviteCode;
-  renderChannelManager(); renderMemberManager();
-  ssTab('overview',document.querySelector('#modal-server-settings .tab'));
-  openModal('server-settings');
-}
-
-function ssTab(name,btn) {
-  ['overview','channels','members','invite'].forEach(t=>{ document.getElementById('ss-'+t).style.display=t===name?'block':'none'; });
-  document.querySelectorAll('#modal-server-settings .tab').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-}
-
-function saveServerSettings() {
-  const name=document.getElementById('ss-name-input').value.trim(); if(!name) return;
-  const prev=document.getElementById('ss-icon-preview'); const img=prev.querySelector('img');
-  send({type:'update_server',serverId:currentServerId,name,icon:img?img.src:null});
-  closeModal('server-settings');
-}
-
-function createServer() {
-  const name=document.getElementById('create-server-name').value.trim(); if(!name) return;
-  const prev=document.getElementById('create-icon-preview'); const img=prev.querySelector('img');
-  send({type:'create_server',name,icon:img?img.src:null});
-  closeModal('create-server');
-  document.getElementById('create-server-name').value='';
-  document.getElementById('create-icon-preview').innerHTML=`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-}
-
-function joinServer() {
-  const code=document.getElementById('join-code-input').value.trim().toUpperCase(); if(!code) return;
-  send({type:'join_server',inviteCode:code});
-  closeModal('join-server');
-  document.getElementById('join-code-input').value='';
-}
-
-function leaveServer() { closeModal('server-menu'); send({type:'leave_server',serverId:currentServerId}); }
-function deleteServer() {
-  closeModal('server-menu'); closeModal('server-settings');
-  if(confirm('Delete this server? This cannot be undone.')) send({type:'delete_server',serverId:currentServerId});
-}
-
-function copyServerInvite() {
-  closeModal('server-menu');
-  const srv=servers[currentServerId];
-  if(srv){navigator.clipboard.writeText(srv.inviteCode);toast('Invite code copied!');}
-}
-
-function copyInvite() { navigator.clipboard.writeText(document.getElementById('ss-invite-code').textContent); toast('Copied!'); }
-function regenerateInvite() { send({type:'regenerate_invite',serverId:currentServerId}); }
-
-function addChannel(type) {
-  const name=prompt(`${type==='text'?'Text':'Voice'} channel name:`);
-  if(name?.trim()) send({type:'add_channel',serverId:currentServerId,channelType:type,name:name.trim()});
-}
-
-function renderChannelManager() {
-  const srv=servers[currentServerId]; if(!srv) return;
-  ['text','voice'].forEach(t=>{
-    const el=document.getElementById('ss-'+t+'-channels'); el.innerHTML='';
-    srv.channels.filter(c=>c.type===t).forEach(ch=>{
-      const div=document.createElement('div'); div.className='ch-mgr-item';
-      div.innerHTML=`<span>${esc(ch.name)}</span><button class="ch-mgr-btn" onclick="removeChannel('${ch.id}')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg></button>`;
-      el.appendChild(div);
-    });
-  });
-}
-
-function removeChannel(channelId) { if(confirm('Delete this channel?')) send({type:'remove_channel',serverId:currentServerId,channelId}); }
-
-function renderMemberManager() {
-  const srv=servers[currentServerId]; if(!srv) return;
-  const el=document.getElementById('ss-members-list'); el.innerHTML='';
-  srv.members.forEach(uid=>{
-    const u=onlineUsers[uid]||{id:uid,username:'Unknown',color:'#5865f2'};
-    const isOwner=srv.ownerId===uid;
-    const div=document.createElement('div'); div.className='mm-item';
-    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)}${isOwner?'<span class="owner-tag">Owner</span>':''}</span>${!isOwner&&srv.ownerId===myId?`<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`:''}`;
-    el.appendChild(div);
-  });
-}
-
-function kickMember(userId) { if(confirm('Kick this member?')) send({type:'kick_member',serverId:currentServerId,userId}); }
-
-function showDMs() {
-  currentView='dm'; currentServerId=null;
-  document.getElementById('dm-icon').classList.add('active');
-  document.getElementById('sidebar-title').textContent='Direct Messages';
-  renderDMList();
-}
-
-function renderDMList() {
-  const el=document.getElementById('channel-list'); el.innerHTML='';
-  const hdr=document.createElement('div'); hdr.className='ch-section';
-  hdr.innerHTML='<span>Direct Messages</span>'; el.appendChild(hdr);
-  Object.values(onlineUsers).filter(u=>u.id!==myId).forEach(u=>{
-    const div=document.createElement('div');
-    div.className='dm-item'+(currentDmUser===u.id?' active':'');
-    div.innerHTML=`<div class="dm-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="dm-name">${esc(u.username)}</span>`;
-    div.onclick=()=>openDM(u.id);
-    el.appendChild(div);
-  });
-}
-
-function openDM(userId) {
-  currentDmUser=userId; currentChannelId=null;
-  const u=onlineUsers[userId]; if(!u) return;
-  document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
-  document.getElementById('header-name').textContent=u.username;
-  document.getElementById('msg-input').placeholder=`Message @${u.username}`;
-  document.getElementById('main-header').style.display='flex';
-  document.getElementById('dm-call-btn').style.display=dmVoiceState.active?'none':'flex';
-  document.getElementById('dm-end-call-btn').style.display=dmVoiceState.active&&dmVoiceState.peerId===userId?'flex':'none';
-  document.getElementById('welcome').style.display='none';
-  document.getElementById('messages').style.display='block';
-  document.getElementById('input-area').style.display='block';
-  document.getElementById('yt-panel').style.display='none';
-  document.getElementById('messages').innerHTML=''; lastMsgUser=null;
-  if(dmConversations[userId]) dmConversations[userId].messages.forEach(addMessage);
-  renderDMList();
-}
-
-function addDM(d) {
-  const otherId=d.from===myId?d.to:d.from;
-  if(!dmConversations[otherId]) dmConversations[otherId]={messages:[]};
-  dmConversations[otherId].messages.push(d);
-  if(currentDmUser===otherId) addMessage(d);
-}
-
-function addMessage(m) {
-  if(currentView==='server'&&m.channelId!==currentChannelId) return;
-  const msgs=document.getElementById('messages');
-  const now=m.timestamp||Date.now();
-  const compact=m.userId===lastMsgUser&&(now-lastMsgTime)<300000;
-  lastMsgUser=m.userId; lastMsgTime=now;
-  const u=onlineUsers[m.userId]||{username:m.username||'Unknown',color:m.color||'#5865f2',avatar:m.avatar};
-  const time=new Date(now).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const div=document.createElement('div');
-  if(compact){
-    div.className='msg msg-compact';
-    div.innerHTML=`<div class="msg-text">${esc(m.content)}</div>`;
-  } else {
-    div.className='msg';
-    const av=u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase();
-    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div><div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-time">${time}</span></div><div class="msg-text">${esc(m.content)}</div></div>`;
-  }
-  msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
-}
-
-function sendText() {
-  const inp=document.getElementById('msg-input');
-  const content=inp.value.trim(); if(!content) return;
-  inp.value=''; inp.style.height='';
-  if(currentDmUser) send({type:'dm',to:currentDmUser,content});
-  else if(currentChannelId) send({type:'chat',serverId:currentServerId,channelId:currentChannelId,content});
-}
-
-function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText();} }
-function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,200)+'px'; }
-
-let membersVisible=false;
-function toggleMembers() { membersVisible=!membersVisible; document.getElementById('members').classList.toggle('visible',membersVisible); renderMembers(); }
-
-function renderMembers() {
-  const el=document.getElementById('members'); if(!membersVisible) return;
-  el.innerHTML='';
-  const online=Object.values(onlineUsers).filter(u=>u.id!==myId);
-  if(online.length){
-    const hdr=document.createElement('div'); hdr.className='member-section';
-    hdr.textContent=`Online — ${online.length}`; el.appendChild(hdr);
-    online.forEach(u=>{
-      const div=document.createElement('div'); div.className='member-item';
-      div.onclick=()=>{openDM(u.id);};
-      div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}<div class="member-dot"></div></div><span class="member-name">${esc(u.username)}</span>`;
-      el.appendChild(div);
-    });
-  }
-}
-
-async function joinVoice(channelId, channelName) {
-  if(voiceState.channelId===channelId) return;
-  if(voiceState.channelId) leaveVoice();
-  if(dmVoiceState.active) cleanupDMCall();
-  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
-  catch(e) { toast('Microphone access needed'); return; }
-  voiceState={channelId,channelName,serverId:currentServerId};
-  send({type:'voice_join',serverId:currentServerId,channelId});
-  document.getElementById('voice-bar').classList.add('active');
-  document.getElementById('vb-room-name').textContent=channelName;
-  document.getElementById('vb-server-name').textContent=servers[currentServerId]?.name||'';
-  renderSidebar();
-}
-
-function leaveVoice() { send({type:'voice_leave'}); cleanupVoice(); }
-
-function cleanupVoice() {
-  Object.keys(peers).forEach(cleanupPeer);
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  voiceState={channelId:null,channelName:null,serverId:null};
-  document.getElementById('voice-bar').classList.remove('active');
-  if(currentServerId) renderSidebar();
-}
-
-function disconnectVoice() { if(dmVoiceState.active) endDMCall(); else leaveVoice(); }
-
-function toggleMic() {
-  muted=!muted;
-  if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!muted);
-  const micSvg=muted?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>`;
-  document.getElementById('mic-icon').innerHTML = micSvg;
-  document.getElementById('vb-mute').classList.toggle('muted-on',muted);
-}
-
-function renderVoiceChannel() { if(currentServerId) renderSidebar(); }
-
-async function startDMCall() {
-  if(!currentDmUser||dmVoiceState.active) return;
-  if(voiceState.channelId) leaveVoice();
-  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
-  catch(e) { toast('Microphone access needed'); return; }
-  dmVoiceState={active:true,peerId:currentDmUser};
-  send({type:'dm_voice_start',to:currentDmUser});
-  document.getElementById('dm-call-btn').style.display='none';
-  document.getElementById('dm-end-call-btn').style.display='flex';
-  document.getElementById('voice-bar').classList.add('active');
-  document.getElementById('vb-room-name').textContent=`Calling ${onlineUsers[currentDmUser]?.username||'User'}...`;
-  document.getElementById('vb-server-name').textContent='DM Voice Call';
-  setTimeout(()=>callPeerDM(currentDmUser),500);
-}
-
-function endDMCall() { send({type:'dm_voice_end',to:dmVoiceState.peerId}); cleanupDMCall(); }
-
-function cleanupDMCall() {
-  const peerId=dmVoiceState.peerId;
-  if(peerId) cleanupPeer(peerId);
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  dmVoiceState={active:false,peerId:null};
-  document.getElementById('dm-call-btn').style.display='flex';
-  document.getElementById('dm-end-call-btn').style.display='none';
-  document.getElementById('voice-bar').classList.remove('active');
-}
-
-function handleDMVoiceStart(fromId) {
-  if(dmVoiceState.active){send({type:'dm_voice_decline',to:fromId});return;}
-  if(voiceState.channelId) leaveVoice();
-  const callerName=onlineUsers[fromId]?.username||'User';
-  if(confirm(`${callerName} is calling you. Accept?`)) acceptDMCall(fromId);
-  else send({type:'dm_voice_decline',to:fromId});
-}
-
-async function acceptDMCall(fromId) {
-  try { localStream=await navigator.mediaDevices.getUserMedia({audio:true}); startSpeakingDetection(localStream); }
-  catch(e) { toast('Microphone access needed'); return; }
-  dmVoiceState={active:true,peerId:fromId};
-  send({type:'dm_voice_accept',to:fromId});
-  document.getElementById('dm-call-btn').style.display='none';
-  document.getElementById('dm-end-call-btn').style.display='flex';
-  document.getElementById('voice-bar').classList.add('active');
-  document.getElementById('vb-room-name').textContent=`Call with ${onlineUsers[fromId]?.username||'User'}`;
-  document.getElementById('vb-server-name').textContent='DM Voice Call';
-  setTimeout(()=>callPeerDM(fromId),500);
-}
-
-async function callPeerDM(id) {
-  if(peers[id]){const s=peers[id].connectionState||peers[id].iceConnectionState; if(s==='connected'||s==='connecting') return; cleanupPeer(id);}
-  const pc=makePc(id);
-  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
-  send({type:'dm_voice_offer',sdp:pc.localDescription,to:id});
-}
-
-async function handleDMVoiceOffer(id,sdp) {
-  if(!dmVoiceState.active||dmVoiceState.peerId!==id) return;
-  if(peers[id]) cleanupPeer(id);
-  const pc=makePc(id);
-  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  const answer=await pc.createAnswer(); await pc.setLocalDescription(answer);
-  send({type:'dm_voice_answer',sdp:pc.localDescription,to:id});
-}
-
-function unlockAudio() {
-  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended') audioCtx.resume();
-}
-
-function playAudio(id,stream) {
-  let a=audioEls[id];
-  if(!a){a=document.createElement('audio');a.autoplay=true;a.playsInline=true;document.body.appendChild(a);audioEls[id]=a;}
-  a.srcObject=stream;
-  const tryPlay=()=>a.play().catch(()=>{try{unlockAudio();audioCtx.createMediaStreamSource(stream).connect(audioCtx.destination);}catch(e){}});
-  tryPlay();
-  document.addEventListener('click',tryPlay,{once:true});
-}
-
-function makePc(id) {
-  const pc=new RTCPeerConnection(ICE);
-  if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-  pc.ontrack=e=>{if(e.streams[0])playAudio(id,e.streams[0]);};
-  pc.onicecandidate=e=>{
-    if(e.candidate){
-      if(dmVoiceState.active) send({type:'dm_voice_ice',candidate:e.candidate,to:id});
-      else send({type:'voice_ice',candidate:e.candidate,to:id});
-    }
-  };
-  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>{if(dmVoiceState.active) callPeerDM(id); else callPeer(id);},1000);}};
-  peers[id]=pc; return pc;
-}
-
-async function callPeer(id) {
-  if(peers[id]){const s=peers[id].connectionState||peers[id].iceConnectionState; if(s==='connected'||s==='connecting') return; cleanupPeer(id);}
-  const pc=makePc(id);
-  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
-  send({type:'voice_offer',sdp:pc.localDescription,to:id});
-}
-
-async function handleOffer(id,sdp) {
-  if(peers[id]) cleanupPeer(id);
-  const pc=makePc(id);
-  await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  const answer=await pc.createAnswer(); await pc.setLocalDescription(answer);
-  send({type:'voice_answer',sdp:pc.localDescription,to:id});
-}
-
-function cleanupPeer(id) {
-  if(peers[id]){try{peers[id].close();}catch(e){}delete peers[id];}
-  if(audioEls[id]){audioEls[id].srcObject=null;audioEls[id].remove();delete audioEls[id];}
-}
-
-function startSpeakingDetection(stream) {
+  const timeout = setTimeout(() => controllers.forEach(c => c.abort()), timeoutMs);
   try {
-    unlockAudio();
-    const analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
-    audioCtx.createMediaStreamSource(stream).connect(analyser);
-    const buf=new Uint8Array(analyser.frequencyBinCount); let was=false;
-    const check=()=>{analyser.getByteFrequencyData(buf);const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;if(s!==was){was=s;send({type:'voice_speaking',active:s});}requestAnimationFrame(check);};
-    check();
-  } catch(e){}
+    const results = await Promise.all(promises);
+    const success = results.find(r => r.data);
+    if (success) return success;
+    throw results.find(r => r.error)?.error || new Error('All Piped instances failed');
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
-function previewImage(input,previewId) {
-  const file=input.files[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=e=>{document.getElementById(previewId).innerHTML=`<img src="${e.target.result}">`;};
-  r.readAsDataURL(file);
+/* ===== INVIDIOUS FALLBACK (with proxies) ===== */
+async function fetchInvidiousJson(url, timeoutMs = 8000) {
+  for (const proxy of PROXIES) {
+    try {
+      const target = proxy.prefix
+        ? (proxy.encode ? proxy.prefix + encodeURIComponent(url) : proxy.prefix + url)
+        : url;
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), proxy.name === 'direct' ? timeoutMs : timeoutMs + 4000);
+      const r = await fetch(target, { signal: c.signal });
+      clearTimeout(t);
+      if (r.ok) return await r.json();
+    } catch (e) {}
+  }
+  return null;
 }
 
-function openModal(id) { if(id==='edit-profile'){openEditProfile();return;} document.getElementById('modal-'+id).classList.add('open'); }
-function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+async function raceInvidious(path, timeoutMs = 8000) {
+  for (let i = 0; i < INVIDIOUS_APIS.length; i++) {
+    const api = INVIDIOUS_APIS[i];
+    const data = await fetchInvidiousJson(api + path, timeoutMs);
+    if (data) return { data, api };
+  }
+  throw new Error('All Invidious instances failed');
+}
 
-document.addEventListener('click',e=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); unlockAudio(); });
+/* ===== UNIFIED FETCH ===== */
+async function fetchSearchResults(query, maxResults = 24) {
+  // Try Piped first
+  try {
+    const { data } = await racePiped(`/search?q=${encodeURIComponent(query)}&filter=videos`);
+    if (data && data.items && data.items.length > 0) {
+      return data.items.map(item => ({
+        videoId: extractVideoId(item.url),
+        title: item.title,
+        author: item.uploaderName,
+        lengthSeconds: item.duration,
+        viewCount: item.views,
+        publishedText: item.uploadedDate,
+        thumbnail: item.thumbnail,
+        _source: 'piped'
+      })).filter(v => v.videoId);
+    }
+  } catch (e) {
+    console.warn('Piped search failed, trying Invidious...', e);
+  }
 
-function toast(msg) { const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),3000); }
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+  // Fallback to Invidious
+  const { data } = await raceInvidious(`/search?q=${encodeURIComponent(query)}&type=video&maxResults=${maxResults}`);
+  return (data || []).map(item => ({
+    videoId: item.videoId,
+    title: item.title,
+    author: item.author,
+    lengthSeconds: item.lengthSeconds,
+    viewCount: item.viewCount,
+    publishedText: item.publishedText,
+    thumbnail: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`,
+    _source: 'invidious'
+  })).filter(v => v.videoId);
+}
 
-checkOnboarding();
+async function fetchVideoInfo(videoId) {
+  // Try Piped first
+  try {
+    const { data } = await racePiped(`/streams/${videoId}`);
+    if (data && data.title) {
+      // Normalize Piped data to match our expected format
+      const formatStreams = [];
+      // Piped videoStreams are already proxied URLs
+      // Prefer muxed streams (videoOnly: false) for direct playback
+      const muxed = (data.videoStreams || []).filter(s => !s.videoOnly && s.url);
+      const videoOnly = (data.videoStreams || []).filter(s => s.videoOnly && s.url);
+      const audioStreams = (data.audioStreams || []).filter(s => s.url);
+
+      // Add muxed as formatStreams (direct MP4 playback)
+      muxed.forEach(s => {
+        formatStreams.push({
+          url: s.url,
+          type: s.mimeType || 'video/mp4',
+          quality: s.quality,
+          bitrate: s.bitrate,
+          width: s.width,
+          height: s.height
+        });
+      });
+
+      return {
+        videoId,
+        title: data.title,
+        author: data.uploader,
+        description: data.description,
+        viewCount: data.views,
+        lengthSeconds: data.duration,
+        thumbnailUrl: data.thumbnailUrl,
+        formatStreams,
+        // Keep raw Piped streams for advanced playback
+        _pipedVideoStreams: videoOnly,
+        _pipedAudioStreams: audioStreams,
+        _relatedStreams: data.relatedStreams || [],
+        _source: 'piped'
+      };
+    }
+  } catch (e) {
+    console.warn('Piped streams failed, trying Invidious...', e);
+  }
+
+  // Fallback to Invidious
+  const { data } = await raceInvidious(`/videos/${videoId}`);
+  return {
+    videoId: data.videoId,
+    title: data.title,
+    author: data.author,
+    description: data.description,
+    viewCount: data.viewCount,
+    lengthSeconds: data.lengthSeconds,
+    thumbnailUrl: `https://i.ytimg.com/vi/${data.videoId}/hqdefault.jpg`,
+    formatStreams: data.formatStreams || [],
+    hlsUrl: data.hlsUrl,
+    dashManifestUrl: data.dashManifestUrl,
+    adaptiveFormats: data.adaptiveFormats,
+    _source: 'invidious'
+  };
+}
+
+/* ===== PERSISTENCE ===== */
+const STORE_KEY = 't9tube_data_v1';
+function loadStore(){
+  try{
+    return JSON.parse(localStorage.getItem(STORE_KEY)) || {searches:[], watched:[], topicScores:{}};
+  }catch(e){ return {searches:[], watched:[], topicScores:{}}; }
+}
+function saveStore(s){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch(e) {}
+}
+let store = loadStore();
+
+const STOPWORDS = new Set(['the','a','an','and','or','of','to','in','on','for','with','is','are','vs','full','official','video','new','best','how','what','why','2023','2024','2025','2026','ep','episode']);
+function extractTopics(text){
+  return (text||'').toLowerCase()
+    .replace(/[^\w\s]/g,' ')
+    .split(/\s+/)
+    .filter(w => w.length>2 && !STOPWORDS.has(w));
+}
+function bumpTopics(words, weight){
+  words.forEach(w=>{
+    store.topicScores[w] = (store.topicScores[w]||0) + weight;
+  });
+}
+function recordSearch(q){
+  store.searches.unshift({q, t:Date.now()});
+  store.searches = store.searches.slice(0,50);
+  bumpTopics(extractTopics(q), 3);
+  saveStore(store);
+  renderTrendingTopics();
+}
+function recordWatch(video){
+  if(video && video.videoId) {
+    videoCache.set(video.videoId, video);
+    store.watched.unshift({
+      videoId:video.videoId, title:video.title, author:video.author,
+      thumb:video.thumbnailUrl || `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`, t:Date.now()
+    });
+    store.watched = store.watched.slice(0,100);
+    bumpTopics(extractTopics(video.title), 2);
+    bumpTopics(extractTopics(video.author), 1);
+    saveStore(store);
+    renderTrendingTopics();
+  }
+}
+function clearHistory(){
+  if(!confirm('Clear your watch & search history? This resets your For You page.')) return;
+  store = {searches:[], watched:[], topicScores:{}};
+  saveStore(store);
+  renderTrendingTopics();
+  if(currentView==='fyp') renderFYP();
+  if(currentView==='history') renderHistory();
+}
+function topTopics(n=8){
+  return Object.entries(store.topicScores).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]);
+}
+function renderTrendingTopics(){
+  const sec = document.getElementById('trending-topics-section');
+  const wrap = document.getElementById('trending-topics');
+  const topics = topTopics(6);
+  if(!topics.length){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  wrap.innerHTML = topics.map(t=>`<div class="nav-item" onclick="quickSearch('${escAttr(t)}')" style="font-size:13px;color:var(--muted)">
+    <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+    <span>${esc(t)}</span>
+  </div>`).join('');
+}
+function quickSearch(t){
+  document.getElementById('q').value = t;
+  setView('home');
+  search();
+}
+
+/* ===== VIEW SWITCHING ===== */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('main').classList.toggle('expanded');
+}
+function setView(view){
+  currentView = view;
+  document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
+  document.getElementById('player-view').style.display='none';
+  document.getElementById('home-view').style.display='block';
+  document.querySelector('.app').style.display='flex';
+
+  const chips = document.getElementById('chips');
+  const results = document.getElementById('results');
+
+  if(view==='home'){
+    chips.style.display='flex';
+    renderChips();
+    if(!currentVideos.length) showDefaultHome();
+  } else if(view==='fyp'){
+    chips.style.display='none';
+    renderFYP();
+  } else if(view==='history'){
+    chips.style.display='none';
+    renderHistory();
+  } else if(view==='subs'){
+    chips.style.display='none';
+    results.innerHTML = `<div class="status">Subscribe to channels to see them here.<br><span style="font-size:13px">(This is a lightweight demo — subscriptions aren't wired to a backend.)</span></div>`;
+  }
+}
+function goHome(){ setView('home'); }
+
+/* ===== DEFAULT CHIPS ===== */
+const DEFAULT_CHIPS = ['All','Music','Gaming','News','Live','Coding','Movies','Podcasts','Sports','Tech'];
+function renderChips(){
+  const el = document.getElementById('chips');
+  el.innerHTML = DEFAULT_CHIPS.map((c,i)=>`<button class="chip ${i===0?'active':''}" onclick="chipClick(this,'${escAttr(c)}')">${esc(c)}</button>`).join('');
+}
+function chipClick(btn, label){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  if(label==='All'){ showDefaultHome(); return; }
+  document.getElementById('q').value = label;
+  search();
+}
+
+function showDefaultHome(){
+  const el = document.getElementById('results');
+  const topics = topTopics(3);
+  if(topics.length){
+    el.innerHTML = `<div class="status">Search something above, or check your <b style="color:var(--text)">For You</b> page in the sidebar — it's already picking up on: ${topics.map(esc).join(', ')}</div>`;
+  } else {
+    el.innerHTML = `<div class="status">Search for videos above to get started. Your <b style="color:var(--text)">For You</b> page will build itself as you go.</div>`;
+  }
+}
+
+/* ===== SEARCH ===== */
+async function search() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  setView('home');
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  recordSearch(q);
+
+  const el = document.getElementById('results');
+  el.innerHTML = '<div class="status">Searching...</div>';
+
+  try{
+    const data = await fetchSearchResults(q, 24);
+    cacheVideos(data);
+    currentVideos = data;
+    renderResults(data, {title:`Results for "${q}"`});
+  }catch(e){
+    console.error(e);
+    el.innerHTML = '<div class="status">All video APIs failed. The network may be unreachable or every instance is down.<br>Wait a moment and try again.</div>';
+  }
+}
+
+function renderResults(data, opts={}) {
+  const el = document.getElementById('results');
+  if (!data || !data.length) { el.innerHTML = '<div class="status">No results.</div>'; return; }
+  cacheVideos(data);
+
+  let header = '';
+  if(opts.title){
+    header = `<div class="section-title" style="grid-column:1/-1">${opts.icon||''}${esc(opts.title)}${opts.sub?`<span class="section-sub">${esc(opts.sub)}</span>`:''}</div>`;
+  }
+
+  el.innerHTML = header + data.map((v) => `
+    <div class="card" data-id="${escAttr(v.videoId)}" onclick="playVideoById('${escAttr(v.videoId)}')">
+      <div class="thumb">
+        <img src="${v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg'">
+        ${v.lengthSeconds ? `<span class="duration">${fmt(v.lengthSeconds)}</span>` : ''}
+        ${v._fyp ? `<span class="fyp-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C17.15 17.81 14.75 19 12 19z"/></svg>${esc(v._fypReason||'For You')}</span>` : ''}
+      </div>
+      <div class="info">
+        <div class="ch-avatar">${esc((v.author||'?').charAt(0).toUpperCase())}</div>
+        <div class="info-text">
+          <div class="title">${esc(v.title)}</div>
+          <div class="meta">${esc(v.author)}</div>
+          <div class="meta">${fmtViews(v.viewCount)}${v.publishedText?` &bull; ${esc(v.publishedText)}`:''}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function playVideoById(id){
+  const video = videoCache.get(id);
+  if(video && video.videoId) {
+    playVideo(video);
+  } else {
+    fetchVideoAndPlay(id);
+  }
+}
+
+async function fetchVideoAndPlay(videoId) {
+  try {
+    const video = await fetchVideoInfo(videoId);
+    if(video && video.videoId) {
+      cacheVideos([video]);
+      playVideo(video);
+    } else {
+      throw new Error('Invalid video data');
+    }
+  } catch(e) {
+    alert('Could not load video. All APIs and proxies failed.');
+    console.error(e);
+  }
+}
+
+/* ===== FOR YOU PAGE ===== */
+async function renderFYP(){
+  const el = document.getElementById('results');
+  document.getElementById('chips').style.display='none';
+  const topics = topTopics(6);
+
+  if(!topics.length){
+    el.innerHTML = `<div class="status">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted);margin-bottom:12px"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C17.15 17.81 14.75 19 12 19z"/></svg><br>
+      Nothing here yet. Search and watch a few videos — your For You page builds from what you look up and watch.
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = '<div class="status">Building your feed...</div>';
+
+  const picksPerTopic = topics.length <= 3 ? 6 : topics.length <= 5 ? 4 : 3;
+  let combined = [];
+
+  for(const topic of topics){
+    try {
+      const vids = await fetchSearchResults(topic, picksPerTopic);
+      vids.forEach(v=>{ v._fyp = true; v._fypReason = `Because you searched "${topic}"`; });
+      combined = combined.concat(vids);
+    } catch(e) {}
+  }
+
+  const seen = new Set();
+  combined = combined.filter(v=>{
+    if(!v.videoId || seen.has(v.videoId)) return false;
+    seen.add(v.videoId);
+    return true;
+  });
+  combined = shuffle(combined);
+
+  cacheVideos(combined);
+  currentVideos = combined;
+  if(!combined.length){
+    el.innerHTML = '<div class="status">Could not load your feed right now. Try again in a moment.</div>';
+    return;
+  }
+  renderResults(combined, {
+    title:'For You',
+    sub:`based on: ${topics.join(', ')}`,
+    icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C17.15 17.81 14.75 19 12 19z"/></svg>`
+  });
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* ===== HISTORY VIEW ===== */
+function renderHistory(){
+  const el = document.getElementById('results');
+  if(!store.watched.length){
+    el.innerHTML = '<div class="status">No watch history yet.</div>';
+    return;
+  }
+  cacheVideos(store.watched.map(w=>({videoId:w.videoId, title:w.title, author:w.author, thumbnail: w.thumb})));
+
+  el.innerHTML = `<div class="section-title" style="grid-column:1/-1">Watch history</div>` +
+    store.watched.map((v) => `
+    <div class="card" data-id="${escAttr(v.videoId)}" onclick="playVideoById('${escAttr(v.videoId)}')">
+      <div class="thumb">
+        <img src="${v.thumb}" loading="lazy" onerror="this.style.display='none'">
+      </div>
+      <div class="info">
+        <div class="ch-avatar">${esc((v.author||'?').charAt(0).toUpperCase())}</div>
+        <div class="info-text">
+          <div class="title">${esc(v.title)}</div>
+          <div class="meta">${esc(v.author)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ===== PLAYER INIT ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  player = new Plyr('#player', {
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+    settings: ['quality', 'speed'],
+    quality: {
+      default: 1080,
+      options: [4320, 2160, 1440, 1080, 720, 480, 360, 240]
+    },
+    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+  });
+  renderTrendingTopics();
+  setView('home');
+});
+
+/* ===== CLEANUP PLAYER ===== */
+function cleanupPlayer() {
+  if (window.hlsInstance) {
+    try { window.hlsInstance.destroy(); } catch(e) {}
+    window.hlsInstance = null;
+  }
+  if (window.dashPlayer) {
+    try { window.dashPlayer.reset(); window.dashPlayer.destroy(); } catch(e) {}
+    window.dashPlayer = null;
+  }
+  const videoElement = document.getElementById('player');
+  if (videoElement) {
+    videoElement.pause();
+    videoElement.removeAttribute('src');
+    videoElement.load();
+  }
+  if (player) {
+    try { player.source = { type: 'video', sources: [] }; } catch(e) {}
+  }
+  const titleEl = document.getElementById('player-title');
+  if (titleEl) {
+    const badge = titleEl.querySelector('.quality-badge');
+    if (badge) badge.remove();
+  }
+  document.getElementById('player-error').innerHTML = '';
+  document.getElementById('player-loader').classList.add('hidden');
+}
+
+/* ===== SHOW PLAYER ERROR ===== */
+function showPlayerError(msg) {
+  document.getElementById('player-error').innerHTML = `
+    <div class="player-error">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+      </svg><br>
+      ${esc(msg)}<br>
+      <span style="font-size:12px;margin-top:8px;display:block">Try refreshing or searching for another video.</span>
+    </div>`;
+}
+
+/* ===== SET QUALITY BADGE ===== */
+function setQualityBadge(text) {
+  const titleEl = document.getElementById('player-title');
+  if (!titleEl) return;
+  const oldBadge = titleEl.querySelector('.quality-badge');
+  if (oldBadge) oldBadge.remove();
+  if (text) {
+    const badge = document.createElement('span');
+    badge.className = 'quality-badge';
+    badge.textContent = text;
+    titleEl.appendChild(badge);
+  }
+}
+
+/* ===== FIND BEST SOURCE ===== */
+function findBestSource(videoData) {
+  if (!videoData) return null;
+
+  // Piped formatStreams (proxied, most reliable)
+  if (videoData.formatStreams && videoData.formatStreams.length > 0) {
+    const sorted = videoData.formatStreams
+      .filter(s => s.url)
+      .sort((a, b) => (parseInt(b.height) || 0) - (parseInt(a.height) || 0));
+    if (sorted.length > 0) {
+      return {
+        url: sorted[0].url,
+        type: sorted[0].type || 'video/mp4',
+        quality: sorted[0].quality || (sorted[0].height + 'p'),
+        mode: 'direct'
+      };
+    }
+  }
+
+  // Invidious HLS
+  if (videoData.hlsUrl) {
+    return { url: videoData.hlsUrl, type: 'application/x-mpegURL', quality: 'HLS', mode: 'hls' };
+  }
+
+  // Invidious DASH
+  if (videoData.dashManifestUrl) {
+    return { url: videoData.dashManifestUrl, type: 'application/dash+xml', quality: 'DASH', mode: 'dash' };
+  }
+
+  // Invidious adaptiveFormats
+  if (videoData.adaptiveFormats && videoData.adaptiveFormats.length > 0) {
+    const videoStreams = videoData.adaptiveFormats
+      .filter(s => s.url && s.type && s.type.startsWith('video/'))
+      .sort((a, b) => {
+        const qa = parseQualityLabel(a.qualityLabel);
+        const qb = parseQualityLabel(b.qualityLabel);
+        return qb - qa;
+      });
+    const audioStreams = videoData.adaptiveFormats
+      .filter(s => s.url && s.type && s.type.startsWith('audio/'))
+      .sort((a, b) => (parseInt(b.bitrate) || 0) - (parseInt(a.bitrate) || 0));
+
+    if (videoStreams.length > 0 && audioStreams.length > 0 && typeof dashjs !== 'undefined') {
+      try {
+        const dashManifest = buildDashManifest(videoStreams, audioStreams);
+        const blob = new Blob([dashManifest], { type: 'application/dash+xml' });
+        const objUrl = URL.createObjectURL(blob);
+        return {
+          url: objUrl,
+          type: 'application/dash+xml',
+          quality: videoStreams[0].qualityLabel || 'Adaptive',
+          mode: 'dash',
+          _isBlob: true
+        };
+      } catch(e) {}
+    }
+    if (videoStreams.length > 0) {
+      return {
+        url: videoStreams[0].url,
+        type: videoStreams[0].type || 'video/mp4',
+        quality: videoStreams[0].qualityLabel || '',
+        mode: 'direct'
+      };
+    }
+  }
+
+  return null;
+}
+
+function parseQualityLabel(label) {
+  if (!label) return 0;
+  const s = (label + '').toLowerCase().trim();
+  if (s.includes('8k')) return 4320;
+  if (s.includes('4k')) return 2160;
+  if (s.includes('1440') || s.includes('2k')) return 1440;
+  const m = s.match(/(\d{2,4})/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+function buildDashManifest(videoStreams, audioStreams) {
+  const duration = videoStreams[0].duration || 0;
+  const durationStr = duration ? `duration="PT${Math.floor(duration/3600)}H${Math.floor((duration%3600)/60)}M${(duration%60).toFixed(1)}S"` : '';
+
+  let videoSets = '';
+  videoStreams.forEach((s, idx) => {
+    const codecs = (s.type || '').replace('video/', '').replace(/;.*/, '').trim();
+    const bw = s.bitrate || 0;
+    const w = s.width || 0;
+    const h = s.height || 0;
+    if (!s.url) return;
+    videoSets += `
+      <Representation id="v${idx}" codecs="${codecs}" bandwidth="${bw}" width="${w}" height="${h}">
+        <BaseURL>${escapeXml(s.url)}</BaseURL>
+        <SegmentBase indexRange="${s.indexRange || '0-1000'}">
+          <Initialization range="0-1000"/>
+        </SegmentBase>
+      </Representation>`;
+  });
+
+  let audioSets = '';
+  audioStreams.forEach((s, idx) => {
+    const codecs = (s.type || '').replace('audio/', '').replace(/;.*/, '').trim();
+    const bw = s.bitrate || 0;
+    if (!s.url) return;
+    audioSets += `
+      <Representation id="a${idx}" codecs="${codecs}" bandwidth="${bw}">
+        <BaseURL>${escapeXml(s.url)}</BaseURL>
+        <SegmentBase indexRange="${s.indexRange || '0-1000'}">
+          <Initialization range="0-1000"/>
+        </SegmentBase>
+      </Representation>`;
+  });
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" ${durationStr} minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-main:2011">
+  <Period>
+    <AdaptationSet mimeType="video/mp4" contentType="video" subsegmentAlignment="true" subsegmentStartsWithSAP="1">
+      ${videoSets}
+    </AdaptationSet>
+    <AdaptationSet mimeType="audio/mp4" contentType="audio" subsegmentAlignment="true" subsegmentStartsWithSAP="1">
+      ${audioSets}
+    </AdaptationSet>
+  </Period>
+</MPD>`;
+}
+
+function escapeXml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ===== PLAYBACK MODES ===== */
+function tryDirectPlayback(videoElement, source) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const doResolve = (success) => {
+      if (resolved) return;
+      resolved = true;
+      resolve(success);
+    };
+
+    const onCanPlay = () => {
+      videoElement.removeEventListener('canplay', onCanPlay);
+      videoElement.removeEventListener('error', onError);
+      clearTimeout(timeout);
+      doResolve(true);
+    };
+    const onError = () => {
+      videoElement.removeEventListener('canplay', onCanPlay);
+      videoElement.removeEventListener('error', onError);
+      clearTimeout(timeout);
+      doResolve(false);
+    };
+
+    videoElement.addEventListener('canplay', onCanPlay);
+    videoElement.addEventListener('error', onError);
+
+    const timeout = setTimeout(() => {
+      videoElement.removeEventListener('canplay', onCanPlay);
+      videoElement.removeEventListener('error', onError);
+      doResolve(false);
+    }, 15000);
+
+    videoElement.src = source.url;
+    videoElement.play().catch(() => {});
+
+    const q = parseQualityLabel(source.quality);
+    const badgeText = q > 0 ? q + 'p' : (source.quality || '');
+    if (badgeText) setQualityBadge(badgeText);
+  });
+}
+
+function tryHlsPlayback(videoElement, source) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const doResolve = (success) => {
+      if (resolved) return;
+      resolved = true;
+      if (!success && window.hlsInstance) {
+        try { window.hlsInstance.destroy(); } catch(e) {}
+        window.hlsInstance = null;
+      }
+      resolve(success);
+    };
+
+    if (!Hls.isSupported()) {
+      if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        videoElement.src = source.url;
+        const onCanPlay = () => {
+          videoElement.removeEventListener('canplay', onCanPlay);
+          videoElement.removeEventListener('error', onError);
+          clearTimeout(timeout);
+          doResolve(true);
+        };
+        const onError = () => {
+          videoElement.removeEventListener('canplay', onCanPlay);
+          videoElement.removeEventListener('error', onError);
+          clearTimeout(timeout);
+          doResolve(false);
+        };
+        videoElement.addEventListener('canplay', onCanPlay);
+        videoElement.addEventListener('error', onError);
+        const timeout = setTimeout(() => {
+          videoElement.removeEventListener('canplay', onCanPlay);
+          videoElement.removeEventListener('error', onError);
+          doResolve(false);
+        }, 15000);
+        videoElement.play().catch(() => {});
+        return;
+      }
+      doResolve(false);
+      return;
+    }
+
+    const hls = new Hls({
+      maxBufferLength: 30,
+      maxMaxBufferLength: 600,
+      maxBufferSize: 60 * 1000 * 1000,
+      startLevel: -1,
+      capLevelToPlayerSize: false,
+      autoStartLoad: true,
+    });
+    window.hlsInstance = hls;
+
+    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+      if (data.levels && data.levels.length > 0) {
+        const bestLevel = data.levels.reduce((best, lvl, idx) =>
+          (lvl.height || 0) > (data.levels[best].height || 0) ? idx : best, 0);
+        hls.currentLevel = bestLevel;
+      }
+      videoElement.play().catch(() => {});
+      doResolve(true);
+    });
+
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        console.error('HLS fatal error:', data.type, data.details);
+        doResolve(false);
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      doResolve(false);
+    }, 15000);
+
+    hls.loadSource(source.url);
+    hls.attachMedia(videoElement);
+  });
+}
+
+function tryDashPlayback(videoElement, source) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const doResolve = (success) => {
+      if (resolved) return;
+      resolved = true;
+      if (!success && window.dashPlayer) {
+        try { window.dashPlayer.reset(); window.dashPlayer.destroy(); } catch(e) {}
+        window.dashPlayer = null;
+      }
+      resolve(success);
+    };
+
+    try {
+      const dashPlayer = dashjs.MediaPlayer().create();
+      window.dashPlayer = dashPlayer;
+
+      dashPlayer.initialize(videoElement, source.url, true);
+      dashPlayer.setPlaybackRate(1);
+      dashPlayer.updateSettings({
+        streaming: {
+          abr: { autoSwitchBitrate: { video: true, audio: true }, limitBitrateByPortal: false },
+          buffer: { fastSwitchEnabled: true }
+        }
+      });
+
+      const onCanPlay = () => {
+        videoElement.removeEventListener('canplay', onCanPlay);
+        videoElement.removeEventListener('error', onError);
+        clearTimeout(timeout);
+        doResolve(true);
+      };
+      const onError = () => {
+        videoElement.removeEventListener('canplay', onCanPlay);
+        videoElement.removeEventListener('error', onError);
+        clearTimeout(timeout);
+        doResolve(false);
+      };
+      videoElement.addEventListener('canplay', onCanPlay);
+      videoElement.addEventListener('error', onError);
+
+      const timeout = setTimeout(() => {
+        videoElement.removeEventListener('canplay', onCanPlay);
+        videoElement.removeEventListener('error', onError);
+        doResolve(false);
+      }, 15000);
+
+      dashPlayer.on(dashjs.MediaPlayer.events.ERROR, (e) => {
+        console.error('DASH error event:', e);
+        onError();
+      });
+
+    } catch (e) {
+      doResolve(false);
+    }
+  });
+}
+
+async function attemptPlayback(videoElement, source) {
+  try {
+    if (source.mode === 'hls') {
+      return await tryHlsPlayback(videoElement, source);
+    } else if (source.mode === 'dash') {
+      const ok = await tryDashPlayback(videoElement, source);
+      if (ok && source.quality) setQualityBadge(source.quality);
+      if (ok && source._isBlob) {
+        setTimeout(() => { try { URL.revokeObjectURL(source.url); } catch(e) {} }, 30000);
+      }
+      return ok;
+    } else {
+      return await tryDirectPlayback(videoElement, source);
+    }
+  } catch (e) {
+    return false;
+  }
+}
+
+/* ===== MAIN PLAY VIDEO FUNCTION ===== */
+async function playVideo(video) {
+  const videoId = video.videoId;
+  const title = video.title;
+  if (!videoId) return;
+
+  cacheVideos([video]);
+  recordWatch(video);
+
+  cleanupPlayer();
+  document.querySelector('.app').style.display = 'none';
+  document.getElementById('player-view').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  document.getElementById('player-title').textContent = title || 'Untitled';
+  document.getElementById('player-channel').textContent = video.author || '';
+  document.getElementById('player-avatar').textContent = (video.author || '?').charAt(0).toUpperCase();
+  document.getElementById('player-views').textContent = fmtViews(video.viewCount) || '';
+  document.getElementById('player-desc').textContent = video.description || 'No description available.';
+  document.getElementById('player-error').innerHTML = '';
+
+  renderUpNext(videoId);
+
+  const videoElement = document.getElementById('player');
+  const loader = document.getElementById('player-loader');
+  loader.classList.remove('hidden');
+
+  let loaded = false;
+
+  // If we already have formatStreams from Piped, try them immediately
+  if (video.formatStreams && video.formatStreams.length > 0) {
+    const source = findBestSource(video);
+    if (source) {
+      console.log('[Cache] Trying playback from cached formatStreams:', source.quality);
+      const success = await attemptPlayback(videoElement, source);
+      if (success) {
+        loaded = true;
+        loader.classList.add('hidden');
+      }
+    }
+  }
+
+  // If not loaded, fetch full video info and try again
+  if (!loaded) {
+    try {
+      const videoData = await fetchVideoInfo(videoId);
+      cacheVideos([videoData]);
+
+      // Update UI with fresh data
+      document.getElementById('player-title').textContent = videoData.title || title || 'Untitled';
+      document.getElementById('player-channel').textContent = videoData.author || video.author || '';
+      document.getElementById('player-views').textContent = fmtViews(videoData.viewCount) || '';
+      document.getElementById('player-desc').textContent = videoData.description || 'No description available.';
+
+      const source = findBestSource(videoData);
+      if (!source) {
+        throw new Error('No playable source found');
+      }
+
+      console.log('[Fetch] Trying playback:', source.mode, source.quality);
+      const success = await attemptPlayback(videoElement, source);
+      if (success) {
+        loaded = true;
+        loader.classList.add('hidden');
+      }
+    } catch (e) {
+      console.error('Playback failed:', e);
+    }
+  }
+
+  loader.classList.add('hidden');
+
+  if (!loaded) {
+    showPlayerError('Could not load this video. The video may be restricted, removed, or no sources are currently available.');
+  }
+}
+
+/* ===== UP NEXT / SIDEBAR ===== */
+async function renderUpNext(currentId){
+  const wrap = document.getElementById('up-next-list');
+  wrap.innerHTML = '<div class="status" style="padding:20px 0">Loading suggestions...</div>';
+
+  // Try to get related from cache first
+  const cached = videoCache.get(currentId);
+  if (cached && cached._relatedStreams && cached._relatedStreams.length > 0) {
+    const related = cached._relatedStreams
+      .map(item => ({
+        videoId: extractVideoId(item.url),
+        title: item.title,
+        author: item.uploaderName,
+        lengthSeconds: item.duration,
+        viewCount: item.views,
+        thumbnail: item.thumbnail
+      }))
+      .filter(v => v.videoId && v.videoId !== currentId)
+      .slice(0, 8);
+
+    if (related.length > 0) {
+      cacheVideos(related);
+      renderUpNextList(related);
+      return;
+    }
+  }
+
+  // Fallback to search-based suggestions
+  const topics = topTopics(3);
+  const seed = topics.length ? topics[Math.floor(Math.random()*topics.length)] : 'trending';
+
+  try {
+    const vids = await fetchSearchResults(seed, 12);
+    const filtered = vids.filter(v => v && v.videoId && v.videoId !== currentId).slice(0, 8);
+    if(!filtered.length){
+      wrap.innerHTML = '<div class="status" style="padding:20px 0">No suggestions available.</div>';
+      return;
+    }
+    cacheVideos(filtered);
+    renderUpNextList(filtered);
+  } catch(e) {
+    wrap.innerHTML = '<div class="status" style="padding:20px 0">No suggestions available.</div>';
+  }
+}
+
+function renderUpNextList(videos) {
+  const wrap = document.getElementById('up-next-list');
+  wrap.innerHTML = videos.map((v) => {
+    const vid = v.videoId;
+    const vtitle = esc(v.title || 'Untitled');
+    const vauthor = esc(v.author || '');
+    const vviews = fmtViews(v.viewCount);
+    const vduration = v.lengthSeconds ? fmt(v.lengthSeconds) : '';
+    return `
+    <div class="up-card" onclick="handleUpNextClick('${escAttr(vid)}')">
+      <div class="up-thumb">
+        <img src="${v.thumbnail || `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${vid}/mqdefault.jpg'">
+        ${vduration ? `<span class="duration">${vduration}</span>` : ''}
+      </div>
+      <div class="up-info">
+        <div class="up-title">${vtitle}</div>
+        <div class="up-meta">${vauthor}</div>
+        <div class="up-meta">${vviews}</div>
+      </div>
+    </div>
+  `}).join('');
+}
+
+async function handleUpNextClick(videoId) {
+  const video = videoCache.get(videoId);
+  if (video && video.videoId) {
+    await playVideo(video);
+  } else {
+    await fetchVideoAndPlay(videoId);
+  }
+}
+
+/* ===== UTILS ===== */
+function fmt(s) {
+  if (!s) return '';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`;
+}
+function fmtViews(v) {
+  if (!v) return '';
+  if (v>=1e9) return (v/1e9).toFixed(1)+'B views';
+  if (v>=1e6) return (v/1e6).toFixed(1)+'M views';
+  if (v>=1e3) return (v/1e3).toFixed(1)+'K views';
+  return v+' views';
+}
+function esc(s) { const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+function escAttr(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
