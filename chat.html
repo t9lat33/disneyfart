@@ -1063,16 +1063,8 @@ document.addEventListener('click',e=>{ if(e.target.classList.contains('modal-ove
 function toast(msg) { const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),3000); }
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
-window.addEventListener('message', e => {
-  if(e.data && e.data.type === 't9_accept_call' && e.data.from){
-    const fromId = e.data.from;
-    if(!dmVoiceState.active && onlineUsers[fromId]){
-      if(voiceState.channelId) leaveVoice();
-      openDM(fromId);
-      setTimeout(() => acceptDMCall(fromId), 200);
-    }
-  }
-});
+
+
 
 checkOnboarding();
 </script>
