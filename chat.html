@@ -945,24 +945,68 @@ function unlockAudio() {
 
 function playAudio(id,stream) {
   let a=audioEls[id];
-  if(!a){a=document.createElement('audio');a.autoplay=true;a.playsInline=true;document.body.appendChild(a);audioEls[id]=a;}
-  a.srcObject=stream;
-  const tryPlay=()=>a.play().catch(()=>{try{unlockAudio();audioCtx.createMediaStreamSource(stream).connect(audioCtx.destination);}catch(e){}});
+  if(!a){
+    a=document.createElement('audio');
+    a.autoplay=true;
+    a.playsInline=true;
+    a.muted=false;
+    a.setAttribute('playsinline','');
+    a.setAttribute('webkit-playsinline','');
+    a.style.position='absolute';
+    a.style.opacity='0';
+    a.style.pointerEvents='none';
+    document.body.appendChild(a);
+    audioEls[id]=a;
+  }
+  if(a.srcObject!==stream){
+    a.srcObject=stream;
+    a.load();
+  }
+  const tryPlay=()=>{
+    unlockAudio();
+    a.play().then(()=>{
+      console.log('Audio playing for',id);
+    }).catch(err=>{
+      console.warn('Audio play blocked, waiting for interaction',err);
+    });
+  };
   tryPlay();
-  document.addEventListener('click',tryPlay,{once:true});
+  const interactionHandler=()=>{
+    if(a.paused){tryPlay();}
+    document.removeEventListener('click',interactionHandler);
+    document.removeEventListener('touchstart',interactionHandler);
+    document.removeEventListener('keydown',interactionHandler);
+  };
+  document.addEventListener('click',interactionHandler,{once:true});
+  document.addEventListener('touchstart',interactionHandler,{once:true});
+  document.addEventListener('keydown',interactionHandler,{once:true});
 }
 
 function makePc(id) {
   const pc=new RTCPeerConnection(ICE);
   if(localStream) localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
-  pc.ontrack=e=>{if(e.streams[0])playAudio(id,e.streams[0]);};
+  pc.ontrack=e=>{
+    if(e.streams&&e.streams[0]){
+      console.log('Got remote stream from',id,e.streams[0].getAudioTracks());
+      playAudio(id,e.streams[0]);
+    }
+  };
   pc.onicecandidate=e=>{
     if(e.candidate){
       if(dmVoiceState.active) send({type:'dm_voice_ice',candidate:e.candidate,to:id});
       else send({type:'voice_ice',candidate:e.candidate,to:id});
     }
   };
-  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){cleanupPeer(id);setTimeout(()=>{if(dmVoiceState.active) callPeerDM(id); else callPeer(id);},1000);}};
+  pc.onconnectionstatechange=()=>{
+    console.log('PC state',id,pc.connectionState);
+    if(pc.connectionState==='failed'||pc.connectionState==='disconnected'){
+      cleanupPeer(id);
+      setTimeout(()=>{
+        if(dmVoiceState.active&&dmVoiceState.peerId===id) callPeerDM(id);
+        else if(voiceState.channelId) callPeer(id);
+      },1500);
+    }
+  };
   peers[id]=pc; return pc;
 }
 
@@ -989,12 +1033,21 @@ function cleanupPeer(id) {
 function startSpeakingDetection(stream) {
   try {
     unlockAudio();
-    const analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
-    audioCtx.createMediaStreamSource(stream).connect(analyser);
-    const buf=new Uint8Array(analyser.frequencyBinCount); let was=false;
-    const check=()=>{analyser.getByteFrequencyData(buf);const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;if(s!==was){was=s;send({type:'voice_speaking',active:s});}requestAnimationFrame(check);};
+    const analyser=audioCtx.createAnalyser();
+    analyser.fftSize=512;
+    const src=audioCtx.createMediaStreamSource(stream);
+    src.connect(analyser);
+    const buf=new Uint8Array(analyser.frequencyBinCount);
+    let was=false;
+    const check=()=>{
+      if(!audioCtx||audioCtx.state==='closed')return;
+      analyser.getByteFrequencyData(buf);
+      const s=(buf.reduce((a,b)=>a+b,0)/buf.length)>15;
+      if(s!==was){was=s;send({type:'voice_speaking',active:s});}
+      requestAnimationFrame(check);
+    };
     check();
-  } catch(e){}
+  } catch(e){console.error('speaking detection error',e);}
 }
 
 function previewImage(input,previewId) {
