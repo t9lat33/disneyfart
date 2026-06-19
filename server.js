@@ -437,33 +437,33 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-       case 'dm_voice_end': {
+    case 'dm_voice_end': {
       if (client.dmVoicePeer) {
-        const peers = [...clients.values()].filter(c => c.id === client.dmVoicePeer);
-        peers.forEach(peer => { sendTo(peer.ws, { type: 'dm_voice_end', from: client.id }); peer.dmVoicePeer = null; });
+        const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+        if (peer) { sendTo(peer.ws, { type: 'dm_voice_end', from: client.id }); peer.dmVoicePeer = null; }
         client.dmVoicePeer = null;
       }
       break;
     }
 
-        case 'dm_voice_decline': {
-      const targets = [...clients.values()].filter(c => c.id === data.to);
-      targets.forEach(target => { target.dmVoicePeer = null; sendTo(target.ws, { type: 'dm_voice_decline', from: client.id }); });
+    case 'dm_voice_decline': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) { target.dmVoicePeer = null; sendTo(target.ws, { type: 'dm_voice_decline', from: client.id }); }
       client.dmVoicePeer = null;
       break;
     }
 
-       case 'dm_voice_accept': {
-      const targets = [...clients.values()].filter(c => c.id === data.to);
-      targets.forEach(target => sendTo(target.ws, { type: 'dm_voice_accept', from: client.id }));
+    case 'dm_voice_accept': {
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) sendTo(target.ws, { type: 'dm_voice_accept', from: client.id });
       break;
     }
 
-        case 'dm_voice_offer':
+    case 'dm_voice_offer':
     case 'dm_voice_answer':
     case 'dm_voice_ice': {
-      const targets = [...clients.values()].filter(c => c.id === data.to);
-      targets.forEach(target => sendTo(target.ws, { ...data, from: client.id }));
+      const target = [...clients.values()].find(c => c.id === data.to);
+      if (target) sendTo(target.ws, { ...data, from: client.id });
       break;
     }
   }
