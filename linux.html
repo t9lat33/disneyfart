@@ -1313,6 +1313,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   const protocol = location.protocol==='https:'?'wss:':'ws:';
   const ws = new WebSocket(`${protocol}//${location.host}/ws`);
   let myId = null, incomingFrom = null, callCtx = null, callInt = null;
+  const onlineUsers = {};
 
   function playSound(){
     try{
@@ -1334,6 +1335,21 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   }
   function send(d){if(ws?.readyState===1)ws.send(JSON.stringify(d));}
 
+  function updateCallerDisplay(caller) {
+    const c = caller || {username:'User', color:'#5865f2', avatar:null};
+    document.getElementById('linux-call-name').textContent = c.username || 'User';
+    const av = document.getElementById('linux-call-avatar');
+    if(c.avatar){
+      av.innerHTML = `<img src="${c.avatar}" onerror="this.style.display='none'">`;
+      av.style.background = ''; 
+      av.textContent = '';
+    } else {
+      av.innerHTML = '';
+      av.style.background = c.color || '#5865f2';
+      av.textContent = (c.username || 'User')[0].toUpperCase();
+    }
+  }
+
   ws.onopen = () => {
     const p = JSON.parse(localStorage.getItem('t9_profile')||'{}');
     let cid = localStorage.getItem('t9_user_id');
@@ -1343,28 +1359,41 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
   ws.onmessage = e => {
     const d = JSON.parse(e.data);
-    if(d.type==='init'){myId=d.id;}
+    if(d.type==='init'){
+      myId=d.id;
+      if(d.onlineUsers) Object.assign(onlineUsers, d.onlineUsers);
+    }
+    else if(d.type==='user_join' || d.type==='user_updated'){
+      if(d.user) onlineUsers[d.user.id] = d.user;
+    }
+    else if(d.type==='user_leave'){
+      if(d.userId) delete onlineUsers[d.userId];
+    }
     else if(d.type==='dm_voice_start'){
       incomingFrom = d.from;
-      const c = d.caller || {username:'User',color:'#5865f2',avatar:null};
-      document.getElementById('linux-call-name').textContent = c.username;
-      const av = document.getElementById('linux-call-avatar');
-      if(c.avatar){av.innerHTML=`<img src="${c.avatar}">`;av.style.background='';av.textContent='';}
-      else{av.innerHTML='';av.style.background=c.color||'#5865f2';av.textContent=(c.username||'User')[0].toUpperCase();}
+      // Try d.caller first (from server), then fall back to onlineUsers lookup
+      const caller = d.caller || onlineUsers[d.from] || {username:'User', color:'#5865f2', avatar:null};
+      updateCallerDisplay(caller);
       document.getElementById('linux-call-overlay').style.display='flex';
       playSound();
-    } else if(d.type==='dm_voice_end'||d.type==='dm_voice_decline'){
-      stopSound(); document.getElementById('linux-call-overlay').style.display='none'; incomingFrom=null;
+    }
+    else if(d.type==='dm_voice_end' || d.type==='dm_voice_decline'){
+      stopSound(); 
+      document.getElementById('linux-call-overlay').style.display='none'; 
+      incomingFrom=null;
     }
   };
 
   window.acceptLinuxCall = function(){
-    stopSound(); document.getElementById('linux-call-overlay').style.display='none';
+    stopSound(); 
+    document.getElementById('linux-call-overlay').style.display='none';
     if(incomingFrom) window.open(`chat.html?acceptCall=${encodeURIComponent(incomingFrom)}`,'_blank');
     incomingFrom=null;
   };
+  
   window.declineLinuxCall = function(){
-    stopSound(); document.getElementById('linux-call-overlay').style.display='none';
+    stopSound(); 
+    document.getElementById('linux-call-overlay').style.display='none';
     if(incomingFrom) send({type:'dm_voice_decline',to:incomingFrom});
     incomingFrom=null;
   };
