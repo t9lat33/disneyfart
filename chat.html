@@ -367,7 +367,7 @@ const peers={}, audioEls={};
 let audioCtx=null;
 let lastMsgUser=null, lastMsgTime=0;
 
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
 let obAvatarData = null;
 
 function obPreviewAvatar(input) {
@@ -464,8 +464,8 @@ function handleMsg(d) {
     case 'invite_regenerated':
       if(servers[d.serverId]) servers[d.serverId].inviteCode=d.inviteCode;
       document.getElementById('ss-invite-code').textContent=d.inviteCode; break;
-    case 'voice_users': d.users.filter(u=>u.id!==myId).forEach(u=>setTimeout(()=>callPeer(u.id),500)); break;
-    case 'voice_user_joined': setTimeout(()=>callPeer(d.userId),1000); renderVoiceChannel(); break;
+    case 'voice_users': d.users.filter(u=>u.id!==myId).forEach(u=>{if(myId<u.id)setTimeout(()=>callPeer(u.id),500)}); break;
+    case 'voice_user_joined': if(myId<d.userId)setTimeout(()=>callPeer(d.userId),1000); renderVoiceChannel(); break;
     case 'voice_user_left': cleanupPeer(d.userId); renderVoiceChannel(); break;
     case 'voice_offer': handleOffer(d.from,d.sdp); break;
     case 'voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
@@ -943,7 +943,8 @@ function unlockAudio() {
 
 function playAudio(id,stream) {
   let a=audioEls[id];
-  if(!a){
+  if(!a||!a.isConnected){
+    if(a){try{a.srcObject=null;}catch(e){}}
     a=document.createElement('audio');
     a.autoplay=true;
     a.playsInline=true;
@@ -970,7 +971,7 @@ function playAudio(id,stream) {
   };
   tryPlay();
   const interactionHandler=()=>{
-    if(a.paused){tryPlay();}
+    if(a.paused&&a.isConnected){tryPlay();}
     document.removeEventListener('click',interactionHandler);
     document.removeEventListener('touchstart',interactionHandler);
     document.removeEventListener('keydown',interactionHandler);
@@ -991,13 +992,13 @@ function makePc(id) {
   };
   pc.onicecandidate=e=>{
     if(e.candidate){
-      if(dmVoiceState.active) send({type:'dm_voice_ice',candidate:e.candidate,to:id});
-      else send({type:'voice_ice',candidate:e.candidate,to:id});
+      const type=dmVoiceState.active?'dm_voice_ice':'voice_ice';
+      send({type,candidate:e.candidate,to:id});
     }
   };
   pc.onconnectionstatechange=()=>{
     console.log('PC state',id,pc.connectionState);
-    if(pc.connectionState==='failed'||pc.connectionState==='disconnected'){
+    if(pc.connectionState==='failed'){
       cleanupPeer(id);
       setTimeout(()=>{
         if(dmVoiceState.active&&dmVoiceState.peerId===id) callPeerDM(id);
