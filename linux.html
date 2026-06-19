@@ -1339,12 +1339,23 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     const c = caller || {username:'User', color:'#5865f2', avatar:null};
     document.getElementById('linux-call-name').textContent = c.username || 'User';
     const av = document.getElementById('linux-call-avatar');
+    av.innerHTML = '';
+    av.style.background = '';
+    av.textContent = '';
+    
     if(c.avatar){
-      av.innerHTML = `<img src="${c.avatar}" onerror="this.style.display='none'">`;
-      av.style.background = ''; 
-      av.textContent = '';
+      const img = document.createElement('img');
+      img.src = c.avatar;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.onerror = function() {
+        this.remove();
+        av.style.background = c.color || '#5865f2';
+        av.textContent = (c.username || 'User')[0].toUpperCase();
+      };
+      av.appendChild(img);
     } else {
-      av.innerHTML = '';
       av.style.background = c.color || '#5865f2';
       av.textContent = (c.username || 'User')[0].toUpperCase();
     }
@@ -1371,8 +1382,14 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     }
     else if(d.type==='dm_voice_start'){
       incomingFrom = d.from;
-      // Try d.caller first (from server), then fall back to onlineUsers lookup
-      const caller = d.caller || onlineUsers[d.from] || {username:'User', color:'#5865f2', avatar:null};
+      // MERGE server caller with cached user data
+      const srv = d.caller || {};
+      const cached = onlineUsers[d.from] || {};
+      const caller = {
+        username: srv.username || cached.username || 'User',
+        color: srv.color || cached.color || '#5865f2',
+        avatar: srv.avatar || cached.avatar || null
+      };
       updateCallerDisplay(caller);
       document.getElementById('linux-call-overlay').style.display='flex';
       playSound();
