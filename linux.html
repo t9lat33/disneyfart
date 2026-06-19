@@ -1273,6 +1273,104 @@ border: 1px solid rgba(255, 255, 255, 0.15);
            
 </div>
 
+<style>
+#linux-call-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;font-family:'Segoe UI',sans-serif}
+.linux-call-box{width:340px;background:#2b2d31;border-radius:16px;padding:32px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.linux-call-label{font-size:12px;font-weight:700;color:#949ba4;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.linux-call-avatar{width:96px;height:96px;border-radius:50%;background:#5865f2;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;overflow:hidden;border:3px solid #3a3d44}
+.linux-call-avatar img{width:100%;height:100%;object-fit:cover}
+.linux-call-name{font-size:22px;font-weight:700;margin-bottom:8px;color:#fff}
+.linux-call-ring{font-size:13px;color:#23a55a;margin-bottom:28px;animation:ringpulse 1.2s infinite}
+@keyframes ringpulse{0%,100%{opacity:1}50%{opacity:.5}}
+.linux-call-actions{display:flex;gap:20px;justify-content:center}
+.linux-call-btn{width:72px;height:72px;border-radius:50%;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.linux-call-btn:hover{transform:scale(1.08)}
+.linux-call-decline{background:#f23f43}
+.linux-call-accept{background:#23a55a}
+.linux-call-labels{display:flex;justify-content:space-between;margin-top:10px;padding:0 40px;font-size:12px;color:#949ba4}
+</style>
+
+<div id="linux-call-overlay">
+  <div class="linux-call-box">
+    <div class="linux-call-label">Incoming call</div>
+    <div class="linux-call-avatar" id="linux-call-avatar"></div>
+    <div class="linux-call-name" id="linux-call-name">User</div>
+    <div class="linux-call-ring">● Calling...</div>
+    <div class="linux-call-actions">
+      <button class="linux-call-btn linux-call-decline" onclick="declineLinuxCall()" title="Decline">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+      </button>
+      <button class="linux-call-btn linux-call-accept" onclick="acceptLinuxCall()" title="Accept">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+      </button>
+    </div>
+    <div class="linux-call-labels"><span>Decline</span><span>Accept</span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const protocol = location.protocol==='https:'?'wss:':'ws:';
+  const ws = new WebSocket(`${protocol}//${location.host}/ws`);
+  let myId = null, incomingFrom = null, callCtx = null, callInt = null;
+
+  function playSound(){
+    try{
+      callCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const ring = () => {
+        if(!callCtx)return;
+        const n=callCtx.currentTime, o1=callCtx.createOscillator(), o2=callCtx.createOscillator(), g=callCtx.createGain();
+        o1.type='sine';o1.frequency.value=440; o2.type='sine';o2.frequency.value=880;
+        g.gain.setValueAtTime(0.08,n); g.gain.exponentialRampToValueAtTime(0.001,n+0.25);
+        o1.connect(g);o2.connect(g);g.connect(callCtx.destination);
+        o1.start(n);o2.start(n);o1.stop(n+0.25);o2.stop(n+0.25);
+      };
+      ring(); callInt=setInterval(ring,2200);
+    }catch(e){}
+  }
+  function stopSound(){
+    if(callInt){clearInterval(callInt);callInt=null;}
+    if(callCtx){try{callCtx.close();}catch(e){}callCtx=null;}
+  }
+  function send(d){if(ws?.readyState===1)ws.send(JSON.stringify(d));}
+
+  ws.onopen = () => {
+    const p = JSON.parse(localStorage.getItem('t9_profile')||'{}');
+    let cid = localStorage.getItem('t9_user_id');
+    if(!cid){cid='u_'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('t9_user_id',cid);}
+    send({type:'init',username:p.username||null,avatar:p.avatar||null,clientId:cid});
+  };
+
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if(d.type==='init'){myId=d.id;}
+    else if(d.type==='dm_voice_start'){
+      incomingFrom = d.from;
+      const c = d.caller || {username:'User',color:'#5865f2',avatar:null};
+      document.getElementById('linux-call-name').textContent = c.username;
+      const av = document.getElementById('linux-call-avatar');
+      if(c.avatar){av.innerHTML=`<img src="${c.avatar}">`;av.style.background='';av.textContent='';}
+      else{av.innerHTML='';av.style.background=c.color||'#5865f2';av.textContent=(c.username||'User')[0].toUpperCase();}
+      document.getElementById('linux-call-overlay').style.display='flex';
+      playSound();
+    } else if(d.type==='dm_voice_end'||d.type==='dm_voice_decline'){
+      stopSound(); document.getElementById('linux-call-overlay').style.display='none'; incomingFrom=null;
+    }
+  };
+
+  window.acceptLinuxCall = function(){
+    stopSound(); document.getElementById('linux-call-overlay').style.display='none';
+    if(incomingFrom) window.open(`chat.html?acceptCall=${encodeURIComponent(incomingFrom)}`,'_blank');
+    incomingFrom=null;
+  };
+  window.declineLinuxCall = function(){
+    stopSound(); document.getElementById('linux-call-overlay').style.display='none';
+    if(incomingFrom) send({type:'dm_voice_decline',to:incomingFrom});
+    incomingFrom=null;
+  };
+})();
+</script>
+
 <div id="movieDiv">
   <button class="close-btn" onclick="document.getElementById('movieDiv').style.display = 'none';">●</button>
       <button class="full-btn" onclick="fullscreenIframe3()">●</button>

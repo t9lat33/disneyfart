@@ -424,14 +424,16 @@ function handleMessage(ws, client, data) {
     }
 
     case 'dm_voice_start': {
-      const target = [...clients.values()].find(c => c.id === data.to);
-      if (!target || target.dmVoicePeer || target.voiceChannel) {
+      const targets = [...clients.values()].filter(c => c.id === data.to);
+      if (!targets.length || targets.some(t => t.dmVoicePeer || t.voiceChannel)) {
         sendTo(ws, { type: 'dm_voice_decline', from: data.to });
         return;
       }
       client.dmVoicePeer = data.to;
-      target.dmVoicePeer = client.id;
-      sendTo(target.ws, { type: 'dm_voice_start', from: client.id });
+      targets.forEach(target => {
+        target.dmVoicePeer = client.id;
+        sendTo(target.ws, { type: 'dm_voice_start', from: client.id, caller: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } });
+      });
       break;
     }
 
