@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luna Music</title>
+<title>Music</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 <style>
@@ -420,6 +420,19 @@ async function playIdx(idx){
   }
 }
 
+function postMusicState() {
+  var song = queue[queueIdx];
+  parent.postMessage({
+    type: 't9_music_state',
+    isPlaying: !audio.paused,
+    title: song ? song.title : '',
+    artist: song ? song.artist : '',
+    artwork: song ? song.image : '',
+    currentTime: audio.currentTime || 0,
+    duration: audio.duration || 0
+  }, '*');
+}
+
 function setNP(song){
   document.getElementById('np-title').textContent=song.title||'—';
   document.getElementById('np-artist').textContent=song.artist||'—';
@@ -428,6 +441,7 @@ function setNP(song){
   else{ wrap.innerHTML='<i class="ri-album-fill"></i>'; }
   updateLikeBtn(song);
   highlightPlaying();
+  postMusicState();
 }
 
 function setPlayBtnState(state){
@@ -442,8 +456,8 @@ function setPlayBtnState(state){
   }
 }
 
-audio.addEventListener('play', function(){ var b=document.getElementById('play-btn'); if(b&&!b.disabled) b.classList.remove('paused'); highlightPlaying(); });
-audio.addEventListener('pause', function(){ var b=document.getElementById('play-btn'); if(b&&!b.disabled) b.classList.add('paused'); });
+audio.addEventListener('play', function(){ var b=document.getElementById('play-btn'); if(b&&!b.disabled) b.classList.remove('paused'); highlightPlaying(); postMusicState(); });
+audio.addEventListener('pause', function(){ var b=document.getElementById('play-btn'); if(b&&!b.disabled) b.classList.add('paused'); postMusicState(); });
 audio.addEventListener('ended', function(){ nextTrack(); });
 audio.addEventListener('timeupdate', function(){
   var c=audio.currentTime||0, d=audio.duration||0;
@@ -451,6 +465,13 @@ audio.addEventListener('timeupdate', function(){
   document.getElementById('np-dur').textContent=fmt(d);
   document.getElementById('np-fill').style.width=d?(c/d*100)+'%':'0%';
   updateActiveLyric(c);
+  postMusicState();
+});
+
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 't9_miniplayer_toggle') {
+    togglePlay();
+  }
 });
 
 function getNextIdx(){

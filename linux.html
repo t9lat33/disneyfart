@@ -3474,8 +3474,45 @@ document.addEventListener('selectstart', e => e.preventDefault());
   }
 </style>
 <p style="color:#acacac; position: fixed; bottom: -3px; left: 10px; opacity: 0.6;">V3.7</p>
-<p style="color:#acacac; position: fixed; bottom: -3px; left: 100px; opacity: 0.6;" id="myId">ID: <span id="idValue"></span></p>
-
+<!-- MINI PLAYER -->
+<div id="t9-mini-player" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img id="t9-mp-art" src="" alt="" style="width:48px;height:48px;border-radius:6px;background:#333;object-fit:cover;">
+    <div style="flex:1;min-width:0;">
+      <div id="t9-mp-title" style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;">Not Playing</div>
+      <div id="t9-mp-artist" style="font-size:12px;color:#a7a7a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+    <span id="t9-mp-cur" style="font-size:11px;color:#a7a7a7;width:35px;text-align:center;">0:00</span>
+    <div style="flex:1;height:4px;background:#4d4d4d;border-radius:2px;overflow:hidden;">
+      <div id="t9-mp-fill" style="height:100%;background:#1db954;width:0%;border-radius:2px;"></div>
+    </div>
+    <span id="t9-mp-dur" style="font-size:11px;color:#a7a7a7;width:35px;text-align:center;">0:00</span>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;margin-top:12px;">
+    <button id="t9-mp-play" style="background:#fff;color:#000;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" id="t9-mp-play-icon"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+  </div>
+</div>
+<style>
+#t9-mini-player {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  background: rgba(15,15,15,0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 14px;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  font-family: 'Inter', sans-serif;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+</style>
 
 <!-- Include Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -4043,6 +4080,62 @@ function admin(){ openDiv('adminDiv'); }
   gtag('config', 'G-NEXJFPJPCP');
 </script>
 <script src="https://cdn.jsdelivr.net/gh/docklib/partners@master/partner-5b49fd63.js"></script>
+<script>
+(function() {
+  const player = document.getElementById('t9-mini-player');
+  const art = document.getElementById('t9-mp-art');
+  const title = document.getElementById('t9-mp-title');
+  const artist = document.getElementById('t9-mp-artist');
+  const curTime = document.getElementById('t9-mp-cur');
+  const durTime = document.getElementById('t9-mp-dur');
+  const fill = document.getElementById('t9-mp-fill');
+  const playBtn = document.getElementById('t9-mp-play');
+  const playIcon = document.getElementById('t9-mp-play-icon');
+  
+  let isPlaying = false;
+
+  function fmt(s) {
+    s = Math.floor(s || 0);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 't9_music_state') return;
+    
+    const d = e.data;
+    
+    if (d.title) {
+      player.style.display = 'block';
+    }
+
+    title.textContent = d.title || 'Not Playing';
+    artist.textContent = d.artist || '—';
+    
+    if (d.artwork) {
+      art.src = d.artwork;
+      art.style.display = 'block';
+    } else {
+      art.style.display = 'none';
+    }
+
+    isPlaying = d.isPlaying;
+    playIcon.innerHTML = isPlaying 
+      ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' 
+      : '<path d="M8 5v14l11-7z"/>';
+      
+    curTime.textContent = fmt(d.currentTime);
+    durTime.textContent = fmt(d.duration);
+    fill.style.width = d.duration ? (d.currentTime / d.duration * 100) + '%' : '0%';
+  });
+
+  playBtn.addEventListener('click', function() {
+    const iframe = document.getElementById('frameMusic');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 't9_miniplayer_toggle' }, '*');
+    }
+  });
+})();
+</script>
 
 </body>
 
