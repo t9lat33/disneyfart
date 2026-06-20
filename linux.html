@@ -390,18 +390,15 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 display: none;
     margin-top: 20px;
     padding: 10px;
- background: linear-gradient(160deg,
-        rgba(15,15,15,0.65),
-        rgba(10,10,10,0.65)
-      );
+ background: #212121;
     color: white;
     inset: 0;
     margin:auto;
     position: fixed;
     z-index: 1000;
     border-radius:4px; 
-    width:66%;
-    height: 65%; 
+    width:64%;
+    height: 66%; 
     right:50px;
     overflow-x: hidden;
     border:2px solid gray;
@@ -2156,7 +2153,7 @@ document.addEventListener("click", () => {
   <button class="close-btn" onclick="document.getElementById('aiDiv').style.display = 'none';">●</button>
     <button class="full-btn" onclick="fullscreenIframeAI()">●</button>
 
-<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >AI</h3>
+<h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >T9 GPT</h3>
 <h3  id="fpsCounter" style="  left: 80%; color:white; top:-9.5px; position: absolute;   transform: translateX(-80%);      " ></h3>
  
 
@@ -2172,7 +2169,6 @@ document.addEventListener("click", () => {
       border:none;
       border-radius:0px 0px 15px 15px;
       left:0;
-      border-top: 2px solid gray;
     }
     .back {
     background: none;
