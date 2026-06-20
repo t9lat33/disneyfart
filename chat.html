@@ -471,10 +471,23 @@ function handleMsg(d) {
     case 'voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
     case 'voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
     case 'voice_speaking': break;
-    case 'dm_voice_start': handleDMVoiceStart(d.from); break;
-    case 'dm_voice_end': cleanupDMCall(); toast('Call ended'); break;
-    case 'dm_voice_decline': cleanupDMCall(); toast('Call declined'); break;
-    case 'dm_voice_accept': dmVoiceState.peerId=d.from; setTimeout(()=>callPeerDM(d.from),500); break;
+    case 'dm_voice_start': 
+      if (window.self !== window.top) {
+        // We are in an iframe (linux.html), tell parent to show popup
+        incomingCallFrom = d.from;
+        const caller = onlineUsers[d.from] || d.caller || {username:'User', color:'#5865f2', avatar:null};
+        window.parent.postMessage({ type: 't9_incoming_call', from: d.from, caller }, '*');
+      } else {
+        handleDMVoiceStart(d.from); 
+      }
+      break;
+    case 'dm_voice_end': 
+      if (window.self !== window.top) window.parent.postMessage({type: 't9_call_ended'}, '*');
+      cleanupDMCall(); toast('Call ended'); break;
+    case 'dm_voice_decline': 
+      if (window.self !== window.top) window.parent.postMessage({type: 't9_call_ended'}, '*');
+      cleanupDMCall(); toast('Call declined'); break;
+case 'dm_voice_accept': dmVoiceState.active=true; dmVoiceState.peerId=d.from; setTimeout(()=>callPeerDM(d.from),500); break;
     case 'dm_voice_offer': handleDMVoiceOffer(d.from,d.sdp); break;
     case 'dm_voice_answer': if(peers[d.from])peers[d.from].setRemoteDescription(new RTCSessionDescription(d.sdp)).catch(()=>{}); break;
     case 'dm_voice_ice': if(peers[d.from]&&d.candidate)peers[d.from].addIceCandidate(new RTCIceCandidate(d.candidate)).catch(()=>{}); break;
@@ -944,43 +957,29 @@ function unlockAudio() {
 }
 
 function playAudio(id,stream) {
+  unlockAudio();
   let a=audioEls[id];
-  if(!a||!a.isConnected){
-    if(a){try{a.srcObject=null;}catch(e){}}
+  if(!a){
     a=document.createElement('audio');
     a.autoplay=true;
-    a.playsInline=true;
-    a.muted=false;
     a.setAttribute('playsinline','');
-    a.setAttribute('webkit-playsinline','');
-    a.style.position='absolute';
-    a.style.opacity='0';
-    a.style.pointerEvents='none';
+    a.style.display='none';
     document.body.appendChild(a);
     audioEls[id]=a;
   }
   if(a.srcObject!==stream){
     a.srcObject=stream;
-    a.load();
   }
-  const tryPlay=()=>{
-    unlockAudio();
-    a.play().then(()=>{
-      console.log('Audio playing for',id);
-    }).catch(err=>{
-      console.warn('Audio play blocked, waiting for interaction',err);
-    });
+  a.muted = false;
+  a.play().catch(()=>{ /* Will retry on interaction */ });
+  
+  const retry = () => {
+    if(a.paused) a.play().catch(()=>{});
+    document.removeEventListener('click', retry);
+    document.removeEventListener('touchstart', retry);
   };
-  tryPlay();
-  const interactionHandler=()=>{
-    if(a.paused&&a.isConnected){tryPlay();}
-    document.removeEventListener('click',interactionHandler);
-    document.removeEventListener('touchstart',interactionHandler);
-    document.removeEventListener('keydown',interactionHandler);
-  };
-  document.addEventListener('click',interactionHandler,{once:true});
-  document.addEventListener('touchstart',interactionHandler,{once:true});
-  document.addEventListener('keydown',interactionHandler,{once:true});
+  document.addEventListener('click', retry);
+  document.addEventListener('touchstart', retry);
 }
 
 function makePc(id) {
@@ -1070,6 +1069,19 @@ function esc(s){const d=document.createElement('div');d.textContent=s||'';return
 
 
 checkOnboarding();
+</script>
+
+<script>
+  // Listen for decline command from linux.html parent
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 't9_decline_call') {
+    if (incomingCallFrom) {
+      send({type:'dm_voice_decline', to: incomingCallFrom});
+      incomingCallFrom = null;
+      if (window.self !== window.top) window.parent.postMessage({type: 't9_call_ended'}, '*');
+    }
+  }
+});
 </script>
 
 <div id="call-overlay">

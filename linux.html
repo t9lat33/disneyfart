@@ -1310,30 +1310,29 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 <script>
 (function(){
-  const protocol = location.protocol==='https:'?'wss:':'ws:';
-  const ws = new WebSocket(`${protocol}//${location.host}/ws`);
-  let myId = null, incomingFrom = null, callCtx = null, callInt = null;
-  const onlineUsers = {};
+  let incomingFrom = null, callCtx = null, callInt = null;
 
-  function playSound(){
-    try{
-      callCtx = new (window.AudioContext||window.webkitAudioContext)();
+  function playSound() {
+    try {
+      callCtx = new (window.AudioContext || window.webkitAudioContext)();
       const ring = () => {
-        if(!callCtx)return;
-        const n=callCtx.currentTime, o1=callCtx.createOscillator(), o2=callCtx.createOscillator(), g=callCtx.createGain();
-        o1.type='sine';o1.frequency.value=440; o2.type='sine';o2.frequency.value=880;
-        g.gain.setValueAtTime(0.08,n); g.gain.exponentialRampToValueAtTime(0.001,n+0.25);
-        o1.connect(g);o2.connect(g);g.connect(callCtx.destination);
-        o1.start(n);o2.start(n);o1.stop(n+0.25);o2.stop(n+0.25);
+        if (!callCtx) return;
+        const n = callCtx.currentTime, o1 = callCtx.createOscillator(), o2 = callCtx.createOscillator(), g = callCtx.createGain();
+        o1.type = 'sine'; o1.frequency.value = 440;
+        o2.type = 'sine'; o2.frequency.value = 880;
+        g.gain.setValueAtTime(0.08, n);
+        g.gain.exponentialRampToValueAtTime(0.001, n + 0.25);
+        o1.connect(g); o2.connect(g); g.connect(callCtx.destination);
+        o1.start(n); o2.start(n); o1.stop(n + 0.25); o2.stop(n + 0.25);
       };
-      ring(); callInt=setInterval(ring,2200);
-    }catch(e){}
+      ring(); callInt = setInterval(ring, 2200);
+    } catch(e) {}
   }
-  function stopSound(){
-    if(callInt){clearInterval(callInt);callInt=null;}
-    if(callCtx){try{callCtx.close();}catch(e){}callCtx=null;}
+
+  function stopSound() {
+    if (callInt) { clearInterval(callInt); callInt = null; }
+    if (callCtx) { try { callCtx.close(); } catch(e) {} callCtx = null; }
   }
-  function send(d){if(ws?.readyState===1)ws.send(JSON.stringify(d));}
 
   function updateCallerDisplay(caller) {
     const c = caller || {username:'User', color:'#5865f2', avatar:null};
@@ -1361,50 +1360,24 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     }
   }
 
-  ws.onopen = () => {
-    const p = JSON.parse(localStorage.getItem('t9_profile')||'{}');
-    let cid = localStorage.getItem('t9_user_id');
-    if(!cid){cid='u_'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('t9_user_id',cid);}
-    send({type:'init',username:p.username||null,avatar:p.avatar||null,clientId:cid});
-  };
-
-  ws.onmessage = e => {
-    const d = JSON.parse(e.data);
-    if(d.type==='init'){
-      myId=d.id;
-      if(d.onlineUsers) Object.assign(onlineUsers, d.onlineUsers);
-    }
-    else if(d.type==='user_join' || d.type==='user_updated'){
-      if(d.user) onlineUsers[d.user.id] = d.user;
-    }
-    else if(d.type==='user_leave'){
-      if(d.userId) delete onlineUsers[d.userId];
-    }
-    else if(d.type==='dm_voice_start'){
-      incomingFrom = d.from;
-      // MERGE server caller with cached user data
-      const srv = d.caller || {};
-      const cached = onlineUsers[d.from] || {};
-      const caller = {
-        username: srv.username || cached.username || 'User',
-        color: srv.color || cached.color || '#5865f2',
-        avatar: srv.avatar || cached.avatar || null
-      };
-      updateCallerDisplay(caller);
-      document.getElementById('linux-call-overlay').style.display='flex';
+  // Listen for messages from chat.html iframe
+  window.addEventListener('message', e => {
+    if (!e.data) return;
+    if (e.data.type === 't9_incoming_call') {
+      incomingFrom = e.data.from;
+      updateCallerDisplay(e.data.caller);
+      document.getElementById('linux-call-overlay').style.display = 'flex';
       playSound();
+    } else if (e.data.type === 't9_call_ended') {
+      stopSound();
+      document.getElementById('linux-call-overlay').style.display = 'none';
+      incomingFrom = null;
     }
-    else if(d.type==='dm_voice_end' || d.type==='dm_voice_decline'){
-      stopSound(); 
-      document.getElementById('linux-call-overlay').style.display='none'; 
-      incomingFrom=null;
-    }
-  };
+  });
 
-    window.acceptLinuxCall = function(){
   window.acceptLinuxCall = function(){
     stopSound(); 
-    document.getElementById('linux-call-overlay').style.display='none';
+    document.getElementById('linux-call-overlay').style.display = 'none';
     if(incomingFrom){
       const chatDiv = document.getElementById('ChatDiv');
       const iframe = document.getElementById('framechat');
@@ -1413,14 +1386,19 @@ border: 1px solid rgba(255, 255, 255, 0.15);
         chatDiv.style.display = 'block';
       }
     }
-    incomingFrom=null;
+    incomingFrom = null;
   };
   
   window.declineLinuxCall = function(){
     stopSound(); 
-    document.getElementById('linux-call-overlay').style.display='none';
-    if(incomingFrom) send({type:'dm_voice_decline',to:incomingFrom});
-    incomingFrom=null;
+    document.getElementById('linux-call-overlay').style.display = 'none';
+    if(incomingFrom){
+      const iframe = document.getElementById('framechat');
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 't9_decline_call', to: incomingFrom }, '*');
+      }
+    }
+    incomingFrom = null;
   };
 })();
 </script>
