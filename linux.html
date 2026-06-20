@@ -1381,9 +1381,9 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     if(incomingFrom){
       const chatDiv = document.getElementById('ChatDiv');
       const iframe = document.getElementById('framechat');
-      if(chatDiv && iframe){
-        iframe.src = `chat.html?acceptCall=${encodeURIComponent(incomingFrom)}`;
-        chatDiv.style.display = 'block';
+      if(chatDiv) chatDiv.style.display = 'block';
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 't9_accept_call', from: incomingFrom }, '*');
       }
     }
     incomingFrom = null;

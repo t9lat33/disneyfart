@@ -1072,16 +1072,25 @@ checkOnboarding();
 </script>
 
 <script>
-  // Listen for decline command from linux.html parent
-window.addEventListener('message', e => {
-  if (e.data && e.data.type === 't9_decline_call') {
-    if (incomingCallFrom) {
-      send({type:'dm_voice_decline', to: incomingCallFrom});
-      incomingCallFrom = null;
-      if (window.self !== window.top) window.parent.postMessage({type: 't9_call_ended'}, '*');
+  // Listen for commands from linux.html parent
+  window.addEventListener('message', e => {
+    if (!e.data) return;
+    
+    if (e.data.type === 't9_decline_call') {
+      if (incomingCallFrom) {
+        send({type:'dm_voice_decline', to: incomingCallFrom});
+        incomingCallFrom = null;
+        if (window.self !== window.top) window.parent.postMessage({type: 't9_call_ended'}, '*');
+      }
+    } 
+    else if (e.data.type === 't9_accept_call') {
+      if (incomingCallFrom) {
+        const fromId = incomingCallFrom;
+        incomingCallFrom = null;
+        acceptDMCall(fromId);
+      }
     }
-  }
-});
+  });
 </script>
 
 <div id="call-overlay">
