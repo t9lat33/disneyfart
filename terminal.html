@@ -575,9 +575,12 @@ async function t9Sploit() {
     div('  [0] Exit');
     
     const choice = (await t9Prompt('Select module [0-10]:')).trim();
-    if (choice === '0' || choice === '') {
+    if (choice === '0') {
       div('Exiting T9 OSINT Tool...', 'ln-dim');
       break;
+    }
+    if (choice === '') {
+      continue; // If user presses enter without typing, just loop the menu
     }
     
     try {
@@ -592,10 +595,14 @@ async function t9Sploit() {
         case '8': await t9GoogleDorks(); break;
         case '9': await t9HashAnalyzer(); break;
         case '10': await t9WebScraper(); break;
-        default: div('Invalid selection!', 'ln-err');
+        default: div('Invalid selection! Please enter a number 0-10.', 'ln-err');
       }
     } catch (e) {
-      div('Error: ' + e.message, 'ln-err');
+      if (e.message !== 'Input aborted') {
+        div('Error: ' + e.message, 'ln-err');
+      } else {
+        div('\nOperation cancelled. Returning to menu...', 'ln-warn');
+      }
     }
   }
 }
@@ -1056,7 +1063,7 @@ function run(raw) {
     case 'html': {
       if (!args[0]) { enterMulti('html','HTML preview mode. Paste HTML, type EOF to render.'); break; }
       const n=getNode(resolvePath(args[0]));
-      if (!n||n._type!==='file') { div(`html: cannot open '${args[0]}'`,'ln-err'); break; }
+      if (!n||n._type!=='file') { div(`html: cannot open '${args[0]}'`,'ln-err'); break; }
       openHtml(n.data);
       div('Opened in preview pane','ln-info');
       break;
@@ -1378,7 +1385,7 @@ function printBanner() {
   ].join('\n');
   outEl.insertBefore(pre, inputBarEl);
 
-    const br = document.createElement('div');
+  const br = document.createElement('div');
   outEl.insertBefore(br, inputBarEl);
 
   outEl.scrollTop = outEl.scrollHeight;
