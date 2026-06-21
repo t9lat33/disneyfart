@@ -16,6 +16,7 @@ html, body {
   user-select: none;
 }
 
+/* Terminal window — fullscreen */
 .term-win {
   width: 100%;
   height: 100vh;
@@ -28,6 +29,7 @@ html, body {
   user-select: text;
 }
 
+/* Output — now fills full remaining space */
 .output {
   flex: 1;
   overflow-y: auto;
@@ -42,6 +44,7 @@ html, body {
 .output::-webkit-scrollbar-track { background: transparent; }
 .output::-webkit-scrollbar-thumb { background: #313244; border-radius: 2px; }
 
+/* Sticky input bar — lives INSIDE .output at the bottom */
 .input-bar {
   background: transparent;
   padding: 7px 0 7px;
@@ -51,6 +54,7 @@ html, body {
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
+  /* subtle bg so text above doesn't bleed through when scrolling */
   background: #1e1e2e;
 }
 
@@ -73,6 +77,7 @@ html, body {
   caret-color: #cba6f7;
 }
 
+/* Output line echo */
 .echo-line {
   display: flex;
   align-items: baseline;
@@ -81,6 +86,7 @@ html, body {
   white-space: pre;
 }
 
+/* Text color tokens — Catppuccin Mocha */
 .c-text    { color: #cdd6f4; }
 .c-sub     { color: #a6adc8; }
 .c-green   { color: #a6e3a1; }
@@ -103,6 +109,7 @@ html, body {
 .ln-dir    { color: #89b4fa; font-weight: 700; }
 .ln-exec   { color: #a6e3a1; font-weight: 700; }
 
+/* Banner styling */
 .banner-pre {
   color: #cba6f7;
   font-size: 9.5px;
@@ -113,16 +120,50 @@ html, body {
   letter-spacing: 0;
 }
 
-.nf-wrap { display: flex; gap: 20px; margin: 2px 0 6px; }
-.nf-logo { flex-shrink: 0; font-size: 11.5px; line-height: 1.35; white-space: pre; color: #89b4fa; }
-.nf-info { flex: 1; font-size: 12px; line-height: 1.7; }
+/* Neofetch style layout */
+.nf-wrap {
+  display: flex;
+  gap: 20px;
+  margin: 2px 0 6px;
+}
+
+.nf-logo {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  white-space: pre;
+  color: #89b4fa;
+}
+
+.nf-info {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .nf-label { color: #89b4fa; font-weight: 700; }
 .nf-sep   { color: #585b70; }
 .nf-val   { color: #cdd6f4; }
-.nf-divider { color: #cba6f7; font-size: 12px; }
-.nf-colors { display: flex; gap: 4px; margin-top: 4px; }
-.nf-swatch { width: 14px; height: 14px; border-radius: 2px; display: inline-block; }
 
+.nf-divider {
+  color: #cba6f7;
+  font-size: 12px;
+}
+
+.nf-colors {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.nf-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* HTML pane */
 #htmlPane {
   display: none;
   position: fixed;
@@ -152,8 +193,14 @@ html, body {
 }
 
 .pane-close { cursor: pointer; color: #f38ba8; }
-#htmlIframe { flex: 1; border: none; background: #fff; }
 
+#htmlIframe {
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
+/* Multi-line mode indicator */
 .multi-hint {
   background: #181825;
   border-top: 1px solid rgba(255,255,255,0.06);
@@ -171,10 +218,16 @@ html, body {
 <body>
 
 <div class="term-win" id="termWin">
+<!-- Multi-line hint -->
     <div class="multi-hint" id="multiHint">-- INSERT -- (type EOF or Ctrl+D to run, Ctrl+C to cancel)</div>
-    <div class="output" id="output"></div>
-</div>
 
+    <!-- Output — input bar lives at the bottom of this -->
+    <div class="output" id="output">
+      <!-- input bar is appended here by JS after banner -->
+    </div>
+  </div>
+
+<!-- HTML preview pane -->
 <div id="htmlPane">
   <div class="pane-bar">
     <span><i class="ti ti-browser" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i> HTML Preview</span>
@@ -189,7 +242,6 @@ import sys
 import json
 import re
 import time
-import hashlib
 import base64
 import urllib.parse
 
@@ -229,8 +281,7 @@ except ImportError:
             return Fut(fn, args)
         def __enter__(self): return self
         def __exit__(self, *a): pass
-    def as_completed(futures):
-        return futures
+    def as_completed(futures): return futures
 
 try:
     import socket
@@ -245,6 +296,26 @@ except ImportError:
         AF_INET = 2
         SOCK_STREAM = 1
         def error(self): pass
+
+try:
+    import hashlib
+except ImportError:
+    class hashlib:
+        @staticmethod
+        def md5(s):
+            class H:
+                def hexdigest(self): return ""
+            return H()
+        @staticmethod
+        def sha1(s):
+            class H:
+                def hexdigest(self): return ""
+            return H()
+        @staticmethod
+        def sha256(s):
+            class H:
+                def hexdigest(self): return ""
+            return H()
 
 try:
     from rich.console import Console
@@ -577,34 +648,57 @@ if __name__ == "__main__":
 <script src="https://skulpt.org/js/skulpt-stdlib.js"></script>
 
 <script>
+const outEl    = document.getElementById('output');
+const multiHint= document.getElementById('multiHint');
 const T9_SPLOIT_PY = document.getElementById('t9-sploit-code').textContent;
-const outEl = document.getElementById('output');
-const multiHint = document.getElementById('multiHint');
 
+// ── Build the sticky input bar inside #output ──────────────────────────────────
 const inputBarEl = document.createElement('div');
 inputBarEl.className = 'input-bar';
 inputBarEl.innerHTML =
-  `<span class="ps-user">user</span>` +
+  `<span class="ps-user" id="psUser">user</span>` +
   `<span class="ps-at">@</span>` +
   `<span class="ps-host">t9linux</span>` +
   `<span class="ps-sep">:</span>` +
   `<span class="ps-path" id="psPath">~</span>` +
   `<span class="ps-dollar">❯</span>` +
   `<input type="text" id="cmdInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">`;
+// Will be appended after banner prints
+
+// inp reference (resolved after DOM insert)
 let inp;
 
+
+// ── FS ─────────────────────────────────────────────────────────────────────────
 let cwd = '/home/user';
 
 const FS = {
   '/': { _type:'dir',
     home: { _type:'dir',
       user: { _type:'dir',
-        documents: { _type:'dir', 'readme.txt': { _type:'file', data:'Welcome to T9 Linux!' } },
-        projects: { _type:'dir', 'hello.py': { _type:'file', data:'print("Hello")' } }
+        documents: { _type:'dir',
+          'readme.txt':  { _type:'file', data:'Welcome to T9 Linux!\nThis is a simulated filesystem.' },
+          'notes.txt':   { _type:'file', data:'T9 Linux — Fast. Clean. Yours.' }
+        },
+        projects: { _type:'dir',
+          'hello.py':  { _type:'file', data:'print("Hello from T9 Linux!")' },
+          'app.js':    { _type:'file', data:'console.log("T9 JS ready")' },
+          'index.html':{ _type:'file', data:'<!DOCTYPE html><html><body style="background:#1e1e2e;color:#cdd6f4;font-family:monospace;padding:2rem"><h1>T9 HTML Preview</h1><p>It works!</p></body></html>' }
+        },
+        '.bashrc': { _type:'file', data:'# T9 Linux bash config\nexport PS1="\\u@t9linux:\\w❯ "\nalias ll="ls -la"\nalias la="ls -a"' },
+        '.bash_history': { _type:'file', data:'ls\ncd projects\ncat hello.py\npython hello.py' }
       }
     },
-    etc: { _type:'dir', 'hostname': { _type:'file', data:'t9linux' } },
+    etc: { _type:'dir',
+      'hostname':   { _type:'file', data:'t9linux' },
+      'os-release': { _type:'file', data:'NAME="T9 Linux"\nVERSION="3.0 (Neon)"\nID=t9linux\nPRETTY_NAME="T9 Linux 3.0 Neon"' }
+    },
     tmp: { _type:'dir' },
+    var: { _type:'dir',
+      log: { _type:'dir',
+        'syslog': { _type:'file', data:'[INFO] T9 Linux boot OK\n[INFO] All services started' }
+      }
+    },
     usr: { _type:'dir', bin:{ _type:'dir' }, lib:{ _type:'dir' } },
     bin: { _type:'dir' }
   }
@@ -656,18 +750,26 @@ function shortPath(p) {
 }
 
 function updatePrompt() {
-  document.getElementById('psPath').textContent = shortPath(cwd);
+  const sp = shortPath(cwd);
+  document.getElementById('psPath').textContent = sp;
+  // keep input bar at the bottom
   outEl.appendChild(inputBarEl);
 }
 
+// ── Output helpers ─────────────────────────────────────────────────────────────
 function div(text='', cls='c-text') {
+  // insert before the input bar
   const el = document.createElement('div');
   el.className = cls;
   el.textContent = text;
   el.style.whiteSpace = 'pre-wrap';
+  el.style.wordBreak = 'break-all';
   outEl.insertBefore(el, inputBarEl);
   outEl.scrollTop = outEl.scrollHeight;
+  return el;
 }
+
+function blank() { div('',''); }
 
 function echoCmd(raw) {
   const wrap = document.createElement('div');
@@ -684,17 +786,27 @@ function echoCmd(raw) {
   outEl.scrollTop = outEl.scrollHeight;
 }
 
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
+// ── HTML pane ──────────────────────────────────────────────────────────────────
+function openHtml(code) {
+  document.getElementById('htmlIframe').srcdoc = code;
+  document.getElementById('htmlPane').classList.add('open');
+}
+function closeHtml() {
+  document.getElementById('htmlPane').classList.remove('open');
+  document.getElementById('htmlIframe').srcdoc = '';
+}
+
+// ── Python ─────────────────────────────────────────────────────────────────────
 function runPython(code) {
   const lines = [];
   Sk.configure({
     output: t => lines.push(t),
     input: function(prompt) {
-      return new Promise(function(resolve) {
-        const val = window.prompt(prompt || "");
-        resolve(val ? val : "");
-      });
+      return window.prompt(prompt || "");
     },
     read: n => {
       if (Sk.builtinFiles?.files?.[n] != null) return Sk.builtinFiles.files[n];
@@ -705,6 +817,7 @@ function runPython(code) {
     .then(()=>{
       const result = lines.join('');
       if (result) result.split('\n').forEach(l=>div(l,'c-text'));
+      else div('(no output)','ln-dim');
     })
     .catch(e => {
       if (e && e.toString().includes('SystemExit')) {
@@ -715,6 +828,7 @@ function runPython(code) {
     });
 }
 
+// ── Multi-line mode ─────────────────────────────────────────────────────────────
 let mMode = null, mBuf = [];
 
 function enterMulti(mode, hint='') {
@@ -728,27 +842,99 @@ function exitMulti() {
   const mode = mMode;
   mMode = null; mBuf = [];
   multiHint.classList.remove('show');
-  if (mode==='python') runPython(code);
+  if (mode==='python')     runPython(code);
+  if (mode==='javascript') {
+    try {
+      const lines=[];
+      const fc = {log:(...a)=>lines.push(a.map(String).join(' ')), error:(...a)=>lines.push(a.map(String).join(' ')), warn:(...a)=>lines.push(a.map(String).join(' '))};
+      new Function('console',code)(fc);
+      lines.forEach(l=>div(l,'c-text'));
+      if (!lines.length) div('(script executed, no output)','ln-dim');
+    } catch(e) { div('JS error: '+e.message,'ln-err'); }
+  }
+  if (mode==='html') { openHtml(code); div('Opening in preview pane...','ln-info'); }
 }
 
+// ── History ────────────────────────────────────────────────────────────────────
 let hist=[], hIdx=-1;
 
+// ── Neofetch ───────────────────────────────────────────────────────────────────
 function doNeofetch() {
-  const logo = `      _____\n    /      \\\n   |  T  9  |\n   |  ___   |\n   |_|   |  |\n    \\  ___/ /\n     |_____|`;
+  const logo =
+`      _____
+    /      \\
+   |  T  9  |
+   |  ___   |
+   |_|   |  |
+    \\  ___/ /
+     |_____|
+     __|__|__
+    /        \\
+   |__T9Linux_|`;
+
   const wrap = document.createElement('div');
   wrap.className = 'nf-wrap';
+
   const logoEl = document.createElement('div');
   logoEl.className = 'nf-logo';
   logoEl.textContent = logo;
+
   const infoEl = document.createElement('div');
   infoEl.className = 'nf-info';
-  infoEl.innerHTML = `<span class="nf-label">OS</span><span class="nf-sep">: </span><span class="nf-val">T9 OS V4.0 x86_64</span><br><span class="nf-label">Kernel</span><span class="nf-sep">: </span><span class="nf-val">4.0.0-t9-generic</span>`;
+  const now = new Date();
+  const upMins = Math.floor(performance.now()/60000);
+  const info = [
+    ['user','@','t9linux'],
+    [null],
+    ['OS',': ','T9 OS V4.0 x86_64'],
+    ['Host',': ','T9 Network'],
+    ['Kernel',': ','4.0.0-t9-generic'],
+    ['Uptime',': ', upMins+' mins'],
+    ['Shell',': ','bash 4.0'],
+    ['Resolution',': ','1920x1080'],
+    ['DE',': ','T9 Desktop'],
+    ['WM',': ','T9WM'],
+    ['Theme',': ','Catppuccin Mocha'],
+    ['Terminal',': ','t9term'],
+    ['CPU',': ','T9 Simulated CPU (8) @ 3.60GHz'],
+    ['Memory',': ','2048MiB / 16384MiB'],
+    [null],
+    ['colors'],
+  ];
+
+  for (const row of info) {
+    const line = document.createElement('div');
+    if (!row[0]) { line.innerHTML='<br>'; }
+    else if (row[0]==='colors') {
+      line.className='nf-colors';
+      const swatches=['#45475a','#f38ba8','#a6e3a1','#f9e2af','#89b4fa','#f5c2e7','#94e2d5','#bac2de','#585b70','#f38ba8','#a6e3a1','#f9e2af','#89b4fa','#f5c2e7','#94e2d5','#a6adc8'];
+      for (const c of swatches) {
+        const sw = document.createElement('span');
+        sw.className='nf-swatch';
+        sw.style.background=c;
+        line.appendChild(sw);
+      }
+    } else if (!row[1]) {
+      line.innerHTML = `<span class="nf-label">${esc(row[0])}</span>`;
+    } else {
+      line.innerHTML = `<span class="nf-label">${esc(row[0])}</span><span class="nf-sep">${row[1]}</span><span class="nf-val">${esc(row[2])}</span>`;
+    }
+    infoEl.appendChild(line);
+  }
+
   wrap.appendChild(logoEl);
   wrap.appendChild(infoEl);
   outEl.insertBefore(wrap, inputBarEl);
+  outEl.scrollTop = outEl.scrollHeight;
 }
 
-function runApt(cmd, args) {
+// ── Commands ───────────────────────────────────────────────────────────────────
+const REDIRECTS = {
+  '!ai':'/ai/index.html', '!gms':'g2.html',
+  '!xploits':'/xploits/index.html', '!early':'testing.html'
+};
+
+function runApt(args) {
   const sub=args[0];
   if (sub==='install') {
     const pkgs = args.slice(1);
@@ -774,7 +960,11 @@ function runApt(cmd, args) {
   } else if (sub==='update') {
     div('Hit:1 https://apt.t9linux.org neon InRelease','ln-dim');
     div('Reading package lists... Done','ln-dim');
-  } else { div(`${cmd}: invalid operation`,'ln-err'); }
+  } else if (sub==='upgrade') {
+    div('0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.','ln-dim');
+  } else { 
+    div(`apt: invalid operation '${sub||''}'`,'ln-err'); 
+  }
 }
 
 function run(raw) {
@@ -796,47 +986,14 @@ function run(raw) {
   const cmd  = toks[0].toLowerCase();
   const args = toks.slice(1).map(a=>a.replace(/^["']|["']$/g,''));
 
+  if (REDIRECTS[cmd]) {
+    div('Opening '+cmd+'...','ln-info');
+    setTimeout(()=>window.location.href=REDIRECTS[cmd],700);
+    return;
+  }
+
   switch(cmd) {
-    case 'ls': {
-      const lp = args.find(a=>!a.startsWith('-')) ? resolvePath(args.find(a=>!a.startsWith('-'))) : cwd;
-      const n = getNode(lp);
-      if (!n) { div(`ls: cannot access`,'ln-err'); break; }
-      if (n._type!=='dir') { div(lp.split('/').pop(),'ln-file'); break; }
-      const items = Object.entries(n).filter(([k])=>k!=='_type');
-      const row = document.createElement('div');
-      row.style.cssText='display:flex;flex-wrap:wrap;gap:2px 20px;';
-      for (const [name,node] of items) {
-        const sp=document.createElement('span');
-        sp.className = node._type==='dir'?'ln-dir':'ln-file';
-        sp.textContent = node._type==='dir'?name+'/':name;
-        row.appendChild(sp);
-      }
-      outEl.insertBefore(row, inputBarEl); outEl.scrollTop=outEl.scrollHeight;
-      break;
-    }
-    case 'cd': {
-      const t = args[0]||'~';
-      const np = resolvePath(t);
-      const n = getNode(np);
-      if (n && n._type==='dir') { cwd = np||'/'; updatePrompt(); }
-      else div(`bash: cd: ${t}: No such file or directory`,'ln-err');
-      break;
-    }
-    case 'pwd': div(cwd); break;
-    case 'cat': {
-      if (!args[0]) break;
-      const n = getNode(resolvePath(args[0]));
-      if (n && n._type==='file') n.data.split('\n').forEach(l=>div(l,'ln-file'));
-      else div(`cat: ${args[0]}: No such file`,'ln-err');
-      break;
-    }
-    case 'python': case 'python3': {
-      if (!args[0]) { enterMulti('python','Python 3 (Skulpt). Type EOF to run.'); break; }
-      const n=getNode(resolvePath(args[0]));
-      if (n && n._type==='file') runPython(n.data);
-      else div(`python: can't open '${args[0]}'`,'ln-err');
-      break;
-    }
+
     case 't9-sploit': {
       const n = getNode('/usr/bin/t9-sploit.py');
       if (n && n._type === 'file') {
@@ -847,72 +1004,6 @@ function run(raw) {
       }
       break;
     }
-    case 'apt': case 'apt-get': runApt(cmd, args); break;
-    case 'sudo': {
-      if (args[0]==='rm'&&args.some(a=>a.includes('r'))&&args.some(a=>a==='/'||a==='/*')) {
-        div('🔴 Nice try.','ln-err'); break;
-      }
-      div('[sudo] password for user: ','ln-warn');
-      setTimeout(() => {
-        if (args[0] === 'apt' || args[0] === 'apt-get') {
-          div('Granted root privileges.','ln-ok');
-          runApt(args[0], args.slice(1));
-        } else {
-          div('Sorry, user is not in the sudoers file.','ln-err');
-        }
-      }, 500);
-      break;
-    }
-    case 'clear': while (outEl.firstChild && outEl.firstChild !== inputBarEl) outEl.removeChild(outEl.firstChild); break;
-    case 'neofetch': doNeofetch(); break;
-    case 'help':
-      div('Available commands: ls cd cat python python3 apt sudo t9-sploit neofetch clear','ln-info');
-      break;
-    default:
-      div(`bash: ${cmd}: command not found`,'ln-err');
-  }
-}
 
-function printBanner() {
-  const pre = document.createElement('pre');
-  pre.className = 'banner-pre';
-  pre.textContent = 'T9 Linux 4.0 "Neon"\nType "help" for commands.';
-  outEl.insertBefore(pre, inputBarEl);
-  outEl.scrollTop = outEl.scrollHeight;
-}
-
-function setupInput() {
-  inp = document.getElementById('cmdInput');
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const v = inp.value;
-      run(v);
-      inp.value = '';
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (hIdx < hist.length-1) { hIdx++; inp.value = hist[hIdx]; }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      hIdx > 0 ? (hIdx--, inp.value=hist[hIdx]) : (hIdx=-1, inp.value='');
-    } else if (e.key==='l'&&e.ctrlKey) {
-      e.preventDefault();
-      while (outEl.firstChild && outEl.firstChild !== inputBarEl) outEl.removeChild(outEl.firstChild);
-    } else if (e.key==='c'&&e.ctrlKey) {
-      if (mMode) { mMode=null; mBuf=[]; multiHint.classList.remove('show'); }
-      echoCmd(inp.value+'^C');
-      inp.value='';
-    } else if (e.key==='d'&&e.ctrlKey) {
-      if (mMode&&mBuf.length) exitMulti();
-      inp.value='';
-    }
-  });
-  inp.focus();
-  document.addEventListener('click', ()=>inp.focus());
-}
-
-outEl.appendChild(inputBarEl);
-printBanner();
-setupInput();
-</script>
-</body>
-</html>
+    case 'ls': {
+      const flags  = args.filter(a=>a.startsWith('-')).join('');
