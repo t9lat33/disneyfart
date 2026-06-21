@@ -373,19 +373,17 @@ box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
   }
 @keyframes osOpenReal {
-  0% {
-    opacity: 0;
-    transform: scale(0.85) translateY(40px);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.03) translateY(-4px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  0% { opacity: 0; transform: scale(0.85) translateY(40px); }
+  70% { opacity: 1; transform: scale(1.03) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
+@keyframes osCloseReal {
+  0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+  100% { opacity: 0; transform: scale(0.88) translateY(24px); filter: blur(1px); }
+}
+.t9-closing { pointer-events: none; animation: osCloseReal 0.22s cubic-bezier(.4,0,1,1) forwards; }
+.t9-closing.t9-pop { animation: popOut 0.22s cubic-bezier(.4,0,1,1) forwards; }
+.t9-closing.t9-pop2 { animation: popOut2 0.22s cubic-bezier(.4,0,1,1) forwards; }
 #aiDiv {
 display: none;
     margin-top: 20px;
@@ -877,25 +875,21 @@ border-radius: 20px;
     justify-content: space-between;
     align-items: center;
 }
- @keyframes popIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      100% {
-        opacity: 80%;
-        transform: scale(1);
-      }
+@keyframes popIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 80%; transform: scale(1); }
+    }
+    @keyframes popOut {
+      0% { opacity: 80%; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.85); }
     }
      @keyframes popIn2 {
-      0% {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      100% {
-        opacity: 100%;
-        transform: scale(1);
-      }
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 100%; transform: scale(1); }
+    }
+    @keyframes popOut2 {
+      0% { opacity: 100%; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.85); }
     }
 
     
@@ -1137,7 +1131,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 
 <div id="wwwDiv">
-  <button class="close-btn" onclick="document.getElementById('wwwDiv').style.display = 'none';">●</button>
+  <button class="close-btn" onclick="t9Close('wwwDiv')">●</button>
     <button class="full-btn" onclick="fullscreenIframechat()">●</button>
 
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif " ></h3>
@@ -1484,7 +1478,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 
 <div id="blkDiv">
-  <button class="close-btn" onclick="document.getElementById('blkDiv').style.display = 'none';">●</button>
+  <button class="close-btn" onclick="t9Close('blkDiv')">●</button>
       <button class="full-btn" onclick="fullscreenIframeBLK()">●</button>
 
         <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);" ></h3>
@@ -1851,7 +1845,7 @@ transform: translateX(0) scale(1);
              
 </div>
 <div id="hiddenDiv">
-<button class="close-btn" onclick="document.getElementById('hiddenDiv').style.display = 'none';">●</button>
+    <button class="close-btn" onclick="t9Close('hiddenDiv')">●</button>
     <button class="full-btn" onclick="fullscreenIframe()">●</button>
 
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " ></h3>
@@ -2000,7 +1994,7 @@ animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
 </div>
 
 <div id="musicDiv">
-  <button class="close-btn" onclick="document.getElementById('musicDiv').style.display = 'none';">●</button>
+  <button class="close-btn" onclick="t9Close('musicDiv')">●</button>
     <button class="full-btn" onclick="fullscreenIframeMusic()">●</button>
 
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >Music</h3>
@@ -2151,7 +2145,7 @@ document.addEventListener("click", () => {
 
 
 <div id="aiDiv">
-  <button class="close-btn" onclick="document.getElementById('aiDiv').style.display = 'none';">●</button>
+  <button class="close-btn" onclick="t9Close('aiDiv')">●</button>
     <button class="full-btn" onclick="fullscreenIframeAI()">●</button>
 
 <h3 style="  left: 50%; color:white; top:-9.5px; position: absolute;   transform: translateX(-50%);      " >T9 GPT</h3>
@@ -2408,7 +2402,7 @@ document.getElementById('day').textContent = day;
 
 ">
   
-  <button style="position:absolute; left:12px;" class="close-btn" onclick="document.getElementById('settingsDiv').style.display = 'none';">●</button>
+  <button style="position:absolute; left:12px;" class="close-btn" onclick="t9Close('settingsDiv')">●</button>
     <h3 id="newUserBox1" style="color:white; margin:0; font-size:15px;">Settings</h3>
 </div>
 <h2 id="newUserBox2" style="text-align: center;">Appearances</h2>
@@ -4028,31 +4022,56 @@ document.head.appendChild(navFix);
 </script>
 <!-- Matomo -->
 <script>
-const toggleFns = ['animeDiv','movieDiv','musicDiv','aiDiv','wwwDiv','ChatDiv','terminalDiv','roDiv','settingsDiv','calcDiv','searchDiv','hacksDiv','emulatorDiv','collabDiv','soundDiv','adminDiv','hiddenDiv', 'blkDiv', 'settingsDiv'];
+const T9_POP_VARIANT = {
+  appsDiv: 'pop', collabDiv: 'pop', soundDiv: 'pop', hacksDiv: 'pop',
+  adminDiv: 'pop', widgetDiv: 'pop',
+  calcDiv: 'pop2', emulatorDiv: 'pop2', searchDiv: 'pop2'
+};
+const T9_CLOSE_MS = 220;
 
-toggleFns.forEach(id => {
+function _t9Variant(div) { return T9_POP_VARIANT[div.id] || null; }
+
+function closeDiv(id) {
   const div = document.getElementById(id);
-  if(!div) return;
-  const animName = getComputedStyle(div).animationName;
-  div.addEventListener('show', () => {
-    div.style.animation = 'none';
-    div.offsetHeight;
+  if (!div || div.style.display !== 'block') return;
+  if (div.classList.contains('t9-closing')) return;
+
+  const variant = _t9Variant(div);
+  div.classList.add('t9-closing');
+  if (variant === 'pop') div.classList.add('t9-pop');
+  if (variant === 'pop2') div.classList.add('t9-pop2');
+
+  const cleanup = () => {
+    div.style.display = 'none';
+    div.classList.remove('t9-closing', 't9-pop', 't9-pop2');
     div.style.animation = '';
-  });
-});
+    div.removeEventListener('animationend', cleanup);
+  };
+  div.addEventListener('animationend', cleanup);
+  setTimeout(cleanup, T9_CLOSE_MS + 80);
+}
+
+function showDiv(id) {
+  const div = document.getElementById(id);
+  if (!div) return;
+  div.classList.remove('t9-closing', 't9-pop', 't9-pop2');
+  div.style.animation = 'none';
+  void div.offsetHeight;
+  div.style.animation = '';
+  div.style.display = 'block';
+}
 
 function openDiv(id) {
   const div = document.getElementById(id);
-  if(!div) return;
-  if(div.style.display === 'block'){
-    div.style.display = 'none';
+  if (!div) return;
+  if (div.style.display === 'block' && !div.classList.contains('t9-closing')) {
+    closeDiv(id);
   } else {
-    div.style.animation = 'none';
-    div.offsetHeight;
-    div.style.animation = '';
-    div.style.display = 'block';
+    showDiv(id);
   }
 }
+
+function t9Close(id) { closeDiv(id); }
 
 function movie(){ openDiv('movieDiv'); }
 function anime(){ openDiv('animeDiv'); }
