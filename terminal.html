@@ -545,6 +545,17 @@ function runApt(args) {
   }
 }
 
+// ── Native Terminal Input Hook for T9-Sploit ───────────────────────────────────
+let inputResolver = null;
+function t9Prompt(text) {
+  div(text, 'c-mauve');
+  inp.value = '';
+  inp.focus();
+  return new Promise(resolve => {
+    inputResolver = resolve;
+  });
+}
+
 // ── T9-Sploit JS Engine ────────────────────────────────────────────────────────
 async function t9Sploit() {
   div('--- 000 OSINT TOOL (JS Native Edition) ---', 'ln-info');
@@ -563,24 +574,24 @@ async function t9Sploit() {
     div(' [10] Web Scraper');
     div('  [0] Exit');
     
-    const choice = prompt('Select module [0-10]:');
-    if (!choice || choice === '0') {
+    const choice = (await t9Prompt('Select module [0-10]:')).trim();
+    if (choice === '0' || choice === '') {
       div('Exiting T9 OSINT Tool...', 'ln-dim');
       break;
     }
     
     try {
-      switch(choice.trim()) {
+      switch(choice) {
         case '1': await t9IpIntel(); break;
         case '2': await t9DomainIntel(); break;
-        case '3': t9EmailOsint(); break;
-        case '4': t9UsernameSearch(); break;
-        case '5': t9PhoneLookup(); break;
-        case '6': t9SocialMedia(); break;
-        case '7': t9MetadataExtract(); break;
-        case '8': t9GoogleDorks(); break;
+        case '3': await t9EmailOsint(); break;
+        case '4': await t9UsernameSearch(); break;
+        case '5': await t9PhoneLookup(); break;
+        case '6': await t9SocialMedia(); break;
+        case '7': await t9MetadataExtract(); break;
+        case '8': await t9GoogleDorks(); break;
         case '9': await t9HashAnalyzer(); break;
-        case '10': t9WebScraper(); break;
+        case '10': await t9WebScraper(); break;
         default: div('Invalid selection!', 'ln-err');
       }
     } catch (e) {
@@ -590,7 +601,7 @@ async function t9Sploit() {
 }
 
 async function t9IpIntel() {
-  const ip = prompt('Enter IP address:');
+  const ip = (await t9Prompt('Enter IP address:')).trim();
   if (!ip) return;
   div('Gathering IP intelligence for ' + ip + '...', 'ln-info');
   try {
@@ -608,7 +619,7 @@ async function t9IpIntel() {
 }
 
 async function t9DomainIntel() {
-  const domain = prompt('Enter domain:');
+  const domain = (await t9Prompt('Enter domain:')).trim();
   if (!domain) return;
   div('Querying DNS for ' + domain + '...', 'ln-info');
   const types = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA'];
@@ -626,8 +637,8 @@ async function t9DomainIntel() {
   }
 }
 
-function t9EmailOsint() {
-  const email = prompt('Enter email:');
+async function t9EmailOsint() {
+  const email = (await t9Prompt('Enter email:')).trim();
   if (!email) return;
   const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const isValid = pattern.test(email);
@@ -636,8 +647,8 @@ function t9EmailOsint() {
   if (isValid) div('Domain: ' + email.split('@')[1], 'c-text');
 }
 
-function t9UsernameSearch() {
-  const username = prompt('Enter username:');
+async function t9UsernameSearch() {
+  const username = (await t9Prompt('Enter username:')).trim();
   if (!username) return;
   const sites = {
     'Twitter/X': 'https://twitter.com/' + username,
@@ -653,16 +664,16 @@ function t9UsernameSearch() {
   }
 }
 
-function t9PhoneLookup() {
-  const phone = prompt('Enter phone number:');
+async function t9PhoneLookup() {
+  const phone = (await t9Prompt('Enter phone number:')).trim();
   if (!phone) return;
   const cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
   div('Original: ' + phone, 'c-text');
   div('Cleaned: ' + cleaned, 'c-text');
 }
 
-function t9SocialMedia() {
-  const url = prompt('Enter profile URL:');
+async function t9SocialMedia() {
+  const url = (await t9Prompt('Enter profile URL:')).trim();
   if (!url) return;
   try {
     const u = new URL(url.includes('://') ? url : 'https://' + url);
@@ -680,8 +691,8 @@ function t9SocialMedia() {
   }
 }
 
-function t9MetadataExtract() {
-  const html = prompt('Paste HTML source (or partial):');
+async function t9MetadataExtract() {
+  const html = (await t9Prompt('Paste HTML source (or partial):')).trim();
   if (!html) return;
   const titleMatch = html.match(/<title>(.*?)<\/title>/i);
   div('Title: ' + (titleMatch ? titleMatch[1] : 'None'), 'c-text');
@@ -690,8 +701,8 @@ function t9MetadataExtract() {
   div('Description: ' + (descMatch ? descMatch[1] : 'None'), 'c-text');
 }
 
-function t9GoogleDorks() {
-  const target = prompt('Enter target (domain, name):');
+async function t9GoogleDorks() {
+  const target = (await t9Prompt('Enter target (domain, name):')).trim();
   if (!target) return;
   const dorks = {
     'Site Search': 'site:' + target,
@@ -706,7 +717,7 @@ function t9GoogleDorks() {
 }
 
 async function t9HashAnalyzer() {
-  const hash = prompt('Enter hash:');
+  const hash = (await t9Prompt('Enter hash:')).trim();
   if (!hash) return;
   
   let type = 'Unknown';
@@ -742,8 +753,8 @@ async function t9HashAnalyzer() {
   }
 }
 
-function t9WebScraper() {
-  const text = prompt('Paste text to extract data from:');
+async function t9WebScraper() {
+  const text = (await t9Prompt('Paste text to extract data from:')).trim();
   if (!text) return;
   
   const emails = [...new Set(text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [])];
@@ -1045,7 +1056,7 @@ function run(raw) {
     case 'html': {
       if (!args[0]) { enterMulti('html','HTML preview mode. Paste HTML, type EOF to render.'); break; }
       const n=getNode(resolvePath(args[0]));
-      if (!n||n._type!=='file') { div(`html: cannot open '${args[0]}'`,'ln-err'); break; }
+      if (!n||n._type!==='file') { div(`html: cannot open '${args[0]}'`,'ln-err'); break; }
       openHtml(n.data);
       div('Opened in preview pane','ln-info');
       break;
@@ -1380,6 +1391,17 @@ function setupInput() {
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       const v = inp.value;
+      
+      // Handle Native JS Prompt Hook (for t9-sploit)
+      if (inputResolver) {
+        echoCmd(v);
+        inp.value = '';
+        const r = inputResolver;
+        inputResolver = null;
+        r(v);
+        return;
+      }
+
       run(v);
       inp.value = '';
     } else if (e.key === 'ArrowUp') {
@@ -1416,6 +1438,11 @@ function setupInput() {
         outEl.removeChild(outEl.firstChild);
       }
     } else if (e.key==='c'&&e.ctrlKey) {
+      if (inputResolver) {
+        const r = inputResolver;
+        inputResolver = null;
+        r(null); // Abort the JS prompt
+      }
       if (mMode) { mMode=null; mBuf=[]; multiHint.classList.remove('show'); }
       echoCmd(inp.value+'^C');
       inp.value='';
