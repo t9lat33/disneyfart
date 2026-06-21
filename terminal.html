@@ -54,7 +54,6 @@ html, body {
   flex-shrink: 0;
   position: sticky;
   bottom: 0;
-  /* subtle bg so text above doesn't bleed through when scrolling */
   background: #1e1e2e;
 }
 
@@ -218,16 +217,10 @@ html, body {
 <body>
 
 <div class="term-win" id="termWin">
-<!-- Multi-line hint -->
     <div class="multi-hint" id="multiHint">-- INSERT -- (type EOF or Ctrl+D to run, Ctrl+C to cancel)</div>
+    <div class="output" id="output"></div>
+</div>
 
-    <!-- Output — input bar lives at the bottom of this -->
-    <div class="output" id="output">
-      <!-- input bar is appended here by JS after banner -->
-    </div>
-  </div>
-
-<!-- HTML preview pane -->
 <div id="htmlPane">
   <div class="pane-bar">
     <span><i class="ti ti-browser" style="font-size:13px;vertical-align:-2px;margin-right:4px"></i> HTML Preview</span>
@@ -236,421 +229,13 @@ html, body {
   <iframe id="htmlIframe" sandbox="allow-scripts"></iframe>
 </div>
 
-<!-- T9-Sploit Python Source Code -->
-<script type="text/python" id="t9-sploit-code">
-import sys
-import json
-import re
-import time
-import base64
-import urllib.parse
-
-# --- Skulpt Compatibility Mocks ---
-try:
-    import smtplib
-except ImportError:
-    class smtplib: pass
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    pass
-
-try:
-    from datetime import datetime
-except ImportError:
-    pass
-
-try:
-    from typing import Dict, List, Optional, Tuple
-except ImportError:
-    Dict = dict
-    List = list
-    Optional = None
-    Tuple = tuple
-
-try:
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-except ImportError:
-    class ThreadPoolExecutor:
-        def __init__(self, max_workers=1): pass
-        def submit(self, fn, *args):
-            class Fut:
-                def __init__(self, fn, args): self.fn = fn; self.args = args
-                def result(self): return self.fn(*self.args)
-            return Fut(fn, args)
-        def __enter__(self): return self
-        def __exit__(self, *a): pass
-    def as_completed(futures): return futures
-
-try:
-    import socket
-except ImportError:
-    class socket:
-        @staticmethod
-        def gethostbyaddr(ip): raise Exception("Sandboxed: No socket")
-        @staticmethod
-        def gethostbyname(host): raise Exception("Sandboxed: No socket")
-        @staticmethod
-        def socket(*a, **k): raise Exception("Sandboxed: No socket")
-        AF_INET = 2
-        SOCK_STREAM = 1
-        def error(self): pass
-
-try:
-    import hashlib
-except ImportError:
-    class hashlib:
-        @staticmethod
-        def md5(s):
-            class H:
-                def hexdigest(self): return ""
-            return H()
-        @staticmethod
-        def sha1(s):
-            class H:
-                def hexdigest(self): return ""
-            return H()
-        @staticmethod
-        def sha256(s):
-            class H:
-                def hexdigest(self): return ""
-            return H()
-
-try:
-    from rich.console import Console
-    from rich.table import Table
-    from rich.panel import Panel
-    RICH_AVAILABLE = True
-except ImportError:
-    RICH_AVAILABLE = False
-
-try:
-    import dns.resolver
-    DNSPYTHON_AVAILABLE = True
-except ImportError:
-    DNSPYTHON_AVAILABLE = False
-
-try:
-    from bs4 import BeautifulSoup
-    BS4_AVAILABLE = True
-except ImportError:
-    BS4_AVAILABLE = False
-
-try:
-    from PIL import Image
-    from PIL.ExifTags import TAGS, GPSTAGS
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-
-try:
-    import whois
-    WHOIS_AVAILABLE = True
-except ImportError:
-    WHOIS_AVAILABLE = False
-
-try:
-    import requests
-except ImportError:
-    class requests:
-        @staticmethod
-        def get(url, headers={}, timeout=10, allow_redirects=True):
-            raise Exception("Sandboxed: No network access in Skulpt")
-# --- End Skulpt Compatibility Mocks ---
-
-if RICH_AVAILABLE:
-    console = Console()
-else:
-    class FakeConsole:
-        def print(self, *args, **kwargs):
-            clean_args = [re.sub(r'\[/?[a-z_ ]+\]', '', str(arg)) for arg in args]
-            print(*clean_args)
-        def rule(self, title=""):
-            print("\n" + "="*50 + "\n" + title + "\n" + "="*50)
-    console = FakeConsole()
-
-class Colors:
-    @staticmethod
-    def colorize(text: str, color: str) -> str:
-        return text
-
-class Banner:
-    BANNER = """
-    d888888b .d888b.      .d8888. d8888b. db       .d88b.  d888888b d888888b 
-    `~~88~~' 88' `8D      88'  YP 88  `8D 88      .8P  Y8.   `88'   `~~88~~' 
-       88    `V8o88'      `8bo.   88oodD' 88      88    88    88       88    
-       88       d8'         `Y8b. 88~~~   88      88    88    88       88    
-       88      d8'        db   8D 88      88booo. `8b  d8'   .88.      88    
-       YP     d8'         `8888Y' 88      Y88888P  `Y88P'  Y888888P    YP    
-    """
-    @classmethod
-    def show(cls):
-        if RICH_AVAILABLE:
-            console.print(Panel.fit(cls.BANNER, border_style="cyan", title="[bold red]000 OSINT TOOL", title_align="left"))
-        else:
-            print(Colors.colorize(cls.BANNER, Colors.CYAN))
-
-class IPIntelligence:
-    @staticmethod
-    def geolocation(ip: str) -> Dict:
-        try:
-            response = requests.get("http://ip-api.com/json/" + ip, timeout=10)
-            return response.json()
-        except Exception as e:
-            return {"error": str(e)}
-
-    @staticmethod
-    def reverse_dns(ip: str) -> str:
-        try:
-            return socket.gethostbyaddr(ip)[0]
-        except Exception as e:
-            return "Error: " + str(e)
-
-    @staticmethod
-    def port_scan(ip: str, ports: List[int] = None) -> Dict:
-        if ports is None:
-            ports = [21, 22, 80, 443]
-        return {"ip": ip, "open_ports": [], "total_scanned": len(ports)}
-
-class DomainIntelligence:
-    @staticmethod
-    def whois_lookup(domain: str) -> Dict:
-        return {"error": "whois not installed"}
-    @staticmethod
-    def dns_records(domain: str) -> Dict:
-        return {"error": "dnspython not installed"}
-    @staticmethod
-    def subdomain_enum(domain: str, wordlist: List[str] = None) -> List[str]:
-        return []
-    @staticmethod
-    def technology_detection(url: str) -> Dict:
-        try:
-            response = requests.get(url, timeout=10)
-            return {"technologies": []}
-        except Exception as e:
-            return {"error": str(e)}
-
-class EmailIntelligence:
-    @staticmethod
-    def validate_format(email: str) -> bool:
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return re.match(pattern, email) is not None
-    @staticmethod
-    def extract_domain(email: str) -> str:
-        return email.split('@')[1]
-    @staticmethod
-    def check_breach(email: str, api_key: str = None) -> Dict:
-        return {"note": "HaveIBeenPwned API key required"}
-
-class UsernameIntelligence:
-    SITES = {
-        "Twitter/X": "https://twitter.com/{}",
-        "Instagram": "https://www.instagram.com/{}/",
-        "Facebook": "https://www.facebook.com/{}/",
-        "GitHub": "https://github.com/{}",
-        "Reddit": "https://www.reddit.com/user/{}/",
-        "LinkedIn": "https://www.linkedin.com/in/{}/",
-        "TikTok": "https://www.tiktok.com/@{}",
-        "YouTube": "https://www.youtube.com/@{}",
-        "Twitch": "https://www.twitch.tv/{}",
-        "Steam": "https://steamcommunity.com/id/{}/",
-    }
-    @staticmethod
-    def search_username(username: str, sites: Dict = None) -> Dict:
-        if sites is None: sites = UsernameIntelligence.SITES
-        results = {}
-        for name, url in sites.items():
-            results[name] = {"url": url.format(username), "found": False, "status": "Sandboxed"}
-        return {"username": username, "results": results}
-
-class PhoneIntelligence:
-    @staticmethod
-    def parse_number(phone: str) -> Dict:
-        cleaned = re.sub(r'[\s\-\(\)\.]', '', phone)
-        return {"cleaned": cleaned}
-    @staticmethod
-    def carrier_lookup(phone: str) -> Dict:
-        return {"phone": phone, "note": "Sandboxed"}
-
-class SocialMediaIntelligence:
-    @staticmethod
-    def extract_profile_info(url: str) -> Dict:
-        try:
-            parsed = urlparse(url)
-            return {"platform": "Unknown", "domain": parsed.netloc}
-        except:
-            return {"platform": "Unknown"}
-    @staticmethod
-    def generate_profile_urls(username: str) -> Dict:
-        platforms = {"Twitter/X": "https://twitter.com/" + username}
-        return {"username": username, "profiles": platforms}
-
-class MetadataExtractor:
-    @staticmethod
-    def extract_from_url(url: str) -> Dict:
-        try:
-            response = requests.get(url, timeout=10)
-            return {"title": None}
-        except Exception as e:
-            return {"error": str(e)}
-    @staticmethod
-    def extract_exif(image_path: str) -> Dict:
-        return {"error": "Pillow not installed"}
-
-class GoogleDorkGenerator:
-    DORKS = {"site": "site:{target}"}
-    @classmethod
-    def generate(cls, target: str) -> Dict:
-        return {"target": target, "dorks": {"site": {"dork": "site:"+target, "url": "https://google.com/search?q=site:"+target}}}
-
-class HashAnalyzer:
-    @staticmethod
-    def identify_hash(hash_value: str) -> Dict:
-        return {"hash": hash_value, "length": len(hash_value), "possible_types": ["Unknown"]}
-    @staticmethod
-    def crack_common_hashes(hash_value: str) -> Dict:
-        return {"cracked": False}
-
-class WebScraper:
-    @staticmethod
-    def extract_emails(text: str) -> List[str]:
-        return list(set(re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', text)))
-    @staticmethod
-    def extract_urls(text: str) -> List[str]:
-        return list(set(re.findall(r'https?://[^\s]+', text)))
-
-class OSINTReport:
-    @staticmethod
-    def generate_json(data: Dict) -> str:
-        return json.dumps(data, indent=2)
-
-class Menu:
-    def __init__(self):
-        self.modules = {
-            '1': ('IP Intelligence', self.ip_menu), '2': ('Domain Intelligence', self.domain_menu),
-            '3': ('Email OSINT', self.email_menu), '4': ('Username Search', self.username_menu),
-            '5': ('Phone Lookup', self.phone_menu), '6': ('Social Media', self.social_menu),
-            '7': ('Metadata Extractor', self.metadata_menu), '8': ('Google Dorks', self.dork_menu),
-            '9': ('Hash Analyzer', self.hash_menu), '10': ('Web Scraper', self.scraper_menu),
-            '0': ('Exit', self.exit_tool)
-        }
-        self.last_results = {}
-
-    def show_main(self):
-        Banner.show()
-        print("\nAvailable Modules:")
-        for key, (name, _) in self.modules.items():
-            print(f"  [{key}] {name}")
-        print()
-
-    def ip_menu(self):
-        ip = input("Enter IP address: ").strip()
-        if not ip: return
-        print("Gathering IP intelligence...")
-        geo = IPIntelligence.geolocation(ip)
-        print("Geolocation:", geo)
-        self.last_results['ip_intelligence'] = geo
-
-    def domain_menu(self):
-        domain = input("Enter domain: ").strip()
-        if not domain: return
-        print("Analyzing domain...")
-        dns = DomainIntelligence.dns_records(domain)
-        print("DNS Records:", dns)
-        self.last_results['domain_intelligence'] = dns
-
-    def email_menu(self):
-        email = input("Enter email: ").strip()
-        if not email: return
-        is_valid = EmailIntelligence.validate_format(email)
-        print(f"Email: {email}\nValid: {is_valid}")
-        self.last_results['email_osint'] = {"email": email, "valid": is_valid}
-
-    def username_menu(self):
-        username = input("Enter username: ").strip()
-        if not username: return
-        print(f"Searching for '{username}'...")
-        results = UsernameIntelligence.search_username(username)
-        for platform, data in results['results'].items():
-            print(f"  {platform}: {data.get('url')} ({data.get('status')})")
-        self.last_results['username_search'] = results
-
-    def phone_menu(self):
-        phone = input("Enter phone: ").strip()
-        if not phone: return
-        result = PhoneIntelligence.carrier_lookup(phone)
-        print(result)
-        self.last_results['phone_lookup'] = result
-
-    def social_menu(self):
-        url = input("Enter profile URL: ").strip()
-        if url:
-            info = SocialMediaIntelligence.extract_profile_info(url)
-            print(info)
-
-    def metadata_menu(self):
-        url = input("Enter URL: ").strip()
-        if url:
-            meta = MetadataExtractor.extract_from_url(url)
-            print(meta)
-
-    def dork_menu(self):
-        target = input("Enter target: ").strip()
-        if target:
-            dorks = GoogleDorkGenerator.generate(target)
-            print(dorks)
-
-    def hash_menu(self):
-        hash_value = input("Enter hash: ").strip()
-        if hash_value:
-            identified = HashAnalyzer.identify_hash(hash_value)
-            print(identified)
-
-    def scraper_menu(self):
-        print("Enter text (type EOF on next line to finish):")
-        lines = []
-        while True:
-            line = input()
-            if line == "EOF": break
-            lines.append(line)
-        text = "\n".join(lines)
-        emails = WebScraper.extract_emails(text)
-        print("Emails found:", emails)
-
-    def exit_tool(self):
-        print("Thank you for using 000 OSINT Tool. Stay safe!")
-        sys.exit(0)
-
-    def run(self):
-        while True:
-            self.show_main()
-            choice = input("Select module [0-10]: ").strip()
-            if choice in self.modules:
-                try:
-                    self.modules[choice][1]()
-                except Exception as e:
-                    print(f"Error: {e}")
-                input("\nPress Enter to continue...")
-            else:
-                print("Invalid selection!")
-
-def main():
-    menu = Menu()
-    menu.run()
-
-if __name__ == "__main__":
-    main()
-</script>
-
-<!-- Skulpt Python -->
+<!-- Skulpt Python (Still included for standard python3 command) -->
 <script src="https://skulpt.org/js/skulpt.min.js"></script>
 <script src="https://skulpt.org/js/skulpt-stdlib.js"></script>
 
 <script>
 const outEl    = document.getElementById('output');
 const multiHint= document.getElementById('multiHint');
-const T9_SPLOIT_PY = document.getElementById('t9-sploit-code').textContent;
 
 // ── Build the sticky input bar inside #output ──────────────────────────────────
 const inputBarEl = document.createElement('div');
@@ -663,14 +248,12 @@ inputBarEl.innerHTML =
   `<span class="ps-path" id="psPath">~</span>` +
   `<span class="ps-dollar">❯</span>` +
   `<input type="text" id="cmdInput" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">`;
-// Will be appended after banner prints
 
-// inp reference (resolved after DOM insert)
 let inp;
-
 
 // ── FS ─────────────────────────────────────────────────────────────────────────
 let cwd = '/home/user';
+let t9Installed = false;
 
 const FS = {
   '/': { _type:'dir',
@@ -752,13 +335,11 @@ function shortPath(p) {
 function updatePrompt() {
   const sp = shortPath(cwd);
   document.getElementById('psPath').textContent = sp;
-  // keep input bar at the bottom
   outEl.appendChild(inputBarEl);
 }
 
 // ── Output helpers ─────────────────────────────────────────────────────────────
 function div(text='', cls='c-text') {
-  // insert before the input bar
   const el = document.createElement('div');
   el.className = cls;
   el.textContent = text;
@@ -800,7 +381,7 @@ function closeHtml() {
   document.getElementById('htmlIframe').srcdoc = '';
 }
 
-// ── Python ─────────────────────────────────────────────────────────────────────
+// ── Python (for normal python3 command) ────────────────────────────────────────
 function runPython(code) {
   const lines = [];
   Sk.configure({
@@ -944,10 +525,7 @@ function runApt(args) {
     div(`0 upgraded, ${pkgs.length} newly installed.`,'ln-dim');
     
     if (pkgs.includes('t9-sploit')) {
-      const binNode = getNode('/usr/bin');
-      if (binNode && binNode._type === 'dir') {
-        binNode['t9-sploit.py'] = { _type: 'file', data: T9_SPLOIT_PY };
-      }
+      t9Installed = true;
       setTimeout(()=>{
         div('Setting up t9-sploit (1.0.0) ...','ln-dim');
         div('Processing triggers for man-db ...','ln-dim');
@@ -967,6 +545,222 @@ function runApt(args) {
   }
 }
 
+// ── T9-Sploit JS Engine ────────────────────────────────────────────────────────
+async function t9Sploit() {
+  div('--- 000 OSINT TOOL (JS Native Edition) ---', 'ln-info');
+  
+  while (true) {
+    div('\nAvailable Modules:', 'c-blue');
+    div('  [1] IP Intelligence');
+    div('  [2] Domain Intelligence');
+    div('  [3] Email OSINT');
+    div('  [4] Username Search');
+    div('  [5] Phone Lookup');
+    div('  [6] Social Media');
+    div('  [7] Metadata Extractor');
+    div('  [8] Google Dorks');
+    div('  [9] Hash Analyzer');
+    div(' [10] Web Scraper');
+    div('  [0] Exit');
+    
+    const choice = prompt('Select module [0-10]:');
+    if (!choice || choice === '0') {
+      div('Exiting T9 OSINT Tool...', 'ln-dim');
+      break;
+    }
+    
+    try {
+      switch(choice.trim()) {
+        case '1': await t9IpIntel(); break;
+        case '2': await t9DomainIntel(); break;
+        case '3': t9EmailOsint(); break;
+        case '4': t9UsernameSearch(); break;
+        case '5': t9PhoneLookup(); break;
+        case '6': t9SocialMedia(); break;
+        case '7': t9MetadataExtract(); break;
+        case '8': t9GoogleDorks(); break;
+        case '9': await t9HashAnalyzer(); break;
+        case '10': t9WebScraper(); break;
+        default: div('Invalid selection!', 'ln-err');
+      }
+    } catch (e) {
+      div('Error: ' + e.message, 'ln-err');
+    }
+  }
+}
+
+async function t9IpIntel() {
+  const ip = prompt('Enter IP address:');
+  if (!ip) return;
+  div('Gathering IP intelligence for ' + ip + '...', 'ln-info');
+  try {
+    const res = await fetch('https://ipwho.is/' + ip);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    div('IP: ' + data.ip, 'c-text');
+    div('Country: ' + data.country + ' (' + data.country_code + ')', 'c-text');
+    div('City: ' + data.city, 'c-text');
+    div('ISP: ' + data.connection.isp, 'c-text');
+    div('Coordinates: ' + data.latitude + ', ' + data.longitude, 'c-text');
+  } catch (e) {
+    div('Error: ' + e.message, 'ln-err');
+  }
+}
+
+async function t9DomainIntel() {
+  const domain = prompt('Enter domain:');
+  if (!domain) return;
+  div('Querying DNS for ' + domain + '...', 'ln-info');
+  const types = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA'];
+  for (const type of types) {
+    try {
+      const res = await fetch('https://dns.google/resolve?name=' + domain + '&type=' + type);
+      const data = await res.json();
+      if (data.Answer) {
+        div(type + ' Records:', 'c-mauve');
+        data.Answer.forEach(a => div('  ' + a.data, 'c-text'));
+      }
+    } catch (e) {
+      div('Error fetching ' + type + ': ' + e.message, 'ln-err');
+    }
+  }
+}
+
+function t9EmailOsint() {
+  const email = prompt('Enter email:');
+  if (!email) return;
+  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const isValid = pattern.test(email);
+  div('Email: ' + email, 'c-text');
+  div('Valid Format: ' + (isValid ? 'YES' : 'NO'), isValid ? 'ln-ok' : 'ln-err');
+  if (isValid) div('Domain: ' + email.split('@')[1], 'c-text');
+}
+
+function t9UsernameSearch() {
+  const username = prompt('Enter username:');
+  if (!username) return;
+  const sites = {
+    'Twitter/X': 'https://twitter.com/' + username,
+    'Instagram': 'https://www.instagram.com/' + username + '/',
+    'GitHub': 'https://github.com/' + username,
+    'Reddit': 'https://www.reddit.com/user/' + username + '/',
+    'TikTok': 'https://www.tiktok.com/@' + username,
+    'YouTube': 'https://www.youtube.com/@' + username
+  };
+  div('Generated Links for ' + username + ':', 'c-blue');
+  for (const [name, url] of Object.entries(sites)) {
+    div('  ' + name + ': ' + url, 'c-text');
+  }
+}
+
+function t9PhoneLookup() {
+  const phone = prompt('Enter phone number:');
+  if (!phone) return;
+  const cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
+  div('Original: ' + phone, 'c-text');
+  div('Cleaned: ' + cleaned, 'c-text');
+}
+
+function t9SocialMedia() {
+  const url = prompt('Enter profile URL:');
+  if (!url) return;
+  try {
+    const u = new URL(url.includes('://') ? url : 'https://' + url);
+    let platform = 'Unknown';
+    if (u.hostname.includes('twitter') || u.hostname.includes('x.com')) platform = 'Twitter/X';
+    else if (u.hostname.includes('instagram')) platform = 'Instagram';
+    else if (u.hostname.includes('facebook')) platform = 'Facebook';
+    else if (u.hostname.includes('github')) platform = 'GitHub';
+    
+    div('Platform: ' + platform, 'c-text');
+    div('Domain: ' + u.hostname, 'c-text');
+    div('Path: ' + u.pathname, 'c-text');
+  } catch {
+    div('Invalid URL', 'ln-err');
+  }
+}
+
+function t9MetadataExtract() {
+  const html = prompt('Paste HTML source (or partial):');
+  if (!html) return;
+  const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+  div('Title: ' + (titleMatch ? titleMatch[1] : 'None'), 'c-text');
+  
+  const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i);
+  div('Description: ' + (descMatch ? descMatch[1] : 'None'), 'c-text');
+}
+
+function t9GoogleDorks() {
+  const target = prompt('Enter target (domain, name):');
+  if (!target) return;
+  const dorks = {
+    'Site Search': 'site:' + target,
+    'PDF Files': 'filetype:pdf ' + target,
+    'Admin Pages': 'inurl:admin ' + target,
+    'Subdomains': 'site:*.' + target
+  };
+  div('Generated Dorks:', 'c-blue');
+  for (const [name, dork] of Object.entries(dorks)) {
+    div('  ' + name + ': ' + dork, 'c-text');
+  }
+}
+
+async function t9HashAnalyzer() {
+  const hash = prompt('Enter hash:');
+  if (!hash) return;
+  
+  let type = 'Unknown';
+  if (hash.length === 32) type = 'MD5';
+  else if (hash.length === 40) type = 'SHA1';
+  else if (hash.length === 64) type = 'SHA256';
+  else if (hash.length === 128) type = 'SHA512';
+  
+  div('Hash: ' + hash, 'c-text');
+  div('Length: ' + hash.length, 'c-text');
+  div('Possible Type: ' + type, 'c-text');
+  
+  if (type === 'SHA1' || type === 'SHA256') {
+    div('Attempting to crack with common passwords...', 'ln-info');
+    const wordlist = ['password', '123456', 'admin', 'test', 'letmein', 'welcome'];
+    let cracked = false;
+    
+    for (const pw of wordlist) {
+      const enc = new TextEncoder().encode(pw);
+      const algo = type === 'SHA1' ? 'SHA-1' : 'SHA-256';
+      const buf = await crypto.subtle.digest(algo, enc);
+      const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      if (hex === hash.toLowerCase()) {
+        div('[CRACKED] Password: ' + pw, 'ln-ok');
+        cracked = true;
+        break;
+      }
+    }
+    if (!cracked) div('Not found in common wordlist.', 'ln-err');
+  } else if (type === 'MD5') {
+    div('MD5 cracking is not supported in browser JS without external libs.', 'ln-warn');
+  }
+}
+
+function t9WebScraper() {
+  const text = prompt('Paste text to extract data from:');
+  if (!text) return;
+  
+  const emails = [...new Set(text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [])];
+  const urls = [...new Set(text.match(/https?:\/\/[^\s]+/g) || [])];
+  const ips = [...new Set(text.match(/\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g) || [])];
+  
+  div('Emails found (' + emails.length + '):', 'c-blue');
+  emails.forEach(e => div('  ' + e, 'c-text'));
+  
+  div('URLs found (' + urls.length + '):', 'c-blue');
+  urls.forEach(u => div('  ' + u, 'c-text'));
+  
+  div('IPs found (' + ips.length + '):', 'c-blue');
+  ips.forEach(i => div('  ' + i, 'c-text'));
+}
+
+// ── Core Command Processor ─────────────────────────────────────────────────────
 function run(raw) {
   const trimmed = raw.trim();
   if (!trimmed) return;
@@ -995,10 +789,9 @@ function run(raw) {
   switch(cmd) {
 
     case 't9-sploit': {
-      const n = getNode('/usr/bin/t9-sploit.py');
-      if (n && n._type === 'file') {
+      if (t9Installed) {
         div('Starting T9 OSINT Tool...','ln-info');
-        runPython(n.data);
+        t9Sploit();
       } else {
         div('t9-sploit: command not found. Did you run "sudo apt install t9-sploit"?','ln-err');
       }
@@ -1272,7 +1065,6 @@ function run(raw) {
     }
 
     case 'clear': {
-      // remove everything except the input bar
       while (outEl.firstChild && outEl.firstChild !== inputBarEl) {
         outEl.removeChild(outEl.firstChild);
       }
@@ -1638,7 +1430,6 @@ function setupInput() {
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
-// Append input bar first (it sits at the bottom via insertBefore logic)
 outEl.appendChild(inputBarEl);
 printBanner();
 setupInput();
