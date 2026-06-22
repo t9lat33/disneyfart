@@ -2289,11 +2289,17 @@ navigator.getBattery().then(battery => {
   right: 225px;
   top: 4px;
   position: fixed;
+  font-family: "Inter", sans-serif;
+font-size: 14px;
+font-weight: 400;
 }
 #clock2 {
   right: 100px;
   top: 4px;
   position: fixed;
+  font-family: "Inter", sans-serif;
+font-size: 14px;
+font-weight: 400;
 }
 #activity {
   left: 10px;
@@ -2305,9 +2311,12 @@ font-size: 14px;
 font-weight: 400;
 }
 #weather {
-  right: 440px;
+  right: 410px;
   top: 4px;
   position: fixed;
+  font-family: "Inter", sans-serif;
+font-size: 14px;
+font-weight: 400;
 }
 </style>
 <p id="weather" style="color:white; margin:0;"></p>
@@ -2349,7 +2358,7 @@ getWeather();
 </script>
  <p class="battery" id="date"></p>
 <p class="clock" id="day"></p>
-<p id="activity" style="color:white; margin:0;">Activity</p>
+<p id="activity" style="color:white; margin:0;">Activities</p>
 
 <script>
   const now = new Date();
@@ -2889,7 +2898,7 @@ var savedType = localStorage.getItem('backgroundType') || 'image';
 
 
 
-</style> </div> <div 
+</style> </div> <!-- <div 
  onclick="www()" class="icon" style="left:100px; top:120px;">
     <img src="firefox.png" style="border-radius:25%; ">
     <span>Firefox</span>
@@ -2902,7 +2911,7 @@ var savedType = localStorage.getItem('backgroundType') || 'image';
     <img src="yt2.png" style="border-radius:25%; ">
     <span>YouTube</span>
 </div>
-
+-->
 
 
 <script>
