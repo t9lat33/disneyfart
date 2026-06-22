@@ -185,7 +185,7 @@
 
 .navbar {
   position: fixed;
-  top: 25px;
+  top: 35px;
   left: 1.4%; 
   bottom: 0;
   width: 56px; 
@@ -195,7 +195,7 @@ background: linear-gradient(
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
       );
-  border-radius: 0 16px 16px 0; 
+  border-radius:1rem; 
   display: flex;
   flex-direction: column; 
   align-items: center;
@@ -203,7 +203,7 @@ background: linear-gradient(
   padding: 10px 0;
   backdrop-filter: blur(2px) saturate(140%);
 
-  opacity: 65%;
+  opacity: 75%;
   z-index: 9999;
     border: none !important;
   outline: none !important;
@@ -1711,7 +1711,6 @@ background: linear-gradient(
     position:fixed;
     left:0;
     width:100%;
-    border-radius: 0px 0px 0px 0px;
     display: flex;
     border-bottom: 1px solid rgba(128, 128, 128, 0.523);
 
@@ -2232,7 +2231,7 @@ document.addEventListener("click", () => {
 
 <div id="tnav" class="tnav">
 
-
+<!--
    
 
   <a onclick="t9()">
@@ -2254,8 +2253,7 @@ document.addEventListener("click", () => {
     <img class="timg" src="fullscreen.png">
   </a>
 
-
-
+-->
 
 
 
@@ -2294,6 +2292,12 @@ navigator.getBattery().then(battery => {
 #clock2 {
   right: 100px;
   top: 4px;
+  position: fixed;
+}
+#activity {
+  left: 50px;
+  top: 4px;
+  color:white;
   position: fixed;
 }
 #weather {
@@ -2339,10 +2343,9 @@ getWeather();
   updateTime();
   setInterval(updateTime, 1000);
 </script>
-<!--
  <p class="battery" id="date"></p>
 <p class="clock" id="day"></p>
--->
+<p id="activity" style="color:white; margin:0;"></p>
 
 <script>
   const now = new Date();
