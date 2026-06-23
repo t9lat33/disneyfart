@@ -1542,52 +1542,46 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   }
 </script>
 
-<div id="t9Div" onclick="if(!event.target.closest('.app-icon')) closeT9()">
+<div id="t9Div" onclick="if(!event.target.closest('.app-icon') && !event.target.closest('.t9-search')) closeT9()">
  
-  <!-- This wrapper forces everything inside it to be perfectly dead-center -->
-  <div style="position: absolute; inset: 0; display: flex; justify-content: center; align-items: center;">
-    
-    <!-- This grid holds the apps -->
-    <div style="
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      justify-content: center;
-      width: 80%;
-      max-width: 600px;
-    ">
+  <!-- GNOME-style top search bar -->
+  <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); width: 60%; max-width: 500px;">
+    <input type="text" class="t9-search" placeholder="Type to search applications..." style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: white; font-size: 14px; outline: none; box-sizing: border-box; font-family: 'Ubuntu', sans-serif;">
+  </div>
 
-      <div class="app-icon" onclick="closeT9(); hidden3()">
-        <img src="steam2.png" />
-        <span>Games</span>
-      </div>
+  <!-- Centered Linux-style Grid -->
+  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%); width: 80%; max-width: 600px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start;">
 
-      <div class="app-icon" onclick="closeT9(); music()">
-        <img src="spotify.png">
-        <span>Music</span>
-      </div>
-
-      <div class="app-icon" onclick="closeT9(); movie()">
-        <img src="netflix2.png">
-        <span>Movies</span>
-      </div>
-
-      <div class="app-icon" onclick="closeT9(); settings()">
-        <img src="setting.png">
-        <span>Settings</span>
-      </div>
-      
-      <div class="app-icon" onclick="closeT9(); ro()">
-        <img src="steam.png">
-        <span>Cine Cloud</span>
-      </div>
-      
-      <div class="app-icon" onclick="closeT9(); anime()">
-        <img src="anime.png">
-        <span>Anime</span>
-      </div>
-      
+    <div class="app-icon" onclick="closeT9(); hidden3()">
+      <img src="steam2.png" />
+      <span>Games</span>
     </div>
+
+    <div class="app-icon" onclick="closeT9(); music()">
+      <img src="spotify.png">
+      <span>Music</span>
+    </div>
+
+    <div class="app-icon" onclick="closeT9(); movie()">
+      <img src="netflix2.png">
+      <span>Movies</span>
+    </div>
+
+    <div class="app-icon" onclick="closeT9(); settings()">
+      <img src="setting.png">
+      <span>Settings</span>
+    </div>
+    
+    <div class="app-icon" onclick="closeT9(); ro()">
+      <img src="steam.png">
+      <span>Cine Cloud</span>
+    </div>
+    
+    <div class="app-icon" onclick="closeT9(); anime()">
+      <img src="anime.png">
+      <span>Anime</span>
+    </div>
+    
   </div>
 
   <script>
@@ -1598,7 +1592,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 </div>
 
 <style>
-  /* Clean, Apple-style App Icons */
+  /* Linux (GNOME/Ubuntu) Style App Icons */
   .app-icon {
     display: flex;
     flex-direction: column;
@@ -1606,38 +1600,36 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     justify-content: center;
     gap: 8px;
     cursor: pointer;
-    padding: 15px;
-    border-radius: 20px;
-    transition: background 0.2s ease, transform 0.15s ease;
-    width: 110px;
+    padding: 12px;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+    width: 100px;
   }
 
   .app-icon:hover {
-    transform: scale(1.08);
+    background: rgba(255,255,255,0.1); /* Flat hover, no scaling */
   }
 
   .app-icon:active {
-    transform: scale(0.95);
+    background: rgba(255,255,255,0.2);
   }
 
-  /* FORCE override the global img styles that were making them look bad */
+  /* Force override the global img styles */
   .app-icon img {
-    width: 72px !important;
-    height: 72px !important;
+    width: 56px !important;
+    height: 56px !important;
     padding: 0 !important;
-    border-radius: 16px !important;
+    border-radius: 10px !important; /* Linux-style rounded squares */
     object-fit: cover;
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
     background: #333;
   }
 
   .app-icon span {
     color: white;
     font-size: 13px;
-    font-weight: 500;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Ubuntu', 'Segoe UI', sans-serif; /* Ubuntu-like font stack */
     text-align: center;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   }
 </style>
 
