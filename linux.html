@@ -1554,17 +1554,17 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
     <div class="app-icon" onclick="closeT9(); hidden3()">
       <img src="steam2.png" />
-      <span>Games</span>
+      <span>Steam</span>
     </div>
 
     <div class="app-icon" onclick="closeT9(); music()">
       <img src="spotify.png">
-      <span>Music</span>
+      <span>Spotify</span>
     </div>
 
     <div class="app-icon" onclick="closeT9(); movie()">
       <img src="netflix2.png">
-      <span>Movies</span>
+      <span>Netflix</span>
     </div>
 
     <div class="app-icon" onclick="closeT9(); settings()">
@@ -1579,7 +1579,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     
     <div class="app-icon" onclick="closeT9(); anime()">
       <img src="anime.png">
-      <span>Anime</span>
+      <span>Crunchy Roll</span>
     </div>
     
   </div>
@@ -1613,7 +1613,6 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 </div>
 
 <style>
-  /* Linux (GNOME/Ubuntu) Style App Icons */
   .app-icon {
     display: flex;
     flex-direction: column;
@@ -1628,12 +1627,10 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
   .app-icon:hover {
-    background: rgba(255,255,255,0.1); /* Flat hover, no scaling */
+    background: transparent /* Flat hover, no scaling */
   }
 
-  .app-icon:active {
-    background: rgba(255,255,255,0.2);
-  }
+  
 
   /* Force override the global img styles */
   .app-icon img {
