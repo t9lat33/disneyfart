@@ -1544,21 +1544,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 </script>
 
 <div id="t9Div">
-  <div style="
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 36px;
-  background: rgba(255,255,255,0.07);
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px 12px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-        border-bottom: 2px solid gray;
-">
-  <button class="close-btn" onclick="document.getElementById('t9Div').style.display = 'none';" style="position:absolute; left:10px;">●</button>
-  <h3 style="color:white; margin:0; font-size:15px;">Apps</h3>
-</div>
+ 
 
   &nbsp;&nbsp;&nbsp;&nbsp; 
   
@@ -1610,31 +1596,39 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 10px;
-    transition: background 0.2s ease;
-    width: 60px;
+    padding: 12px;
+    border-radius: 16px;
+    transition: background 0.2s ease, transform 0.15s ease;
+    width: 100px;
   }
 
   .app-icon:hover {
     background: rgba(255,255,255,0.1);
+    transform: scale(1.05); /* Apple-like pop on hover */
+  }
+
+  .app-icon:active {
+    transform: scale(0.95);
   }
 
   .app-icon img {
-    width: 36px;
-    height: 36px;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px; /* Apple-style rounded squares */
+    object-fit: cover;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
   }
 
   .app-icon span {
     color: white;
-    font-size: 11px;
-    font-family: sans-serif;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     text-align: center;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8); /* Makes text readable on any background */
   }
 </style>
-
 
 
 </script>
