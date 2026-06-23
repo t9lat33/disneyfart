@@ -1545,12 +1545,12 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 <div id="t9Div" onclick="if(!event.target.closest('.app-icon') && !event.target.closest('.t9-search')) closeT9()">
  
   <!-- GNOME-style top search bar -->
-  <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); width: 60%; max-width: 500px;">
-    <input type="text" class="t9-search" placeholder="Type to search applications..." style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: white; font-size: 14px; outline: none; box-sizing: border-box; font-family: 'Ubuntu', sans-serif;">
+  <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); width: 60%; max-width: 500px; z-index: 2;">
+    <input type="text" id="t9AppSearch" class="t9-search" placeholder="Type to search applications..." oninput="filterT9Apps()" style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: white; font-size: 14px; outline: none; box-sizing: border-box; font-family: 'Inter', sans-serif;">
   </div>
 
   <!-- Centered Linux-style Grid -->
-  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%); width: 80%; max-width: 600px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start;">
+  <div id="t9AppGrid" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%); width: 80%; max-width: 600px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start;">
 
     <div class="app-icon" onclick="closeT9(); hidden3()">
       <img src="steam2.png" />
@@ -1586,7 +1586,28 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
   <script>
     function closeT9() {
-      document.getElementById('t9Div').style.display = 'none';
+      const div = document.getElementById('t9Div');
+      div.style.display = 'none';
+      
+      // Clear search when closing so it's empty next time you open it
+      const searchInput = document.getElementById('t9AppSearch');
+      if (searchInput) searchInput.value = '';
+      filterT9Apps(); 
+    }
+
+    // Search functionality
+    function filterT9Apps() {
+      const term = document.getElementById('t9AppSearch').value.toLowerCase();
+      const icons = document.querySelectorAll('#t9AppGrid .app-icon');
+      
+      icons.forEach(icon => {
+        const appName = icon.querySelector('span').textContent.toLowerCase();
+        if (appName.includes(term)) {
+          icon.style.display = 'flex'; // Show if it matches
+        } else {
+          icon.style.display = 'none'; // Hide if it doesn't
+        }
+      });
     }
   </script>
 </div>
@@ -1626,8 +1647,9 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
   .app-icon span {
     color: white;
-    font-size: 13px;
-    font-family: 'Ubuntu', 'Segoe UI', sans-serif; /* Ubuntu-like font stack */
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   }
