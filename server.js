@@ -409,6 +409,16 @@ function handleMessage(ws, client, data) {
       break;
     }
 
+    // NEW: broadcast video state (camera on/off) to other voice channel members
+    case 'voice_video_state': {
+      if (!client.voiceChannel) return;
+      const { serverId, channelId } = client.voiceChannel;
+      const srv = servers.get(serverId);
+      if (!srv) return;
+      broadcast({ type: 'voice_video_state', userId: client.id, video: !!data.video }, c => srv.members.includes(c.id) && c.id !== client.id);
+      break;
+    }
+
     case 'voice_speaking': {
       if (!client.voiceChannel && !client.dmVoicePeer) return;
       if (client.voiceChannel) {
@@ -432,7 +442,8 @@ function handleMessage(ws, client, data) {
       client.dmVoicePeer = data.to;
       targets.forEach(target => {
         target.dmVoicePeer = client.id;
-        sendTo(target.ws, { type: 'dm_voice_start', from: client.id, caller: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } });
+        // Pass through video flag so recipient knows it's a video call
+        sendTo(target.ws, { type: 'dm_voice_start', from: client.id, caller: { id: client.id, username: client.username, color: client.color, avatar: client.avatar }, video: !!data.video });
       });
       break;
     }
@@ -459,6 +470,14 @@ function handleMessage(ws, client, data) {
       break;
     }
 
+    // NEW: relay DM video state (camera on/off) to DM call peer
+    case 'dm_voice_video_state': {
+      if (!client.dmVoicePeer) return;
+      const target = [...clients.values()].find(c => c.id === client.dmVoicePeer);
+      if (target) sendTo(target.ws, { type: 'dm_voice_video_state', from: client.id, video: !!data.video });
+      break;
+    }
+
     case 'dm_voice_offer':
     case 'dm_voice_answer':
     case 'dm_voice_ice': {
@@ -477,6 +496,7 @@ function leaveVoice(client) {
     srv.voiceState[channelId] = srv.voiceState[channelId].filter(id => id !== client.id);
     if (srv.voiceState[channelId].length === 0) delete srv.voiceState[channelId];
     broadcast({ type: 'voice_user_left', userId: client.id, serverId, channelId }, c => srv.members.includes(c.id));
+    broadcast({ type: 'voice_video_state', userId: client.id, video: false }, c => srv.members.includes(c.id));
     broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
   }
   client.voiceChannel = null;
