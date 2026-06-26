@@ -15,7 +15,10 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/' || req.url === '/chat.html') {
+  // Ignore query params for file serving
+  let urlPath = req.url.split('?')[0];
+  
+  if (urlPath === '/' || urlPath === '/chat.html') {
     fs.readFile(path.join(__dirname, 'chat.html'), (err, data) => {
       if (err) { res.writeHead(404); res.end('Not found'); return; }
       res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -23,7 +26,8 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  const filePath = path.join(__dirname, req.url);
+  
+  const filePath = path.join(__dirname, urlPath);
   const ext = path.extname(filePath).toLowerCase();
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not found'); return; }
@@ -32,7 +36,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-const wss = new WebSocket.Server({ server });
+// Explicitly set path: '/ws' to match the frontend connection
+const wss = new WebSocket.Server({ server, path: '/ws' });
 
 let userIdCounter = 1;
 const COLORS = ['#7289da','#43b581','#faa61a','#f47fff','#ed4245','#5865f2','#00b0f4','#57f287','#feb132','#eb459e'];
@@ -409,7 +414,6 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    // NEW: broadcast video state (camera on/off) to other voice channel members
     case 'voice_video_state': {
       if (!client.voiceChannel) return;
       const { serverId, channelId } = client.voiceChannel;
@@ -442,7 +446,6 @@ function handleMessage(ws, client, data) {
       client.dmVoicePeer = data.to;
       targets.forEach(target => {
         target.dmVoicePeer = client.id;
-        // Pass through video flag so recipient knows it's a video call
         sendTo(target.ws, { type: 'dm_voice_start', from: client.id, caller: { id: client.id, username: client.username, color: client.color, avatar: client.avatar }, video: !!data.video });
       });
       break;
@@ -470,7 +473,6 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    // NEW: relay DM video state (camera on/off) to DM call peer
     case 'dm_voice_video_state': {
       if (!client.dmVoicePeer) return;
       const target = [...clients.values()].find(c => c.id === client.dmVoicePeer);
