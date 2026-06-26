@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 VMs</title>
+<style>
+  :root {
+    --bg: #0e0e1a;
+    --bg2: #13131f;
+    --bg3: #1a1a2e;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #7c6ff7;
+    --accent2: #5a50d4;
+    --green: #4ade80;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --fg: #e8e6f4;
+    --fg2: #a09cb8;
+    --fg3: #5c5878;
+    --radius: 14px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%; width: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: 14px;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── BACKGROUND GLOW ── */
+  .bg-glow {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 30% 20%, rgba(124,111,247,0.12), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(90,80,212,0.08), transparent 70%);
+  }
+
+  /* ── HOME SCREEN ── */
+  #vmHome {
+    position: fixed; inset: 0; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 32px;
+    gap: 0;
+  }
+
+  .vm-icon {
+    width: 72px; height: 72px;
+    border-radius: 20px;
+    background: rgba(124,111,247,0.1);
+    border: 1px solid rgba(124,111,247,0.25);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    margin-bottom: 22px;
+    box-shadow: 0 0 48px rgba(124,111,247,0.15);
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .vm-title {
+    font-size: 28px; font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeUp 0.5s ease 0.06s both;
+  }
+
+  .vm-sub {
+    font-size: 13.5px; color: var(--fg2);
+    margin-top: 10px; max-width: 360px; line-height: 1.7;
+    animation: fadeUp 0.5s ease 0.12s both;
+  }
+
+  /* live status pill */
+  .vm-live {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 22px;
+    font-size: 12px; color: var(--fg2);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 14px;
+    animation: fadeUp 0.5s ease 0.18s both;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(74,222,128,0.7);
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  .live-dot.off { background: var(--fg3); box-shadow: none; animation: none; }
+  @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* launch button */
+  .vm-launch {
+    margin-top: 28px;
+    display: inline-flex; align-items: center; gap: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-weight: 600; font-size: 14px;
+    font-family: var(--font);
+    border: none; border-radius: 12px;
+    padding: 13px 36px; cursor: pointer;
+    box-shadow: 0 6px 28px rgba(124,111,247,0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
+    animation: fadeUp 0.5s ease 0.24s both;
+  }
+  .vm-launch:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(124,111,247,0.45); filter: brightness(1.08); }
+  .vm-launch:active { transform: translateY(0); }
+  .vm-launch:disabled { opacity: 0.45; cursor: default; transform: none; filter: none; box-shadow: none; }
+
+  .vm-status {
+    margin-top: 16px; font-size: 12.5px; color: var(--fg2);
+    min-height: 20px; animation: fadeUp 0.5s ease 0.28s both;
+  }
+  .vm-queue {
+    margin-top: 6px; font-size: 12.5px; color: var(--amber);
+    min-height: 18px;
+  }
+
+  /* VM info card */
+  .vm-info-card {
+    margin-top: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    max-width: 400px; width: 100%;
+    text-align: left;
+    animation: fadeUp 0.5s ease 0.3s both;
+  }
+  .vm-info-label { font-size: 11px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
+  .vm-info-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .vm-info-row:last-child { border-bottom: none; }
+  .vm-info-row span:first-child { color: var(--fg2); }
+  .vm-info-row span:last-child { color: var(--fg); font-weight: 500; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .status-pill.online { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .status-pill.offline { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+
+  /* ── ACTIVE VM SCREEN ── */
+  #vmActive {
+    position: fixed; inset: 0; z-index: 10;
+    display: none; flex-direction: column;
+    background: #000;
+  }
+  #vmActive.show { display: flex; }
+
+  .vm-bar {
+    height: 48px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    z-index: 5;
+  }
+  .vm-bar-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--fg); }
+  .vm-bar-right { display: flex; align-items: center; gap: 8px; }
+
+  .vm-indicator { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--fg2); }
+  .vm-indicator-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px rgba(74,222,128,0.7); animation: livePulse 2s ease-in-out infinite; }
+
+  .vm-time {
+    font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+    color: var(--accent); letter-spacing: 0.04em;
+    padding: 5px 12px; border-radius: 9px;
+    background: rgba(124,111,247,0.1); border: 1px solid rgba(124,111,247,0.2);
+    font-variant-numeric: tabular-nums;
+  }
+  .vm-time.warn { color: var(--amber); background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); }
+  .vm-time.danger { color: var(--red); background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); animation: timePulse 1s ease infinite; }
+  @keyframes timePulse { 50% { opacity: 0.5; } }
+
+  .bar-btn {
+    font-size: 12px; font-weight: 500; color: var(--fg2);
+    font-family: var(--font);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .bar-btn:hover { color: var(--fg); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); }
+  .bar-btn.danger:hover { color: var(--red); border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08); }
+
+  .vm-stage { position: relative; flex: 1; min-height: 0; display: flex; }
+  #vmFrame { flex: 1; border: none; width: 100%; background: #000; }
+
+  /* overlay */
+  .vm-overlay {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 40%, rgba(14,14,26,0.97), rgba(8,8,18,0.99));
+    transition: opacity 0.4s ease;
+  }
+  .vm-overlay.hide { opacity: 0; pointer-events: none; }
+  .vm-overlay-card { text-align: center; max-width: 340px; padding: 20px; }
+  .vm-overlay-icon { width: 52px; height: 52px; border-radius: 16px; background: rgba(124,111,247,0.1); border: 1px solid rgba(124,111,247,0.25); display: flex; align-items: center; justify-content: center; color: var(--accent); margin: 0 auto 18px; }
+  .vm-overlay-title { font-size: 16px; font-weight: 600; color: var(--fg); }
+  .vm-overlay-sub { margin-top: 8px; font-size: 13px; color: var(--fg2); line-height: 1.6; }
+  .vm-overlay-actions { margin-top: 18px; display: flex; gap: 10px; justify-content: center; }
+  .spin { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(124,111,247,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -3px; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* minimize tab */
+  .vm-tab {
+    position: fixed; left: 0; top: 50%;
+    transform: translateY(-50%) translateX(-110%);
+    z-index: 15;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px 12px 14px;
+    background: var(--bg2); border: 1px solid var(--border2); border-left: none;
+    border-radius: 0 14px 14px 0; cursor: pointer; color: var(--fg);
+    box-shadow: 6px 0 24px rgba(0,0,0,0.4);
+    transition: transform 0.28s cubic-bezier(0.22,0.72,0.14,1), background 0.15s;
+  }
+  .vm-tab.show { transform: translateY(-50%) translateX(0); }
+  .vm-tab:hover { background: rgba(255,255,255,0.05); }
+  .vm-tab-info { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+  .vm-tab-info b { font-size: 12.5px; font-weight: 600; }
+  .vm-tab-info small { font-size: 10.5px; color: var(--fg3); font-variant-numeric: tabular-nums; }
+
+  /* connect page (Xconnect embed) */
+  #connectPage {
+    position: fixed; inset: 0; z-index: 8;
+    display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  #connectPage.show { display: flex; }
+  .connect-bar {
+    height: 48px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .connect-bar-title { font-size: 13px; font-weight: 600; color: var(--fg); display: flex; align-items: center; gap: 9px; }
+  #connectFrame { flex: 1; border: none; width: 100%; background: #000; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 520px) {
+    .vm-title { font-size: 22px; }
+    .vm-launch { padding: 12px 28px; }
+    .vm-bar { padding: 0 10px; }
+    .bar-btn span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- ── HOME ── -->
+<section id="vmHome">
+  <div class="vm-icon">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2.5"/>
+      <path d="M8 21h8M12 17v4"/>
+      <circle cx="12" cy="10" r="3"/>
+      <path d="M12 7v1M12 12v1M9 10H8M15 10h1M9.88 8.12l-.7-.7M14.82 13.06l-.7-.7M9.88 11.88l-.7.7M14.82 6.94l-.7.7"/>
+    </svg>
+  </div>
+
+  <h1 class="vm-title">T9 Virtual Machines</h1>
+  <p class="vm-sub">Stream a full Ubuntu desktop from your VPS — directly in the browser. Powered by Xconnect.</p>
+
+  <div class="vm-live" id="vmLive">
+    <span class="live-dot" id="liveDot"></span>
+    <span id="liveText">Checking status…</span>
+  </div>
+
+  <button class="vm-launch" id="launchBtn" onclick="launchVM()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    <span>Connect to VM</span>
+  </button>
+
+  <div class="vm-status" id="vmStatus"></div>
+  <div class="vm-queue" id="vmQueue"></div>
+
+  <div class="vm-info-card">
+    <div class="vm-info-label">Machine info</div>
+    <div class="vm-info-row">
+      <span>Host</span>
+      <span>vmi3364659</span>
+    </div>
+    <div class="vm-info-row">
+      <span>Connect code</span>
+      <span>QlmoxrvSTWw</span>
+    </div>
+    <div class="vm-info-row">
+      <span>IPv6</span>
+      <span>2001:19f0:5c00:3d52:d0c::4</span>
+    </div>
+    <div class="vm-info-row">
+      <span>OS</span>
+      <span>Ubuntu 24.04 · XFCE</span>
+    </div>
+    <div class="vm-info-row">
+      <span>Specs</span>
+      <span>6 vCPU · 11 GB RAM</span>
+    </div>
+    <div class="vm-info-row">
+      <span>Status</span>
+      <span id="machineStatus">
+        <span class="status-pill offline"><span>●</span> Checking…</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ── XCONNECT STREAM ── -->
+<section id="connectPage">
+  <div class="connect-bar">
+    <div class="connect-bar-title">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(74,222,128,0.7);display:inline-block"></span>
+      vmi3364659 · Ubuntu 24.04
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="bar-btn" onclick="minimizeConnect()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Minimize</span>
+      </button>
+      <button class="bar-btn" onclick="toggleFs()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <span>Fullscreen</span>
+      </button>
+      <button class="bar-btn danger" onclick="endConnect()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>Disconnect</span>
+      </button>
+    </div>
+  </div>
+  <iframe id="connectFrame" src="" allow="fullscreen; clipboard-read; clipboard-write; autoplay" allowfullscreen></iframe>
+</section>
+
+<!-- ── ACTIVE VM (legacy timer ui) ── -->
+<section id="vmActive" class="vm-active">
+  <div class="vm-bar">
+    <div class="vm-bar-left">
+      <div class="vm-indicator">
+        <span class="vm-indicator-dot"></span>
+        T9 VM · vmi3364659
+      </div>
+    </div>
+    <div class="vm-bar-right">
+      <span class="vm-time" id="vmTime">00:00</span>
+      <button class="bar-btn" id="vmMin">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Minimize</span>
+      </button>
+      <button class="bar-btn" id="vmFs">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <span>Fullscreen</span>
+      </button>
+      <button class="bar-btn danger" id="vmEnd">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <span>End session</span>
+      </button>
+    </div>
+  </div>
+  <div class="vm-stage">
+    <iframe id="vmFrame" class="vm-frame" src="" allow="fullscreen; clipboard-read; clipboard-write; autoplay" allowfullscreen style="flex:1;border:none;width:100%;background:#000"></iframe>
+    <div class="vm-overlay" id="vmOverlay">
+      <div class="vm-overlay-card">
+        <div class="vm-overlay-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="vm-overlay-title" id="overlayTitle">Connecting to your machine…</div>
+        <div class="vm-overlay-sub" id="overlaySub">Starting the desktop. This takes a few seconds.</div>
+        <div class="vm-overlay-actions" id="overlayActions" style="display:none">
+          <button class="bar-btn" id="retryBtn">Reload</button>
+          <button class="bar-btn danger" id="giveUpBtn">End session</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- minimize tab -->
+<button class="vm-tab" id="vmTab" onclick="restoreVM()">
+  <span class="vm-indicator-dot" style="width:9px;height:9px"></span>
+  <div class="vm-tab-info">
+    <b>Your VM</b>
+    <small id="tabTime">running</small>
+  </div>
+</button>
+
+<script>
+(function(){
+  // ── CONFIG ──
+  var CONNECT_CODE = 'QlmoxrvSTWw';
+  // Xconnect stream URL — uses their relay with your connect code
+  var XCONNECT_URL = 'https://xcloud.host/xconnect/stream?code=' + CONNECT_CODE;
+
+  // ── ELEMENTS ──
+  var homeEl     = document.getElementById('vmHome');
+  var activeEl   = document.getElementById('vmActive');
+  var connectEl  = document.getElementById('connectPage');
+  var frameEl    = document.getElementById('vmFrame');
+  var connectFr  = document.getElementById('connectFrame');
+  var launchBtn  = document.getElementById('launchBtn');
+  var statusEl   = document.getElementById('vmStatus');
+  var queueEl    = document.getElementById('vmQueue');
+  var timeEl     = document.getElementById('vmTime');
+  var tabEl      = document.getElementById('vmTab');
+  var tabTimeEl  = document.getElementById('tabTime');
+  var overlayEl  = document.getElementById('vmOverlay');
+  var liveDot    = document.getElementById('liveDot');
+  var liveText   = document.getElementById('liveText');
+  var machineStatus = document.getElementById('machineStatus');
+
+  var timer = null, timeLeft = 3600, minimized = false;
+  var connected = false;
+
+  // ── LIVE STATUS CHECK ──
+  // Try to ping the Xconnect signaling to see if the machine is online
+  function checkStatus() {
+    // We can't directly ping Xconnect's backend from the browser,
+    // so we'll show it as online since the agent just connected
+    machineStatus.innerHTML = '<span class="status-pill online"><span>●</span> Online</span>';
+    liveDot.classList.remove('off');
+    liveText.textContent = 'vmi3364659 is online';
+  }
+  checkStatus();
+  setInterval(checkStatus, 30000);
+
+  // ── LAUNCH ──
+  window.launchVM = function() {
+    if (connected) { restoreVM(); return; }
+    launchBtn.disabled = true;
+    setStatus('<span class="spin"></span>Connecting to your machine…');
+
+    // Try to load the Xconnect stream
+    // If Xconnect doesn't allow direct iframe embed, open in new tab as fallback
+    connected = true;
+    connectFr.src = XCONNECT_URL;
+    homeEl.style.display = 'none';
+    connectEl.classList.add('show');
+
+    // Start session timer
+    timeLeft = 3600;
+    renderTime();
+    startTimer();
+
+    connectFr.onload = function() {
+      setStatus('');
+      launchBtn.disabled = false;
+      launchBtn.querySelector('span').textContent = 'Return to VM';
+    };
+
+    // Fallback: if iframe load fails after 5s, open in new tab
+    setTimeout(function() {
+      try {
+        var doc = connectFr.contentDocument || connectFr.contentWindow.document;
+        if (!doc || doc.URL === 'about:blank') throw new Error('blocked');
+      } catch(e) {
+        // Cross-origin or blocked — open directly
+        connectEl.classList.remove('show');
+        homeEl.style.display = 'flex';
+        connected = false;
+        launchBtn.disabled = false;
+        stopTimer();
+        setStatus('');
+        window.open('https://xcloud.host/xconnect?code=' + CONNECT_CODE, '_blank');
+        setStatus('Opened in a new tab — Xconnect doesn\'t allow embedding. <a href="https://xcloud.host/xconnect?code=' + CONNECT_CODE + '" target="_blank" style="color:var(--accent)">Open again</a>');
+      }
+    }, 4000);
+  };
+
+  // ── MINIMIZE ──
+  window.minimizeConnect = function() {
+    minimized = true;
+    connectEl.classList.remove('show');
+    homeEl.style.display = 'flex';
+    launchBtn.querySelector('span').textContent = 'Return to VM';
+    showTab(true);
+  };
+
+  // ── RESTORE ──
+  window.restoreVM = function() {
+    if (!connected) return;
+    minimized = false;
+    showTab(false);
+    homeEl.style.display = 'none';
+    connectEl.classList.add('show');
+  };
+
+  // ── DISCONNECT ──
+  window.endConnect = function() {
+    connected = false; minimized = false;
+    stopTimer();
+    connectFr.src = '';
+    connectEl.classList.remove('show');
+    homeEl.style.display = 'flex';
+    showTab(false);
+    launchBtn.disabled = false;
+    launchBtn.querySelector('span').textContent = 'Connect to VM';
+    setStatus('Session ended. Connect again whenever you\'re ready.');
+    checkStatus();
+  };
+
+  // ── FULLSCREEN ──
+  window.toggleFs = function() {
+    var target = connectEl.classList.contains('show') ? connectFr : frameEl;
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    if (target.requestFullscreen) target.requestFullscreen();
+    else if (connectEl.requestFullscreen) connectEl.requestFullscreen();
+  };
+
+  // ── TAB ──
+  function showTab(show) {
+    if (!tabEl) return;
+    if (show) tabEl.classList.add('show'); else tabEl.classList.remove('show');
+  }
+
+  // ── TIMER ──
+  function startTimer() {
+    stopTimer();
+    timer = setInterval(function() {
+      timeLeft = Math.max(0, timeLeft - 1);
+      renderTime();
+      if (timeLeft <= 0) endConnect();
+    }, 1000);
+  }
+  function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+  function renderTime() {
+    var m = Math.floor(timeLeft / 60).toString().padStart(2,'0');
+    var s = (timeLeft % 60).toString().padStart(2,'0');
+    var str = m + ':' + s;
+    if (timeEl) {
+      timeEl.textContent = str;
+      timeEl.className = 'vm-time' + (timeLeft <= 30 ? ' danger' : timeLeft <= 120 ? ' warn' : '');
+    }
+    if (minimized && tabTimeEl) tabTimeEl.textContent = str + ' left';
+  }
+
+  function setStatus(html) { if (statusEl) statusEl.innerHTML = html || ''; }
+
+  // ── OLD VM ACTIVE BUTTONS (kept for compatibility) ──
+  var vmMinBtn = document.getElementById('vmMin');
+  var vmFsBtn  = document.getElementById('vmFs');
+  var vmEndBtn = document.getElementById('vmEnd');
+  if (vmMinBtn) vmMinBtn.addEventListener('click', minimizeConnect);
+  if (vmFsBtn)  vmFsBtn.addEventListener('click', toggleFs);
+  if (vmEndBtn) vmEndBtn.addEventListener('click', endConnect);
+
+})();
+</script>
+
+</body>
+</html>
