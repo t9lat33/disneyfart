@@ -1,115 +1,100 @@
-const state = {
-  currentResults: []
-};
+const express = require('express');
+const { execFile } = require('child_process');
+const http = require('http');
+const https = require('https');
+const app = express();
 
-const els = {
-  searchInput: document.querySelector(".video-search"),
-  resultsGrid: document.querySelector(".video-grid"),
-  playerFrame: document.querySelector(".player-frame"),
-  playerContainer: document.querySelector(".player-container")
-};
+const PORT = 4501;
+const YTDLP = 'yt-dlp';
 
-// Fetch search results from your VPS backend
-async function fetchQuery(q) {
-  const res = await fetch("/api/search?query=" + encodeURIComponent(q));
-  const data = await res.json();
-  return data.results || [];
+function ytdlp(args) {
+  return new Promise((resolve, reject) => {
+    execFile(YTDLP, args, { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) return reject(stderr || err.message);
+      resolve(stdout.trim());
+    });
+  });
 }
 
-// Create a video card element
-function createCard(video, index) {
-  const card = document.createElement("div");
-  card.className = "video-card";
-  
-  const title = video.title || "Untitled";
-  
-  card.innerHTML = `
-    <div class="video-img">
-      <img src="${video.thumbnail}" alt="${title}">
-    </div>
-    <div class="video-info">
-      <div class="video-title">${title}</div>
-    </div>
-  `;
-  
-  card.onclick = function () {
-    openWatch(index);
-  };
-  
-  return card;
-}
-
-// Render the grid of videos
-function render(list) {
-  els.resultsGrid.innerHTML = "";
-  state.currentResults = list;
-  
-  if (list.length === 0) {
-    els.resultsGrid.innerHTML = "<p style='color: #aaa; text-align: center;'>No videos found. Try another search.</p>";
-    return;
-  }
-  
-  for (let i = 0; i < list.length; i++) {
-    els.resultsGrid.appendChild(createCard(list[i], i));
-  }
-}
-
-// Perform the search
-async function performSearch() {
-  const q = els.searchInput.value.trim();
-  if (!q) return;
-  
-  els.resultsGrid.innerHTML = '<div class="spinner"></div>';
-  
-  try {
-    const res = await fetchQuery(q);
-    render(res);
-  } catch (error) {
-    els.resultsGrid.innerHTML = "<p style='color: #aaa; text-align: center;'>Error loading videos.</p>";
-  }
-}
-
-// Open the video player
-async function openWatch(index) {
-  if (!state.currentResults[index]) return;
-  const video = state.currentResults[index];
-
-  // Hide grid, show player
-  els.resultsGrid.style.display = "none";
-  els.playerContainer.style.display = "block";
-  els.playerFrame.src = "about:blank"; // Reset frame
+app.get('/api/search', async (req, res) => {
+  const q = req.query.query;
+  if (!q) return res.json({ results: [] });
 
   try {
-    // 1. Fetch the direct media URL from your VPS backend
-    const fetchRes = await fetch("/api/fetch?url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + video.id));
-    const fetchData = await fetchRes.json();
-    
-    const media = fetchData.medias && fetchData.medias[0];
-    if (!media || !media.url) {
-      alert("Failed to load video stream. YouTube might be blocking the server.");
-      closePlayer();
-      return;
-    }
+    const raw = await ytdlp([
+      `ytsearch15:${q}`,
+      '--dump-json',
+      '--flat-playlist',
+      '--no-warnings',
+      '--js-runtimes', 'node',
+      '--remote-components', 'ejs:github'
+    ]);
 
-    // 2. Proxy it through the /api/encode endpoint to bypass CORS
-    els.playerFrame.src = "/api/encode?url=" + encodeURIComponent(media.url);
+    const results = raw.split('\n').filter(Boolean).map(line => {
+      try {
+        const v = JSON.parse(line);
+        return {
+          id: v.id,
+          title: v.title,
+          thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+          duration: v.duration,
+          uploader: v.uploader
+        };
+      } catch { return null; }
+    }).filter(Boolean);
 
+    res.json({ results });
   } catch (e) {
-    alert("Error playing video.");
-    closePlayer();
-  }
-}
-
-// Close the video player
-function closePlayer() {
-  els.playerFrame.src = "about:blank";
-  els.playerContainer.style.display = "none";
-  els.resultsGrid.style.display = "grid";
-}
-
-// Allow pressing "Enter" to search
-els.searchInput.addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    performSearch();
+    console.error('search error:', e);
+    res.status(500).json({ results: [], error: String(e) });
   }
 });
+
+app.get('/api/fetch', async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).json({ error: 'no url' });
+
+  try {
+    const raw = await ytdlp([
+      url,
+      '--dump-json',
+      '--no-warnings',
+      '--format', 'best[ext=mp4]/best',
+      '--js-runtimes', 'node',
+      '--remote-components', 'ejs:github'
+    ]);
+
+    const info = JSON.parse(raw);
+    const mediaUrl = info.url || (info.formats && info.formats.slice(-1)[0].url);
+
+    res.json({ medias: [{ url: mediaUrl, ext: info.ext, title: info.title }] });
+  } catch (e) {
+    console.error('fetch error:', e);
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+app.get('/api/encode', (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).send('no url');
+
+  const mod = url.startsWith('https') ? https : http;
+
+  mod.get(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0',
+      'Referer': 'https://www.youtube.com/'
+    }
+  }, upstream => {
+    res.setHeader('Content-Type', upstream.headers['content-type'] || 'video/mp4');
+    if (upstream.headers['content-length'])
+      res.setHeader('Content-Length', upstream.headers['content-length']);
+    res.setHeader('Accept-Ranges', 'bytes');
+    upstream.pipe(res);
+  }).on('error', e => {
+    console.error('proxy error:', e);
+    res.status(500).send('proxy error');
+  });
+});
+
+app.listen(PORT, () => console.log(`T9 Tube backend on :${PORT}`));
