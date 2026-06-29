@@ -2440,25 +2440,19 @@ document.getElementById('day').textContent = day;
       display:flex;flex-direction:column;gap:4px;
       overflow-y:auto;
     ">
-      <div class="fe-place" onclick="feNav('home')" data-path="home">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
-      </div>
-      <div class="fe-place" onclick="feNav('desktop')" data-path="desktop">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5v2H6v2h12v-2h-2v-2h5a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12z"/></svg> Desktop
-      </div>
-      <div class="fe-place" onclick="feNav('documents')" data-path="documents">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg> Documents
-      </div>
-      <div class="fe-place" onclick="feNav('images')" data-path="images">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zm-11.5-5.5L12 16l3.5-4.5 4.5 6H4l5.5-7.5z"/></svg> Images
-      </div>
-      <div class="fe-place" onclick="feNav('music')" data-path="music">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg> Music
-      </div>
-      <div class="fe-place" onclick="feNav('trash')" data-path="trash">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Trash
-      </div>
-    </div>
+  <div class="fe-place" onclick="feNav('/')"                    data-path="/">📂 /</div>
+  <div class="fe-place" onclick="feNav('/home/user')"           data-path="/home/user">🏠 Home</div>
+  <div class="fe-place" onclick="feNav('/home/user/Desktop')"   data-path="/home/user/Desktop">🖥️ Desktop</div>
+  <div class="fe-place" onclick="feNav('/home/user/Documents')" data-path="/home/user/Documents">📄 Documents</div>
+  <div class="fe-place" onclick="feNav('/home/user/Downloads')" data-path="/home/user/Downloads">⬇️ Downloads</div>
+  <div class="fe-place" onclick="feNav('/home/user/Pictures')"  data-path="/home/user/Pictures">🖼️ Pictures</div>
+  <div class="fe-place" onclick="feNav('/home/user/Music')"     data-path="/home/user/Music">🎵 Music</div>
+  <div class="fe-place" onclick="feNav('/tmp')"                 data-path="/tmp">🗑️ Trash</div>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:6px 4px;"></div>
+  <div class="fe-place" onclick="feNav('/etc')" data-path="/etc">⚙️ /etc</div>
+  <div class="fe-place" onclick="feNav('/var')" data-path="/var">📋 /var</div>
+  <div class="fe-place" onclick="feNav('/usr')" data-path="/usr">📦 /usr</div>
+</div>
 
     <!-- Main area -->
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
@@ -2508,16 +2502,15 @@ document.getElementById('day').textContent = day;
     display:none;position:absolute;inset:33px 0 0 0;
     background:#0d0d0d;z-index:50;flex-direction:column;
   ">
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.1);">
+  <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.1);">
       <button onclick="feEditorClose()" style="background:rgba(255,255,255,0.07);border:none;color:white;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">← Back</button>
-      <span id="fe-editor-title" style="flex:1;font-size:13px;color:rgba(255,255,255,0.6);"></span>
-      <button onclick="feEditorSave()" style="background:#1db954;border:none;color:white;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Save</button>
+      <span id="fe-editor-title" style="flex:1;font-size:12px;color:rgba(255,255,255,0.45);font-family:monospace;"></span>
+      <button id="fe-preview-btn" onclick="feTogglePreview()" style="display:none;background:rgba(255,255,255,0.07);border:none;color:white;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">👁 Preview</button>
+      <button id="fe-run-btn" onclick="feRunHTML()" style="display:none;background:rgba(29,185,84,0.2);border:1px solid #1db954;color:#1db954;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">▶ Run</button>
+      <button id="fe-save-btn" onclick="feEditorSave()" style="background:#1db954;border:none;color:white;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Save</button>
     </div>
-    <textarea id="fe-editor-ta" style="
-      flex:1;background:transparent;border:none;color:#cdd6f4;
-      font-family:'Fira Code',monospace;font-size:13px;
-      padding:16px;resize:none;outline:none;line-height:1.6;
-    "></textarea>
+    <textarea id="fe-editor-ta" style="flex:1;background:transparent;border:none;color:#cdd6f4;font-family:'Fira Code',monospace;font-size:13px;padding:16px;resize:none;outline:none;line-height:1.6;"></textarea>
+    <iframe id="fe-preview" style="display:none;flex:1;border:none;background:white;" sandbox="allow-scripts allow-same-origin"></iframe>
   </div>
 
   <!-- Image viewer -->
@@ -2569,66 +2562,110 @@ document.getElementById('day').textContent = day;
 </style>
 
 <script>
-(function(){
-  // ── FS state stored in localStorage ──
-  const LS_KEY = 'fe_fs_v2';
+  (function(){
+  const LS_KEY = 'fe_fs_v3';
   let fs = null;
-  let cwd = 'home'; // current path string
+  let cwd = '/home/user';
   let history = [];
-  let viewMode = 'grid'; // 'grid' | 'list'
+  let viewMode = 'grid';
   let ctxTarget = null;
+  let editingFile = null;
 
   const ICONS = {
-    folder: '📁',
-    txt: '📄', md: '📝', js: '⚡', html: '🌐', css: '🎨',
-    json: '📋', png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️',
-    mp3: '🎵', mp4: '🎬', wav: '🎵', pdf: '📕', zip: '🗜️',
-    default: '📄'
+    folder:'📁', txt:'📄', md:'📝', js:'⚡', html:'🌐', css:'🎨',
+    json:'📋', png:'🖼️', jpg:'🖼️', jpeg:'🖼️', gif:'🖼️', svg:'🖼️',
+    mp3:'🎵', mp4:'🎬', wav:'🎵', pdf:'📕', zip:'🗜️', sh:'⚙️',
+    py:'🐍', ts:'⚡', jsx:'⚛️', default:'📄'
   };
+
+  function resolvePath(path) {
+    if (!path) return cwd;
+    if (!path.startsWith('/')) path = cwd + '/' + path;
+    const parts = path.split('/').filter(Boolean);
+    const resolved = [];
+    for (const p of parts) {
+      if (p === '..') resolved.pop();
+      else if (p !== '.') resolved.push(p);
+    }
+    return '/' + resolved.join('/');
+  }
+
+  function getNode(path) {
+    path = resolvePath(path);
+    if (path === '/') return fs['/'];
+    const parts = path.split('/').filter(Boolean);
+    let node = fs['/'];
+    for (const p of parts) {
+      if (!node || !node.children) return null;
+      node = node.children[p];
+    }
+    return node;
+  }
+
+  function getParent(path) {
+    path = resolvePath(path);
+    const parts = path.split('/').filter(Boolean);
+    parts.pop();
+    return '/' + parts.join('/');
+  }
+
+  function getName(path) {
+    return path.split('/').filter(Boolean).pop() || '/';
+  }
+
+  function defaultFS() {
+    const now = Date.now();
+    return {
+      '/': {
+        type:'dir', created:now,
+        children:{
+          bin:  { type:'dir', created:now, children:{} },
+          etc:  { type:'dir', created:now, children:{
+            'hostname':   { type:'file', created:now, modified:now, size:6,  content:'t9os\n' },
+            'os-release': { type:'file', created:now, modified:now, size:64, content:'NAME="T9 OS"\nVERSION="1.0"\nID=t9os\n' }
+          }},
+          home: { type:'dir', created:now, children:{
+            user: { type:'dir', created:now, children:{
+              Desktop:   { type:'dir', created:now, children:{} },
+              Documents: { type:'dir', created:now, children:{
+                'notes.txt': { type:'file', created:now, modified:now, size:32, content:'My notes go here.' },
+                'todo.md':   { type:'file', created:now, modified:now, size:48, content:'# Todo\n- [ ] Task 1\n- [ ] Task 2' }
+              }},
+              Downloads: { type:'dir', created:now, children:{} },
+              Music:     { type:'dir', created:now, children:{} },
+              Pictures:  { type:'dir', created:now, children:{} },
+              Videos:    { type:'dir', created:now, children:{} },
+              'welcome.html': { type:'file', created:now, modified:now, size:128, content:'<!DOCTYPE html>\n<html>\n<head><title>Welcome</title></head>\n<body style="background:#0f0f0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">\n<h1>👋 Welcome to T9 OS</h1>\n</body>\n</html>' }
+            }}
+          }},
+          tmp: { type:'dir', created:now, children:{ '.Trash': { type:'dir', created:now, children:{} } } },
+          var: { type:'dir', created:now, children:{
+            log: { type:'dir', created:now, children:{
+              'system.log': { type:'file', created:now, modified:now, size:64, content:'[INFO] T9 OS booted\n[INFO] File system mounted\n' }
+            }}
+          }},
+          usr: { type:'dir', created:now, children:{
+            bin: { type:'dir', created:now, children:{} },
+            lib: { type:'dir', created:now, children:{} }
+          }},
+          dev:  { type:'dir', created:now, children:{} },
+          proc: { type:'dir', created:now, children:{} },
+        }
+      }
+    };
+  }
 
   function loadFS() {
     try { fs = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
-    if (!fs) fs = defaultFS();
+    if (!fs || !fs['/']) fs = defaultFS();
   }
 
   function saveFS() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(fs)); } catch(e) {}
   }
 
-  function defaultFS() {
-    return {
-      home: {
-        __meta: { type:'folder', created: Date.now() },
-        'readme.txt': { __meta:{ type:'file', size:64, created:Date.now(), modified:Date.now() }, content:'Welcome to T9 OS File Explorer!\nStore your files here.' },
-        'notes.md':   { __meta:{ type:'file', size:32, created:Date.now(), modified:Date.now() }, content:'# My Notes\n- Todo list\n- Ideas' },
-      },
-      desktop: { __meta:{ type:'folder', created:Date.now() } },
-      documents: {
-        __meta:{ type:'folder', created:Date.now() },
-        'project.txt': { __meta:{ type:'file', size:128, created:Date.now(), modified:Date.now() }, content:'My project notes go here.' }
-      },
-      images: { __meta:{ type:'folder', created:Date.now() } },
-      music: { __meta:{ type:'folder', created:Date.now() } },
-      trash: { __meta:{ type:'folder', created:Date.now() } }
-    };
-  }
-
-  function getNode(path) {
-    if (!path || path === 'home') return fs.home;
-    const parts = path.split('/');
-    let node = fs;
-    for (const p of parts) { node = node[p]; if (!node) return null; }
-    return node;
-  }
-
-  function getParentPath(path) {
-    const parts = path.split('/');
-    parts.pop();
-    return parts.length ? parts.join('/') : null;
-  }
-
   function fmtSize(b) {
-    if (!b) return '—';
+    if (b == null) return '—';
     if (b < 1024) return b + ' B';
     if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
     return (b/1048576).toFixed(1) + ' MB';
@@ -2639,267 +2676,308 @@ document.getElementById('day').textContent = day;
     return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   }
 
-  function extIcon(name) {
-    const ext = name.split('.').pop().toLowerCase();
-    return ICONS[ext] || ICONS.default;
-  }
+  function extOf(name) { return name.includes('.') ? name.split('.').pop().toLowerCase() : ''; }
+  function extIcon(name) { return ICONS[extOf(name)] || ICONS.default; }
 
+  // ── Render ──
   function render() {
     const node = getNode(cwd);
     const grid = document.getElementById('fe-grid');
-    const bc = document.getElementById('fe-breadcrumb');
+    const bc   = document.getElementById('fe-breadcrumb');
     grid.innerHTML = '';
 
-    // Breadcrumb
-    bc.textContent = '/ ' + cwd.replace(/\//g, ' / ');
+    // Clickable breadcrumb
+    const parts = cwd.split('/').filter(Boolean);
+    let bcHtml = `<span onclick="feNav('/')" style="cursor:pointer;color:rgba(255,255,255,0.5);">/</span>`;
+    let built = '';
+    parts.forEach((p, i) => {
+      built += '/' + p;
+      const path = built;
+      bcHtml += `<span style="color:rgba(255,255,255,0.25);margin:0 2px;">/</span>`;
+      bcHtml += `<span onclick="feNav('${path}')" style="cursor:pointer;color:${i===parts.length-1?'white':'rgba(255,255,255,0.5)'};">${p}</span>`;
+    });
+    bc.innerHTML = bcHtml;
 
-    // Sidebar active
+    // Sidebar active state
     document.querySelectorAll('.fe-place').forEach(p => {
-      p.classList.toggle('fe-active', p.dataset.path === cwd.split('/')[0]);
+      p.classList.toggle('fe-active', cwd === p.dataset.path || cwd.startsWith(p.dataset.path + '/'));
     });
 
-    if (!node) { grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;">Empty</div>'; return; }
-
-    const entries = Object.entries(node).filter(([k]) => k !== '__meta');
-    if (!entries.length) {
-      grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;font-size:13px;">This folder is empty</div>';
+    if (!node || node.type !== 'dir') {
+      grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;font-size:13px;">Not a directory</div>';
       return;
     }
 
-    // Sort: folders first
-    entries.sort((a,b) => {
-      const af = a[1]?.__meta?.type === 'folder';
-      const bf = b[1]?.__meta?.type === 'folder';
+    const entries = Object.entries(node.children || {});
+    if (!entries.length) {
+      grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;font-size:13px;">Empty directory</div>';
+      return;
+    }
+
+    // Folders first, then alphabetical
+    entries.sort((a, b) => {
+      const af = a[1].type === 'dir', bf = b[1].type === 'dir';
       if (af && !bf) return -1;
       if (!af && bf) return 1;
       return a[0].localeCompare(b[0]);
     });
 
     if (viewMode === 'list') {
-      // List header
+      grid.style.cssText = 'flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:2px;flex-wrap:nowrap;align-content:flex-start;';
       const hdr = document.createElement('div');
-      hdr.style.cssText = 'width:100%;display:flex;gap:10px;padding:4px 10px;box-sizing:border-box;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:4px;';
-      hdr.innerHTML = '<span style="flex:1;font-size:11px;color:rgba(255,255,255,0.3);">Name</span><span style="width:70px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Size</span><span style="width:120px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Modified</span>';
-      grid.style.flexDirection = 'column';
-      grid.style.flexWrap = 'nowrap';
+      hdr.style.cssText = 'display:flex;gap:10px;padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:4px;';
+      hdr.innerHTML = '<span style="flex:1;font-size:11px;color:rgba(255,255,255,0.3);">Name</span><span style="width:70px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Size</span><span style="width:130px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Modified</span>';
       grid.appendChild(hdr);
     } else {
-      grid.style.flexDirection = '';
-      grid.style.flexWrap = 'wrap';
+      grid.style.cssText = 'flex:1;overflow-y:auto;padding:12px;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;';
     }
 
-    entries.forEach(([name, node]) => {
-      const isFolder = node?.__meta?.type === 'folder';
-      const icon = isFolder ? '📁' : extIcon(name);
+    entries.forEach(([name, child]) => {
+      const isDir = child.type === 'dir';
+      const icon  = isDir ? '📁' : extIcon(name);
+      const fullPath = cwd + '/' + name;
 
       if (viewMode === 'grid') {
         const el = document.createElement('div');
         el.className = 'fe-icon';
         el.innerHTML = `<span style="font-size:32px;line-height:1;">${icon}</span><span>${name}</span>`;
-        el.ondblclick = () => feOpen(name, node);
-        el.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, name); };
-        el.onclick = (e) => { document.querySelectorAll('.fe-icon').forEach(i=>i.classList.remove('fe-selected')); el.classList.add('fe-selected'); };
+        el.ondblclick = () => feOpen(fullPath, child);
+        el.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, fullPath); };
+        el.onclick = () => { document.querySelectorAll('.fe-icon').forEach(i=>i.classList.remove('fe-selected')); el.classList.add('fe-selected'); };
         grid.appendChild(el);
       } else {
         const el = document.createElement('div');
         el.className = 'fe-row';
-        el.innerHTML = `<span style="font-size:18px;">${icon}</span><span class="fe-row-name">${name}</span><span class="fe-row-size">${isFolder?'—':fmtSize(node.__meta?.size)}</span><span class="fe-row-date">${fmtDate(node.__meta?.modified||node.__meta?.created)}</span>`;
-        el.ondblclick = () => feOpen(name, node);
-        el.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, name); };
+        el.innerHTML = `<span style="font-size:18px;">${icon}</span><span class="fe-row-name">${name}</span><span class="fe-row-size">${isDir?'—':fmtSize(child.size)}</span><span class="fe-row-date">${fmtDate(child.modified||child.created)}</span>`;
+        el.ondblclick = () => feOpen(fullPath, child);
+        el.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, fullPath); };
         el.onclick = () => { document.querySelectorAll('.fe-row').forEach(r=>r.classList.remove('fe-selected')); el.classList.add('fe-selected'); };
         grid.appendChild(el);
       }
     });
   }
 
-  function feOpen(name, node) {
-    if (node?.__meta?.type === 'folder') {
+  // ── Open ──
+  function feOpen(path, node) {
+    if (node.type === 'dir') {
       history.push(cwd);
-      cwd = cwd ? cwd + '/' + name : name;
+      cwd = resolvePath(path);
       render();
     } else {
-      // Try to open based on type
-      const ext = name.split('.').pop().toLowerCase();
-      if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
-        // Image viewer - only works for data URLs
-        if (node.content && node.content.startsWith('data:')) {
-          document.getElementById('fe-imgview-img').src = node.content;
-          document.getElementById('fe-imgview-name').textContent = name;
-          document.getElementById('fe-imgview').style.display = 'flex';
-        } else {
-          feEditorOpen(name, node);
-        }
+      const ext = extOf(getName(path));
+      if (['png','jpg','jpeg','gif','webp','svg'].includes(ext) && node.content?.startsWith('data:')) {
+        document.getElementById('fe-imgview-img').src = node.content;
+        document.getElementById('fe-imgview-name').textContent = getName(path);
+        document.getElementById('fe-imgview').style.display = 'flex';
       } else {
-        feEditorOpen(name, node);
+        feEditorOpen(path, node);
       }
     }
   }
 
+  // ── Editor ──
+  function feEditorOpen(path, node) {
+    editingFile = { path };
+    const ext = extOf(getName(path));
+    document.getElementById('fe-editor-title').textContent = path;
+    document.getElementById('fe-editor-ta').value = node.content || '';
+    document.getElementById('fe-editor').style.display = 'flex';
+
+    // reset view to code
+    document.getElementById('fe-preview').style.display = 'none';
+    document.getElementById('fe-editor-ta').style.display = 'block';
+    document.getElementById('fe-preview-btn').textContent = '👁 Preview';
+
+    // only show preview/run for html files
+    const isHtml = ext === 'html';
+    document.getElementById('fe-preview-btn').style.display = isHtml ? 'inline-block' : 'none';
+    document.getElementById('fe-run-btn').style.display     = isHtml ? 'inline-block' : 'none';
+
+    // if html, auto-render in preview pane immediately
+    if (isHtml) {
+      document.getElementById('fe-preview').srcdoc = node.content || '';
+    }
+  }
+
+  window.feEditorClose = function() {
+    document.getElementById('fe-editor').style.display = 'none';
+    document.getElementById('fe-preview').style.display = 'none';
+    document.getElementById('fe-editor-ta').style.display = 'block';
+    editingFile = null;
+  };
+
+  window.feEditorSave = function() {
+    if (!editingFile) return;
+    const content = document.getElementById('fe-editor-ta').value;
+
+    // walk tree by path and write directly — no stale reference
+    const parts = editingFile.path.split('/').filter(Boolean);
+    let node = fs['/'];
+    for (let i = 0; i < parts.length - 1; i++) {
+      node = node.children[parts[i]];
+      if (!node) return;
+    }
+    const fileName = parts[parts.length - 1];
+    if (!node.children[fileName]) return;
+
+    node.children[fileName].content  = content;
+    node.children[fileName].size     = new Blob([content]).size;
+    node.children[fileName].modified = Date.now();
+
+    saveFS();
+
+    // if html, live-update the preview pane
+    const ext = extOf(fileName);
+    if (ext === 'html') {
+      document.getElementById('fe-preview').srcdoc = content;
+    }
+
+    // flash save button
+    const btn = document.getElementById('fe-save-btn');
+    btn.textContent = '✓ Saved';
+    btn.style.background = '#1a7a3a';
+    setTimeout(() => { btn.textContent = 'Save'; btn.style.background = '#1db954'; }, 1500);
+
+    render();
+  };
+
+  // toggle between code editor and live preview pane
+  window.feTogglePreview = function() {
+    const ta      = document.getElementById('fe-editor-ta');
+    const preview = document.getElementById('fe-preview');
+    const btn     = document.getElementById('fe-preview-btn');
+    if (preview.style.display === 'block') {
+      preview.style.display = 'none';
+      ta.style.display = 'block';
+      btn.textContent = '👁 Preview';
+    } else {
+      // sync latest edits into preview before showing
+      preview.srcdoc = ta.value;
+      preview.style.display = 'block';
+      ta.style.display = 'none';
+      btn.textContent = '✏️ Edit';
+    }
+  };
+
+  // open html in a real browser tab and execute it
+  window.feRunHTML = function() {
+    if (!editingFile) return;
+    const content = document.getElementById('fe-editor-ta').value;
+    const blob = new Blob([content], { type:'text/html' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  };
+
   // ── Navigation ──
-  window.feNav = function(path) { history.push(cwd); cwd = path; render(); };
+  window.feNav  = function(path) { history.push(cwd); cwd = resolvePath(path); render(); };
   window.feBack = function() { if (history.length) { cwd = history.pop(); render(); } };
+
   window.feSearch = function(q) {
     if (!q) { render(); return; }
     const node = getNode(cwd);
     const grid = document.getElementById('fe-grid');
     grid.innerHTML = '';
-    Object.entries(node).filter(([k])=>k!=='__meta').forEach(([name,n])=>{
+    grid.style.cssText = 'flex:1;overflow-y:auto;padding:12px;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;';
+    Object.entries(node.children || {}).forEach(([name, child]) => {
       if (!name.toLowerCase().includes(q.toLowerCase())) return;
-      const isFolder = n?.__meta?.type==='folder';
       const el = document.createElement('div');
       el.className = 'fe-icon';
-      el.innerHTML = `<span style="font-size:32px">${isFolder?'📁':extIcon(name)}</span><span>${name}</span>`;
-      el.ondblclick=()=>feOpen(name,n);
+      el.innerHTML = `<span style="font-size:32px">${child.type==='dir'?'📁':extIcon(name)}</span><span>${name}</span>`;
+      el.ondblclick = () => feOpen(cwd+'/'+name, child);
       grid.appendChild(el);
     });
   };
 
-  // ── View toggle ──
   window.feToggleView = function() {
     viewMode = viewMode === 'grid' ? 'list' : 'grid';
     document.getElementById('fe-view-btn').textContent = viewMode === 'grid' ? '☰' : '⊞';
     render();
   };
 
-  // ── New file/folder ──
   window.feNewFile = function() {
-    const name = prompt('File name:');
-    if (!name) return;
+    const name = prompt('File name (e.g. index.html):');
+    if (!name || name.includes('/')) return;
     const node = getNode(cwd);
-    node[name] = { __meta:{ type:'file', size:0, created:Date.now(), modified:Date.now() }, content:'' };
+    node.children[name] = { type:'file', created:Date.now(), modified:Date.now(), size:0, content:'' };
     saveFS(); render();
   };
+
   window.feNewFolder = function() {
     const name = prompt('Folder name:');
-    if (!name) return;
+    if (!name || name.includes('/')) return;
     const node = getNode(cwd);
-    node[name] = { __meta:{ type:'folder', created:Date.now() } };
+    node.children[name] = { type:'dir', created:Date.now(), children:{} };
     saveFS(); render();
   };
 
   // ── Context menu ──
-  window.feCtxOpen = function(e, name) {
-    ctxTarget = name;
+  window.feCtxOpen = function(e, path) {
+    ctxTarget = path;
     const ctx = document.getElementById('fe-ctx');
     ctx.style.display = 'block';
     ctx.style.left = e.clientX + 'px';
-    ctx.style.top = e.clientY + 'px';
+    ctx.style.top  = e.clientY + 'px';
   };
-  document.addEventListener('click', () => document.getElementById('fe-ctx').style.display = 'none');
+  document.addEventListener('click', () => {
+    const ctx = document.getElementById('fe-ctx');
+    if (ctx) ctx.style.display = 'none';
+  });
 
   window.feCtxRename = function() {
-    const newName = prompt('New name:', ctxTarget);
-    if (!newName || newName === ctxTarget) return;
-    const node = getNode(cwd);
-    node[newName] = node[ctxTarget];
-    delete node[ctxTarget];
+    const oldName = getName(ctxTarget);
+    const newName = prompt('New name:', oldName);
+    if (!newName || newName === oldName) return;
+    const parent = getNode(getParent(ctxTarget));
+    parent.children[newName] = parent.children[oldName];
+    delete parent.children[oldName];
     saveFS(); render();
   };
+
   window.feCtxDelete = function() {
-    if (!confirm('Delete "' + ctxTarget + '"?')) return;
-    const node = getNode(cwd);
-    // Move to trash instead of hard delete
-    const item = node[ctxTarget];
-    if (cwd !== 'trash') {
-      fs.trash[ctxTarget + '_' + Date.now()] = item;
+    const name = getName(ctxTarget);
+    if (!confirm(`Delete "${name}"?`)) return;
+    const item   = getNode(ctxTarget);
+    const parent = getNode(getParent(ctxTarget));
+    // move to trash
+    if (!cwd.startsWith('/tmp/.Trash')) {
+      const trash = getNode('/tmp/.Trash');
+      if (trash) trash.children[name + '_' + Date.now()] = item;
     }
-    delete node[ctxTarget];
+    delete parent.children[name];
     saveFS(); render();
   };
+
   window.feCtxDownload = function() {
-    const node = getNode(cwd);
-    const item = node[ctxTarget];
-    if (!item || item.__meta?.type === 'folder') return;
-    const blob = new Blob([item.content||''], {type:'text/plain'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = ctxTarget;
+    const node = getNode(ctxTarget);
+    if (!node || node.type === 'dir') return;
+    const ext  = extOf(getName(ctxTarget));
+    const mime = ext === 'html' ? 'text/html' : ext === 'js' ? 'text/javascript' : 'text/plain';
+    const blob = new Blob([node.content||''], { type:mime });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = getName(ctxTarget);
     a.click();
   };
+
   window.feCtxProps = function() {
-    const node = getNode(cwd);
-    const item = node[ctxTarget];
-    const m = item?.__meta;
-    alert(`Name: ${ctxTarget}\nType: ${m?.type||'?'}\nSize: ${fmtSize(m?.size)}\nCreated: ${fmtDate(m?.created)}\nModified: ${fmtDate(m?.modified)}`);
-  };
-
-  // ── Text editor ──
-  let editingFile = null;
- function feEditorOpen(name, node) {
-    editingFile = { name };
-    document.getElementById('fe-editor-title').textContent = name;
-    document.getElementById('fe-editor-ta').value = node.content || '';
-    document.getElementById('fe-editor').style.display = 'flex';
-  }
-  window.feEditorClose = function() {
-    document.getElementById('fe-editor').style.display = 'none';
-    editingFile = null;
-  };
- window.feEditorSave = function() {
-    if (!editingFile) return;
-    const content = document.getElementById('fe-editor-ta').value;
-
-    // Walk the FS tree by path and update directly
-    const parts = cwd.split('/');
-    let node = fs;
-    for (const p of parts) { node = node[p]; if (!node) return; }
-    
-    const file = node[editingFile.name];
-    if (file) {
-      file.content = content;
-      file.__meta.size = new Blob([content]).size;
-      file.__meta.modified = Date.now();
-    }
-
-    saveFS();
-    document.getElementById('fe-editor').style.display = 'none';
-    editingFile = null;
-    render();
+    const node = getNode(ctxTarget);
+    alert(`Path:     ${ctxTarget}\nType:     ${node?.type}\nSize:     ${fmtSize(node?.size)}\nCreated:  ${fmtDate(node?.created)}\nModified: ${fmtDate(node?.modified)}`);
   };
 
   // ── Image viewer ──
   window.feImgClose = function() { document.getElementById('fe-imgview').style.display = 'none'; };
 
-  // ── Upload file from disk ──
-  const uploadInput = document.createElement('input');
-  uploadInput.type = 'file';
-  uploadInput.multiple = true;
-  uploadInput.style.display = 'none';
-  document.body.appendChild(uploadInput);
-  uploadInput.onchange = function() {
-    Array.from(this.files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const node = getNode(cwd);
-        node[file.name] = {
-          __meta: { type:'file', size:file.size, created:Date.now(), modified:Date.now() },
-          content: e.target.result
-        };
-        saveFS(); render();
-      };
-      if (file.type.startsWith('image/')) reader.readAsDataURL(file);
-      else reader.readAsText(file);
-    });
-    this.value = '';
-  };
-
-  // Add upload button to toolbar
-  document.addEventListener('DOMContentLoaded', () => {
-    const toolbar = document.querySelector('#filesDiv .fe-row'); // fallback
-  });
-
-  // Drag & drop to upload
+  // ── Drag & drop upload ──
   const feGrid = document.getElementById('fe-grid');
   if (feGrid) {
-    feGrid.addEventListener('dragover', e => { e.preventDefault(); feGrid.style.background='rgba(29,185,84,0.07)'; });
-    feGrid.addEventListener('dragleave', () => { feGrid.style.background=''; });
+    feGrid.addEventListener('dragover', e => { e.preventDefault(); feGrid.style.outline = '2px dashed #1db954'; });
+    feGrid.addEventListener('dragleave', () => { feGrid.style.outline = ''; });
     feGrid.addEventListener('drop', e => {
-      e.preventDefault(); feGrid.style.background='';
+      e.preventDefault(); feGrid.style.outline = '';
       Array.from(e.dataTransfer.files).forEach(file => {
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = ev => {
           const node = getNode(cwd);
-          node[file.name] = { __meta:{ type:'file', size:file.size, created:Date.now(), modified:Date.now() }, content:ev.target.result };
+          node.children[file.name] = { type:'file', created:Date.now(), modified:Date.now(), size:file.size, content:ev.target.result };
           saveFS(); render();
         };
         if (file.type.startsWith('image/')) reader.readAsDataURL(file);
@@ -2908,22 +2986,34 @@ document.getElementById('day').textContent = day;
     });
   }
 
-  // Add upload button to toolbar when filesDiv opens
+  // ── Upload button ──
+  const uploadInput = document.createElement('input');
+  uploadInput.type = 'file'; uploadInput.multiple = true; uploadInput.style.display = 'none';
+  document.body.appendChild(uploadInput);
+  uploadInput.onchange = function() {
+    Array.from(this.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const node = getNode(cwd);
+        node.children[file.name] = { type:'file', created:Date.now(), modified:Date.now(), size:file.size, content:ev.target.result };
+        saveFS(); render();
+      };
+      if (file.type.startsWith('image/')) reader.readAsDataURL(file);
+      else reader.readAsText(file);
+    });
+    this.value = '';
+  };
+  window.feUpload = () => uploadInput.click();
+
+  // ── Watch filesDiv open ──
   const filesDiv = document.getElementById('filesDiv');
   if (filesDiv) {
-    const observer = new MutationObserver(() => {
-      if (filesDiv.style.display === 'block') {
-        loadFS(); render();
-      }
-    });
-    observer.observe(filesDiv, { attributes:true, attributeFilter:['style'] });
+    new MutationObserver(() => {
+      if (filesDiv.style.display === 'block') { loadFS(); render(); }
+    }).observe(filesDiv, { attributes:true, attributeFilter:['style'] });
   }
 
-  // Init
   loadFS(); render();
-
-  // Expose for toolbar upload button
-  window.feUpload = () => uploadInput.click();
 })();
 </script>
 <div id="settingsDiv">
