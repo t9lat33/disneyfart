@@ -2825,8 +2825,8 @@ document.getElementById('day').textContent = day;
 
   // ── Text editor ──
   let editingFile = null;
-  function feEditorOpen(name, node) {
-    editingFile = { name, node };
+ function feEditorOpen(name, node) {
+    editingFile = { name };
     document.getElementById('fe-editor-title').textContent = name;
     document.getElementById('fe-editor-ta').value = node.content || '';
     document.getElementById('fe-editor').style.display = 'flex';
@@ -2835,12 +2835,22 @@ document.getElementById('day').textContent = day;
     document.getElementById('fe-editor').style.display = 'none';
     editingFile = null;
   };
-  window.feEditorSave = function() {
+ window.feEditorSave = function() {
     if (!editingFile) return;
     const content = document.getElementById('fe-editor-ta').value;
-    editingFile.node.content = content;
-    editingFile.node.__meta.size = new Blob([content]).size;
-    editingFile.node.__meta.modified = Date.now();
+
+    // Walk the FS tree by path and update directly
+    const parts = cwd.split('/');
+    let node = fs;
+    for (const p of parts) { node = node[p]; if (!node) return; }
+    
+    const file = node[editingFile.name];
+    if (file) {
+      file.content = content;
+      file.__meta.size = new Blob([content]).size;
+      file.__meta.modified = Date.now();
+    }
+
     saveFS();
     document.getElementById('fe-editor').style.display = 'none';
     editingFile = null;
