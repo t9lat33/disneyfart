@@ -2562,7 +2562,7 @@ document.getElementById('day').textContent = day;
 </style>
 
 <script>
-  (function(){
+(function(){
   const LS_KEY = 'fe_fs_v3';
   let fs = null;
   let cwd = '/home/user';
@@ -2574,31 +2574,30 @@ document.getElementById('day').textContent = day;
   function getIcon(name, isDir) {
     if (isDir) return `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><path d="M3 7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L11.7071 6.70711C11.8946 6.89464 12.149 7 12.4142 7H19C20.1046 7 21 7.89543 21 9V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" fill="#E8A838" stroke="#E8A838" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
-    const colors = {
-      html:'#E44D26', css:'#264DE4', js:'#F7DF1E', ts:'#3178C6',
-      jsx:'#61DAFB', tsx:'#61DAFB', json:'#FBBF24', md:'#4B5563',
-      txt:'#9CA3AF', py:'#3572A5', sh:'#4EAA25', svg:'#FF9900',
-      png:'#06B6D4', jpg:'#06B6D4', jpeg:'#06B6D4', gif:'#A855F7',
-      webp:'#06B6D4', mp3:'#EC4899', wav:'#EC4899', mp4:'#8B5CF6',
-      pdf:'#EF4444', zip:'#78716C', gz:'#78716C', default:'#6B7280'
-    };
     const svgs = {
       html: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#E44D26" d="M4.136 3h15.728l-1.431 16.05L12 21l-6.433-1.95L4.136 3z"/><path fill="#FF6D00" d="M12 19.5l5.2-1.448 1.223-13.69H12v15.138z"/><path fill="#EBEBEB" d="M12 11h-3.5l-.241-2.7H12V6H6.2l.637 7.15H12V11z"/><path fill="#fff" d="M12 15.8l-.009.003-2.627-.71-.168-1.892H7.2l.33 3.698 4.461 1.242.009-.003V15.8z"/></svg>`,
-      css: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#264DE4" d="M4.136 3h15.728l-1.431 16.05L12 21l-6.433-1.95L4.136 3z"/><path fill="#2965F1" d="M12 19.5l5.2-1.448 1.223-13.69H12v15.138z"/><path fill="#EBEBEB" d="M12 11H8.559l-.24-2.7H12V6H6.2l.636 7.15H12V11z"/><path fill="#fff" d="M12 15.8l-.009.003-2.627-.71-.168-1.892H7.2l.33 3.698 4.461 1.242.009-.003V15.8z"/></svg>`,
-      js: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#F7DF1E"/><path fill="#000" d="M7.5 17.5c.35.57.8 1 1.65 1 .7 0 1.15-.35 1.15-.83 0-.58-.46-.78-1.23-1.12l-.42-.18c-1.22-.52-2.03-1.17-2.03-2.55 0-1.27.97-2.24 2.48-2.24 1.08 0 1.85.37 2.41 1.35l-1.32.85c-.29-.52-.6-.72-1.09-.72-.5 0-.81.31-.81.72 0 .51.32.71 1.05 1.03l.42.18c1.44.62 2.25 1.25 2.25 2.66 0 1.53-1.2 2.36-2.81 2.36-1.57 0-2.59-.75-3.08-1.73L7.5 17.5zm6.5.17c.4.7.96 1.23 1.92 1.23.81 0 1.32-.4 1.32-1V12h1.73v5.96c0 1.65-1 2.54-2.48 2.54-1.33 0-2.1-.7-2.5-1.55l1.01-.78z"/></svg>`,
-      ts: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#3178C6"/><path fill="#fff" d="M13.5 12.5H11V11h7v1.5h-2.5V19H13.5v-6.5zM8.5 14c.1.8.7 1.3 1.5 1.3.65 0 1.05-.3 1.05-.78 0-.5-.38-.7-1.08-1l-.38-.16C8.37 12.86 7.5 12.2 7.5 10.8c0-1.27.97-2.05 2.35-2.05 1 0 1.73.38 2.2 1.23l-1.2.77c-.24-.44-.5-.61-.98-.61-.45 0-.74.25-.74.62 0 .44.3.62.97.92l.38.16C11.77 12.48 12.6 13.1 12.6 14.5c0 1.5-1.17 2.2-2.74 2.2-1.54 0-2.5-.73-2.93-1.7L8.5 14z"/></svg>`,
-      py: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#3572A5" d="M12 2C9.5 2 8 3.1 8 4.5V7h4v1H5.5C4 8 3 9.5 3 11.5s1 3.5 2.5 3.5H6v-2.5c0-1.1.9-2 2-2h7c1.1 0 2-.9 2-2V4.5C17 3.1 15.5 2 12 2zm-1.5 1.8c.5 0 .9.4.9.9s-.4.9-.9.9-.9-.4-.9-.9.4-.9.9-.9z"/><path fill="#FFD43B" d="M12 22c2.5 0 4-1.1 4-2.5V17h-4v-1h6.5c1.5 0 2.5-1.5 2.5-3.5s-1-3.5-2.5-3.5H18v2.5c0 1.1-.9 2-2 2H9c-1.1 0-2 .9-2 2v4.5C7 20.9 9.5 22 12 22zm1.5-1.8c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/></svg>`,
+      css:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#264DE4" d="M4.136 3h15.728l-1.431 16.05L12 21l-6.433-1.95L4.136 3z"/><path fill="#2965F1" d="M12 19.5l5.2-1.448 1.223-13.69H12v15.138z"/><path fill="#EBEBEB" d="M12 11H8.559l-.24-2.7H12V6H6.2l.636 7.15H12V11z"/><path fill="#fff" d="M12 15.8l-.009.003-2.627-.71-.168-1.892H7.2l.33 3.698 4.461 1.242.009-.003V15.8z"/></svg>`,
+      js:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#F7DF1E"/><path fill="#000" d="M7.5 17.5c.35.57.8 1 1.65 1 .7 0 1.15-.35 1.15-.83 0-.58-.46-.78-1.23-1.12l-.42-.18c-1.22-.52-2.03-1.17-2.03-2.55 0-1.27.97-2.24 2.48-2.24 1.08 0 1.85.37 2.41 1.35l-1.32.85c-.29-.52-.6-.72-1.09-.72-.5 0-.81.31-.81.72 0 .51.32.71 1.05 1.03l.42.18c1.44.62 2.25 1.25 2.25 2.66 0 1.53-1.2 2.36-2.81 2.36-1.57 0-2.59-.75-3.08-1.73L7.5 17.5zm6.5.17c.4.7.96 1.23 1.92 1.23.81 0 1.32-.4 1.32-1V12h1.73v5.96c0 1.65-1 2.54-2.48 2.54-1.33 0-2.1-.7-2.5-1.55l1.01-.78z"/></svg>`,
+      ts:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#3178C6"/><path fill="#fff" d="M13.5 12.5H11V11h7v1.5h-2.5V19H13.5v-6.5zM8.5 14c.1.8.7 1.3 1.5 1.3.65 0 1.05-.3 1.05-.78 0-.5-.38-.7-1.08-1l-.38-.16C8.37 12.86 7.5 12.2 7.5 10.8c0-1.27.97-2.05 2.35-2.05 1 0 1.73.38 2.2 1.23l-1.2.77c-.24-.44-.5-.61-.98-.61-.45 0-.74.25-.74.62 0 .44.3.62.97.92l.38.16C11.77 12.48 12.6 13.1 12.6 14.5c0 1.5-1.17 2.2-2.74 2.2-1.54 0-2.5-.73-2.93-1.7L8.5 14z"/></svg>`,
+      jsx:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#222"/><path fill="#61DAFB" d="M12 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0-9c3.87 0 7 1.57 7 3.5 0 1.93-3.13 3.5-7 3.5S5 9.93 5 8c0-1.93 3.13-3.5 7-3.5zm0 9c-3.87 0-7-1.57-7-3.5V12c0 1.93 3.13 3.5 7 3.5s7-1.57 7-3.5V10c0 1.93-3.13 3.5-7 3.5z"/></svg>`,
+      tsx:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1a1a2e"/><path fill="#61DAFB" d="M12 13.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0-9c3.87 0 7 1.57 7 3.5 0 1.93-3.13 3.5-7 3.5S5 9.93 5 8c0-1.93 3.13-3.5 7-3.5zm0 9c-3.87 0-7-1.57-7-3.5V12c0 1.93 3.13 3.5 7 3.5s7-1.57 7-3.5V10c0 1.93-3.13 3.5-7 3.5z"/></svg>`,
+      py:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#3572A5" d="M12 2C9.5 2 8 3.1 8 4.5V7h4v1H5.5C4 8 3 9.5 3 11.5s1 3.5 2.5 3.5H6v-2.5c0-1.1.9-2 2-2h7c1.1 0 2-.9 2-2V4.5C17 3.1 15.5 2 12 2zm-1.5 1.8c.5 0 .9.4.9.9s-.4.9-.9.9-.9-.4-.9-.9.4-.9.9-.9z"/><path fill="#FFD43B" d="M12 22c2.5 0 4-1.1 4-2.5V17h-4v-1h6.5c1.5 0 2.5-1.5 2.5-3.5s-1-3.5-2.5-3.5H18v2.5c0 1.1-.9 2-2 2H9c-1.1 0-2 .9-2 2v4.5C7 20.9 9.5 22 12 22zm1.5-1.8c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/></svg>`,
       json: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1E1E1E"/><text x="3" y="16" font-family="monospace" font-size="8" fill="#FBBF24">{json}</text></svg>`,
-      md: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1E1E1E"/><path fill="#4B5563" d="M3 3h18v18H3z" opacity="0"/><text x="2" y="15" font-family="monospace" font-size="7" fill="#9CA3AF"># MD</text></svg>`,
-      pdf: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#EF4444" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><text x="4" y="18" font-family="sans-serif" font-size="5.5" font-weight="bold" fill="#fff">PDF</text></svg>`,
-      mp3: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#EC4899"/><path fill="#fff" d="M9 17V7l10-2v2L11 8.8V18a3 3 0 11-2-1z"/></svg>`,
-      wav: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#EC4899"/><path stroke="#fff" stroke-width="2" fill="none" d="M3 12h2l2-4 2 8 2-6 2 4 2-2 2 2h2"/></svg>`,
-      mp4: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#8B5CF6"/><path fill="#fff" d="M8 6l12 6-12 6V6z"/></svg>`,
-      png: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#06B6D4"/><path fill="#fff" d="M3 3h18v18H3z" opacity="0"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5l0-3z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
-      jpg: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#0891B2"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5l0-3z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
-      svg: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#FF9900"/><path stroke="#fff" stroke-width="1.5" fill="none" d="M5 12c0-3 2-5 5-4s4 4 2 6-5 1-5-1 2-3 4-2"/></svg>`,
-      zip: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#78716C" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><rect x="10" y="2" width="4" height="2" fill="#fff" opacity=".6"/><rect x="10" y="6" width="4" height="2" fill="#fff" opacity=".6"/><rect x="10" y="10" width="4" height="2" fill="#fff" opacity=".6"/></svg>`,
-      sh: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1E1E1E"/><text x="3" y="15" font-family="monospace" font-size="9" fill="#4EAA25">$_</text></svg>`,
+      md:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1E1E1E"/><text x="2" y="15" font-family="monospace" font-size="7" fill="#9CA3AF"># MD</text></svg>`,
+      txt:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#6B7280" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><line x1="8" y1="10" x2="16" y2="10" stroke="#fff" stroke-opacity=".6" stroke-width="1.2"/><line x1="8" y1="13" x2="16" y2="13" stroke="#fff" stroke-opacity=".6" stroke-width="1.2"/><line x1="8" y1="16" x2="13" y2="16" stroke="#fff" stroke-opacity=".6" stroke-width="1.2"/></svg>`,
+      pdf:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#EF4444" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><text x="4" y="18" font-family="sans-serif" font-size="5.5" font-weight="bold" fill="#fff">PDF</text></svg>`,
+      mp3:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#EC4899"/><path fill="#fff" d="M9 17V7l10-2v2L11 8.8V18a3 3 0 11-2-1z"/></svg>`,
+      wav:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#EC4899"/><path stroke="#fff" stroke-width="2" fill="none" d="M3 12h2l2-4 2 8 2-6 2 4 2-2 2 2h2"/></svg>`,
+      mp4:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#8B5CF6"/><path fill="#fff" d="M8 6l12 6-12 6V6z"/></svg>`,
+      png:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#06B6D4"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
+      jpg:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#0891B2"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
+      jpeg: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#0891B2"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
+      gif:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#A855F7"/><text x="3" y="16" font-family="sans-serif" font-size="8" font-weight="bold" fill="#fff">GIF</text></svg>`,
+      webp: `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#06B6D4"/><path fill="#fff" d="M5 17l4-5 3 3.5 2-2.5 5 7H5z"/><circle cx="8" cy="8" r="2" fill="#fff"/></svg>`,
+      svg:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#FF9900"/><path stroke="#fff" stroke-width="1.5" fill="none" d="M5 12c0-3 2-5 5-4s4 4 2 6-5 1-5-1 2-3 4-2"/></svg>`,
+      zip:  `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#78716C" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><rect x="10" y="2" width="4" height="2" fill="#fff" opacity=".6"/><rect x="10" y="6" width="4" height="2" fill="#fff" opacity=".6"/><rect x="10" y="10" width="4" height="2" fill="#fff" opacity=".6"/></svg>`,
+      gz:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#78716C" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/><rect x="10" y="2" width="4" height="2" fill="#fff" opacity=".6"/><rect x="10" y="6" width="4" height="2" fill="#fff" opacity=".6"/></svg>`,
+      sh:   `<svg viewBox="0 0 24 24" width="100%" height="100%"><rect width="24" height="24" rx="3" fill="#1E1E1E"/><text x="3" y="15" font-family="monospace" font-size="9" fill="#4EAA25">$_</text></svg>`,
       default: `<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#6B7280" d="M6 2h9l5 5v15a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/><path fill="#fff" fill-opacity=".3" d="M15 2l5 5h-5V2z"/></svg>`
     };
     return svgs[ext] || svgs.default;
@@ -2661,7 +2660,7 @@ document.getElementById('day').textContent = day;
               Music:     { type:'dir', created:now, children:{} },
               Pictures:  { type:'dir', created:now, children:{} },
               Videos:    { type:'dir', created:now, children:{} },
-              'welcome.html': { type:'file', created:now, modified:now, size:128, content:'<!DOCTYPE html>\n<html>\n<head><title>Welcome</title></head>\n<body style="background:#0f0f0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">\n<h1>👋 Welcome to T9 OS</h1>\n</body>\n</html>' }
+              'welcome.html': { type:'file', created:now, modified:now, size:128, content:'<!DOCTYPE html>\n<html>\n<head><title>Welcome</title></head>\n<body style="background:#0f0f0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">\n<h1>Welcome to T9 OS</h1>\n</body>\n</html>' }
             }}
           }},
           tmp: { type:'dir', created:now, children:{ '.Trash': { type:'dir', created:now, children:{} } } },
@@ -2704,14 +2703,12 @@ document.getElementById('day').textContent = day;
 
   function extOf(name) { return name.includes('.') ? name.split('.').pop().toLowerCase() : ''; }
 
-  // ── Render ──
   function render() {
     const node = getNode(cwd);
     const grid = document.getElementById('fe-grid');
     const bc   = document.getElementById('fe-breadcrumb');
     grid.innerHTML = '';
 
-    // Clickable breadcrumb
     const parts = cwd.split('/').filter(Boolean);
     let bcHtml = `<span onclick="feNav('/')" style="cursor:pointer;color:rgba(255,255,255,0.5);">/</span>`;
     let built = '';
@@ -2723,7 +2720,6 @@ document.getElementById('day').textContent = day;
     });
     bc.innerHTML = bcHtml;
 
-    // Sidebar active state
     document.querySelectorAll('.fe-place').forEach(p => {
       p.classList.toggle('fe-active', cwd === p.dataset.path || cwd.startsWith(p.dataset.path + '/'));
     });
@@ -2739,7 +2735,6 @@ document.getElementById('day').textContent = day;
       return;
     }
 
-    // Folders first, then alphabetical
     entries.sort((a, b) => {
       const af = a[1].type === 'dir', bf = b[1].type === 'dir';
       if (af && !bf) return -1;
@@ -2759,7 +2754,7 @@ document.getElementById('day').textContent = day;
 
     entries.forEach(([name, child]) => {
       const isDir = child.type === 'dir';
-      const icon = getIcon(name, isDir);
+      const icon  = getIcon(name, isDir);
       const fullPath = cwd + '/' + name;
 
       if (viewMode === 'grid') {
@@ -2782,7 +2777,6 @@ document.getElementById('day').textContent = day;
     });
   }
 
-  // ── Open ──
   function feOpen(path, node) {
     if (node.type === 'dir') {
       history.push(cwd);
@@ -2800,25 +2794,18 @@ document.getElementById('day').textContent = day;
     }
   }
 
-  // ── Editor ──
   function feEditorOpen(path, node) {
     editingFile = { path };
     const ext = extOf(getName(path));
     document.getElementById('fe-editor-title').textContent = path;
     document.getElementById('fe-editor-ta').value = node.content || '';
     document.getElementById('fe-editor').style.display = 'flex';
-
-    // reset view to code
     document.getElementById('fe-preview').style.display = 'none';
     document.getElementById('fe-editor-ta').style.display = 'block';
     document.getElementById('fe-preview-btn').textContent = '👁 Preview';
-
-    // only show preview/run for html files
     const isHtml = ext === 'html';
     document.getElementById('fe-preview-btn').style.display = isHtml ? 'inline-block' : 'none';
     document.getElementById('fe-run-btn').style.display     = isHtml ? 'inline-block' : 'none';
-
-    // if html, auto-render in preview pane immediately
     if (isHtml) {
       document.getElementById('fe-preview').srcdoc = node.content || '';
     }
@@ -2834,8 +2821,6 @@ document.getElementById('day').textContent = day;
   window.feEditorSave = function() {
     if (!editingFile) return;
     const content = document.getElementById('fe-editor-ta').value;
-
-    // walk tree by path and write directly — no stale reference
     const parts = editingFile.path.split('/').filter(Boolean);
     let node = fs['/'];
     for (let i = 0; i < parts.length - 1; i++) {
@@ -2844,29 +2829,21 @@ document.getElementById('day').textContent = day;
     }
     const fileName = parts[parts.length - 1];
     if (!node.children[fileName]) return;
-
     node.children[fileName].content  = content;
     node.children[fileName].size     = new Blob([content]).size;
     node.children[fileName].modified = Date.now();
-
     saveFS();
-
-    // if html, live-update the preview pane
     const ext = extOf(fileName);
     if (ext === 'html') {
       document.getElementById('fe-preview').srcdoc = content;
     }
-
-    // flash save button
     const btn = document.getElementById('fe-save-btn');
     btn.textContent = '✓ Saved';
     btn.style.background = '#1a7a3a';
     setTimeout(() => { btn.textContent = 'Save'; btn.style.background = '#1db954'; }, 1500);
-
     render();
   };
 
-  // toggle between code editor and live preview pane
   window.feTogglePreview = function() {
     const ta      = document.getElementById('fe-editor-ta');
     const preview = document.getElementById('fe-preview');
@@ -2876,7 +2853,6 @@ document.getElementById('day').textContent = day;
       ta.style.display = 'block';
       btn.textContent = '👁 Preview';
     } else {
-      // sync latest edits into preview before showing
       preview.srcdoc = ta.value;
       preview.style.display = 'block';
       ta.style.display = 'none';
@@ -2884,7 +2860,6 @@ document.getElementById('day').textContent = day;
     }
   };
 
-  // open html in a real browser tab and execute it
   window.feRunHTML = function() {
     if (!editingFile) return;
     const content = document.getElementById('fe-editor-ta').value;
@@ -2892,7 +2867,6 @@ document.getElementById('day').textContent = day;
     window.open(URL.createObjectURL(blob), '_blank');
   };
 
-  // ── Navigation ──
   window.feNav  = function(path) { history.push(cwd); cwd = resolvePath(path); render(); };
   window.feBack = function() { if (history.length) { cwd = history.pop(); render(); } };
 
@@ -2934,7 +2908,6 @@ document.getElementById('day').textContent = day;
     saveFS(); render();
   };
 
-  // ── Context menu ──
   window.feCtxOpen = function(e, path) {
     ctxTarget = path;
     const ctx = document.getElementById('fe-ctx');
@@ -2962,7 +2935,6 @@ document.getElementById('day').textContent = day;
     if (!confirm(`Delete "${name}"?`)) return;
     const item   = getNode(ctxTarget);
     const parent = getNode(getParent(ctxTarget));
-    // move to trash
     if (!cwd.startsWith('/tmp/.Trash')) {
       const trash = getNode('/tmp/.Trash');
       if (trash) trash.children[name + '_' + Date.now()] = item;
@@ -2988,10 +2960,8 @@ document.getElementById('day').textContent = day;
     alert(`Path:     ${ctxTarget}\nType:     ${node?.type}\nSize:     ${fmtSize(node?.size)}\nCreated:  ${fmtDate(node?.created)}\nModified: ${fmtDate(node?.modified)}`);
   };
 
-  // ── Image viewer ──
   window.feImgClose = function() { document.getElementById('fe-imgview').style.display = 'none'; };
 
-  // ── Drag & drop upload ──
   const feGrid = document.getElementById('fe-grid');
   if (feGrid) {
     feGrid.addEventListener('dragover', e => { e.preventDefault(); feGrid.style.outline = '2px dashed #1db954'; });
@@ -3011,7 +2981,6 @@ document.getElementById('day').textContent = day;
     });
   }
 
-  // ── Upload button ──
   const uploadInput = document.createElement('input');
   uploadInput.type = 'file'; uploadInput.multiple = true; uploadInput.style.display = 'none';
   document.body.appendChild(uploadInput);
@@ -3030,7 +2999,6 @@ document.getElementById('day').textContent = day;
   };
   window.feUpload = () => uploadInput.click();
 
-  // ── Watch filesDiv open ──
   const filesDiv = document.getElementById('filesDiv');
   if (filesDiv) {
     new MutationObserver(() => {
