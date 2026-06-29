@@ -592,7 +592,29 @@ background: linear-gradient(
 box-shadow: 2px #141414;
 animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
   }
-
+  #filesDiv {
+    display: none;
+    margin-top: 20px;
+    padding: 10px;
+    background: linear-gradient(
+        145deg,
+        rgba(0, 0, 0, 0.842),
+        rgba(0, 0, 0, 0.534)
+      );
+    color: white;
+    inset: 0;
+    margin:auto;
+    position: fixed;
+    z-index: 1000;
+    border-radius:1rem; 
+    width:66%;
+    height: 63%; 
+    overflow-x: hidden;
+    border:2px solid gray;
+    overflow-y: auto;
+box-shadow: 2px #141414;
+animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards; 
+  }
   #appsDiv {
     display: none;
     margin-top: 20px;
@@ -911,7 +933,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
   
   /* Reduce shadow complexity */
-  .navbar, #settingsDiv, #appsDiv{
+  .navbar, #settingsDiv, #appsDiv, #filesDiv{
     box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
   }
 
@@ -1579,6 +1601,10 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     <div class="app-icon" onclick="closeT9(); terminal()">
       <img src="terminal3.png">
       <span>Terminal</span>
+    </div>
+     <div class="app-icon" onclick="closeT9(); files()">
+      <img src="files.png">
+      <span>File Explorer</span>
     </div>
     
     <div class="app-icon" onclick="closeT9(); anime()">
@@ -2370,7 +2396,526 @@ document.getElementById('day').textContent = day;
     });
   }
 </script>
+<div id="filesDiv" style="
+  display: none;
+  margin-top: 20px;
+  padding: 10px;
+  background: #0f0f0f;
+  color: white;
+  inset: 0;
+  margin: auto;
+  position: fixed;
+  z-index: 1000;
+  border-radius: 1rem;
+  width: 66%;
+  height: 65%;
+  overflow: hidden;
+  border: 2px solid gray;
+  box-shadow: 2px #141414;
+  animation: osOpenReal 0.32s cubic-bezier(.22,1,.36,1) forwards;
+  font-family: 'Inter', sans-serif;
+">
 
+  <!-- Title bar -->
+  <div style="
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 33px;
+    background: rgba(255,255,255,0.07);
+    border-bottom: 2px solid gray;
+    border-radius: 12px 12px 0 0;
+    display: flex; align-items: center; justify-content: center;
+  ">
+    <button class="close-btn" onclick="t9Close('filesDiv')" style="position:absolute;left:12px;">●</button>
+    <span style="color:white;font-size:15px;font-weight:600;">File Explorer</span>
+  </div>
+
+  <!-- Layout -->
+  <div style="display:flex;height:100%;padding-top:33px;">
+
+    <!-- Sidebar -->
+    <div id="fe-sidebar" style="
+      width:160px;flex-shrink:0;
+      border-right:1px solid rgba(255,255,255,0.1);
+      padding:12px 8px;
+      display:flex;flex-direction:column;gap:4px;
+      overflow-y:auto;
+    ">
+      <div class="fe-place" onclick="feNav('home')" data-path="home">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Home
+      </div>
+      <div class="fe-place" onclick="feNav('desktop')" data-path="desktop">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5v2H6v2h12v-2h-2v-2h5a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12z"/></svg> Desktop
+      </div>
+      <div class="fe-place" onclick="feNav('documents')" data-path="documents">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg> Documents
+      </div>
+      <div class="fe-place" onclick="feNav('images')" data-path="images">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zm-11.5-5.5L12 16l3.5-4.5 4.5 6H4l5.5-7.5z"/></svg> Images
+      </div>
+      <div class="fe-place" onclick="feNav('music')" data-path="music">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg> Music
+      </div>
+      <div class="fe-place" onclick="feNav('trash')" data-path="trash">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Trash
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- Toolbar -->
+      <div style="
+        display:flex;align-items:center;gap:8px;
+        padding:8px 12px;
+        border-bottom:1px solid rgba(255,255,255,0.08);
+        flex-shrink:0;
+      ">
+        <button onclick="feBack()" title="Back" style="background:rgba(255,255,255,0.07);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">←</button>
+        <div id="fe-breadcrumb" style="flex:1;font-size:13px;color:rgba(255,255,255,0.5);padding:0 8px;"></div>
+        <input id="fe-search" type="text" placeholder="Search..." oninput="feSearch(this.value)" style="
+          background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+          border-radius:6px;color:white;padding:4px 10px;font-size:12px;width:140px;outline:none;
+        ">
+        <button onclick="feNewFile()" title="New File" style="background:rgba(255,255,255,0.07);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">+ File</button>
+        <button onclick="feNewFolder()" title="New Folder" style="background:rgba(255,255,255,0.07);border:none;color:white;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">+ Folder</button>
+        <button onclick="feToggleView()" id="fe-view-btn" title="Toggle View" style="background:rgba(255,255,255,0.07);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">☰</button>
+      </div>
+
+      <!-- File grid/list -->
+      <div id="fe-grid" style="
+        flex:1;overflow-y:auto;padding:12px;
+        display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;
+      "></div>
+    </div>
+  </div>
+
+  <!-- Context menu -->
+  <div id="fe-ctx" style="
+    display:none;position:fixed;z-index:9999;
+    background:#1a1a1a;border:1px solid rgba(255,255,255,0.12);
+    border-radius:8px;padding:4px 0;min-width:160px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:13px;
+  ">
+    <div class="fe-ctx-item" onclick="feCtxRename()">✏️ Rename</div>
+    <div class="fe-ctx-item" onclick="feCtxDelete()">🗑️ Delete</div>
+    <div class="fe-ctx-item" onclick="feCtxDownload()">⬇️ Download</div>
+    <div style="height:1px;background:rgba(255,255,255,0.1);margin:4px 0;"></div>
+    <div class="fe-ctx-item" onclick="feCtxProps()">ℹ️ Properties</div>
+  </div>
+
+  <!-- Text editor modal -->
+  <div id="fe-editor" style="
+    display:none;position:absolute;inset:33px 0 0 0;
+    background:#0d0d0d;z-index:50;flex-direction:column;
+  ">
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <button onclick="feEditorClose()" style="background:rgba(255,255,255,0.07);border:none;color:white;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">← Back</button>
+      <span id="fe-editor-title" style="flex:1;font-size:13px;color:rgba(255,255,255,0.6);"></span>
+      <button onclick="feEditorSave()" style="background:#1db954;border:none;color:white;padding:4px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Save</button>
+    </div>
+    <textarea id="fe-editor-ta" style="
+      flex:1;background:transparent;border:none;color:#cdd6f4;
+      font-family:'Fira Code',monospace;font-size:13px;
+      padding:16px;resize:none;outline:none;line-height:1.6;
+    "></textarea>
+  </div>
+
+  <!-- Image viewer -->
+  <div id="fe-imgview" style="
+    display:none;position:absolute;inset:33px 0 0 0;
+    background:rgba(0,0,0,0.92);z-index:50;
+    align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  ">
+    <button onclick="feImgClose()" style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,0.1);border:none;color:white;padding:4px 12px;border-radius:6px;cursor:pointer;">← Back</button>
+    <img id="fe-imgview-img" src="" style="max-width:90%;max-height:80%;border-radius:8px;object-fit:contain;">
+    <span id="fe-imgview-name" style="color:rgba(255,255,255,0.5);font-size:12px;"></span>
+  </div>
+
+</div>
+
+<style>
+.fe-place {
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:7px;
+  font-size:13px;color:rgba(255,255,255,0.7);
+  cursor:pointer;transition:background 0.1s;
+  user-select:none;
+}
+.fe-place:hover,.fe-place.fe-active { background:rgba(255,255,255,0.08); color:white; }
+.fe-ctx-item {
+  padding:8px 14px;cursor:pointer;color:rgba(255,255,255,0.85);
+  transition:background 0.1s;
+}
+.fe-ctx-item:hover { background:rgba(255,255,255,0.07); }
+.fe-icon {
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 8px;border-radius:9px;cursor:pointer;
+  width:80px;transition:background 0.12s;user-select:none;
+  position:relative;
+}
+.fe-icon:hover { background:rgba(255,255,255,0.07); }
+.fe-icon.fe-selected { background:rgba(53,132,228,0.25);outline:1px solid rgba(53,132,228,0.5); }
+.fe-icon span { font-size:11px;color:rgba(255,255,255,0.75);text-align:center;word-break:break-word;max-width:72px;line-height:1.3; }
+.fe-row {
+  display:flex;align-items:center;gap:10px;padding:7px 10px;
+  border-radius:7px;cursor:pointer;width:100%;box-sizing:border-box;
+  transition:background 0.1s;user-select:none;
+}
+.fe-row:hover { background:rgba(255,255,255,0.05); }
+.fe-row.fe-selected { background:rgba(53,132,228,0.2); }
+.fe-row span.fe-row-name { flex:1;font-size:13px;color:rgba(255,255,255,0.85); }
+.fe-row span.fe-row-size { font-size:11px;color:rgba(255,255,255,0.35);width:70px;text-align:right; }
+.fe-row span.fe-row-date { font-size:11px;color:rgba(255,255,255,0.3);width:120px;text-align:right; }
+</style>
+
+<script>
+(function(){
+  // ── FS state stored in localStorage ──
+  const LS_KEY = 'fe_fs_v2';
+  let fs = null;
+  let cwd = 'home'; // current path string
+  let history = [];
+  let viewMode = 'grid'; // 'grid' | 'list'
+  let ctxTarget = null;
+
+  const ICONS = {
+    folder: '📁',
+    txt: '📄', md: '📝', js: '⚡', html: '🌐', css: '🎨',
+    json: '📋', png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️',
+    mp3: '🎵', mp4: '🎬', wav: '🎵', pdf: '📕', zip: '🗜️',
+    default: '📄'
+  };
+
+  function loadFS() {
+    try { fs = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+    if (!fs) fs = defaultFS();
+  }
+
+  function saveFS() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(fs)); } catch(e) {}
+  }
+
+  function defaultFS() {
+    return {
+      home: {
+        __meta: { type:'folder', created: Date.now() },
+        'readme.txt': { __meta:{ type:'file', size:64, created:Date.now(), modified:Date.now() }, content:'Welcome to T9 OS File Explorer!\nStore your files here.' },
+        'notes.md':   { __meta:{ type:'file', size:32, created:Date.now(), modified:Date.now() }, content:'# My Notes\n- Todo list\n- Ideas' },
+      },
+      desktop: { __meta:{ type:'folder', created:Date.now() } },
+      documents: {
+        __meta:{ type:'folder', created:Date.now() },
+        'project.txt': { __meta:{ type:'file', size:128, created:Date.now(), modified:Date.now() }, content:'My project notes go here.' }
+      },
+      images: { __meta:{ type:'folder', created:Date.now() } },
+      music: { __meta:{ type:'folder', created:Date.now() } },
+      trash: { __meta:{ type:'folder', created:Date.now() } }
+    };
+  }
+
+  function getNode(path) {
+    if (!path || path === 'home') return fs.home;
+    const parts = path.split('/');
+    let node = fs;
+    for (const p of parts) { node = node[p]; if (!node) return null; }
+    return node;
+  }
+
+  function getParentPath(path) {
+    const parts = path.split('/');
+    parts.pop();
+    return parts.length ? parts.join('/') : null;
+  }
+
+  function fmtSize(b) {
+    if (!b) return '—';
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(1) + ' MB';
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function extIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    return ICONS[ext] || ICONS.default;
+  }
+
+  function render() {
+    const node = getNode(cwd);
+    const grid = document.getElementById('fe-grid');
+    const bc = document.getElementById('fe-breadcrumb');
+    grid.innerHTML = '';
+
+    // Breadcrumb
+    bc.textContent = '/ ' + cwd.replace(/\//g, ' / ');
+
+    // Sidebar active
+    document.querySelectorAll('.fe-place').forEach(p => {
+      p.classList.toggle('fe-active', p.dataset.path === cwd.split('/')[0]);
+    });
+
+    if (!node) { grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;">Empty</div>'; return; }
+
+    const entries = Object.entries(node).filter(([k]) => k !== '__meta');
+    if (!entries.length) {
+      grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);padding:20px;font-size:13px;">This folder is empty</div>';
+      return;
+    }
+
+    // Sort: folders first
+    entries.sort((a,b) => {
+      const af = a[1]?.__meta?.type === 'folder';
+      const bf = b[1]?.__meta?.type === 'folder';
+      if (af && !bf) return -1;
+      if (!af && bf) return 1;
+      return a[0].localeCompare(b[0]);
+    });
+
+    if (viewMode === 'list') {
+      // List header
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'width:100%;display:flex;gap:10px;padding:4px 10px;box-sizing:border-box;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:4px;';
+      hdr.innerHTML = '<span style="flex:1;font-size:11px;color:rgba(255,255,255,0.3);">Name</span><span style="width:70px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Size</span><span style="width:120px;text-align:right;font-size:11px;color:rgba(255,255,255,0.3);">Modified</span>';
+      grid.style.flexDirection = 'column';
+      grid.style.flexWrap = 'nowrap';
+      grid.appendChild(hdr);
+    } else {
+      grid.style.flexDirection = '';
+      grid.style.flexWrap = 'wrap';
+    }
+
+    entries.forEach(([name, node]) => {
+      const isFolder = node?.__meta?.type === 'folder';
+      const icon = isFolder ? '📁' : extIcon(name);
+
+      if (viewMode === 'grid') {
+        const el = document.createElement('div');
+        el.className = 'fe-icon';
+        el.innerHTML = `<span style="font-size:32px;line-height:1;">${icon}</span><span>${name}</span>`;
+        el.ondblclick = () => feOpen(name, node);
+        el.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, name); };
+        el.onclick = (e) => { document.querySelectorAll('.fe-icon').forEach(i=>i.classList.remove('fe-selected')); el.classList.add('fe-selected'); };
+        grid.appendChild(el);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'fe-row';
+        el.innerHTML = `<span style="font-size:18px;">${icon}</span><span class="fe-row-name">${name}</span><span class="fe-row-size">${isFolder?'—':fmtSize(node.__meta?.size)}</span><span class="fe-row-date">${fmtDate(node.__meta?.modified||node.__meta?.created)}</span>`;
+        el.ondblclick = () => feOpen(name, node);
+        el.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); feCtxOpen(e, name); };
+        el.onclick = () => { document.querySelectorAll('.fe-row').forEach(r=>r.classList.remove('fe-selected')); el.classList.add('fe-selected'); };
+        grid.appendChild(el);
+      }
+    });
+  }
+
+  function feOpen(name, node) {
+    if (node?.__meta?.type === 'folder') {
+      history.push(cwd);
+      cwd = cwd ? cwd + '/' + name : name;
+      render();
+    } else {
+      // Try to open based on type
+      const ext = name.split('.').pop().toLowerCase();
+      if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) {
+        // Image viewer - only works for data URLs
+        if (node.content && node.content.startsWith('data:')) {
+          document.getElementById('fe-imgview-img').src = node.content;
+          document.getElementById('fe-imgview-name').textContent = name;
+          document.getElementById('fe-imgview').style.display = 'flex';
+        } else {
+          feEditorOpen(name, node);
+        }
+      } else {
+        feEditorOpen(name, node);
+      }
+    }
+  }
+
+  // ── Navigation ──
+  window.feNav = function(path) { history.push(cwd); cwd = path; render(); };
+  window.feBack = function() { if (history.length) { cwd = history.pop(); render(); } };
+  window.feSearch = function(q) {
+    if (!q) { render(); return; }
+    const node = getNode(cwd);
+    const grid = document.getElementById('fe-grid');
+    grid.innerHTML = '';
+    Object.entries(node).filter(([k])=>k!=='__meta').forEach(([name,n])=>{
+      if (!name.toLowerCase().includes(q.toLowerCase())) return;
+      const isFolder = n?.__meta?.type==='folder';
+      const el = document.createElement('div');
+      el.className = 'fe-icon';
+      el.innerHTML = `<span style="font-size:32px">${isFolder?'📁':extIcon(name)}</span><span>${name}</span>`;
+      el.ondblclick=()=>feOpen(name,n);
+      grid.appendChild(el);
+    });
+  };
+
+  // ── View toggle ──
+  window.feToggleView = function() {
+    viewMode = viewMode === 'grid' ? 'list' : 'grid';
+    document.getElementById('fe-view-btn').textContent = viewMode === 'grid' ? '☰' : '⊞';
+    render();
+  };
+
+  // ── New file/folder ──
+  window.feNewFile = function() {
+    const name = prompt('File name:');
+    if (!name) return;
+    const node = getNode(cwd);
+    node[name] = { __meta:{ type:'file', size:0, created:Date.now(), modified:Date.now() }, content:'' };
+    saveFS(); render();
+  };
+  window.feNewFolder = function() {
+    const name = prompt('Folder name:');
+    if (!name) return;
+    const node = getNode(cwd);
+    node[name] = { __meta:{ type:'folder', created:Date.now() } };
+    saveFS(); render();
+  };
+
+  // ── Context menu ──
+  window.feCtxOpen = function(e, name) {
+    ctxTarget = name;
+    const ctx = document.getElementById('fe-ctx');
+    ctx.style.display = 'block';
+    ctx.style.left = e.clientX + 'px';
+    ctx.style.top = e.clientY + 'px';
+  };
+  document.addEventListener('click', () => document.getElementById('fe-ctx').style.display = 'none');
+
+  window.feCtxRename = function() {
+    const newName = prompt('New name:', ctxTarget);
+    if (!newName || newName === ctxTarget) return;
+    const node = getNode(cwd);
+    node[newName] = node[ctxTarget];
+    delete node[ctxTarget];
+    saveFS(); render();
+  };
+  window.feCtxDelete = function() {
+    if (!confirm('Delete "' + ctxTarget + '"?')) return;
+    const node = getNode(cwd);
+    // Move to trash instead of hard delete
+    const item = node[ctxTarget];
+    if (cwd !== 'trash') {
+      fs.trash[ctxTarget + '_' + Date.now()] = item;
+    }
+    delete node[ctxTarget];
+    saveFS(); render();
+  };
+  window.feCtxDownload = function() {
+    const node = getNode(cwd);
+    const item = node[ctxTarget];
+    if (!item || item.__meta?.type === 'folder') return;
+    const blob = new Blob([item.content||''], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = ctxTarget;
+    a.click();
+  };
+  window.feCtxProps = function() {
+    const node = getNode(cwd);
+    const item = node[ctxTarget];
+    const m = item?.__meta;
+    alert(`Name: ${ctxTarget}\nType: ${m?.type||'?'}\nSize: ${fmtSize(m?.size)}\nCreated: ${fmtDate(m?.created)}\nModified: ${fmtDate(m?.modified)}`);
+  };
+
+  // ── Text editor ──
+  let editingFile = null;
+  function feEditorOpen(name, node) {
+    editingFile = { name, node };
+    document.getElementById('fe-editor-title').textContent = name;
+    document.getElementById('fe-editor-ta').value = node.content || '';
+    document.getElementById('fe-editor').style.display = 'flex';
+  }
+  window.feEditorClose = function() {
+    document.getElementById('fe-editor').style.display = 'none';
+    editingFile = null;
+  };
+  window.feEditorSave = function() {
+    if (!editingFile) return;
+    const content = document.getElementById('fe-editor-ta').value;
+    editingFile.node.content = content;
+    editingFile.node.__meta.size = new Blob([content]).size;
+    editingFile.node.__meta.modified = Date.now();
+    saveFS();
+    document.getElementById('fe-editor').style.display = 'none';
+    editingFile = null;
+    render();
+  };
+
+  // ── Image viewer ──
+  window.feImgClose = function() { document.getElementById('fe-imgview').style.display = 'none'; };
+
+  // ── Upload file from disk ──
+  const uploadInput = document.createElement('input');
+  uploadInput.type = 'file';
+  uploadInput.multiple = true;
+  uploadInput.style.display = 'none';
+  document.body.appendChild(uploadInput);
+  uploadInput.onchange = function() {
+    Array.from(this.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const node = getNode(cwd);
+        node[file.name] = {
+          __meta: { type:'file', size:file.size, created:Date.now(), modified:Date.now() },
+          content: e.target.result
+        };
+        saveFS(); render();
+      };
+      if (file.type.startsWith('image/')) reader.readAsDataURL(file);
+      else reader.readAsText(file);
+    });
+    this.value = '';
+  };
+
+  // Add upload button to toolbar
+  document.addEventListener('DOMContentLoaded', () => {
+    const toolbar = document.querySelector('#filesDiv .fe-row'); // fallback
+  });
+
+  // Drag & drop to upload
+  const feGrid = document.getElementById('fe-grid');
+  if (feGrid) {
+    feGrid.addEventListener('dragover', e => { e.preventDefault(); feGrid.style.background='rgba(29,185,84,0.07)'; });
+    feGrid.addEventListener('dragleave', () => { feGrid.style.background=''; });
+    feGrid.addEventListener('drop', e => {
+      e.preventDefault(); feGrid.style.background='';
+      Array.from(e.dataTransfer.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const node = getNode(cwd);
+          node[file.name] = { __meta:{ type:'file', size:file.size, created:Date.now(), modified:Date.now() }, content:ev.target.result };
+          saveFS(); render();
+        };
+        if (file.type.startsWith('image/')) reader.readAsDataURL(file);
+        else reader.readAsText(file);
+      });
+    });
+  }
+
+  // Add upload button to toolbar when filesDiv opens
+  const filesDiv = document.getElementById('filesDiv');
+  if (filesDiv) {
+    const observer = new MutationObserver(() => {
+      if (filesDiv.style.display === 'block') {
+        loadFS(); render();
+      }
+    });
+    observer.observe(filesDiv, { attributes:true, attributeFilter:['style'] });
+  }
+
+  // Init
+  loadFS(); render();
+
+  // Expose for toolbar upload button
+  window.feUpload = () => uploadInput.click();
+})();
+</script>
 <div id="settingsDiv">
    <div style="
   position: absolute;
@@ -3158,6 +3703,12 @@ document.addEventListener('selectstart', e => e.preventDefault());
   }
 </script>
 <script>
+  function files(){
+    const div = document.getElementById('filesDiv');
+    div.style.display = div.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
+<script>
   function hidden2(){
     const div = document.getElementById('hiddenDiv');
     div.style.display = div.style.display === 'block' ? 'none' : 'block';
@@ -3649,6 +4200,7 @@ document.getElementById("movieDiv"),
 document.getElementById("animeDiv"),
 document.getElementById("roDiv"),
 document.getElementById("settingsDiv"),
+document.getElementById("filesDiv"),
 document.getElementById("calcDiv"),
 document.getElementById("blkDiv"),
 document.getElementById("wwwDiv"),
@@ -4035,6 +4587,7 @@ function Chat(){ openDiv('ChatDiv'); }
 function terminal(){ openDiv('terminalDiv'); }
 function ro(){ openDiv('roDiv'); }
 function settings(){ openDiv('settingsDiv'); }
+function files(){ openDiv('filesDiv'); }
 function calc(){ openDiv('calcDiv'); }
 function s(){ openDiv('searchDiv'); }
 function hacks(){ openDiv('hacksDiv'); }
