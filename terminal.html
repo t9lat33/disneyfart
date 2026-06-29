@@ -287,8 +287,58 @@ const FS = {
   }
 };
 
+// ── Shared FS sync ────────────────────────────────────────────────────────────
+const FS_SYNC_KEY = 't9_shared_fs';
+const fsSyncCh    = new BroadcastChannel('t9_fs_sync');
+
+function persistFS() {
+  function convertNode(node) {
+    if (node._type === 'dir') {
+      const children = {};
+      for (const [k, v] of Object.entries(node)) {
+        if (k !== '_type') children[k] = convertNode(v);
+      }
+      return { type: 'dir', created: Date.now(), children };
+    }
+    return { type: 'file', created: Date.now(), modified: Date.now(),
+             size: (node.data || '').length, content: node.data || '' };
+  }
+  try {
+    localStorage.setItem(FS_SYNC_KEY, JSON.stringify({ '/': convertNode(FS['/']) }));
+    fsSyncCh.postMessage({ type: 'fs_updated', source: 'terminal' });
+  } catch(e) {}
+}
+
+function importSharedFS(raw) {
+  function convertBack(obj) {
+    if (!obj) return { _type: 'file', data: '' };
+    if (obj.type === 'dir') {
+      const n = { _type: 'dir' };
+      for (const [k, v] of Object.entries(obj.children || {})) n[k] = convertBack(v);
+      return n;
+    }
+    return { _type: 'file', data: obj.content || '' };
+  }
+  try {
+    const p = JSON.parse(raw);
+    if (p && p['/']) FS['/'] = convertBack(p['/']);
+  } catch(e) {}
+}
+
+(function() {
+  const saved = localStorage.getItem(FS_SYNC_KEY);
+  if (saved) importSharedFS(saved);
+})();
+
+fsSyncCh.onmessage = (e) => {
+  if (e.data?.source !== 'terminal') {
+    const saved = localStorage.getItem(FS_SYNC_KEY);
+    if (saved) { importSharedFS(saved); div('[fs] Synced from File Explorer', 'ln-info'); }
+  }
+};
+
 function getNode(path) {
-  if (!path || path === '/') return FS['/'];
+    if (!path || path === '/') return FS['/'];
   const parts = path.split('/').filter(Boolean);
   let n = FS['/'];
   for (const p of parts) {
@@ -793,6 +843,7 @@ function run(raw) {
   hist.unshift(trimmed);
   hIdx = -1;
   echoCmd(trimmed);
+  const _MUTATING = ['mkdir','touch','rm','cp','mv','echo','nano','vim','vi'];
 
   const toks = trimmed.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)||[];
   const cmd  = toks[0].toLowerCase();
@@ -1334,8 +1385,9 @@ function run(raw) {
     case 'version': case 'lsb_release':
       div('T9 Linux 4.0 "Neon" — based on Debian GNU/Linux','ln-info'); break;
 
-    case 'exit': case 'logout':
-      div('logout','ln-dim');
+case 'mkdir': case 'touch': case 'rm': case 'cp': case 'mv':
+      // (handled above — fall through to persist)
+      break;      div('logout','ln-dim');
       div('Connection to t9linux closed.','ln-dim');
       break;
 
@@ -1367,6 +1419,7 @@ function run(raw) {
       div(`bash: ${cmd}: command not found`,'ln-err');
       div(`Try 'help' for a list of available commands`,'ln-dim');
   }
+  if (_MUTATING.includes(cmd)) persistFS();
 }
 
 // ── Boot banner ────────────────────────────────────────────────────────────────

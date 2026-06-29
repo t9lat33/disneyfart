@@ -2563,7 +2563,9 @@ document.getElementById('day').textContent = day;
 
 <script>
 (function(){
-  const LS_KEY = 'fe_fs_v3';
+  const LS_KEY     = 'fe_fs_v3';
+  const SHARED_KEY = 't9_shared_fs';
+  const fsSyncCh   = new BroadcastChannel('t9_fs_sync');
   let fs = null;
   let cwd = '/home/user';
   let history = [];
@@ -2681,12 +2683,24 @@ document.getElementById('day').textContent = day;
   }
 
   function loadFS() {
-    try { fs = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+    let loaded = false;
+    try {
+      const shared = localStorage.getItem(SHARED_KEY);
+      if (shared) { fs = JSON.parse(shared); loaded = true; }
+    } catch(e) {}
+    if (!loaded) {
+      try { fs = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+    }
     if (!fs || !fs['/']) fs = defaultFS();
   }
 
   function saveFS() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(fs)); } catch(e) {}
+    try {
+      const str = JSON.stringify(fs);
+      localStorage.setItem(LS_KEY,     str);
+      localStorage.setItem(SHARED_KEY, str);
+      fsSyncCh.postMessage({ type: 'fs_updated', source: 'explorer' });
+    } catch(e) {}
   }
 
   function fmtSize(b) {
@@ -3006,8 +3020,15 @@ document.getElementById('day').textContent = day;
     }).observe(filesDiv, { attributes:true, attributeFilter:['style'] });
   }
 
-  loadFS(); render();
-})();
+loadFS(); render();
+
+  fsSyncCh.onmessage = (e) => {
+    if (e.data?.source !== 'explorer') {
+      const el = document.getElementById('filesDiv');
+      if (el && el.style.display === 'block') { loadFS(); render(); }
+    }
+  };
+  })();
 </script>
 <div id="settingsDiv">
    <div style="
