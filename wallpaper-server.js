@@ -67,14 +67,27 @@ app.get('/wallpapers', (req, res) => {
 });
 
 // Protected: add wallpaper (bot only)
+// If a wallpaper with the same name already exists, it is overwritten
+// (old file deleted, old entry replaced) instead of creating a duplicate.
 app.post('/wallpapers', requireApiKey, upload.single('file'), (req, res) => {
   const { name, addedBy, addedById } = req.body;
   if (!name || !req.file) return res.status(400).json({ error: 'Missing name or file' });
 
   const isVideo = req.file.mimetype.startsWith('video/');
-  const id = path.parse(req.file.filename).name;
   const db = readDB();
 
+  // Reuse existing entry if a wallpaper with this name already exists
+  const existing = Object.entries(db).find(
+    ([id, wp]) => wp.name.toLowerCase() === name.toLowerCase()
+  );
+  if (existing) {
+    const [oldId, oldWp] = existing;
+    const oldFilePath = path.join(UPLOAD_DIR, path.basename(oldWp.file));
+    if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath); // remove old file from disk
+    delete db[oldId];
+  }
+
+  const id = path.parse(req.file.filename).name;
   db[id] = {
     name,
     file: `/wallpapers/files/${req.file.filename}`,
