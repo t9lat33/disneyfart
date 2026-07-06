@@ -4,109 +4,181 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>T9 OS</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* kept this simple on purpose, kept messing with a fancier version and it looked worse */
+  * { box-sizing: border-box; }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #08080a;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 45px;
-  font-family: 'Inter', Arial, sans-serif;
-  padding: 20px;
-}
+  :root {
+    --bg: #0b0b0d;
+    --card: #17171b;
+    --card-hover: #1d1d22;
+    --border: #2a2a30;
+    --border-hover: #45454e;
+    --text: #f2f2f4;
+    --text-dim: #8b8b93;
+  }
 
-.eyebrow {
-  color: rgba(255,255,255,0.35);
-  font-size: 12px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 8px;
-}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 44px;
+    font-family: 'Inter', Arial, sans-serif;
+    padding: 24px;
+  }
 
-h1 {
-  color: white;
-  font-size: 30px;
-  font-weight: 700;
-  text-align: center;
-  margin: 0;
-}
+  .heading {
+    text-align: center;
+    position: relative;
+  }
+  .eyebrow {
+    color: var(--text-dim);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    color: var(--text);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+  .sub {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    margin-top: 10px;
+  }
 
-.options {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
+  .options {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 640px;
+  }
 
-.option {
-  width: 250px;
-  padding: 30px 26px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.08);
-  cursor: pointer;
-  transition: 0.25s ease;
-}
+  .option {
+    width: 280px;
+    padding: 26px 24px 24px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+  /* the two cards lean opposite ways on hover, feels less machine-perfect */
+  .option:nth-child(1):hover { transform: translateY(-4px) rotate(-0.4deg); }
+  .option:nth-child(2):hover { transform: translateY(-4px) rotate(0.4deg); }
+  .option:hover {
+    background: var(--card-hover);
+    border-color: var(--border-hover);
+  }
+  .option:active {
+    transform: translateY(-1px) rotate(0deg);
+  }
 
-.option:hover {
-  transform: translateY(-5px);
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.16);
-}
+  .icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+  }
 
-.tag {
-  display: inline-block;
-  font-size: 10.5px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.06);
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-bottom: 14px;
-}
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-dim);
+  }
 
-.option h2 {
-  color: white;
-  margin: 0 0 10px;
-  font-size: 19px;
-  font-weight: 600;
-}
+  .option h2 {
+    color: var(--text);
+    margin: 0 0 8px;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .option p {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    margin: 0 0 18px;
+    line-height: 1.55;
+  }
 
-.option p {
-  color: rgba(255,255,255,0.45);
-  font-size: 13.5px;
-  margin: 0;
-  line-height: 1.5;
-}
+  .go {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .go svg.arrow {
+    transition: transform 0.2s ease;
+  }
+  .option:hover .go svg.arrow {
+    transform: translateX(3px);
+  }
 
+  footer {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: center;
+    opacity: 0.7;
+  }
 </style>
 </head>
 <body>
 
-<div>
+<div class="heading">
   <h1>Choose your experience</h1>
 </div>
 
 <div class="options">
-
   <div class="option" onclick="location.href='linux.html'">
+    <div class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg>
+    </div>
+    <span class="tag">Full version</span>
     <h2>T9 OS</h2>
-    <p>Provides full experience T9 OS has to offer. Has different styles such as Windows, Mac, and Linux</p>
+    <p>the whole thing — Windows, Mac, and Linux styles, every app we've got.</p>
+    <div class="go">Enter T9 OS
+      <svg class="arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </div>
   </div>
 
   <div class="option" onclick="location.href='lit.html'">
+    <div class="icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+    </div>
+    <span class="tag">Fast & light</span>
     <h2>T9 Lite</h2>
-    <p>Has less lag still has the basic stuff like games, movies, prxy, etc</p>
+    <p>same basics, way less lag — games, movies, proxy, all still here.</p>
+    <div class="go">Enter T9 Lite
+      <svg class="arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </div>
   </div>
-
 </div>
+
 
 </body>
 </html>
