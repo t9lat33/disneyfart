@@ -196,7 +196,7 @@ font-weight: 400;
   bottom: 0;
   width: 56px; 
   height: 93%; 
-background: linear-gradient(
+  background: linear-gradient(
         145deg,
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
@@ -208,10 +208,17 @@ background: linear-gradient(
   gap: 28px;
   padding: 10px 0;
   backdrop-filter: blur(2px) saturate(140%);
-
   opacity: 75%;
   z-index: 9999;
-    border: 1px solid rgba(128, 128, 128, 0.523);
+  border: 1px solid rgba(128, 128, 128, 0.523);
+
+  /* NEW: slide-away behavior */
+  transform: translateX(-120%);
+  transition: transform 0.28s cubic-bezier(.22,1,.36,1);
+}
+
+.navbar.t9-nav-visible {
+  transform: translateX(0);
 }
 
     
@@ -1010,7 +1017,40 @@ border: 1px solid rgba(255, 255, 255, 0.15);
 
 </div>
 
+<div id="navHoverZone" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 100%;
+  z-index: 9998;
+"></div>
 
+<script>
+(function() {
+  const nav = document.getElementById('navbar');
+  const zone = document.getElementById('navHoverZone');
+  let hideTimeout = null;
+
+  function showNav() {
+    clearTimeout(hideTimeout);
+    nav.classList.add('t9-nav-visible');
+  }
+
+  function scheduleHide() {
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+      nav.classList.remove('t9-nav-visible');
+    }, 250); // small grace period so it doesn't feel twitchy
+  }
+
+  zone.addEventListener('mouseenter', showNav);
+  nav.addEventListener('mouseenter', showNav);
+
+  zone.addEventListener('mouseleave', scheduleHide);
+  nav.addEventListener('mouseleave', scheduleHide);
+})();
+</script>
 
 <script>
   const barsEl = document.getElementById('t9-bars');
