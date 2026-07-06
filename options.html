@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T9 OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #08080a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 45px;
+  font-family: 'Inter', Arial, sans-serif;
+  padding: 20px;
+}
+
+.eyebrow {
+  color: rgba(255,255,255,0.35);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+h1 {
+  color: white;
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.options {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.option {
+  width: 250px;
+  padding: 30px 26px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.option:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.06);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.option h2 {
+  color: white;
+  margin: 0 0 10px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.option p {
+  color: rgba(255,255,255,0.45);
+  font-size: 13.5px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+</style>
+</head>
+<body>
+
+<div>
+  <h1>Choose your experience</h1>
+</div>
+
+<div class="options">
+
+  <div class="option" onclick="location.href='linux.html'">
+    <h2>T9 OS</h2>
+    <p>Provides full experience T9 OS has to offer. Has different styles such as Windows, Mac, and Linux</p>
+  </div>
+
+  <div class="option" onclick="location.href='lit.html'">
+    <h2>T9 Lite</h2>
+    <p>Has less lag still has the basic stuff like games, movies, prxy, etc</p>
+  </div>
+
+</div>
+
+</body>
+</html>
