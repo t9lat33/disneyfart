@@ -3419,6 +3419,27 @@ loadFS(); render();
     list.forEach(function(wp){ addCard(grid, wp.name, wp.file, !!wp.video); });
   }
 
+  var _botWpLoadToken = 0;
+  async function loadBotWallpapers() {
+    var grid = document.getElementById('wp-grid');
+    if (!grid) return;
+    var myToken = ++_botWpLoadToken;
+    try {
+      var res = await fetch('/wallpaper-api/wallpapers');
+      var data = await res.json();
+      if (myToken !== _botWpLoadToken) return; // a newer call superseded this one
+      grid.querySelectorAll('.wp-card[data-bot="1"]').forEach(function(c){ c.remove(); });
+      Object.values(data).forEach(function(wp){
+        var fullUrl = '/wallpaper-api' + wp.file;
+        addCard(grid, wp.name, fullUrl, !!wp.video);
+        var justAdded = grid.lastElementChild;
+        if (justAdded) justAdded.dataset.bot = '1';
+      });
+    } catch (e) {
+      console.error('Could not load bot wallpapers', e);
+    }
+  }
+
   function addCard(grid, name, file, isVideo) {
     var card = document.createElement('div');
     card.className = 'wp-card' + (file === current ? ' wp-active' : '');
@@ -3466,12 +3487,16 @@ loadFS(); render();
   // Build grid when settings opens
   var settingsEl = document.getElementById('wallpaperDiv');
   if (settingsEl) {
-    new MutationObserver(function(mutations){
-      mutations.forEach(function(m){
-        if (m.target.style.display === 'block') {
-          buildGrid(WALLPAPERS);
-        }
-      });
+    var _wpWasOpen = settingsEl.style.display === 'block';
+    new MutationObserver(function(){
+      var isOpenNow = settingsEl.style.display === 'block';
+      if (isOpenNow && !_wpWasOpen) {
+        // Only fires on the actual hidden -> visible transition,
+        // not on every unrelated style mutation (drag, willChange, etc.)
+        buildGrid(WALLPAPERS);
+        loadBotWallpapers();
+      }
+      _wpWasOpen = isOpenNow;
     }).observe(settingsEl, { attributes: true, attributeFilter: ['style'] });
   }
 
