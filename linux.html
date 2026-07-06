@@ -196,7 +196,7 @@ font-weight: 400;
   bottom: 0;
   width: 56px; 
   height: 93%; 
-  background: linear-gradient(
+background: linear-gradient(
         145deg,
         rgba(0, 0, 0, 0.842),
         rgba(0, 0, 0, 0.534)
@@ -208,13 +208,13 @@ font-weight: 400;
   gap: 28px;
   padding: 10px 0;
   backdrop-filter: blur(2px) saturate(140%);
+
   opacity: 75%;
   z-index: 9999;
-  border: 1px solid rgba(128, 128, 128, 0.523);
+    border: 1px solid rgba(128, 128, 128, 0.523);
 
-  /* NEW: slide-away behavior */
-  transform: translateX(-120%);
-  transition: transform 0.28s cubic-bezier(.22,1,.36,1);
+    transform: translateX(-85%);
+    transition: transform 0.28s cubic-bezier(.22,1,.36,1);
 }
 
 .navbar.t9-nav-visible {
@@ -1025,6 +1025,18 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   height: 100%;
   z-index: 9998;
 "></div>
+<div id="navHandle" style="
+  position: fixed;
+  top: 50%;
+  left: 4px;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 60px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 4px;
+  z-index: 9998;
+  pointer-events: none;
+"></div>
 
 <script>
 (function() {
@@ -1041,7 +1053,7 @@ border: 1px solid rgba(255, 255, 255, 0.15);
     clearTimeout(hideTimeout);
     hideTimeout = setTimeout(() => {
       nav.classList.remove('t9-nav-visible');
-    }, 250); // small grace period so it doesn't feel twitchy
+    }, 2800); 
   }
 
   zone.addEventListener('mouseenter', showNav);
