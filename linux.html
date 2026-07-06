@@ -213,7 +213,7 @@ background: linear-gradient(
   z-index: 9999;
     border: 1px solid rgba(128, 128, 128, 0.523);
 
-    transform: translateX(-85%);
+    transform: translateX(-100%);
     transition: transform 0.28s cubic-bezier(.22,1,.36,1);
 }
 
@@ -1036,24 +1036,28 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   z-index: 9998;
   pointer-events: none;
+  transition: opacity 0.2s ease;
 "></div>
 
 <script>
 (function() {
   const nav = document.getElementById('navbar');
   const zone = document.getElementById('navHoverZone');
+  const handle = document.getElementById('navHandle');
   let hideTimeout = null;
 
   function showNav() {
     clearTimeout(hideTimeout);
     nav.classList.add('t9-nav-visible');
+    handle.style.opacity = '0';
   }
 
   function scheduleHide() {
     clearTimeout(hideTimeout);
     hideTimeout = setTimeout(() => {
       nav.classList.remove('t9-nav-visible');
-    }, 2800); 
+      handle.style.opacity = '1';
+    }, 200);
   }
 
   zone.addEventListener('mouseenter', showNav);
