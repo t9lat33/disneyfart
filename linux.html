@@ -4716,6 +4716,16 @@ if(e.target.closest("button,a,input,select,textarea")) return;
 const r=win.getBoundingClientRect();
 if(e.clientY-r.top>HEADER_HEIGHT||isResizing) return;
 
+if (win.classList.contains("t9-maxed")) {
+  win.classList.remove("t9-maxed");
+  const w = win.dataset.prevW || "500px";
+  const h = win.dataset.prevH || "400px";
+  win.style.width = w;
+  win.style.height = h;
+  win.style.borderRadius = "";
+  win.style.top = "10px";
+}
+
 if(!hasBeenPositioned){
 win.style.transform="none";
 win.style.margin="0";
@@ -4775,6 +4785,19 @@ win.style.willChange="auto";
 document.addEventListener("mouseup",stopAll);
 document.addEventListener("mouseleave",stopAll);
 window.addEventListener("blur",stopAll);
+
+document.addEventListener("mouseup", e => {
+  if (isDragging && e.clientY <= 3 && !win.classList.contains("t9-maxed")) {
+    win.dataset.prevW = win.style.width || win.offsetWidth + "px";
+    win.dataset.prevH = win.style.height || win.offsetHeight + "px";
+    win.classList.add("t9-maxed");
+    win.style.left = "0px";
+    win.style.top = "0px";
+    win.style.width = "100vw";
+    win.style.height = "100vh";
+    win.style.borderRadius = "0px";
+  }
+});
 });
 </script>
 <script>
