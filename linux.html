@@ -1047,6 +1047,53 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   transition: opacity 0.2s ease;
 "></div>
 
+<div id="t9-widget-card">
+  <div class="t9w-time" id="t9w-time">--:--</div>
+  <div class="t9w-date" id="t9w-date">--</div>
+  <div class="t9w-divider"></div>
+  <div class="t9w-weather" id="t9w-weather">--°</div>
+</div>
+
+<style>
+#t9-widget-card {
+  position: fixed;
+  top: 50px;
+  right: 24px;
+  width: 200px;
+  padding: 18px 20px;
+  border-radius: 1.2rem;
+  background: linear-gradient(160deg, rgba(15,15,15,0.55), rgba(10,10,10,0.55));
+  backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  z-index: 500;
+}
+.t9w-time { font-size: 34px; font-weight: 600; letter-spacing: -1px; }
+.t9w-date { font-size: 13px; opacity: 0.6; margin-top: 2px; }
+.t9w-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0; }
+.t9w-weather { font-size: 15px; opacity: 0.85; }
+</style>
+
+<script>
+function t9wUpdateTime() {
+  const now = new Date();
+  document.getElementById('t9w-time').textContent = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  document.getElementById('t9w-date').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+t9wUpdateTime();
+setInterval(t9wUpdateTime, 1000);
+
+async function t9wWeather() {
+  const geo = await fetch('https://ipapi.co/json/').then(r=>r.json());
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current_weather=true&temperature_unit=fahrenheit`;
+  const w = (await fetch(url).then(r=>r.json())).current_weather;
+  document.getElementById('t9w-weather').textContent = `${Math.round(w.temperature)}°F — ${geo.city}`;
+}
+t9wWeather();
+</script>
+
 <script>
 (function() {
   const nav = document.getElementById('navbar');
@@ -2441,6 +2488,116 @@ getWeather();
   updateTime();
   setInterval(updateTime, 1000);
 </script>
+
+<div id="t9-quicksettings">
+  <div class="qs-row">
+    <svg class="qs-icon" id="qs-vol-icon" viewBox="0 0 24 24" fill="white">
+      <path d="M3 9v6h4l5 5V4L7 9H3z"/>
+      <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"/>
+      <path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+    </svg>
+    <input type="range" min="0" max="100" value="70" id="qs-volume">
+  </div>
+  <div class="qs-row">
+    <svg class="qs-icon" viewBox="0 0 24 24" fill="white">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <input type="range" min="20" max="100" value="100" id="qs-brightness">
+  </div>
+  <div class="qs-divider"></div>
+  <div class="qs-btns">
+    <button onclick="settings()">
+      <svg viewBox="0 0 24 24" fill="white" width="16" height="16">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.65c-.11.2-.06.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+      </svg>
+      Settings
+    </button>
+    <button onclick="wallpaper()">
+      <svg viewBox="0 0 24 24" fill="white" width="16" height="16">
+        <path d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm1 2v10h14V7H5z"/>
+        <path d="M5.5 15.5l3-4 2.5 3 2-2.5 4 4.5H5.5z"/>
+        <circle cx="8.5" cy="9.5" r="1.4"/>
+      </svg>
+      Wallpaper
+    </button>
+  </div>
+</div>
+
+<style>
+#t9-quicksettings {
+  display: none;
+  position: fixed;
+  top: 30px;
+  right: 20px;
+  width: 260px;
+  padding: 16px;
+  border-radius: 1rem;
+  background: linear-gradient(160deg, rgba(15,15,15,0.85), rgba(10,10,10,0.85));
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  z-index: 9999;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  animation: osOpenReal 0.22s cubic-bezier(.22,1,.36,1) forwards;
+}
+.qs-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.qs-icon { width:18px; height:18px; flex-shrink:0; opacity:0.85; }
+.qs-row input[type=range] {
+  flex:1;
+  accent-color:#1db954;
+  height:4px;
+}
+.qs-divider { height:1px; background:rgba(255,255,255,0.1); margin:10px 0 12px; }
+.qs-btns { display:flex; gap:8px; }
+.qs-btns button {
+  flex:1;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.1);
+  color:white;
+  padding:8px;
+  border-radius:8px;
+  font-size:12px;
+  font-family:'Inter', sans-serif;
+  cursor:pointer;
+  transition: background 0.15s ease;
+}
+.qs-btns button:hover { background:rgba(255,255,255,0.13); }
+.qs-btns button svg { flex-shrink:0; }
+</style>
+
+<script>
+document.getElementById('battery2').style.cursor='pointer';
+document.getElementById('clock2').style.cursor='pointer';
+
+function toggleQS(){
+  const el = document.getElementById('t9-quicksettings');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+document.getElementById('battery2').addEventListener('click', toggleQS);
+document.getElementById('clock2').addEventListener('click', toggleQS);
+document.addEventListener('click', e => {
+  const qs = document.getElementById('t9-quicksettings');
+  if (qs.style.display==='block' && !qs.contains(e.target) && e.target.id!=='battery2' && e.target.id!=='clock2') qs.style.display='none';
+});
+
+// swap volume icon based on level (mute/low/high)
+const volSlider = document.getElementById('qs-volume');
+const volIcon = document.getElementById('qs-vol-icon');
+volSlider.addEventListener('input', () => {
+  const v = volSlider.value;
+  if (v == 0) {
+    volIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"/><line x1="16" y1="9" x2="22" y2="15" stroke="white" stroke-width="2"/><line x1="22" y1="9" x2="16" y2="15" stroke="white" stroke-width="2"/>';
+  } else if (v < 50) {
+    volIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"/>';
+  } else {
+    volIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"/><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+  }
+});
+</script>
+
  <p class="battery" id="date"></p>
 <p class="clock" id="day"></p>
 <p id="activity" style="color:white; margin:0;">Activities</p>
