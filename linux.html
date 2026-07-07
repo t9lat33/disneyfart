@@ -3296,21 +3296,31 @@ loadFS(); render();
   };
   })();
 </script>
-<div id="t9-snap-preview"></div>
+<div id="t9-snap-preview">Release to maximize</div>
 <style>
-  #t9-snap-preview {
+#t9-snap-preview {
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(100, 170, 255, 0.25);
-  border: 2px solid rgba(150, 200, 255, 0.6);
-  box-sizing: border-box;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   opacity: 0;
   pointer-events: none;
   z-index: 99999;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
-#t9-snap-preview.t9-show { opacity: 1; }
+#t9-snap-preview.t9-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 </style>
 <div id="settingsDiv">
    <div style="
