@@ -3296,6 +3296,22 @@ loadFS(); render();
   };
   })();
 </script>
+<div id="t9-snap-preview"></div>
+<style>
+  #t9-snap-preview {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(100, 170, 255, 0.25);
+  border: 2px solid rgba(150, 200, 255, 0.6);
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transition: opacity 0.15s ease;
+}
+#t9-snap-preview.t9-show { opacity: 1; }
+</style>
 <div id="settingsDiv">
    <div style="
   position: absolute;
@@ -4766,6 +4782,13 @@ let y=e.clientY-offsetY;
 win.style.left=x+"px";
 win.style.top=y+"px";
 if(win.id==="hiddenDiv") win.style.willChange="transform";
+
+const snapPreview = document.getElementById('t9-snap-preview');
+if (e.clientY <= 40 && !win.classList.contains("t9-maxed")) {
+  snapPreview.classList.add('t9-show');
+} else {
+  snapPreview.classList.remove('t9-show');
+}
 }
 if(isResizing){
 const dx=e.clientX-startX;
@@ -4777,6 +4800,7 @@ win.style.height=Math.max(90,startHeight+dy)+"px";
 
 // ───────── FORCE UNFREEZE ─────────
 function stopAll(e){
+document.getElementById('t9-snap-preview').classList.remove('t9-show');
 if (isDragging && e && e.type === "mouseup" && e.clientY <= 3 && !win.classList.contains("t9-maxed")) {
   win.dataset.prevW = win.style.width || win.offsetWidth + "px";
   win.dataset.prevH = win.style.height || win.offsetHeight + "px";
