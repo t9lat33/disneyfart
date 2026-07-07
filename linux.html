@@ -192,125 +192,134 @@ font-weight: 400;
 .navbar {
   position: fixed;
   top: 35px;
-  left: 0.4%; 
+  left: 0.4%;
   bottom: 0;
-  width: 56px; 
-  height: 93%; 
-background: linear-gradient(
-        145deg,
-        rgba(0, 0, 0, 0.842),
-        rgba(0, 0, 0, 0.534)
-      );
-  border-radius:1rem; 
+  width: 60px;
+  height: 93%;
+  background: linear-gradient(
+    145deg,
+    rgba(20, 20, 25, 0.75),
+    rgba(10, 10, 12, 0.65)
+  );
+  border-radius: 1.2rem;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
-  gap: 28px;
-  padding: 10px 0;
-  backdrop-filter: blur(2px) saturate(140%);
-
-  opacity: 75%;
+  gap: 18px;
+  padding: 14px 0;
+  backdrop-filter: blur(12px) saturate(160%);
+  opacity: 1;
   z-index: 9999;
-    border: 1px solid rgba(128, 128, 128, 0.523);
-
-    transform: translateX(-100%);
-    transition: transform 0.28s cubic-bezier(.22,1,.36,1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateX(-100%);
+  transition: transform 0.32s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease;
 }
 
 .navbar.t9-nav-visible {
   transform: translateX(0);
 }
 
-    
+.navbar::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.06), transparent 60%);
+}
 
-    .navbar::after {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 30px;
-      pointer-events: none;
-      background: radial-gradient(circle at center,  rgba(255,255,255,0.08), transparent 70%);
-      opacity: 1;
-      transition: opacity 0.2s ease;
-    }
+.navbar:hover::after {
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.09), transparent 60%);
+}
 
-    .navbar:hover::after {
-      opacity: 1;
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
-    }
+.navbar img {
+  width: 26px;
+  height: 26px;
+  padding: 9px;
+  border-radius: 12px;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.5));
+  transition: transform 0.15s cubic-bezier(.2,.8,.2,1), background 0.15s ease;
+}
 
-    .navbar img {
-      width: 35px;
-      height: 35px;
-      transition: transform 0.15s ease;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
-      cursor: pointer;
-      will-change: transform;
-    }
+.navbar img:hover {
+  transform: translateY(-2px) scale(1.12);
+  background: rgba(255, 255, 255, 0.08);
+}
 
-    .navbar img:hover {
-      transform: scale(1.25) translateY(-3px);
-    }
-    .navbar img:active{
-        transform: scale(0.97);
-    }
-     .navbar svg {
-  width: 35px;
-  height: 35px;
-  padding: 15px 15px;
-  border-radius: 25px;
-      transition: transform 0.15s ease;
+.navbar img:active {
+  transform: scale(0.94);
+}
+
+.navbar svg {
+  width: 26px;
+  height: 26px;
+  padding: 9px;
+  border-radius: 12px;
+  transition: transform 0.15s cubic-bezier(.2,.8,.2,1), background 0.15s ease;
   cursor: pointer;
   fill: white;
 }
 
 .navbar svg:hover {
-  transform: translateY(-3px) scale(1.12);
+  transform: translateY(-2px) scale(1.12);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .navbar svg:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
-      .navbar.sidebar {
-      position: fixed;
-      top: 50%;
-      left: 12px;
-      bottom: auto;
-      transform: translateY(-50%);
-      width: 64px;
-      height: auto;
-      flex-direction: column;
-      gap: 14px;
-      padding: 12px 0;
-      border-radius: 18px;
-      transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
-    }
+.navbar.sidebar {
+  position: fixed;
+  top: 50%;
+  left: 12px;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: 64px;
+  height: auto;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 0;
+  border-radius: 18px;
+  transition: width 0.25s cubic-bezier(.2,.8,.2,1), border-radius 0.25s cubic-bezier(.2,.8,.2,1), top 0.3s ease, left 0.3s ease, bottom 0.3s ease, height 0.3s ease, transform 0.3s ease;
+}
 
-    .navbar.sidebar:hover {
-      width: 72px;
-      height: auto;
-      border-radius: 24px;
-    }
+.navbar.sidebar:hover {
+  width: 72px;
+  height: auto;
+  border-radius: 24px;
+}
 
-    .navbar.sidebar img:hover {
-      transform: scale(1.25) translateX(3px);
-    }
-.navbar.sidebar img:active{
-        transform: scale(0.97);
-    }
-    .navbar.sidebar::after {
-      inset: 0;
-      box-shadow: 0 0 0 0 rgba(55, 55, 55, 0.5);
-      transition: box-shadow 0.3s;
-      background: none;
-    }
+.navbar.sidebar img:hover {
+  transform: scale(1.25) translateX(3px);
+}
 
-    .navbar.sidebar:hover::after {
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 70%);
-      background: none;
-    }
+.navbar.sidebar img:active {
+  transform: scale(0.97);
+}
 
+.navbar.sidebar::after {
+  inset: 0;
+  box-shadow: 0 0 0 0 rgba(55, 55, 55, 0.5);
+  transition: box-shadow 0.3s;
+  background: none;
+}
+
+.navbar.sidebar:hover::after {
+  background: none;
+}
+
+.nav-divider {
+  width: 60%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  margin: 2px 0;
+}
 
 
 
