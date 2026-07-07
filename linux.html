@@ -4776,7 +4776,17 @@ win.style.height=Math.max(90,startHeight+dy)+"px";
 });
 
 // ───────── FORCE UNFREEZE ─────────
-function stopAll(){
+function stopAll(e){
+if (isDragging && e && e.type === "mouseup" && e.clientY <= 3 && !win.classList.contains("t9-maxed")) {
+  win.dataset.prevW = win.style.width || win.offsetWidth + "px";
+  win.dataset.prevH = win.style.height || win.offsetHeight + "px";
+  win.classList.add("t9-maxed");
+  win.style.left = "0px";
+  win.style.top = "0px";
+  win.style.width = "100vw";
+  win.style.height = "100vh";
+  win.style.borderRadius = "0px";
+}
 enableIframeTemp();
 dragHandle.style.pointerEvents="none";
 isDragging=false;isResizing=false;
@@ -4786,18 +4796,7 @@ document.addEventListener("mouseup",stopAll);
 document.addEventListener("mouseleave",stopAll);
 window.addEventListener("blur",stopAll);
 
-document.addEventListener("mouseup", e => {
-  if (isDragging && e.clientY <= 3 && !win.classList.contains("t9-maxed")) {
-    win.dataset.prevW = win.style.width || win.offsetWidth + "px";
-    win.dataset.prevH = win.style.height || win.offsetHeight + "px";
-    win.classList.add("t9-maxed");
-    win.style.left = "0px";
-    win.style.top = "0px";
-    win.style.width = "100vw";
-    win.style.height = "100vh";
-    win.style.borderRadius = "0px";
-  }
-});
+
 });
 </script>
 <script>
