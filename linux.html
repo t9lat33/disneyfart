@@ -2583,11 +2583,17 @@ document.addEventListener('click', e => {
   if (qs.style.display==='block' && !qs.contains(e.target) && e.target.id!=='battery2' && e.target.id!=='clock2') qs.style.display='none';
 });
 
-// swap volume icon based on level (mute/low/high)
 const volSlider = document.getElementById('qs-volume');
 const volIcon = document.getElementById('qs-vol-icon');
-volSlider.addEventListener('input', () => {
-  const v = volSlider.value;
+
+function applyVolume(v) {
+  const level = v / 100;
+  document.querySelectorAll('audio, video').forEach(el => { el.volume = level; });
+  document.querySelectorAll('iframe').forEach(f => {
+    try { f.contentDocument.querySelectorAll('audio, video').forEach(el => { el.volume = level; }); } catch(e) {}
+    try { f.contentWindow.postMessage({ type: 't9_set_volume', volume: level }, '*'); } catch(e) {}
+  });
+  localStorage.setItem('t9_volume', v);
   if (v == 0) {
     volIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"/><line x1="16" y1="9" x2="22" y2="15" stroke="white" stroke-width="2"/><line x1="22" y1="9" x2="16" y2="15" stroke="white" stroke-width="2"/>';
   } else if (v < 50) {
@@ -2595,7 +2601,19 @@ volSlider.addEventListener('input', () => {
   } else {
     volIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03z"/><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
   }
-});
+}
+volSlider.addEventListener('input', () => applyVolume(volSlider.value));
+const savedVol = localStorage.getItem('t9_volume');
+if (savedVol !== null) { volSlider.value = savedVol; applyVolume(savedVol); }
+
+const brightSlider = document.getElementById('qs-brightness');
+function applyBrightness(v) {
+  document.documentElement.style.filter = `brightness(${v}%)`;
+  localStorage.setItem('t9_brightness', v);
+}
+brightSlider.addEventListener('input', () => applyBrightness(brightSlider.value));
+const savedBright = localStorage.getItem('t9_brightness');
+if (savedBright !== null) { brightSlider.value = savedBright; applyBrightness(savedBright); }
 </script>
 
  <p class="battery" id="date"></p>
