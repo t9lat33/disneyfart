@@ -5,7 +5,7 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 't9_data.json');
-const SUPER_OWNER_ID = '4045629866'; // You have owner in every server
+const SUPER_OWNER_ID = '4045629866';
 
 const mimeTypes = {
   '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
@@ -70,38 +70,32 @@ function makeServer(name, icon, ownerId) {
     categories: [],
     voiceState: {},
     roles: [],
-    messageCooldown: 0, // 0 = no cooldown, in seconds
-    memberRoles: {} // userId -> [roleIds]
+    messageCooldown: 0,
+    memberRoles: {}
   };
   
-  // Add default categories and channels
-  const generalCategory = {
-    id: uid(),
-    name: 'General',
-    channels: []
-  };
+  // Default channels
+  const generalChId = uid();
+  const offTopicChId = uid();
+  const voiceCh1Id = uid();
+  const voiceCh2Id = uid();
   
-  const voiceCategory = {
-    id: uid(),
-    name: 'Voice Channels',
-    channels: []
-  };
+  srv.channels = [
+    { id: generalChId, name: 'general', type: 'text', categoryId: null },
+    { id: offTopicChId, name: 'off-topic', type: 'text', categoryId: null },
+    { id: voiceCh1Id, name: 'General', type: 'voice', categoryId: null },
+    { id: voiceCh2Id, name: 'Gaming', type: 'voice', categoryId: null }
+  ];
   
-  const textCh1 = { id: uid(), name: 'general', type: 'text', categoryId: generalCategory.id };
-  const textCh2 = { id: uid(), name: 'off-topic', type: 'text', categoryId: generalCategory.id };
-  const voiceCh1 = { id: uid(), name: 'General', type: 'voice', categoryId: voiceCategory.id };
-  const voiceCh2 = { id: uid(), name: 'Gaming', type: 'voice', categoryId: voiceCategory.id };
-  
-  generalCategory.channels.push(textCh1.id, textCh2.id);
-  voiceCategory.channels.push(voiceCh1.id, voiceCh2.id);
-  
-  srv.channels.push(textCh1, textCh2, voiceCh1, voiceCh2);
-  srv.categories.push(generalCategory, voiceCategory);
   srv.memberRoles[ownerId] = ['owner'];
   
   servers.set(id, srv);
   saveData();
   return srv;
+}
+
+function isServerOwner(srv, userId) {
+  return srv.ownerId === userId || userId === SUPER_OWNER_ID;
 }
 
 function getClient(ws) { return clients.get(ws); }
@@ -121,7 +115,9 @@ function sendTo(ws, data) {
 
 function getOnlineUsers() {
   const out = {};
-  clients.forEach(c => { out[c.id] = { id: c.id, username: c.username, color: c.color, avatar: c.avatar || null, description: c.description || null }; });
+  clients.forEach(c => { 
+    out[c.id] = { id: c.id, username: c.username, color: c.color, avatar: c.avatar || null, description: c.description || null }; 
+  });
   return out;
 }
 
@@ -160,26 +156,35 @@ function getUserServers(userId) {
 function getServerMemberDetails(srv) {
   const online = [];
   const offline = [];
+  const onlineIds = new Set();
+  
+  clients.forEach(c => onlineIds.add(c.id));
   
   srv.members.forEach(uid => {
-    const client = [...clients.values()].find(c => c.id === uid);
-    if (client) {
+    const memberRoles = srv.memberRoles?.[uid] || [];
+    const memberInfo = {
+      id: uid,
+      roles: memberRoles,
+      isOwner: srv.ownerId === uid || uid === SUPER_OWNER_ID,
+      isMod: (srv.mods || []).includes(uid)
+    };
+    
+    if (onlineIds.has(uid)) {
+      const client = [...clients.values()].find(c => c.id === uid);
       online.push({
-        id: uid,
+        ...memberInfo,
         username: client.username,
         color: client.color,
         avatar: client.avatar || null,
-        description: client.description || null,
-        roles: srv.memberRoles[uid] || []
+        description: client.description || null
       });
     } else {
       offline.push({
-        id: uid,
-        username: `User ${uid}`,
+        ...memberInfo,
+        username: `User ${uid.slice(0, 6)}`,
         color: '#5865f2',
         avatar: null,
-        description: null,
-        roles: srv.memberRoles[uid] || []
+        description: null
       });
     }
   });
@@ -224,6 +229,8 @@ function loadData() {
           if (!srv.roles) srv.roles = [];
           if (!srv.messageCooldown) srv.messageCooldown = 0;
           if (!srv.memberRoles) srv.memberRoles = {};
+          if (!srv.memberRoles[SUPER_OWNER_ID]) srv.memberRoles[SUPER_OWNER_ID] = ['owner'];
+          if (!srv.members.includes(SUPER_OWNER_ID)) srv.members.push(SUPER_OWNER_ID);
           servers.set(id, srv);
         });
       }
@@ -233,15 +240,16 @@ function loadData() {
         });
       }
       
-      // Auto-join default server
       ensureDefaultServer();
       
       console.log(`Loaded ${servers.size} servers and ${dmMessages.size} DM histories`);
     } else {
-      // First run - create default server
       ensureDefaultServer();
     }
-  } catch(e) { console.error('Load error:', e); }
+  } catch(e) { 
+    console.error('Load error:', e);
+    ensureDefaultServer();
+  }
 }
 
 function ensureDefaultServer() {
@@ -250,10 +258,18 @@ function ensureDefaultServer() {
   if (!defaultServer) {
     const srv = makeServer('T9 Network', null, SUPER_OWNER_ID);
     srv.inviteCode = defaultInvite;
+    srv.members.push(SUPER_OWNER_ID);
     srv.memberRoles[SUPER_OWNER_ID] = ['owner'];
     servers.set(srv.id, srv);
     saveData();
     console.log('Created default server with invite code:', defaultInvite);
+  } else {
+    if (!defaultServer.members.includes(SUPER_OWNER_ID)) {
+      defaultServer.members.push(SUPER_OWNER_ID);
+    }
+    if (!defaultServer.memberRoles) defaultServer.memberRoles = {};
+    defaultServer.memberRoles[SUPER_OWNER_ID] = ['owner'];
+    saveData();
   }
 }
 
@@ -324,62 +340,76 @@ function handleInit(ws, data) {
     }
   });
 
+  // Auto-join default server
+  const defaultServer = [...servers.values()].find(s => s.inviteCode === 'F897JV');
+  if (defaultServer && !defaultServer.members.includes(client.id)) {
+    defaultServer.members.push(client.id);
+    saveData();
+  }
+  
+  // Make sure super owner is in all servers
+  servers.forEach(srv => {
+    if (!srv.members.includes(SUPER_OWNER_ID)) {
+      srv.members.push(SUPER_OWNER_ID);
+    }
+    if (!srv.memberRoles) srv.memberRoles = {};
+    if (!srv.memberRoles[SUPER_OWNER_ID] || !srv.memberRoles[SUPER_OWNER_ID].includes('owner')) {
+      srv.memberRoles[SUPER_OWNER_ID] = ['owner'];
+    }
+  });
+  
+  saveData();
+
   sendTo(ws, {
     type: 'init', id: client.id,
     username: client.username, color: client.color, avatar: client.avatar,
     description: client.description,
     servers: getUserServers(client.id),
     onlineUsers: getOnlineUsers(),
-    dmHistory
+    dmHistory,
+    superOwnerId: SUPER_OWNER_ID
   });
   
   broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar, description: client.description } }, c => c.id !== client.id);
-  
-  // Auto-join default server if not already a member
-  const defaultServer = [...servers.values()].find(s => s.inviteCode === 'F897JV');
-  if (defaultServer && !defaultServer.members.includes(client.id)) {
-    defaultServer.members.push(client.id);
-    sendTo(ws, { type: 'server_joined', server: serializeServer(defaultServer) });
-    broadcast({ type: 'server_updated', server: serializeServer(defaultServer) }, c => defaultServer.members.includes(c.id) && c.id !== client.id);
-    saveData();
-  }
 }
 
 function handleMessage(ws, client, data) {
   switch (data.type) {
     case 'update_profile':
-      if (data.username) client.username = String(data.username).slice(0, 32);
-      if (data.avatar !== undefined) client.avatar = data.avatar;
-      if (data.description !== undefined) client.description = data.description;
+      if (data.username !== undefined) client.username = String(data.username).slice(0, 32);
+      if (data.avatar !== undefined) client.avatar = data.avatar || null;
+      if (data.description !== undefined) client.description = data.description || null;
       broadcast({ type: 'user_updated', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar, description: client.description } });
       break;
 
     case 'get_user_profile': {
       const targetId = data.userId;
       const targetClient = [...clients.values()].find(c => c.id === targetId);
-      if (targetClient) {
-        sendTo(ws, {
-          type: 'user_profile',
-          user: {
-            id: targetClient.id,
-            username: targetClient.username,
-            color: targetClient.color,
-            avatar: targetClient.avatar,
-            description: targetClient.description
-          }
-        });
-      } else {
-        sendTo(ws, {
-          type: 'user_profile',
-          user: {
-            id: targetId,
-            username: `User ${targetId}`,
-            color: '#5865f2',
-            avatar: null,
-            description: null
-          }
-        });
+      const profile = targetClient ? {
+        id: targetClient.id,
+        username: targetClient.username,
+        color: targetClient.color,
+        avatar: targetClient.avatar,
+        description: targetClient.description
+      } : {
+        id: targetId,
+        username: `User ${targetId.slice(0, 6)}`,
+        color: '#5865f2',
+        avatar: null,
+        description: null
+      };
+      
+      // Get server-specific roles if in a server
+      if (data.serverId) {
+        const srv = servers.get(data.serverId);
+        if (srv) {
+          profile.isOwner = srv.ownerId === targetId || targetId === SUPER_OWNER_ID;
+          profile.isMod = (srv.mods || []).includes(targetId);
+          profile.memberRoles = srv.memberRoles?.[targetId] || [];
+        }
       }
+      
+      sendTo(ws, { type: 'user_profile', user: profile });
       break;
     }
 
@@ -389,28 +419,29 @@ function handleMessage(ws, client, data) {
       const srv = servers.get(serverId);
       if (!srv || !srv.members.includes(client.id)) return;
       
-      // Check cooldown
       const cooldownRemaining = isOnCooldown(client.id, serverId);
       if (cooldownRemaining) {
-        sendTo(ws, { type: 'error', message: `You must wait ${cooldownRemaining} seconds before sending another message.` });
+        sendTo(ws, { type: 'error', message: `Slow mode: wait ${cooldownRemaining}s before sending.` });
         return;
       }
       
       const ch = srv.channels.find(c => c.id === channelId);
       if (!ch || ch.type !== 'text') return;
       
-      const isSuperOwner = client.id === SUPER_OWNER_ID;
-      const isOwner = srv.ownerId === client.id || isSuperOwner;
+      const isOwner = isServerOwner(srv, client.id);
       const isMod = (srv.mods || []).includes(client.id);
-      const roles = srv.memberRoles[client.id] || [];
       
       const tags = [];
       if (isOwner) tags.push({ type: 'owner', label: 'Owner', color: '#f0b132' });
-      if (isMod && !isOwner) tags.push({ type: 'mod', label: 'Mod', color: '#23a55a' });
-      if (roles.includes('custom') && !isOwner && !isMod) {
-        const role = srv.roles.find(r => r.id === 'custom' || r.name);
-        if (role) tags.push({ type: 'role', label: role.name, color: role.color || '#5865f2' });
-      }
+      else if (isMod) tags.push({ type: 'mod', label: 'Mod', color: '#23a55a' });
+      
+      // Add custom role tags
+      const memberRoles = srv.memberRoles?.[client.id] || [];
+      (srv.roles || []).forEach(role => {
+        if (memberRoles.includes(role.id)) {
+          tags.push({ type: 'role', label: role.name, color: role.color });
+        }
+      });
       
       const msg = {
         type: 'chat', id: uid(),
@@ -476,6 +507,7 @@ function handleMessage(ws, client, data) {
       const srv = makeServer(name.trim().slice(0, 100), icon || null, client.id);
       if (client.id !== SUPER_OWNER_ID) {
         srv.members.push(SUPER_OWNER_ID);
+        if (!srv.memberRoles) srv.memberRoles = {};
         srv.memberRoles[SUPER_OWNER_ID] = ['owner'];
       }
       sendTo(ws, { type: 'server_created', server: serializeServer(srv) });
@@ -486,10 +518,10 @@ function handleMessage(ws, client, data) {
     case 'update_server': {
       const { serverId, name, icon, messageCooldown } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
-      if (name) srv.name = name.slice(0, 100);
-      if (icon !== undefined) srv.icon = icon;
-      if (messageCooldown !== undefined) srv.messageCooldown = Math.max(0, parseInt(messageCooldown) || 0);
+      if (!srv || !isServerOwner(srv, client.id)) return;
+      if (name !== undefined) srv.name = String(name).slice(0, 100);
+      if (icon !== undefined) srv.icon = icon || null;
+      if (messageCooldown !== undefined) srv.messageCooldown = Math.max(0, Math.min(300, parseInt(messageCooldown) || 0));
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -498,7 +530,7 @@ function handleMessage(ws, client, data) {
     case 'delete_server': {
       const { serverId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       servers.delete(serverId);
       broadcast({ type: 'server_deleted', serverId }, c => srv.members.includes(c.id));
       saveData();
@@ -522,7 +554,7 @@ function handleMessage(ws, client, data) {
       const { serverId } = data;
       const srv = servers.get(serverId);
       if (!srv || !srv.members.includes(client.id)) return;
-      if (srv.ownerId === client.id || client.id === SUPER_OWNER_ID) { sendTo(ws, { type: 'error', message: 'Owners cannot leave.' }); return; }
+      if (isServerOwner(srv, client.id)) { sendTo(ws, { type: 'error', message: 'Owners cannot leave.' }); return; }
       srv.members = srv.members.filter(id => id !== client.id);
       srv.mods = (srv.mods || []).filter(id => id !== client.id);
       if (srv.memberRoles) delete srv.memberRoles[client.id];
@@ -535,8 +567,8 @@ function handleMessage(ws, client, data) {
     case 'kick_member': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
-      if (userId === client.id || userId === SUPER_OWNER_ID) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
+      if (userId === client.id || isServerOwner(srv, userId)) return;
       srv.members = srv.members.filter(id => id !== userId);
       srv.mods = (srv.mods || []).filter(id => id !== userId);
       if (srv.memberRoles) delete srv.memberRoles[userId];
@@ -550,12 +582,10 @@ function handleMessage(ws, client, data) {
     case 'add_mod': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (!srv.mods) srv.mods = [];
       if (!srv.mods.includes(userId)) srv.mods.push(userId);
       if (!srv.members.includes(userId)) srv.members.push(userId);
-      if (!srv.memberRoles) srv.memberRoles = {};
-      srv.memberRoles[userId] = ['mod'];
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -564,12 +594,8 @@ function handleMessage(ws, client, data) {
     case 'remove_mod': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       srv.mods = (srv.mods || []).filter(id => id !== userId);
-      if (srv.memberRoles && srv.memberRoles[userId]) {
-        srv.memberRoles[userId] = srv.memberRoles[userId].filter(r => r !== 'mod');
-        if (srv.memberRoles[userId].length === 0) delete srv.memberRoles[userId];
-      }
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -578,11 +604,11 @@ function handleMessage(ws, client, data) {
     case 'add_role': {
       const { serverId, roleName, roleColor } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (!srv.roles) srv.roles = [];
       const role = {
         id: uid(),
-        name: roleName.slice(0, 50),
+        name: String(roleName).slice(0, 50),
         color: roleColor || '#5865f2'
       };
       srv.roles.push(role);
@@ -594,9 +620,8 @@ function handleMessage(ws, client, data) {
     case 'remove_role': {
       const { serverId, roleId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       srv.roles = (srv.roles || []).filter(r => r.id !== roleId);
-      // Remove role from all members
       if (srv.memberRoles) {
         Object.keys(srv.memberRoles).forEach(uid => {
           srv.memberRoles[uid] = srv.memberRoles[uid].filter(r => r !== roleId);
@@ -611,7 +636,7 @@ function handleMessage(ws, client, data) {
     case 'assign_role': {
       const { serverId, userId, roleId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (!srv.memberRoles) srv.memberRoles = {};
       if (!srv.memberRoles[userId]) srv.memberRoles[userId] = [];
       if (!srv.memberRoles[userId].includes(roleId)) {
@@ -625,7 +650,7 @@ function handleMessage(ws, client, data) {
     case 'remove_member_role': {
       const { serverId, userId, roleId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (srv.memberRoles && srv.memberRoles[userId]) {
         srv.memberRoles[userId] = srv.memberRoles[userId].filter(r => r !== roleId);
         if (srv.memberRoles[userId].length === 0) delete srv.memberRoles[userId];
@@ -638,14 +663,10 @@ function handleMessage(ws, client, data) {
     case 'add_channel': {
       const { serverId, channelType, name, categoryId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (!['text','voice'].includes(channelType)) return;
-      const ch = { id: uid(), name: name.slice(0, 50), type: channelType, categoryId: categoryId || null };
+      const ch = { id: uid(), name: String(name).slice(0, 50), type: channelType, categoryId: categoryId || null };
       srv.channels.push(ch);
-      if (categoryId) {
-        const cat = (srv.categories || []).find(c => c.id === categoryId);
-        if (cat) cat.channels.push(ch.id);
-      }
       broadcast({ type: 'channel_added', serverId, channel: ch }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -654,11 +675,9 @@ function handleMessage(ws, client, data) {
     case 'remove_channel': {
       const { serverId, channelId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       srv.channels = srv.channels.filter(c => c.id !== channelId);
-      (srv.categories || []).forEach(cat => {
-        cat.channels = cat.channels.filter(chId => chId !== channelId);
-      });
+      if (channelMessages.has(channelId)) channelMessages.delete(channelId);
       broadcast({ type: 'channel_removed', serverId, channelId }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -667,9 +686,9 @@ function handleMessage(ws, client, data) {
     case 'add_category': {
       const { serverId, name } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       if (!srv.categories) srv.categories = [];
-      const cat = { id: uid(), name: name.slice(0, 50), channels: [] };
+      const cat = { id: uid(), name: String(name).slice(0, 50) };
       srv.categories.push(cat);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
@@ -679,8 +698,12 @@ function handleMessage(ws, client, data) {
     case 'remove_category': {
       const { serverId, categoryId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       srv.categories = (srv.categories || []).filter(c => c.id !== categoryId);
+      // Unset category from channels
+      srv.channels.forEach(ch => {
+        if (ch.categoryId === categoryId) ch.categoryId = null;
+      });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -689,9 +712,20 @@ function handleMessage(ws, client, data) {
     case 'rename_category': {
       const { serverId, categoryId, name } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       const cat = (srv.categories || []).find(c => c.id === categoryId);
-      if (cat) cat.name = name.slice(0, 50);
+      if (cat) cat.name = String(name).slice(0, 50);
+      broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
+      saveData();
+      break;
+    }
+
+    case 'move_channel_category': {
+      const { serverId, channelId, categoryId } = data;
+      const srv = servers.get(serverId);
+      if (!srv || !isServerOwner(srv, client.id)) return;
+      const ch = srv.channels.find(c => c.id === channelId);
+      if (ch) ch.categoryId = categoryId || null;
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -700,7 +734,7 @@ function handleMessage(ws, client, data) {
     case 'regenerate_invite': {
       const { serverId } = data;
       const srv = servers.get(serverId);
-      if (!srv || (srv.ownerId !== client.id && client.id !== SUPER_OWNER_ID)) return;
+      if (!srv || !isServerOwner(srv, client.id)) return;
       srv.inviteCode = inviteCode();
       broadcast({ type: 'invite_regenerated', serverId, inviteCode: srv.inviteCode }, c => srv.members.includes(c.id));
       saveData();
