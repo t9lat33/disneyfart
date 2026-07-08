@@ -101,7 +101,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .dm-item.active{background:#404249}
 .dm-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
 .dm-avatar img{width:100%;height:100%;object-fit:cover}
-.dm-name{font-size:14px;color:var(--muted);flex:1}
+.dm-info{flex:1;min-width:0}
+.dm-name{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dm-id{font-size:10px;color:var(--muted);opacity:0.7}
 .dm-item:hover .dm-name,.dm-item.active .dm-name{color:var(--text)}
 #welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted);text-align:center;padding:32px}
 #welcome h2{font-size:24px;color:var(--text)}
@@ -250,7 +252,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="up-avatar" id="my-avatar" onclick="openModal('edit-profile')"></div>
     <div class="up-info">
       <div class="up-name" id="my-name">...</div>
-      <div class="up-tag">T9 Network</div>
+      <div class="up-tag" id="my-tag">T9 Network</div>
     </div>
     <div class="up-btns">
       <button class="up-btn" id="mute-btn" onclick="toggleMic()" title="Mute/Unmute">
@@ -457,6 +459,18 @@ let incomingCallVideo = false;
 let callAudioCtx = null;
 let callInterval = null;
 
+const ID_KEY = "numericUserID";
+
+function getNumericID() {
+  let id = localStorage.getItem(ID_KEY);
+  if (!id) {
+    // Generate a random 10-digit string
+    id = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    localStorage.setItem(ID_KEY, id);
+  }
+  return id;
+}
+
 function obPreviewAvatar(input) {
   const file = input.files[0]; if (!file) return;
   const r = new FileReader();
@@ -482,11 +496,7 @@ function connect() {
   ws = new WebSocket(`${protocol}//${location.host}/ws`);
   ws.onopen = () => {
     const p = JSON.parse(localStorage.getItem('t9_profile') || '{}');
-    let clientId = localStorage.getItem('t9_user_id');
-    if (!clientId) {
-      clientId = 'u_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
-      localStorage.setItem('t9_user_id', clientId);
-    }
+    let clientId = getNumericID();
     send({ type:'init', username: p.username||null, avatar: p.avatar||null, clientId: clientId });
   };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
@@ -610,6 +620,7 @@ function handleMsg(d) {
 
 function renderMyProfile() {
   document.getElementById('my-name').textContent = myUsername;
+  document.getElementById('my-tag').textContent = 'ID: ' + myId;
   const av = document.getElementById('my-avatar');
   if(myAvatar) av.innerHTML=`<img src="${myAvatar}">`;
   else { av.style.background=myColor; av.textContent=myUsername[0]?.toUpperCase()||'?'; }
@@ -822,12 +833,12 @@ function renderMemberManager() {
     addModDiv.style.marginBottom = '12px';
     addModDiv.style.display = 'flex';
     addModDiv.style.gap = '8px';
-    addModDiv.innerHTML = `<input type="text" id="ss-add-mod-input" placeholder="User ID to make Mod" style="flex:1;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px;color:var(--text);font-family:inherit;outline:none"><button class="btn btn-primary" onclick="addMod()">Add Mod</button>`;
+    addModDiv.innerHTML = `<input type="text" id="ss-add-mod-input" placeholder="10-digit numeric ID" style="flex:1;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px;color:var(--text);font-family:inherit;outline:none"><button class="btn btn-primary" onclick="addMod()">Add Mod</button>`;
     el.appendChild(addModDiv);
   }
 
   const renderUser = (uid) => {
-    const u = onlineUsers[uid] || {id:uid, username:uid, color:'#5865f2', avatar:null};
+    const u = onlineUsers[uid] || {id:uid, username:`User ${uid}`, color:'#5865f2', avatar:null};
     const isOwner = srv.ownerId === uid;
     const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
@@ -842,7 +853,7 @@ function renderMemberManager() {
       actions += `<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`;
     }
     
-    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)} ${tags}</span><div style="display:flex;gap:4px">${actions}</div>`;
+    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)} ${tags}<div style="font-size:10px;color:var(--muted)">ID: ${esc(uid)}</div></span><div style="display:flex;gap:4px">${actions}</div>`;
     el.appendChild(div);
   };
 
@@ -878,28 +889,29 @@ function renderDMList() {
   
   dmUsers.forEach(id => {
     if(id === myId) return;
-    const u = onlineUsers[id] || dmConversations[id]?.user || { id, username: id, color: '#5865f2' };
+    const u = onlineUsers[id] || dmConversations[id]?.user || { id, username: `User ${id}`, color: '#5865f2' };
     const div=document.createElement('div');
     div.className='dm-item'+(currentDmUser===u.id?' active':'');
-    div.innerHTML=`<div class="dm-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="dm-name">${esc(u.username)}</span>`;
+    div.innerHTML=`<div class="dm-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><div class="dm-info"><div class="dm-name">${esc(u.username)}</div><div class="dm-id">ID: ${esc(u.id)}</div></div>`;
     div.onclick=()=>openDM(u.id);
     el.appendChild(div);
   });
 }
 
 function addDMByID() {
-  const id = prompt("Enter user's numeric ID to start DM:");
-  if (id && id.trim()) {
-    if (!dmConversations[id.trim()]) {
-      dmConversations[id.trim()] = { messages: [], user: { id: id.trim(), username: id.trim(), color: '#5865f2' } };
+  const id = prompt("Enter user's 10-digit numeric ID to start DM:");
+  if (id && id.trim().length > 0) {
+    const trimmedId = id.trim();
+    if (!dmConversations[trimmedId]) {
+      dmConversations[trimmedId] = { messages: [], user: { id: trimmedId, username: `User ${trimmedId}`, color: '#5865f2' } };
     }
-    openDM(id.trim());
+    openDM(trimmedId);
   }
 }
 
 function openDM(userId) {
   currentDmUser=userId; currentChannelId=null;
-  const u=onlineUsers[userId] || dmConversations[userId]?.user || { id: userId, username: userId, color: '#5865f2', avatar: null };
+  const u=onlineUsers[userId] || dmConversations[userId]?.user || { id: userId, username: `User ${userId}`, color: '#5865f2', avatar: null };
   document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
   document.getElementById('header-name').textContent=u.username;
   document.getElementById('msg-input').placeholder=`Message @${u.username}`;
@@ -917,7 +929,12 @@ function openDM(userId) {
 
 function addDM(d) {
   const otherId=d.from===myId?d.to:d.from;
-  if(!dmConversations[otherId]) dmConversations[otherId]={messages:[]};
+  if(!dmConversations[otherId]) dmConversations[otherId]={messages:[], user: { id: otherId, username: d.username, color: d.color, avatar: d.avatar }};
+  if (d.from !== myId && dmConversations[otherId].user) {
+    dmConversations[otherId].user.username = d.username;
+    dmConversations[otherId].user.color = d.color;
+    dmConversations[otherId].user.avatar = d.avatar;
+  }
   dmConversations[otherId].messages.push(d);
   if(currentDmUser===otherId) addMessage(d);
 }
