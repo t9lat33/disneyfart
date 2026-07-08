@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Minecraft</title>
+<style>
+  @font-face {
+    font-family: 'Minecraftia';
+    src: local('Consolas'), local('Courier New');
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+  }
+
+  body {
+    background: url('mcbg.png') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    image-rendering: pixelated;
+  }
+
+  .panel {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px 60px;
+    background: #1b1b1b;
+    border: 6px solid #3b3b3b;
+    box-shadow:
+      0 0 0 6px #1b1b1b,
+      inset 0 0 0 3px rgba(255,255,255,0.08);
+  }
+
+  h1 {
+    color: #ffffff;
+    font-size: 42px;
+    margin: 0 0 8px 0;
+    letter-spacing: 2px;
+    text-shadow:
+      4px 4px 0 #3f8f2f,
+      6px 6px 0 rgba(0,0,0,0.5);
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+  }
+
+  .subtitle {
+    color: #dddddd;
+    font-size: 13px;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  }
+
+  .mc-button {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 18px;
+    color: #ffffff;
+    letter-spacing: 1px;
+    padding: 18px 36px;
+    background: #6a6a6a;
+    border: 4px solid #2a2a2a;
+    box-shadow:
+      inset -4px -6px 0 0 #3d3d3d,
+      inset 4px 4px 0 0 #a8a8a8;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+    text-transform: uppercase;
+    transition: transform 0.05s ease;
+  }
+
+  .mc-button:hover {
+    background: #7d9c4f;
+    box-shadow:
+      inset -4px -6px 0 0 #4a5f2f,
+      inset 4px 4px 0 0 #b7d98a;
+  }
+
+  .mc-button:active {
+    transform: translateY(2px);
+    box-shadow:
+      inset -2px -3px 0 0 #3d3d3d,
+      inset 2px 2px 0 0 #a8a8a8;
+  }
+
+  .footer-note {
+    margin-top: 18px;
+    font-size: 10px;
+    color: #cfcfcf;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+
+  <div class="panel">
+    <button class="mc-button" onclick="window.location.href='novix.html'">Enter Minecraft Java</button>
+  </div>
+
+</body>
+</html>
