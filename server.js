@@ -15,7 +15,6 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  // Ignore query params for file serving
   let urlPath = req.url.split('?')[0];
   
   if (urlPath === '/' || urlPath === '/chat.html') {
@@ -36,7 +35,6 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// Explicitly set path: '/ws' to match the frontend connection
 const wss = new WebSocket.Server({ server, path: '/ws' });
 
 let userIdCounter = 1;
@@ -64,6 +62,7 @@ function makeServer(name, icon, ownerId) {
   const srv = {
     id, name, icon: icon || null,
     ownerId,
+    mods: [],
     inviteCode: inviteCode(),
     members: [ownerId],
     channels: [
@@ -106,6 +105,7 @@ function serializeServer(srv) {
     name: srv.name,
     icon: srv.icon,
     ownerId: srv.ownerId,
+    mods: srv.mods || [],
     inviteCode: srv.inviteCode,
     members: srv.members,
     channels: srv.channels.map(ch => ({
@@ -134,7 +134,7 @@ function saveData() {
     servers.forEach((srv, id) => {
       data.servers[id] = {
         id: srv.id, name: srv.name, icon: srv.icon,
-        ownerId: srv.ownerId, inviteCode: srv.inviteCode,
+        ownerId: srv.ownerId, mods: srv.mods || [], inviteCode: srv.inviteCode,
         members: srv.members, channels: srv.channels
       };
     });
@@ -154,6 +154,7 @@ function loadData() {
       if (data.servers) {
         Object.entries(data.servers).forEach(([id, srv]) => {
           srv.voiceState = {};
+          if (!srv.mods) srv.mods = [];
           servers.set(id, srv);
         });
       }
@@ -334,6 +335,7 @@ function handleMessage(ws, client, data) {
       if (!srv || !srv.members.includes(client.id)) return;
       if (srv.ownerId === client.id) { sendTo(ws, { type: 'error', message: 'Owners cannot leave.' }); return; }
       srv.members = srv.members.filter(id => id !== client.id);
+      srv.mods = (srv.mods || []).filter(id => id !== client.id);
       sendTo(ws, { type: 'server_left', serverId });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
@@ -346,8 +348,31 @@ function handleMessage(ws, client, data) {
       if (!srv || srv.ownerId !== client.id) return;
       if (userId === client.id) return;
       srv.members = srv.members.filter(id => id !== userId);
+      srv.mods = (srv.mods || []).filter(id => id !== userId);
       const target = [...clients.values()].find(c => c.id === userId);
       if (target) sendTo(target.ws, { type: 'kicked', serverId });
+      broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
+      saveData();
+      break;
+    }
+
+    case 'add_mod': {
+      const { serverId, userId } = data;
+      const srv = servers.get(serverId);
+      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv.mods) srv.mods = [];
+      if (!srv.mods.includes(userId)) srv.mods.push(userId);
+      if (!srv.members.includes(userId)) srv.members.push(userId);
+      broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
+      saveData();
+      break;
+    }
+
+    case 'remove_mod': {
+      const { serverId, userId } = data;
+      const srv = servers.get(serverId);
+      if (!srv || srv.ownerId !== client.id) return;
+      srv.mods = (srv.mods || []).filter(id => id !== userId);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;

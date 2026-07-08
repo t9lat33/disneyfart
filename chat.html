@@ -6,8 +6,22 @@
 <title>T9 Network</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#313338;--sidebar:#2b2d31;--server-bar:#1e1f22;--text:#dbdee1;--muted:#949ba4;--accent:#5865f2;--green:#23a55a;--red:#f23f43;--hover:#35373c;--input:#383a40;--border:#1e1f22;--modal:#2b2d31}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;display:flex;height:100vh;overflow:hidden}
+:root{
+  --bg:#1a1b2e;
+  --sidebar:#16171d;
+  --server-bar:#0f1015;
+  --text:#e1e2e6;
+  --muted:#8a8d96;
+  --accent:#5865f2;
+  --green:#23a55a;
+  --red:#f23f43;
+  --hover:#232428;
+  --input:#232428;
+  --border:#1e1f22;
+  --modal:#16171d;
+  --shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;display:flex;height:100vh;overflow:hidden}
 .icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .icon svg{display:block}
 #server-bar{width:72px;background:var(--server-bar);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;overflow-y:auto;flex-shrink:0}
@@ -16,7 +30,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .srv-icon:hover,.srv-icon.active{border-radius:16px;background:var(--accent)}
 .srv-separator{width:32px;height:2px;background:#3f4147;border-radius:1px;flex-shrink:0}
 #sidebar{width:240px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
-#sidebar-header{padding:0 16px;height:48px;display:flex;align-items:center;font-weight:700;font-size:15px;border-bottom:2px solid var(--border);cursor:pointer;flex-shrink:0;gap:8px;user-select:none}
+#sidebar-header{padding:0 16px;height:48px;display:flex;align-items:center;font-weight:700;font-size:15px;border-bottom:1px solid var(--border);cursor:pointer;flex-shrink:0;gap:8px;user-select:none}
 #sidebar-header:hover{background:var(--hover)}
 #channel-list{flex:1;overflow-y:auto;padding:8px 0}
 .ch-section{padding:16px 8px 4px 8px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
@@ -28,7 +42,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .ch-voice-users{padding-left:40px}
 .ch-voice-user{font-size:12px;color:var(--muted);padding:2px 0;display:flex;align-items:center;gap:6px}
 .ch-voice-user.speaking{color:var(--green)}
-#user-panel{padding:8px;background:#232428;display:flex;align-items:center;gap:8px;flex-shrink:0}
+#user-panel{padding:8px;background:#111214;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .up-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;cursor:pointer;overflow:hidden;flex-shrink:0}
 .up-avatar img{width:100%;height:100%;object-fit:cover}
 .up-info{flex:1;min-width:0}
@@ -38,28 +52,29 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .up-btn{width:32px;height:32px;border-radius:4px;border:none;background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .up-btn:hover{background:var(--hover);color:var(--text)}
 #main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-#main-header{height:48px;border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
+#main-header{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0;background:rgba(22,23,29,0.8);backdrop-filter:blur(8px)}
 #main-header .ch-name{font-weight:700;font-size:15px}
 #messages{flex:1;overflow-y:auto;padding:16px 16px 0}
-.msg{padding:2px 0;display:flex;gap:16px;border-radius:4px;padding:2px 8px}
-.msg:hover{background:rgba(0,0,0,.06)}
+.msg{padding:2px 0;display:flex;gap:16px;border-radius:4px;padding:2px 8px;transition: background .1s}
+.msg:hover{background:rgba(0,0,0,.12)}
 .msg-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;overflow:hidden;cursor:pointer}
 .msg-avatar img{width:100%;height:100%;object-fit:cover}
 .msg-body{flex:1;min-width:0}
 .msg-header{display:flex;gap:8px;align-items:baseline;margin-bottom:2px}
 .msg-name{font-weight:600;font-size:15px;cursor:pointer}
 .msg-name:hover{text-decoration:underline}
-.msg-time{font-size:11px;color:var(--muted)}
+.msg-uid{font-size:10px;color:var(--muted);background:var(--hover);padding:1px 5px;border-radius:3px}
+.msg-time{font-size:11px;color:var(--muted);margin-left:auto}
 .msg-text{font-size:15px;line-height:1.4;word-break:break-word;white-space:pre-wrap}
 .msg-compact{padding:1px 8px 1px 64px}
 .system-msg{text-align:center;color:var(--muted);font-size:13px;padding:8px 0;display:flex;align-items:center;gap:8px}
 .system-msg::before,.system-msg::after{content:'';flex:1;height:1px;background:var(--border)}
 #input-area{padding:0 16px 24px;flex-shrink:0}
-.input-wrap{background:var(--input);border-radius:8px;display:flex;align-items:center;padding:0 16px;gap:8px}
+.input-wrap{background:var(--input);border-radius:8px;display:flex;align-items:center;padding:0 16px;gap:8px;box-shadow: 0 1px 0 rgba(0,0,0,0.2), 0 1px 5px rgba(0,0,0,0.1) inset;}
 #msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:11px 0;font-family:inherit;resize:none;max-height:200px}
 #msg-input::placeholder{color:var(--muted)}
 .input-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
-.input-btn:hover{color:var(--text);background:var(--hover)}
+.input-btn:hover{color:var(--accent);background:var(--hover)}
 #voice-bar{display:none;background:#1a1b1e;border-top:1px solid #3f4147;padding:8px 16px;flex-shrink:0}
 #voice-bar.active{display:flex;align-items:center;gap:12px}
 .vb-info{flex:1}
@@ -79,7 +94,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .member-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
 .member-avatar img{width:100%;height:100%;object-fit:cover}
 .member-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar)}
-.member-name{font-size:14px;color:var(--muted)}
+.member-name{font-size:14px;color:var(--muted);flex:1}
 .member-item:hover .member-name{color:var(--text)}
 .dm-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;margin:1px 8px}
 .dm-item:hover{background:var(--hover)}
@@ -92,7 +107,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 #welcome h2{font-size:24px;color:var(--text)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--modal);border-radius:8px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal{background:var(--modal);border-radius:8px;padding:24px;width:460px;max-width:90vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow: 0 8px 16px rgba(0,0,0,0.5)}
 .modal h2{font-size:20px;font-weight:700;margin-bottom:4px}
 .modal .subtitle{color:var(--muted);font-size:14px;margin-bottom:20px}
 .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px}
@@ -134,6 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .danger-zone{border:1px solid var(--red);border-radius:4px;padding:16px;margin-top:20px}
 .danger-zone h3{color:var(--red);font-size:13px;font-weight:700;margin-bottom:10px}
 .owner-tag{background:#f0b132;color:#000;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;margin-left:4px}
+.mod-tag{background:#23a55a;color:#fff;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:700;margin-left:4px}
 .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;pointer-events:none;animation:fadeup .2s}
 @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #onboarding{position:fixed;inset:0;background:#1e1f22;z-index:2000;display:flex;align-items:center;justify-content:center}
@@ -165,7 +181,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .call-accept{background:var(--green)}
 .call-action-labels{display:flex;justify-content:space-between;margin-top:10px;padding:0 40px;font-size:12px;color:var(--muted)}
 
-/* Video Call Overlay */
 #video-overlay{display:none;position:absolute;inset:0;background:#0a0a0a;z-index:100;flex-direction:column}
 #video-overlay.active{display:flex}
 #video-header{padding:12px 16px;background:rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -192,7 +207,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;di
 .video-ctrl-btn.muted{background:var(--red)}
 .vid-ctrl-label{font-size:11px;color:var(--muted)}
 .call-type-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(88,101,242,.2);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
-
 </style>
 <base target="_blank">
 </head>
@@ -431,7 +445,6 @@ const peers={}, audioEls={};
 let audioCtx=null;
 let lastMsgUser=null, lastMsgTime=0;
 
-// Video state
 let cameraOn = false;
 const remoteStreams = {};
 const remoteVideoStates = {};
@@ -803,15 +816,48 @@ function removeChannel(channelId) { if(confirm('Delete this channel?')) send({ty
 function renderMemberManager() {
   const srv=servers[currentServerId]; if(!srv) return;
   const el=document.getElementById('ss-members-list'); el.innerHTML='';
-  srv.members.forEach(uid=>{
-    const u=onlineUsers[uid]||{id:uid,username:'Unknown',color:'#5865f2'};
-    const isOwner=srv.ownerId===uid;
+  
+  if (srv.ownerId === myId) {
+    const addModDiv = document.createElement('div');
+    addModDiv.style.marginBottom = '12px';
+    addModDiv.style.display = 'flex';
+    addModDiv.style.gap = '8px';
+    addModDiv.innerHTML = `<input type="text" id="ss-add-mod-input" placeholder="User ID to make Mod" style="flex:1;background:#1e1f22;border:1px solid #3f4147;border-radius:4px;padding:10px;color:var(--text);font-family:inherit;outline:none"><button class="btn btn-primary" onclick="addMod()">Add Mod</button>`;
+    el.appendChild(addModDiv);
+  }
+
+  const renderUser = (uid) => {
+    const u = onlineUsers[uid] || {id:uid, username:uid, color:'#5865f2', avatar:null};
+    const isOwner = srv.ownerId === uid;
+    const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
-    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)}${isOwner?'<span class="owner-tag">Owner</span>':''}</span>${!isOwner&&srv.ownerId===myId?`<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`:''}`;
+    
+    let tags = '';
+    if (isOwner) tags += '<span class="owner-tag">Owner</span>';
+    if (isMod) tags += '<span class="mod-tag">Mod</span>';
+    
+    let actions = '';
+    if (!isOwner && srv.ownerId === myId) {
+      if (isMod) actions += `<button class="mm-kick" onclick="removeMod('${uid}')">Remove Mod</button>`;
+      actions += `<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`;
+    }
+    
+    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)} ${tags}</span><div style="display:flex;gap:4px">${actions}</div>`;
     el.appendChild(div);
-  });
+  };
+
+  renderUser(srv.ownerId);
+  (srv.mods || []).forEach(uid => { if (uid !== srv.ownerId) renderUser(uid); });
+  srv.members.filter(uid => uid !== srv.ownerId && !(srv.mods || []).includes(uid)).forEach(uid => renderUser(uid));
 }
 
+function addMod() {
+  const id=document.getElementById('ss-add-mod-input').value.trim(); 
+  if(!id) return;
+  send({type:'add_mod',serverId:currentServerId,userId:id});
+  document.getElementById('ss-add-mod-input').value='';
+}
+function removeMod(userId) { send({type:'remove_mod',serverId:currentServerId,userId}); }
 function kickMember(userId) { if(confirm('Kick this member?')) send({type:'kick_member',serverId:currentServerId,userId}); }
 
 function showDMs() {
@@ -824,8 +870,15 @@ function showDMs() {
 function renderDMList() {
   const el=document.getElementById('channel-list'); el.innerHTML='';
   const hdr=document.createElement('div'); hdr.className='ch-section';
-  hdr.innerHTML='<span>Direct Messages</span>'; el.appendChild(hdr);
-  Object.values(onlineUsers).filter(u=>u.id!==myId).forEach(u=>{
+  hdr.innerHTML='<span>Direct Messages</span><button class="ch-add-btn" onclick="addDMByID()" title="Add DM by User ID"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>'; 
+  el.appendChild(hdr);
+  
+  const dmUsers = new Set(Object.keys(dmConversations));
+  Object.values(onlineUsers).filter(u=>u.id!==myId).forEach(u=>dmUsers.add(u.id));
+  
+  dmUsers.forEach(id => {
+    if(id === myId) return;
+    const u = onlineUsers[id] || dmConversations[id]?.user || { id, username: id, color: '#5865f2' };
     const div=document.createElement('div');
     div.className='dm-item'+(currentDmUser===u.id?' active':'');
     div.innerHTML=`<div class="dm-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="dm-name">${esc(u.username)}</span>`;
@@ -834,9 +887,19 @@ function renderDMList() {
   });
 }
 
+function addDMByID() {
+  const id = prompt("Enter user's numeric ID to start DM:");
+  if (id && id.trim()) {
+    if (!dmConversations[id.trim()]) {
+      dmConversations[id.trim()] = { messages: [], user: { id: id.trim(), username: id.trim(), color: '#5865f2' } };
+    }
+    openDM(id.trim());
+  }
+}
+
 function openDM(userId) {
   currentDmUser=userId; currentChannelId=null;
-  const u=onlineUsers[userId]; if(!u) return;
+  const u=onlineUsers[userId] || dmConversations[userId]?.user || { id: userId, username: userId, color: '#5865f2', avatar: null };
   document.getElementById('header-icon').innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
   document.getElementById('header-name').textContent=u.username;
   document.getElementById('msg-input').placeholder=`Message @${u.username}`;
@@ -874,7 +937,7 @@ function addMessage(m) {
   } else {
     div.className='msg';
     const av=u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase();
-    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div><div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-time">${time}</span></div><div class="msg-text">${esc(m.content)}</div></div>`;
+    div.innerHTML=`<div class="msg-avatar" style="background:${u.color||'#5865f2'}">${av}</div><div class="msg-body"><div class="msg-header"><span class="msg-name" style="color:${u.color||'#5865f2'}">${esc(u.username)}</span><span class="msg-uid">${esc(m.userId)}</span><span class="msg-time">${time}</span></div><div class="msg-text">${esc(m.content)}</div></div>`;
   }
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
@@ -963,7 +1026,6 @@ function toggleMic() {
 
 function renderVoiceChannel() { if(currentServerId) renderSidebar(); renderVideoGrid(); }
 
-// Toggle camera on/off
 async function toggleCamera() {
   if (!voiceState.channelId && !dmVoiceState.active) {
     toast('Join a voice channel or call first');
@@ -971,7 +1033,6 @@ async function toggleCamera() {
   }
 
   if (cameraOn) {
-    // Turn OFF camera
     cameraOn = false;
     const videoTrack = localStream?.getVideoTracks()[0];
     if (videoTrack) {
@@ -988,7 +1049,6 @@ async function toggleCamera() {
     if (!hasAnyRemoteVideo()) hideVideoOverlay();
     else renderVideoGrid();
   } else {
-    // Turn ON camera
     try {
       const videoStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
       const videoTrack = videoStream.getVideoTracks()[0];
@@ -1039,7 +1099,6 @@ function updateVideoButton() {
   if (vbBtn) vbBtn.classList.toggle('active', cameraOn);
 }
 
-// Video overlay management
 function showVideoOverlay() {
   const overlay = document.getElementById('video-overlay');
   if (!overlay) return;
@@ -1062,7 +1121,6 @@ function hideVideoOverlay() {
   if (overlay) overlay.classList.remove('active');
 }
 
-// Render video grid with all participants
 function renderVideoGrid() {
   const grid = document.getElementById('video-grid');
   if (!grid) return;
@@ -1353,7 +1411,6 @@ function makePc(id) {
       if(!remoteStreams[id].getTracks().includes(e.track)) remoteStreams[id].addTrack(e.track);
     }
 
-    // Audio playback
     if(e.track.kind==='audio'){
       unlockAudio();
       let a=audioEls[id];
@@ -1374,7 +1431,6 @@ function makePc(id) {
       });
     }
 
-    // Video handling
     if(e.track.kind==='video'){
       if(e.track.enabled&&e.track.readyState!=='ended'){
         remoteVideoStates[id]=true;
@@ -1388,9 +1444,7 @@ function makePc(id) {
         remoteVideoStates[id]=true;
         renderVideoGrid();
       };
-      e.track.onmute=()=>{
-        // Track muted but not removed - keep state as is
-      };
+      e.track.onmute=()=>{};
       showVideoOverlay();
     }
 
@@ -1481,7 +1535,6 @@ checkOnboarding();
 </script>
 
 <script>
-  // Listen for commands from linux.html parent
   window.addEventListener('message', e => {
     if (!e.data) return;
     
