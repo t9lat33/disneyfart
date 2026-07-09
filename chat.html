@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -473,8 +472,8 @@ const remoteVideoStates = {};
 const remoteSpeakingStates = {};
 
 const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
-const SUPER_ADMIN_ID = '4045629866';
-function isOwnerOf(srv) { return !!srv && (srv.ownerId === myId || myId === SUPER_ADMIN_ID); }
+let iAmSuperAdmin = false;
+function isOwnerOf(srv) { return !!srv && (srv.ownerId === myId || iAmSuperAdmin); }
 let allServersList = [];
 let obAvatarData = null;
 let incomingCallFrom = null;
@@ -517,10 +516,11 @@ function checkOnboarding() {
 function connect() {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${protocol}//${location.host}/ws`);
-  ws.onopen = () => {
+ws.onopen = () => {
     const p = JSON.parse(localStorage.getItem('t9_profile') || '{}');
     let clientId = getNumericID();
-    send({ type:'init', username: p.username||null, avatar: p.avatar||null, clientId: clientId });
+    const adminKey = localStorage.getItem('t9_admin_key') || null;
+    send({ type:'init', username: p.username||null, avatar: p.avatar||null, clientId: clientId, adminKey: adminKey });
   };
   ws.onmessage = e => handleMsg(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 2000);
@@ -530,8 +530,9 @@ function send(d) { if (ws?.readyState===1) ws.send(JSON.stringify(d)); }
 
 function handleMsg(d) {
   switch(d.type) {
-    case 'init':
+case 'init':
       myId=d.id; myUsername=d.username; myColor=d.color; myAvatar=d.avatar;
+      iAmSuperAdmin = !!d.isSuperAdmin;
       servers=d.servers||{}; onlineUsers=d.onlineUsers||{};
       if(d.dmHistory) {
         Object.entries(d.dmHistory).forEach(([otherId, msgs]) => {
@@ -905,10 +906,10 @@ if (isOwnerOf(srv)) {
 const renderUser = (uid) => {
     const isOnline=!!onlineUsers[uid];
     const u = onlineUsers[uid] || {id:uid, username:`User ${uid}`, color:'#5865f2', avatar:null};
-const isOwner = (uid === srv.ownerId) || (uid === SUPER_ADMIN_ID);
+const isOwner = (uid === srv.ownerId);
     const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
-    if(!isOnline) div.style.opacity='.55';
+    if(!isOnline) div.style.opacity='.55'; 
 
     let tags = '';
     if (isOwner) tags += '<span class="owner-tag">Owner</span>';

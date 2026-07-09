@@ -5,7 +5,8 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 't9_data.json');
-const SUPER_ADMIN_ID = '4045629866';
+const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || 'change-this-to-a-long-random-secret';
+const superAdmins = new Set();
 const DEFAULT_INVITE_CODE = 'F897JV';
 
 const mimeTypes = {
@@ -82,13 +83,13 @@ function makeServer(name, icon, ownerId) {
 
 function getClient(ws) { return clients.get(ws); }
 
-function isOwnerOrAdmin(srv, clientId) { return !!srv && (srv.ownerId === clientId || clientId === SUPER_ADMIN_ID); }
+function isOwnerOrAdmin(srv, clientId) { return !!srv && (srv.ownerId === clientId || superAdmins.has(clientId)); }
 function isStaff(srv, clientId) { return isOwnerOrAdmin(srv, clientId) || (srv.mods||[]).includes(clientId); }
 
 function ensureDefaultServer() {
   let srv = [...servers.values()].find(s => s.inviteCode === DEFAULT_INVITE_CODE);
   if (!srv) {
-    srv = makeServer('T9 Network', null, SUPER_ADMIN_ID);
+    srv = makeServer('T9 Network', null, uid());
     srv.inviteCode = DEFAULT_INVITE_CODE;
     saveData();
   }
@@ -219,6 +220,9 @@ function handleInit(ws, data) {
     currentChannel: null, voiceChannel: null, dmVoicePeer: null,
   };
 clients.set(ws, client);
+if (data.adminKey && data.adminKey === SUPER_ADMIN_PASSWORD) {
+    superAdmins.add(id);
+  }
 
   const defaultSrv = ensureDefaultServer();
   if (!defaultSrv.members.includes(client.id)) {
@@ -235,12 +239,13 @@ clients.set(ws, client);
     }
   });
 
-  sendTo(ws, {
+sendTo(ws, {
     type: 'init', id: client.id,
     username: client.username, color: client.color, avatar: client.avatar,
     servers: getUserServers(client.id),
     onlineUsers: getOnlineUsers(),
-    dmHistory
+    dmHistory,
+    isSuperAdmin: superAdmins.has(id)
   });
   
   broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
@@ -385,7 +390,7 @@ function handleMessage(ws, client, data) {
       const srv = servers.get(serverId);
       if (!srv || !isStaff(srv, client.id)) return;
       if (userId === client.id) return;
-      if (userId === srv.ownerId || userId === SUPER_ADMIN_ID) return;
+      if (userId === srv.ownerId || superAdmins.has(userId)) return;
       srv.members = srv.members.filter(id => id !== userId);
       srv.mods = (srv.mods || []).filter(id => id !== userId);
       const target = [...clients.values()].find(c => c.id === userId);
