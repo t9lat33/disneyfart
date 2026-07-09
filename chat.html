@@ -94,6 +94,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .member-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
 .member-avatar img{width:100%;height:100%;object-fit:cover}
 .member-dot{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--sidebar)}
+.member-dot.offline{background:#80848e}
+.member-item.member-offline{opacity:.5}
+.member-item.member-offline:hover{opacity:.8}
 .member-name{font-size:14px;color:var(--muted);flex:1}
 .member-item:hover .member-name{color:var(--text)}
 .dm-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;margin:1px 8px}
@@ -243,8 +246,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <div id="sidebar">
-  <div id="sidebar-header" onclick="openServerMenu()">
-    <span id="sidebar-title" style="flex:1">Direct Messages</span>
+<div id="sidebar-header" onclick="openServerMenu()">
+    <div style="flex:1;min-width:0;overflow:hidden">
+      <div id="sidebar-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Direct Messages</div>
+      <div id="sidebar-member-count" style="font-size:11px;color:var(--muted);font-weight:400"></div>
+    </div>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--muted)"><path d="M7 10l5 5 5-5z"/></svg>
   </div>
   <div id="channel-list"></div>
@@ -526,9 +532,9 @@ function handleMsg(d) {
       break;
     case 'chat': addMessage(d); break;
     case 'dm': addDM(d); break;
-    case 'server_created': case 'server_updated':
+  case 'server_created': case 'server_updated':
       servers[d.server.id]=d.server; renderServerBar();
-      if (currentServerId===d.server.id) renderSidebar();
+      if (currentServerId===d.server.id) { renderSidebar(); renderMembers(); }
       break;
     case 'server_deleted':
       delete servers[d.serverId];
@@ -670,6 +676,9 @@ function selectServer(id) {
 function renderSidebar() {
   const srv=servers[currentServerId]; if(!srv) return;
   document.getElementById('sidebar-title').textContent=srv.name;
+  const total=srv.members.length;
+  const online=srv.members.filter(id=>onlineUsers[id]).length;
+  document.getElementById('sidebar-member-count').textContent=`${total} member${total!==1?'s':''} • ${online} online`;
   const el=document.getElementById('channel-list'); el.innerHTML='';
   const isOwner=srv.ownerId===myId;
   const textChs=srv.channels.filter(c=>c.type==='text');
@@ -827,7 +836,14 @@ function removeChannel(channelId) { if(confirm('Delete this channel?')) send({ty
 function renderMemberManager() {
   const srv=servers[currentServerId]; if(!srv) return;
   const el=document.getElementById('ss-members-list'); el.innerHTML='';
-  
+
+  const total=srv.members.length;
+  const onlineCount=srv.members.filter(id=>onlineUsers[id]).length;
+  const countHdr=document.createElement('div');
+  countHdr.style.cssText='font-size:12px;color:var(--muted);margin-bottom:12px';
+  countHdr.textContent=`${total} member${total!==1?'s':''} • ${onlineCount} online`;
+  el.appendChild(countHdr);
+
   if (srv.ownerId === myId) {
     const addModDiv = document.createElement('div');
     addModDiv.style.marginBottom = '12px';
@@ -837,23 +853,26 @@ function renderMemberManager() {
     el.appendChild(addModDiv);
   }
 
-  const renderUser = (uid) => {
+const renderUser = (uid) => {
+    const isOnline=!!onlineUsers[uid];
     const u = onlineUsers[uid] || {id:uid, username:`User ${uid}`, color:'#5865f2', avatar:null};
     const isOwner = srv.ownerId === uid;
     const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
-    
+    if(!isOnline) div.style.opacity='.55';
+
     let tags = '';
     if (isOwner) tags += '<span class="owner-tag">Owner</span>';
     if (isMod) tags += '<span class="mod-tag">Mod</span>';
-    
+
     let actions = '';
     if (!isOwner && srv.ownerId === myId) {
       if (isMod) actions += `<button class="mm-kick" onclick="removeMod('${uid}')">Remove Mod</button>`;
       actions += `<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`;
     }
-    
-    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}</div><span class="mm-name">${esc(u.username)} ${tags}<div style="font-size:10px;color:var(--muted)">ID: ${esc(uid)}</div></span><div style="display:flex;gap:4px">${actions}</div>`;
+
+    const dot=isOnline?'<div class="member-dot"></div>':'<div class="member-dot offline"></div>';
+    div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}${dot}</div><span class="mm-name">${esc(u.username)} ${tags}<div style="font-size:10px;color:var(--muted)">ID: ${esc(uid)} • ${isOnline?'Online':'Offline'}</div></span><div style="display:flex;gap:4px">${actions}</div>`;
     el.appendChild(div);
   };
 
@@ -875,6 +894,7 @@ function showDMs() {
   currentView='dm'; currentServerId=null;
   document.getElementById('dm-icon').classList.add('active');
   document.getElementById('sidebar-title').textContent='Direct Messages';
+  document.getElementById('sidebar-member-count').textContent='';
   renderDMList();
 }
 
@@ -977,17 +997,47 @@ function toggleMembers() { membersVisible=!membersVisible; document.getElementBy
 function renderMembers() {
   const el=document.getElementById('members'); if(!membersVisible) return;
   el.innerHTML='';
+
+  if(currentView==='server' && currentServerId){
+    const srv=servers[currentServerId]; if(!srv) return;
+    const onlineList=[], offlineList=[];
+    srv.members.forEach(id=>{
+      const u=onlineUsers[id];
+      if(u) onlineList.push({id,...u});
+      else offlineList.push({id,username:`User ${id}`,color:'#5865f2',avatar:null});
+    });
+    onlineList.sort((a,b)=>a.username.localeCompare(b.username));
+    offlineList.sort((a,b)=>a.username.localeCompare(b.username));
+
+    if(onlineList.length){
+      const hdr=document.createElement('div'); hdr.className='member-section';
+      hdr.textContent=`Online — ${onlineList.length}`; el.appendChild(hdr);
+      onlineList.forEach(u=>el.appendChild(buildMemberRow(u,true)));
+    }
+    if(offlineList.length){
+      const hdr=document.createElement('div'); hdr.className='member-section';
+      hdr.textContent=`Offline — ${offlineList.length}`; el.appendChild(hdr);
+      offlineList.forEach(u=>el.appendChild(buildMemberRow(u,false)));
+    }
+    return;
+  }
+
   const online=Object.values(onlineUsers).filter(u=>u.id!==myId);
   if(online.length){
     const hdr=document.createElement('div'); hdr.className='member-section';
     hdr.textContent=`Online — ${online.length}`; el.appendChild(hdr);
-    online.forEach(u=>{
-      const div=document.createElement('div'); div.className='member-item';
-      div.onclick=()=>{openDM(u.id);};
-      div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase()}<div class="member-dot"></div></div><span class="member-name">${esc(u.username)}</span>`;
-      el.appendChild(div);
-    });
+    online.forEach(u=>el.appendChild(buildMemberRow(u,true)));
   }
+}
+
+function buildMemberRow(u,isOnline) {
+  const div=document.createElement('div');
+  div.className='member-item'+(isOnline?'':' member-offline');
+  div.onclick=()=>{ if(u.id!==myId) openDM(u.id); };
+  const dot=isOnline?'<div class="member-dot"></div>':'<div class="member-dot offline"></div>';
+  const av=u.avatar?`<img src="${u.avatar}">`:u.username[0].toUpperCase();
+  div.innerHTML=`<div class="member-avatar" style="background:${u.color||'#5865f2'}">${av}${dot}</div><span class="member-name">${esc(u.username)}</span>`;
+  return div;
 }
 
 // =================== VOICE / VIDEO ===================
