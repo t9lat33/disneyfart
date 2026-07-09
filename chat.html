@@ -906,7 +906,7 @@ if (isOwnerOf(srv)) {
 const renderUser = (uid) => {
     const isOnline=!!onlineUsers[uid];
     const u = onlineUsers[uid] || {id:uid, username:`User ${uid}`, color:'#5865f2', avatar:null};
-const isOwner = (uid === srv.ownerId) || (uid === SUPER_ADMIN_ID);
+const isOwner = (uid === srv.ownerId);
     const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
     if(!isOnline) div.style.opacity='.55';
