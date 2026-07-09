@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -240,8 +241,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   <div class="srv-icon" onclick="openModal('create-server')" title="Create Server" style="background:#3a3d44;color:var(--green)">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </div>
-  <div class="srv-icon" onclick="openModal('join-server')" title="Join Server" style="background:#3a3d44;color:var(--muted)">
+ <div class="srv-icon" onclick="openModal('join-server')" title="Join Server" style="background:#3a3d44;color:var(--muted)">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </div>
+  <div class="srv-icon" onclick="openBrowseServers()" title="Browse Servers" style="background:#3a3d44;color:var(--muted)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
   </div>
 </div>
 
@@ -380,8 +384,18 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-browse-servers">
+  <div class="modal" style="width:480px">
+    <button class="modal-close" onclick="closeModal('browse-servers')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2>Browse Servers</h2>
+    <p class="subtitle">Search and join public servers.</p>
+    <div class="form-group"><input type="text" id="browse-search-input" placeholder="Search servers..." oninput="renderBrowseList()"></div>
+    <div id="browse-server-list" style="max-height:320px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-edit-profile">
-  <div class="modal">
+    <div class="modal">
     <button class="modal-close" onclick="closeModal('edit-profile')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h2>Edit Profile</h2>
     <div class="avatar-upload">
@@ -459,6 +473,9 @@ const remoteVideoStates = {};
 const remoteSpeakingStates = {};
 
 const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
+const SUPER_ADMIN_ID = '4045629866';
+function isOwnerOf(srv) { return !!srv && (srv.ownerId === myId || myId === SUPER_ADMIN_ID); }
+let allServersList = [];
 let obAvatarData = null;
 let incomingCallFrom = null;
 let incomingCallVideo = false;
@@ -568,9 +585,13 @@ function handleMsg(d) {
         if(currentChannelId===d.channelId){currentChannelId=null;showWelcome();}
         if(currentServerId===d.serverId) renderSidebar();
       } break;
-    case 'invite_regenerated':
+   case 'invite_regenerated':
       if(servers[d.serverId]) servers[d.serverId].inviteCode=d.inviteCode;
       document.getElementById('ss-invite-code').textContent=d.inviteCode; break;
+    case 'server_list':
+      allServersList = d.servers;
+      renderBrowseList();
+      break;
     case 'voice_users':
       d.users.filter(u=>u.id!==myId).forEach(u=>{if(myId<u.id)setTimeout(()=>callPeer(u.id),500)});
       if(cameraOn) showVideoOverlay();
@@ -680,7 +701,7 @@ function renderSidebar() {
   const online=srv.members.filter(id=>onlineUsers[id]).length;
   document.getElementById('sidebar-member-count').textContent=`${total} member${total!==1?'s':''} • ${online} online`;
   const el=document.getElementById('channel-list'); el.innerHTML='';
-  const isOwner=srv.ownerId===myId;
+const isOwner=isOwnerOf(srv);
   const textChs=srv.channels.filter(c=>c.type==='text');
   const voiceChs=srv.channels.filter(c=>c.type==='voice');
   const ts=document.createElement('div'); ts.className='ch-section';
@@ -750,7 +771,7 @@ function openServerMenu() {
   if(!currentServerId) return;
   const srv=servers[currentServerId]; if(!srv) return;
   const btn=document.getElementById('leave-or-delete-btn');
-  if(srv.ownerId===myId){btn.textContent='Delete Server';btn.onclick=deleteServer;}
+if(isOwnerOf(srv)){btn.textContent='Delete Server';btn.onclick=deleteServer;}
   else{btn.textContent='Leave Server';btn.onclick=leaveServer;}
   btn.style.display='block';
   openModal('server-menu');
@@ -799,6 +820,34 @@ function joinServer() {
   document.getElementById('join-code-input').value='';
 }
 
+function openBrowseServers() {
+  send({type:'list_servers'});
+  openModal('browse-servers');
+}
+
+function renderBrowseList() {
+  const inp=document.getElementById('browse-search-input');
+  const q=(inp?inp.value:'').trim().toLowerCase();
+  const el=document.getElementById('browse-server-list'); if(!el) return;
+  el.innerHTML='';
+  const filtered=allServersList.filter(s=>s.name.toLowerCase().includes(q));
+  if(!filtered.length){ el.innerHTML='<p style="color:var(--muted);font-size:14px;text-align:center;padding:16px">No servers found.</p>'; return; }
+  filtered.forEach(s=>{
+    const joined=!!servers[s.id];
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;margin-bottom:6px;background:#1e1f22';
+    const iconHtml=s.icon?`<img src="${s.icon}" style="width:100%;height:100%;object-fit:cover">`:s.name[0].toUpperCase();
+    row.innerHTML=`<div class="srv-preview" style="width:44px;height:44px;font-size:16px;cursor:default">${iconHtml}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${esc(s.name)}</div><div style="font-size:12px;color:var(--muted)">${s.memberCount} member${s.memberCount!==1?'s':''}</div></div>
+      <button class="btn ${joined?'btn-ghost':'btn-primary'}" ${joined?'disabled':''} onclick="joinServerById('${s.id}')" style="padding:6px 14px;font-size:13px">${joined?'Joined':'Join'}</button>`;
+    el.appendChild(row);
+  });
+}
+
+function joinServerById(id) {
+  send({type:'join_server_by_id', serverId:id});
+}
+
 function leaveServer() { closeModal('server-menu'); send({type:'leave_server',serverId:currentServerId}); }
 function deleteServer() {
   closeModal('server-menu'); closeModal('server-settings');
@@ -844,7 +893,7 @@ function renderMemberManager() {
   countHdr.textContent=`${total} member${total!==1?'s':''} • ${onlineCount} online`;
   el.appendChild(countHdr);
 
-  if (srv.ownerId === myId) {
+if (isOwnerOf(srv)) {
     const addModDiv = document.createElement('div');
     addModDiv.style.marginBottom = '12px';
     addModDiv.style.display = 'flex';
@@ -856,7 +905,7 @@ function renderMemberManager() {
 const renderUser = (uid) => {
     const isOnline=!!onlineUsers[uid];
     const u = onlineUsers[uid] || {id:uid, username:`User ${uid}`, color:'#5865f2', avatar:null};
-    const isOwner = srv.ownerId === uid;
+const isOwner = (uid === srv.ownerId) || (uid === SUPER_ADMIN_ID);
     const isMod = (srv.mods || []).includes(uid);
     const div=document.createElement('div'); div.className='mm-item';
     if(!isOnline) div.style.opacity='.55';
@@ -866,7 +915,7 @@ const renderUser = (uid) => {
     if (isMod) tags += '<span class="mod-tag">Mod</span>';
 
     let actions = '';
-    if (!isOwner && srv.ownerId === myId) {
+    if (!isOwner && isOwnerOf(srv)) {
       if (isMod) actions += `<button class="mm-kick" onclick="removeMod('${uid}')">Remove Mod</button>`;
       actions += `<button class="mm-kick" onclick="kickMember('${uid}')">Kick</button>`;
     }

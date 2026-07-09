@@ -5,6 +5,8 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 't9_data.json');
+const SUPER_ADMIN_ID = '4045629866';
+const DEFAULT_INVITE_CODE = 'F897JV';
 
 const mimeTypes = {
   '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
@@ -80,6 +82,18 @@ function makeServer(name, icon, ownerId) {
 
 function getClient(ws) { return clients.get(ws); }
 
+function isOwnerOrAdmin(srv, clientId) { return !!srv && (srv.ownerId === clientId || clientId === SUPER_ADMIN_ID); }
+function isStaff(srv, clientId) { return isOwnerOrAdmin(srv, clientId) || (srv.mods||[]).includes(clientId); }
+
+function ensureDefaultServer() {
+  let srv = [...servers.values()].find(s => s.inviteCode === DEFAULT_INVITE_CODE);
+  if (!srv) {
+    srv = makeServer('T9 Network', null, SUPER_ADMIN_ID);
+    srv.inviteCode = DEFAULT_INVITE_CODE;
+    saveData();
+  }
+  return srv;
+}
 function broadcast(data, filter) {
   const msg = JSON.stringify(data);
   wss.clients.forEach(ws => {
@@ -204,7 +218,13 @@ function handleInit(ws, data) {
     color, avatar: data.avatar || null,
     currentChannel: null, voiceChannel: null, dmVoicePeer: null,
   };
-  clients.set(ws, client);
+clients.set(ws, client);
+
+  const defaultSrv = ensureDefaultServer();
+  if (!defaultSrv.members.includes(client.id)) {
+    defaultSrv.members.push(client.id);
+    saveData();
+  }
 
   const dmHistory = {};
   dmMessages.forEach((msgs, key) => {
@@ -298,7 +318,7 @@ function handleMessage(ws, client, data) {
     case 'update_server': {
       const { serverId, name, icon } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
       if (name) srv.name = name.slice(0, 100);
       if (icon !== undefined) srv.icon = icon;
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
@@ -306,21 +326,39 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    case 'delete_server': {
+   case 'delete_server': {
       const { serverId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
       servers.delete(serverId);
       broadcast({ type: 'server_deleted', serverId }, c => srv.members.includes(c.id));
       saveData();
       break;
     }
 
-    case 'join_server': {
+   case 'join_server': {
       const { inviteCode: code } = data;
       if (!code) return;
       const srv = [...servers.values()].find(s => s.inviteCode === code.toUpperCase());
       if (!srv) { sendTo(ws, { type: 'error', message: 'Invalid invite code.' }); return; }
+      if (srv.members.includes(client.id)) { sendTo(ws, { type: 'error', message: 'Already in that server.' }); return; }
+      srv.members.push(client.id);
+      sendTo(ws, { type: 'server_joined', server: serializeServer(srv) });
+      broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id) && c.id !== client.id);
+      saveData();
+      break;
+    }
+
+    case 'list_servers': {
+      const list = [...servers.values()].map(s => ({ id: s.id, name: s.name, icon: s.icon, memberCount: s.members.length }));
+      sendTo(ws, { type: 'server_list', servers: list });
+      break;
+    }
+
+    case 'join_server_by_id': {
+      const { serverId } = data;
+      const srv = servers.get(serverId);
+      if (!srv) { sendTo(ws, { type: 'error', message: 'Server not found.' }); return; }
       if (srv.members.includes(client.id)) { sendTo(ws, { type: 'error', message: 'Already in that server.' }); return; }
       srv.members.push(client.id);
       sendTo(ws, { type: 'server_joined', server: serializeServer(srv) });
@@ -345,8 +383,9 @@ function handleMessage(ws, client, data) {
     case 'kick_member': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isStaff(srv, client.id)) return;
       if (userId === client.id) return;
+      if (userId === srv.ownerId || userId === SUPER_ADMIN_ID) return;
       srv.members = srv.members.filter(id => id !== userId);
       srv.mods = (srv.mods || []).filter(id => id !== userId);
       const target = [...clients.values()].find(c => c.id === userId);
@@ -356,10 +395,10 @@ function handleMessage(ws, client, data) {
       break;
     }
 
-    case 'add_mod': {
+ case 'add_mod': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
       if (!srv.mods) srv.mods = [];
       if (!srv.mods.includes(userId)) srv.mods.push(userId);
       if (!srv.members.includes(userId)) srv.members.push(userId);
@@ -371,17 +410,17 @@ function handleMessage(ws, client, data) {
     case 'remove_mod': {
       const { serverId, userId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
       srv.mods = (srv.mods || []).filter(id => id !== userId);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
     }
 
-    case 'add_channel': {
+   case 'add_channel': {
       const { serverId, channelType, name } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isStaff(srv, client.id)) return;
       if (!['text','voice'].includes(channelType)) return;
       const ch = { id: uid(), name: name.slice(0, 50), type: channelType };
       srv.channels.push(ch);
@@ -393,17 +432,17 @@ function handleMessage(ws, client, data) {
     case 'remove_channel': {
       const { serverId, channelId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isStaff(srv, client.id)) return;
       srv.channels = srv.channels.filter(c => c.id !== channelId);
       broadcast({ type: 'channel_removed', serverId, channelId }, c => srv.members.includes(c.id));
       saveData();
       break;
     }
 
-    case 'regenerate_invite': {
+   case 'regenerate_invite': {
       const { serverId } = data;
       const srv = servers.get(serverId);
-      if (!srv || srv.ownerId !== client.id) return;
+      if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
       srv.inviteCode = inviteCode();
       broadcast({ type: 'invite_regenerated', serverId, inviteCode: srv.inviteCode }, c => srv.members.includes(c.id));
       saveData();
@@ -530,4 +569,5 @@ function leaveVoice(client) {
 }
 
 loadData();
+ensureDefaultServer();
 server.listen(PORT, () => console.log(`T9 Network running on port ${PORT}`));
