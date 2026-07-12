@@ -2,55 +2,57 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Dida Scooter Mod - UUID Target</title>
+    <title>Dida Scooter Mod</title>
 </head>
 <body>
-    <h2>Dida Scooter Mod (Web Bluetooth - Specific UUID)</h2>
-    <input type="text" id="uuidInput" value="897C0E38-AC92-D49A-7653-B95E41FE803B">
+    <h2>Dida Scooter Mod (Web Bluetooth)</h2>
+    <input type="text" id="nameInput" value="BLE Device 9573FF">
     <button id="scanBtn">Find & Connect</button>
     <input type="number" id="speedInput" placeholder="Speed km/h" step="0.1">
     <button id="sendBtn">Send Mod</button>
     <div id="status"></div>
-
     <script>
         let device = null;
         let characteristic = null;
+        let writeWithoutResponse = false;
         const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
         const CHAR_WRITE_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+
+        function setStatus(msg) {
+            document.getElementById('status').innerText = msg;
+        }
 
         document.getElementById('scanBtn').addEventListener('click', async () => {
             try {
                 if (!navigator.bluetooth) {
-                    document.getElementById('status').innerText = "Web Bluetooth not supported.";
+                    setStatus("Web Bluetooth not supported.");
                     return;
                 }
-                const targetUuid = document.getElementById('uuidInput').value.trim().toUpperCase();
-                if (!targetUuid.match(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/)) {
-                    document.getElementById('status').innerText = "Invalid UUID format.";
-                    return;
-                }
-
-                document.getElementById('status').innerText = "Scanning for UUID: " + targetUuid + "...";
-
-                // Web Bluetooth cannot filter by full UUID directly. Scan all with service, then check device.id.
-                const foundDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [SERVICE_UUID] }],
+                const targetName = document.getElementById('nameInput').value.trim();
+                setStatus("Requesting device: " + targetName + "...");
+                device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: targetName }],
                     optionalServices: [SERVICE_UUID]
                 });
 
-                // The device.id is the UUID shown in your screenshot (not MAC).
-                if (foundDevice.id.toUpperCase() !== targetUuid) {
-                    document.getElementById('status').innerText = "Found " + foundDevice.id + " but not target. Retry.";
-                    return;
-                }
+                device.addEventListener('gattserverdisconnected', () => {
+                    characteristic = null;
+                    setStatus("Disconnected: " + device.name);
+                });
 
-                device = foundDevice;
-                document.getElementById('status').innerText = "Connected to target UUID: " + device.id;
+                setStatus("Connecting to " + device.name + "...");
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHAR_WRITE_UUID);
+
+                // Some BLE modules only support write-without-response
+                writeWithoutResponse = characteristic.properties.write === false
+                    && characteristic.properties.writeWithoutResponse === true;
+
+                setStatus("Connected: " + device.name +
+                    (writeWithoutResponse ? " (write-without-response)" : " (write)"));
             } catch (e) {
-                document.getElementById('status').innerText = "Error: " + e;
+                setStatus("Error: " + e);
             }
         });
 
@@ -71,20 +73,25 @@
 
         document.getElementById('sendBtn').addEventListener('click', async () => {
             if (!characteristic) {
-                document.getElementById('status').innerText = "Not connected.";
+                setStatus("Not connected.");
                 return;
             }
             const speed = parseFloat(document.getElementById('speedInput').value);
             if (isNaN(speed) || speed <= 0) {
-                document.getElementById('status').innerText = "Invalid speed.";
+                setStatus("Invalid speed.");
                 return;
             }
             const frame = buildFrame(speed);
+            const hex = Array.from(frame).map(b => b.toString(16).padStart(2, '0')).join(' ');
             try {
-                await characteristic.writeValue(frame);
-                document.getElementById('status').innerText = "Sent to " + device.id + ": " + Array.from(frame).map(b => b.toString(16).padStart(2,'0')).join(' ');
+                if (writeWithoutResponse) {
+                    await characteristic.writeValueWithoutResponse(frame);
+                } else {
+                    await characteristic.writeValue(frame);
+                }
+                setStatus("Sent to " + device.name + ": " + hex);
             } catch (e) {
-                document.getElementById('status').innerText = "Write failed: " + e;
+                setStatus("Write failed (" + hex + "): " + e);
             }
         });
     </script>
