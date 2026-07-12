@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dida Scooter Mod - UUID Target</title>
+</head>
+<body>
+    <h2>Dida Scooter Mod (Web Bluetooth - Specific UUID)</h2>
+    <input type="text" id="uuidInput" value="897C0E38-AC92-D49A-7653-B95E41FE803B">
+    <button id="scanBtn">Find & Connect</button>
+    <input type="number" id="speedInput" placeholder="Speed km/h" step="0.1">
+    <button id="sendBtn">Send Mod</button>
+    <div id="status"></div>
+
+    <script>
+        let device = null;
+        let characteristic = null;
+        const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+        const CHAR_WRITE_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+
+        document.getElementById('scanBtn').addEventListener('click', async () => {
+            try {
+                if (!navigator.bluetooth) {
+                    document.getElementById('status').innerText = "Web Bluetooth not supported.";
+                    return;
+                }
+                const targetUuid = document.getElementById('uuidInput').value.trim().toUpperCase();
+                if (!targetUuid.match(/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/)) {
+                    document.getElementById('status').innerText = "Invalid UUID format.";
+                    return;
+                }
+
+                document.getElementById('status').innerText = "Scanning for UUID: " + targetUuid + "...";
+
+                // Web Bluetooth cannot filter by full UUID directly. Scan all with service, then check device.id.
+                const foundDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [SERVICE_UUID] }],
+                    optionalServices: [SERVICE_UUID]
+                });
+
+                // The device.id is the UUID shown in your screenshot (not MAC).
+                if (foundDevice.id.toUpperCase() !== targetUuid) {
+                    document.getElementById('status').innerText = "Found " + foundDevice.id + " but not target. Retry.";
+                    return;
+                }
+
+                device = foundDevice;
+                document.getElementById('status').innerText = "Connected to target UUID: " + device.id;
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                characteristic = await service.getCharacteristic(CHAR_WRITE_UUID);
+            } catch (e) {
+                document.getElementById('status').innerText = "Error: " + e;
+            }
+        });
+
+        function calcChecksum(bytes) {
+            let csum = 0;
+            for (let b of bytes) csum ^= b;
+            return csum;
+        }
+
+        function buildFrame(speedKmh) {
+            const speedUnits = Math.round(speedKmh * 10);
+            const high = (speedUnits >> 8) & 0xFF;
+            const low = speedUnits & 0xFF;
+            const payload = [0x55, 0x14, high, low];
+            const checksum = calcChecksum(payload);
+            return new Uint8Array([...payload, checksum]);
+        }
+
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            if (!characteristic) {
+                document.getElementById('status').innerText = "Not connected.";
+                return;
+            }
+            const speed = parseFloat(document.getElementById('speedInput').value);
+            if (isNaN(speed) || speed <= 0) {
+                document.getElementById('status').innerText = "Invalid speed.";
+                return;
+            }
+            const frame = buildFrame(speed);
+            try {
+                await characteristic.writeValue(frame);
+                document.getElementById('status').innerText = "Sent to " + device.id + ": " + Array.from(frame).map(b => b.toString(16).padStart(2,'0')).join(' ');
+            } catch (e) {
+                document.getElementById('status').innerText = "Write failed: " + e;
+            }
+        });
+    </script>
+</body>
+</html>
