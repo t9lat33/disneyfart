@@ -1046,34 +1046,9 @@ border: 1px solid rgba(255, 255, 255, 0.15);
   transition: opacity 0.2s ease;
 "></div>
 
-<div id="t9-widget-card">
-  <div class="t9w-time" id="t9w-time">--:--</div>
-  <div class="t9w-date" id="t9w-date">--</div>
-  <div class="t9w-divider"></div>
-  <div class="t9w-weather" id="t9w-weather">--°</div>
-</div>
 
-<style>
-#t9-widget-card {
-  position: fixed;
-  bottom: 50px;
-  right: 24px;
-  width: 200px;
-  padding: 18px 20px;
-  border-radius: 1.2rem;
-  background: linear-gradient(160deg, rgba(15,15,15,0.55), rgba(10,10,10,0.55));
-  backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-  color: white;
-  font-family: 'Inter', sans-serif;
-  z-index: 500;
-}
-.t9w-time { font-size: 34px; font-weight: 600; letter-spacing: -1px; }
-.t9w-date { font-size: 13px; opacity: 0.6; margin-top: 2px; }
-.t9w-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0; }
-.t9w-weather { font-size: 15px; opacity: 0.85; }
-</style>
+
+
 
 <script>
 function t9wUpdateTime() {
