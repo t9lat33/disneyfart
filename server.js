@@ -175,24 +175,34 @@ function getUserServers(userId) {
 }
 
 let saveTimeout = null;
+function saveDataNow() {
+  const data = { servers: {}, dms: {}, channelMsgs: {}, userIdCounter, authTokens: Object.fromEntries(authTokens) };
+  servers.forEach((srv, id) => {
+    data.servers[id] = {
+      id: srv.id, name: srv.name, icon: srv.icon,
+      ownerId: srv.ownerId, mods: srv.mods || [], inviteCode: srv.inviteCode,
+      members: srv.members, channels: srv.channels
+    };
+  });
+  dmMessages.forEach((msgs, key) => { data.dms[key] = msgs; });
+  
+  // FIX: Actually save the channel messages!
+  channelMessages.forEach((msgs, channelId) => { data.channelMsgs[channelId] = msgs; });
+  
+  try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
+}
+
 function saveData() {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    const data = { servers: {}, dms: {}, channelMsgs: {}, userIdCounter, authTokens: Object.fromEntries(authTokens) };
-    servers.forEach((srv, id) => {
-      data.servers[id] = {
-        id: srv.id, name: srv.name, icon: srv.icon,
-        ownerId: srv.ownerId, mods: srv.mods || [], inviteCode: srv.inviteCode,
-        members: srv.members, channels: srv.channels
-      };
-    });
-    dmMessages.forEach((msgs, key) => {
-      data.dms[key] = msgs;
-    });
-    try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
+    saveDataNow();
     saveTimeout = null;
   }, 500);
 }
+
+// FIX: Save immediately before PM2 kills the process during a deploy
+process.on('SIGINT', () => { saveDataNow(); process.exit(0); });
+process.on('SIGTERM', () => { saveDataNow(); process.exit(0); });
 
 function loadData() {
   try {
@@ -209,6 +219,12 @@ function loadData() {
       if (data.dms) {
         Object.entries(data.dms).forEach(([key, msgs]) => {
           dmMessages.set(key, msgs);
+        });
+      }
+      // FIX: Actually load the channel messages!
+      if (data.channelMsgs) {
+        Object.entries(data.channelMsgs).forEach(([channelId, msgs]) => {
+          channelMessages.set(channelId, msgs);
         });
       }
       if (data.authTokens) {
