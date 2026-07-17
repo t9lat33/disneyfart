@@ -11,6 +11,105 @@ const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || DEFAULT_ADMIN_P
 const superAdmins = new Set();
 const DEFAULT_INVITE_CODE = 'F897JV';
 
+// ---------------------------------------------------------------------------
+// USER STATS FILE (server-only, never served to the frontend)
+// ---------------------------------------------------------------------------
+// Stored in a sibling directory *outside* __dirname (the directory the HTTP
+// server serves static files from), so it can never be reached by a browser
+// request no matter what path is requested. The static file handler below
+// also enforces that requested paths must resolve inside __dirname, which
+// blocks "../" traversal from ever reaching this file even if it were placed
+// alongside the app.
+const STATS_DIR = path.join(__dirname, '..', 't9_private_data');
+const STATS_FILE = path.join(STATS_DIR, 'user_stats.json');
+try { fs.mkdirSync(STATS_DIR, { recursive: true }); } catch (e) { /* already exists */ }
+
+const userStats = new Map(); // userId -> { id, username, ip, messagesSent, servers: [{id,name}] }
+
+function getClientIp(req) {
+  // Respect a proxy header if you're behind one (nginx, a load balancer, etc).
+  // Falls back to the raw socket address for direct connections.
+  const xf = req.headers['x-forwarded-for'];
+  if (xf) return xf.split(',')[0].trim();
+  return req.socket.remoteAddress;
+}
+
+function computeUserServers(userId) {
+  const list = [];
+  servers.forEach(srv => { if (srv.members.includes(userId)) list.push({ id: srv.id, name: srv.name }); });
+  return list;
+}
+
+let statsSaveTimeout = null;
+function saveUserStats() {
+  if (statsSaveTimeout) clearTimeout(statsSaveTimeout);
+  statsSaveTimeout = setTimeout(() => {
+    const out = {};
+    userStats.forEach((v, id) => {
+      out[id] = {
+        username: v.username,
+        ip: v.ip || null,
+        messagesSent: v.messagesSent || 0,
+        serverCount: (v.servers || []).length,
+        servers: v.servers || []
+      };
+    });
+    try { fs.writeFileSync(STATS_FILE, JSON.stringify(out, null, 2)); }
+    catch (e) { console.error('user stats save error:', e); }
+    statsSaveTimeout = null;
+  }, 500);
+}
+
+function loadUserStats() {
+  try {
+    if (fs.existsSync(STATS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(STATS_FILE, 'utf8'));
+      Object.entries(data).forEach(([id, v]) => {
+        userStats.set(id, {
+          id,
+          username: v.username,
+          ip: v.ip || null,
+          messagesSent: v.messagesSent || 0,
+          servers: v.servers || []
+        });
+      });
+      console.log(`Loaded stats for ${userStats.size} users`);
+    }
+  } catch (e) { console.error('user stats load error:', e); }
+}
+
+// Refresh (or create) a user's stat entry using whatever we currently know
+// about them - their live client object if connected, otherwise whatever
+// was already on file.
+function touchUserStatsById(userId) {
+  const c = [...clients.values()].find(cl => cl.id === userId);
+  const existing = userStats.get(userId);
+  const username = c ? c.username : (existing ? existing.username : `User${userId}`);
+  const ip = c ? c.ip : (existing ? existing.ip : null);
+  const stat = {
+    id: userId,
+    username,
+    ip,
+    messagesSent: existing ? (existing.messagesSent || 0) : 0,
+    servers: computeUserServers(userId)
+  };
+  userStats.set(userId, stat);
+  saveUserStats();
+}
+
+function incrementMessageCount(client) {
+  let stat = userStats.get(client.id);
+  if (!stat) {
+    stat = { id: client.id, username: client.username, ip: client.ip, messagesSent: 0, servers: computeUserServers(client.id) };
+    userStats.set(client.id, stat);
+  }
+  stat.username = client.username;
+  stat.ip = client.ip || stat.ip;
+  stat.messagesSent = (stat.messagesSent || 0) + 1;
+  saveUserStats();
+}
+// ---------------------------------------------------------------------------
+
 // SECURITY: refuse to grant super-admin at all until a real secret is configured,
 // so the feature can't be trivially unlocked using the shipped placeholder value.
 if (SUPER_ADMIN_PASSWORD === DEFAULT_ADMIN_PASSWORD_PLACEHOLDER) {
@@ -52,7 +151,7 @@ const mimeTypes = {
 
 const server = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
-  
+
   if (urlPath === '/' || urlPath === '/chat.html') {
     fs.readFile(path.join(__dirname, 'chat.html'), (err, data) => {
       if (err) { res.writeHead(404); res.end('Not found'); return; }
@@ -61,8 +160,20 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  
+
   const filePath = path.join(__dirname, urlPath);
+
+  // SECURITY: make sure the resolved path can never escape __dirname (blocks
+  // "../" traversal, e.g. a request for /../t9_private_data/user_stats.json
+  // or /../../etc/passwd). This also guarantees the private stats file -
+  // which deliberately lives outside __dirname - can never be served, even
+  // by accident.
+  const rootDir = path.resolve(__dirname) + path.sep;
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(rootDir)) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
+
   const ext = path.extname(filePath).toLowerCase();
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not found'); return; }
@@ -185,10 +296,10 @@ function saveDataNow() {
     };
   });
   dmMessages.forEach((msgs, key) => { data.dms[key] = msgs; });
-  
+
   // FIX: Actually save the channel messages!
   channelMessages.forEach((msgs, channelId) => { data.channelMsgs[channelId] = msgs; });
-  
+
   try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); } catch(e) { console.error('Save error:', e); }
 }
 
@@ -201,8 +312,8 @@ function saveData() {
 }
 
 // FIX: Save immediately before PM2 kills the process during a deploy
-process.on('SIGINT', () => { saveDataNow(); process.exit(0); });
-process.on('SIGTERM', () => { saveDataNow(); process.exit(0); });
+process.on('SIGINT', () => { saveDataNow(); saveUserStats(); process.exit(0); });
+process.on('SIGTERM', () => { saveDataNow(); saveUserStats(); process.exit(0); });
 
 function loadData() {
   try {
@@ -235,12 +346,15 @@ function loadData() {
   } catch(e) { console.error('Load error:', e); }
 }
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+  // Capture the connecting IP up front so it's available once 'init' arrives.
+  ws._ip = getClientIp(req);
+
   ws.on('message', raw => {
     let data;
     try { data = JSON.parse(raw); } catch { return; }
     const client = clients.get(ws);
-    
+
     if (data.type === 'init' && !client) {
       handleInit(ws, data);
     } else if (client) {
@@ -251,7 +365,7 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     const client = clients.get(ws);
     if (!client) return;
-    
+
     if (client.voiceChannel) leaveVoice(client);
     if (client.dmVoicePeer) {
       const peer = [...clients.values()].find(c => c.id === client.dmVoicePeer);
@@ -281,9 +395,10 @@ function handleInit(ws, data) {
 
   const color = COLORS[Math.abs(hashString(id)) % COLORS.length];
   const client = {
-    id, ws, 
+    id, ws,
     username: data.username ? String(data.username).slice(0, 32) : `User${id.slice(0,4)}`,
     color, avatar: sanitizeImage(data.avatar),
+    ip: ws._ip || null,
     currentChannel: null, voiceChannel: null, dmVoicePeer: null,
     msgTimestamps: [],
   };
@@ -297,6 +412,10 @@ clients.set(ws, client);
     defaultSrv.members.push(client.id);
     saveData();
   }
+
+  // Record/refresh this user's entry in the private stats file (username,
+  // IP, current server list). Message counts are untouched here.
+  touchUserStatsById(client.id);
 
   const dmHistory = {};
   dmMessages.forEach((msgs, key) => {
@@ -315,7 +434,7 @@ sendTo(ws, {
     dmHistory,
     isSuperAdmin: superAdmins.has(id)
   });
-  
+
   broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
 }
 
@@ -333,6 +452,7 @@ function handleMessage(ws, client, data) {
     case 'update_profile':
       if (data.username) client.username = String(data.username).slice(0, 32);
       if (data.avatar !== undefined) client.avatar = sanitizeImage(data.avatar);
+      touchUserStatsById(client.id);
       broadcast({ type: 'user_updated', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } });
       break;
 
@@ -353,6 +473,7 @@ function handleMessage(ws, client, data) {
       if (!channelMessages.has(channelId)) channelMessages.set(channelId, []);
       const hist = channelMessages.get(channelId);
       hist.push(msg); if (hist.length > 100) hist.shift();
+      incrementMessageCount(client);
       clients.forEach(c => {
         if (srv.members.includes(c.id) && c.currentChannel?.channelId === channelId) sendTo(c.ws, msg);
       });
@@ -373,7 +494,8 @@ function handleMessage(ws, client, data) {
       if (!dmMessages.has(key)) dmMessages.set(key, []);
       dmMessages.get(key).push(msg);
       saveData();
-      
+      incrementMessageCount(client);
+
       sendTo(ws, msg);
       if (toClient) sendTo(toClient.ws, msg);
       break;
@@ -395,6 +517,7 @@ function handleMessage(ws, client, data) {
       const { name, icon } = data;
       if (typeof name !== 'string' || !name.trim()) return;
       const srv = makeServer(name.trim().slice(0, 100), sanitizeImage(icon), client.id);
+      touchUserStatsById(client.id);
       sendTo(ws, { type: 'server_created', server: serializeServer(srv) });
       break;
     }
@@ -407,6 +530,7 @@ function handleMessage(ws, client, data) {
       if (icon !== undefined) srv.icon = sanitizeImage(icon);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
+      srv.members.forEach(touchUserStatsById);
       break;
     }
 
@@ -414,9 +538,11 @@ function handleMessage(ws, client, data) {
       const { serverId } = data;
       const srv = servers.get(serverId);
       if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
+      const affectedMembers = [...srv.members];
       servers.delete(serverId);
-      broadcast({ type: 'server_deleted', serverId }, c => srv.members.includes(c.id));
+      broadcast({ type: 'server_deleted', serverId }, c => affectedMembers.includes(c.id));
       saveData();
+      affectedMembers.forEach(touchUserStatsById);
       break;
     }
 
@@ -430,6 +556,7 @@ function handleMessage(ws, client, data) {
       sendTo(ws, { type: 'server_joined', server: serializeServer(srv) });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id) && c.id !== client.id);
       saveData();
+      touchUserStatsById(client.id);
       break;
     }
 
@@ -448,6 +575,7 @@ function handleMessage(ws, client, data) {
       sendTo(ws, { type: 'server_joined', server: serializeServer(srv) });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id) && c.id !== client.id);
       saveData();
+      touchUserStatsById(client.id);
       break;
     }
 
@@ -461,6 +589,7 @@ function handleMessage(ws, client, data) {
       sendTo(ws, { type: 'server_left', serverId });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
+      touchUserStatsById(client.id);
       break;
     }
 
@@ -476,6 +605,7 @@ function handleMessage(ws, client, data) {
       if (target) sendTo(target.ws, { type: 'kicked', serverId });
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
+      touchUserStatsById(userId);
       break;
     }
 
@@ -488,6 +618,7 @@ function handleMessage(ws, client, data) {
       if (!srv.members.includes(userId)) srv.members.push(userId);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
+      touchUserStatsById(userId);
       break;
     }
 
@@ -654,5 +785,6 @@ function leaveVoice(client) {
 }
 
 loadData();
+loadUserStats();
 ensureDefaultServer();
 server.listen(PORT, () => console.log(`T9 Network running on port ${PORT}`));
