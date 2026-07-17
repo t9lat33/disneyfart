@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 't9_data.json');
+const DATA_FILE = path.join(__dirname, '..', 't9_private_data', 't9_data.json');
 const DEFAULT_ADMIN_PASSWORD_PLACEHOLDER = 'change-this-to-a-long-random-secret';
 const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD_PLACEHOLDER;
 const superAdmins = new Set();
