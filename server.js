@@ -2,12 +2,45 @@ const WebSocket = require('ws');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 't9_data.json');
-const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || 'change-this-to-a-long-random-secret';
+const DEFAULT_ADMIN_PASSWORD_PLACEHOLDER = 'change-this-to-a-long-random-secret';
+const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD_PLACEHOLDER;
 const superAdmins = new Set();
 const DEFAULT_INVITE_CODE = 'F897JV';
+
+// SECURITY: refuse to grant super-admin at all until a real secret is configured,
+// so the feature can't be trivially unlocked using the shipped placeholder value.
+if (SUPER_ADMIN_PASSWORD === DEFAULT_ADMIN_PASSWORD_PLACEHOLDER) {
+  console.warn('[SECURITY WARNING] SUPER_ADMIN_PASSWORD is not set (using placeholder). ' +
+    'Super-admin login is DISABLED until you set a strong random SUPER_ADMIN_PASSWORD env var.');
+}
+
+// SECURITY: identity map so a client can't just "type in" someone else's numeric ID
+// and inherit their DM history / server memberships. id -> secret auth token.
+const authTokens = new Map();
+
+// SECURITY: only accept small, well-formed base64 image data URLs for avatars/icons.
+// This blocks (a) HTML/attribute-injection XSS via crafted avatar/icon strings and
+// (b) loading of arbitrary external URLs (privacy/IP leak, SSRF-ish pixel tracking).
+const MAX_IMAGE_DATA_URL_LENGTH = 2_000_000; // ~1.5MB decoded
+const IMAGE_DATA_URL_RE = /^data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
+function sanitizeImage(value) {
+  if (typeof value !== 'string') return null;
+  if (value.length === 0 || value.length > MAX_IMAGE_DATA_URL_LENGTH) return null;
+  if (!IMAGE_DATA_URL_RE.test(value)) return null;
+  return value;
+}
+
+function genNumericId() {
+  let id;
+  do { id = Math.floor(1000000000 + Math.random() * 9000000000).toString(); }
+  while (authTokens.has(id));
+  return id;
+}
+function genAuthToken() { return crypto.randomBytes(24).toString('hex'); }
 
 const mimeTypes = {
   '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
@@ -145,7 +178,7 @@ let saveTimeout = null;
 function saveData() {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    const data = { servers: {}, dms: {}, userIdCounter };
+    const data = { servers: {}, dms: {}, userIdCounter, authTokens: Object.fromEntries(authTokens) };
     servers.forEach((srv, id) => {
       data.servers[id] = {
         id: srv.id, name: srv.name, icon: srv.icon,
@@ -177,6 +210,9 @@ function loadData() {
         Object.entries(data.dms).forEach(([key, msgs]) => {
           dmMessages.set(key, msgs);
         });
+      }
+      if (data.authTokens) {
+        Object.entries(data.authTokens).forEach(([id, token]) => authTokens.set(id, token));
       }
       console.log(`Loaded ${servers.size} servers and ${dmMessages.size} DM histories`);
     }
@@ -211,16 +247,32 @@ wss.on('connection', (ws) => {
 });
 
 function handleInit(ws, data) {
-  let id = data.clientId || uid();
+  // SECURITY: verify the client actually owns the id it's claiming via a secret
+  // auth token minted by us on first connect. If the id is unknown, or the token
+  // doesn't match, issue a brand new identity instead of trusting the client's claim.
+  // This is what stops "type in someone else's numeric ID" account takeover.
+  let id = typeof data.clientId === 'string' ? data.clientId.slice(0, 32) : null;
+  let token = typeof data.authToken === 'string' ? data.authToken.slice(0, 128) : null;
+  let issuedNewIdentity = false;
+
+  if (!id || !authTokens.has(id) || authTokens.get(id) !== token) {
+    id = genNumericId();
+    token = genAuthToken();
+    authTokens.set(id, token);
+    issuedNewIdentity = true;
+    saveData();
+  }
+
   const color = COLORS[Math.abs(hashString(id)) % COLORS.length];
   const client = {
     id, ws, 
     username: data.username ? String(data.username).slice(0, 32) : `User${id.slice(0,4)}`,
-    color, avatar: data.avatar || null,
+    color, avatar: sanitizeImage(data.avatar),
     currentChannel: null, voiceChannel: null, dmVoicePeer: null,
+    msgTimestamps: [],
   };
 clients.set(ws, client);
-if (data.adminKey && data.adminKey === SUPER_ADMIN_PASSWORD) {
+  if (data.adminKey && SUPER_ADMIN_PASSWORD !== DEFAULT_ADMIN_PASSWORD_PLACEHOLDER && data.adminKey === SUPER_ADMIN_PASSWORD) {
     superAdmins.add(id);
   }
 
@@ -240,7 +292,7 @@ if (data.adminKey && data.adminKey === SUPER_ADMIN_PASSWORD) {
   });
 
 sendTo(ws, {
-    type: 'init', id: client.id,
+    type: 'init', id: client.id, authToken: token, identityReset: issuedNewIdentity,
     username: client.username, color: client.color, avatar: client.avatar,
     servers: getUserServers(client.id),
     onlineUsers: getOnlineUsers(),
@@ -251,17 +303,27 @@ sendTo(ws, {
   broadcast({ type: 'user_join', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } }, c => c.id !== client.id);
 }
 
+// SECURITY: crude flood/spam guard - max 8 chat/DM sends per 5s per connection.
+function isRateLimited(client) {
+  const now = Date.now();
+  client.msgTimestamps = client.msgTimestamps.filter(t => now - t < 5000);
+  if (client.msgTimestamps.length >= 8) return true;
+  client.msgTimestamps.push(now);
+  return false;
+}
+
 function handleMessage(ws, client, data) {
   switch (data.type) {
     case 'update_profile':
       if (data.username) client.username = String(data.username).slice(0, 32);
-      if (data.avatar !== undefined) client.avatar = data.avatar;
+      if (data.avatar !== undefined) client.avatar = sanitizeImage(data.avatar);
       broadcast({ type: 'user_updated', user: { id: client.id, username: client.username, color: client.color, avatar: client.avatar } });
       break;
 
     case 'chat': {
       const { serverId, channelId, content } = data;
       if (!serverId || !channelId || !content) return;
+      if (isRateLimited(client)) { sendTo(ws, { type: 'error', message: 'Sending too fast, slow down.' }); return; }
       const srv = servers.get(serverId);
       if (!srv || !srv.members.includes(client.id)) return;
       const ch = srv.channels.find(c => c.id === channelId);
@@ -284,6 +346,7 @@ function handleMessage(ws, client, data) {
     case 'dm': {
       const { to, content } = data;
       if (!to || !content) return;
+      if (isRateLimited(client)) { sendTo(ws, { type: 'error', message: 'Sending too fast, slow down.' }); return; }
       const toClient = [...clients.values()].find(c => c.id === to);
       const msg = {
         type: 'dm', id: uid(), from: client.id, to,
@@ -314,8 +377,8 @@ function handleMessage(ws, client, data) {
 
     case 'create_server': {
       const { name, icon } = data;
-      if (!name?.trim()) return;
-      const srv = makeServer(name.trim().slice(0, 100), icon || null, client.id);
+      if (typeof name !== 'string' || !name.trim()) return;
+      const srv = makeServer(name.trim().slice(0, 100), sanitizeImage(icon), client.id);
       sendTo(ws, { type: 'server_created', server: serializeServer(srv) });
       break;
     }
@@ -324,8 +387,8 @@ function handleMessage(ws, client, data) {
       const { serverId, name, icon } = data;
       const srv = servers.get(serverId);
       if (!srv || !isOwnerOrAdmin(srv, client.id)) return;
-      if (name) srv.name = name.slice(0, 100);
-      if (icon !== undefined) srv.icon = icon;
+      if (typeof name === 'string' && name.trim()) srv.name = name.slice(0, 100);
+      if (icon !== undefined) srv.icon = sanitizeImage(icon);
       broadcast({ type: 'server_updated', server: serializeServer(srv) }, c => srv.members.includes(c.id));
       saveData();
       break;
@@ -343,7 +406,7 @@ function handleMessage(ws, client, data) {
 
    case 'join_server': {
       const { inviteCode: code } = data;
-      if (!code) return;
+      if (typeof code !== 'string' || !code.trim()) return;
       const srv = [...servers.values()].find(s => s.inviteCode === code.toUpperCase());
       if (!srv) { sendTo(ws, { type: 'error', message: 'Invalid invite code.' }); return; }
       if (srv.members.includes(client.id)) { sendTo(ws, { type: 'error', message: 'Already in that server.' }); return; }
@@ -427,7 +490,8 @@ function handleMessage(ws, client, data) {
       const srv = servers.get(serverId);
       if (!srv || !isStaff(srv, client.id)) return;
       if (!['text','voice'].includes(channelType)) return;
-      const ch = { id: uid(), name: name.slice(0, 50), type: channelType };
+      if (typeof name !== 'string' || !name.trim()) return;
+      const ch = { id: uid(), name: name.trim().slice(0, 50), type: channelType };
       srv.channels.push(ch);
       broadcast({ type: 'channel_added', serverId, channel: ch }, c => srv.members.includes(c.id));
       saveData();
