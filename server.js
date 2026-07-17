@@ -178,7 +178,7 @@ let saveTimeout = null;
 function saveData() {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    const data = { servers: {}, dms: {}, userIdCounter, authTokens: Object.fromEntries(authTokens) };
+    const data = { servers: {}, dms: {}, channelMsgs: {}, userIdCounter, authTokens: Object.fromEntries(authTokens) };
     servers.forEach((srv, id) => {
       data.servers[id] = {
         id: srv.id, name: srv.name, icon: srv.icon,
