@@ -1834,7 +1834,7 @@ t9wWeather();
     transform: translateX(-50%);
   }
 
-  
+  .tnav-pill svg { pointer-events: none; }
  
 </style>
 
@@ -2413,9 +2413,9 @@ getWeather();
 </div>
 <div class="tnav-zone tnav-center">
 <div class="tnav-pill" onclick="toggleQS()">
-<p class="battery" id="date" style="position:static;color:white;margin:0;"></p>
-<p class="clock" id="day" style="position:static;color:white;margin:0;"></p>
-<p id="clock2" style="color:white; margin:0;"></p>
+<p class="battery" id="date" style="position:static;color:white;margin:0;pointer-events:none;"></p>
+<p class="clock" id="day" style="position:static;color:white;margin:0;pointer-events:none;"></p>
+<p id="clock2" style="color:white; margin:0;pointer-events:none;"></p>
 </div>
 </div>
 <script>
