@@ -37,23 +37,6 @@
     max-width:900px;
     margin:0 auto 40px;
   }
-  .hero .eyebrow{
-    font-family:var(--font-display);
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color:var(--accent);
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .hero .eyebrow::before{
-    content:'';
-    width:6px;height:6px;border-radius:50%;
-    background:var(--accent);
-    box-shadow:0 0 8px var(--accent);
-  }
   .hero h1{
     font-family:var(--font-display);
     font-size:clamp(28px,4vw,38px);
@@ -176,7 +159,6 @@
   .play-btn:active{transform:scale(.98);}
   .play-btn svg{width:11px;height:11px;fill:#0a0a0c;}
 
-  /* ---- FULLSCREEN PLAYER OVERLAY ---- */
   .overlay{
     position:fixed; inset:0;
     background:#000;
@@ -271,7 +253,7 @@
         <div class="row-top">
           <div class="name">Minecraft: Java Edition</div>
         </div>
-        <p class="desc">The original block-building sandbox — full survival, creative.</p>
+        <p class="desc">a 3D sandbox video game where players explore infinite, procedurally generated blocky worlds</p>
         <div class="tags"><span>Survival</span><span>Creative</span></div>
         <button class="play-btn" onclick="launchGame('minecraft')">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -290,7 +272,7 @@
           <div class="name">GTA: Vice City</div>
           <div class="tagline">Classic</div>
         </div>
-        <p class="desc">Return to 1986 Vice City — open-world crime, chaos, and neon-soaked streets, running entirely in-browser.</p>
+        <p class="desc">n iconic 2002 open-world action-adventure game developed by Rockstar Games</p>
         <div class="tags"><span>Open World</span><span>Action</span><span>Single Player</span></div>
         <button class="play-btn" onclick="launchGame('vicecity')">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -298,7 +280,23 @@
         </button>
       </div>
     </div>
-
+<div class="card">
+      <div class="thumb">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxCs6sL8ypnkYqTn7weYRqUbdXkG3e0wkqh4IDZYRneA&s" alt="Minecraft Java Edition" onerror="this.style.opacity=0">
+        <div class="fade"></div>
+      </div>
+      <div class="info">
+        <div class="row-top">
+          <div class="name">People Playground</div>
+        </div>
+        <p class="desc">a 2D physics sandbox game where players experiment with ragdolls in an open environment.</p>
+        <div class="tags"><span>Survival</span><span>Creative</span></div>
+        <button class="play-btn" onclick="launchGame('people')">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="overlay" id="overlay">
@@ -308,7 +306,7 @@
       <div class="bar"><span></span></div>
       <div class="discord">
         <svg viewBox="0 0 24 24"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.09-.32 13.68.099 18.21a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.076.076 0 0 0-.04.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.029 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .031-.055c.5-5.177-.838-9.673-3.548-13.615a.061.061 0 0 0-.031-.028z"/></svg>
-        <span>Join for updates, links, and more! — <b>.gg/NBmHJy93rg</b></span>
+        <span>Join for updates, links, and more! — <b>.gg/NBmHJy93rg</b></span> <!-- my dc -->
       </div>
     </div>
     <iframe id="gameFrame"
@@ -321,9 +319,13 @@
 
 <script>
   const GAMES = {
-    minecraft: { src: "mc.html", label: "Minecraft: Java Edition" },
-    vicecity:  { src: "gtavc.html", label: "GTA: Vice City" }
+    minecraft: { src: "novix.html", label: "Minecraft: Java Edition" },
+    vicecity:  { src: "gtavc.html", label: "GTA: Vice City" },
+        people:  { src: "people.html", label: "People Playground" }
+
   };
+
+  const MIN_LOADING_MS = 2600; // loading stuff 
 
   function launchGame(key){
     const g = GAMES[key];
@@ -338,9 +340,15 @@
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 
+    const startTime = Date.now();
+
     frame.onload = () => {
-      loading.style.display = 'none';
-      frame.style.opacity = 1;
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
+      setTimeout(() => {
+        loading.style.display = 'none';
+        frame.style.opacity = 1;
+      }, remaining);
     };
     frame.src = g.src;
   }
