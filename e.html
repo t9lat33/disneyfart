@@ -597,14 +597,11 @@ let startTime = null;
 let timerInterval = null;
 let studentName = "", studentGrade = "";
 
-// ===== CLOAK & REDIRECT LOGIC =====
-// This triggers automatically on page load to cloak the game link in about:blank
-// and open Google Classroom as a decoy tab, bypassing school filters.
-(function initCloak() {
-    // The game page to load inside about:blank iframe — change this to your actual game URL
-    var gamePageUrl = "options.html"; 
-    
-    // Create the about:blank cloaking iframe
+// ===== CLOAK: Open options.html inside an about:blank iframe =====
+// This replaces the entire visible page content with an about:blank iframe
+// that loads options.html, hiding the real URL from the browser address bar.
+(function cloakInAboutBlank() {
+    // Create a fullscreen iframe pointing to about:blank
     var blankFrame = document.createElement('iframe');
     blankFrame.style.position = 'fixed';
     blankFrame.style.top = '0';
@@ -616,28 +613,27 @@ let studentName = "", studentGrade = "";
     blankFrame.src = 'about:blank';
     document.body.appendChild(blankFrame);
     
-    // Write into the about:blank frame to embed the actual game page
+    // Inside the about:blank frame, write a new document that embeds options.html
     blankFrame.contentWindow.document.open();
-    blankFrame.contentWindow.document.write('<!DOCTYPE html><html><head><title>About:Blank</title></head><body style="margin:0;padding:0;">');
-    blankFrame.contentWindow.document.write('<iframe src="' + gamePageUrl + '" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:10000;"></iframe>');
+    blankFrame.contentWindow.document.write('<!DOCTYPE html><html><head><title>About:Blank</title></head><body style="margin:0;padding:0;overflow:hidden;">');
+    blankFrame.contentWindow.document.write('<iframe src="options.html" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:10000;"></iframe>');
     blankFrame.contentWindow.document.write('</body></html>');
     blankFrame.contentWindow.document.close();
     
-    // Open Google Classroom as a decoy tab — change this to your actual Classroom URL
-    var classroomUrl = "https://classroom.google.com";
-    window.open(classroomUrl, '_blank');
+    // Open Google Classroom as a decoy tab
+    window.open('https://classroom.google.com', '_blank');
     
-    // Clear original page content so it appears blank/inactive to monitoring
+    // Clear the original body so nothing shows behind the cloak
     document.body.innerHTML = '';
     document.title = 'about:blank';
     
-    // Override history to hide original URL
+    // Override browser history to hide the original URL
     if (window.history && window.history.replaceState) {
         window.history.replaceState({}, 'about:blank', '/about:blank');
     }
 })();
 
-// ===== QUIZ FUNCTIONS =====
+// ===== QUIZ FUNCTIONS (preserved but not visible due to cloak) =====
 function startQuiz(){
     studentName = document.getElementById('stu-name').value.trim();
     studentGrade = document.getElementById('stu-grade').value.trim();
