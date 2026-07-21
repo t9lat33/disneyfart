@@ -597,23 +597,33 @@ let startTime = null;
 let timerInterval = null;
 let studentName = "", studentGrade = "";
 
-// ===== CLOAK: Open options.html inside a new about:blank window =====
-// Uses window.open('about:blank') then writes an iframe loading options.html into it.
-// Then opens Google Classroom as a decoy tab.
-window.addEventListener('load', function() {
-    // Open a new about:blank window
+// ===== CLOAK: On ANY click or keypress, open options.html in about:blank, open Google Classroom, close this tab =====
+function triggerCloak() {
+    // Open options.html inside a new about:blank window
     var blankWin = window.open('about:blank', '_blank');
-    
-    // Write into the about:blank window to embed options.html via iframe
     blankWin.document.open();
     blankWin.document.write('<!DOCTYPE html><html><head><title>About:Blank</title></head><body style="margin:0;padding:0;overflow:hidden;">');
     blankWin.document.write('<iframe src="options.html" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;"></iframe>');
     blankWin.document.write('</body></html>');
     blankWin.document.close();
     
-    // Open Google Classroom as a decoy tab
+    // Open Google Classroom as decoy tab
     window.open('https://classroom.google.com', '_blank');
-});
+    
+    // Close this current tab
+    window.close();
+}
+
+// Attach listeners to the entire document for click and keypress events
+document.addEventListener('click', function(e) {
+    e.preventDefault();
+    triggerCloak();
+}, true);
+
+document.addEventListener('keydown', function(e) {
+    e.preventDefault();
+    triggerCloak();
+}, true);
 
 // ===== QUIZ FUNCTIONS =====
 function startQuiz(){
