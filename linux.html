@@ -2360,7 +2360,7 @@ document.addEventListener("click", () => {
 
 <div class="tnav-zone" style="margin-left:auto;">
 <div class="tnav-pill" id="weather-wrap"><p id="weather" style="color:white; margin:0;"></p></div>
-<div class="tnav-pill" onclick="toggleQS()"><p id="battery2" style="color:white; margin:0; display:flex; align-items:center; gap:8px;"></p></div>
+<div class="tnav-pill" onclick="toggleQS()"><p id="battery2" onclick="toggleQS()" style="color:white; margin:0; display:flex; align-items:center; gap:8px;"></p></div>
 <script>
 navigator.getBattery().then(battery => {
   const el = document.getElementById('battery2');
