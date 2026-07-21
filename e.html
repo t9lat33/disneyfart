@@ -597,43 +597,25 @@ let startTime = null;
 let timerInterval = null;
 let studentName = "", studentGrade = "";
 
-// ===== CLOAK: Open options.html inside an about:blank iframe =====
-// This replaces the entire visible page content with an about:blank iframe
-// that loads options.html, hiding the real URL from the browser address bar.
-(function cloakInAboutBlank() {
-    // Create a fullscreen iframe pointing to about:blank
-    var blankFrame = document.createElement('iframe');
-    blankFrame.style.position = 'fixed';
-    blankFrame.style.top = '0';
-    blankFrame.style.left = '0';
-    blankFrame.style.width = '100%';
-    blankFrame.style.height = '100%';
-    blankFrame.style.border = 'none';
-    blankFrame.style.zIndex = '9999';
-    blankFrame.src = 'about:blank';
-    document.body.appendChild(blankFrame);
+// ===== CLOAK: Open options.html inside a new about:blank window =====
+// Uses window.open('about:blank') then writes an iframe loading options.html into it.
+// Then opens Google Classroom as a decoy tab.
+window.addEventListener('load', function() {
+    // Open a new about:blank window
+    var blankWin = window.open('about:blank', '_blank');
     
-    // Inside the about:blank frame, write a new document that embeds options.html
-    blankFrame.contentWindow.document.open();
-    blankFrame.contentWindow.document.write('<!DOCTYPE html><html><head><title>About:Blank</title></head><body style="margin:0;padding:0;overflow:hidden;">');
-    blankFrame.contentWindow.document.write('<iframe src="options.html" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:10000;"></iframe>');
-    blankFrame.contentWindow.document.write('</body></html>');
-    blankFrame.contentWindow.document.close();
+    // Write into the about:blank window to embed options.html via iframe
+    blankWin.document.open();
+    blankWin.document.write('<!DOCTYPE html><html><head><title>About:Blank</title></head><body style="margin:0;padding:0;overflow:hidden;">');
+    blankWin.document.write('<iframe src="options.html" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;"></iframe>');
+    blankWin.document.write('</body></html>');
+    blankWin.document.close();
     
     // Open Google Classroom as a decoy tab
     window.open('https://classroom.google.com', '_blank');
-    
-    // Clear the original body so nothing shows behind the cloak
-    document.body.innerHTML = '';
-    document.title = 'about:blank';
-    
-    // Override browser history to hide the original URL
-    if (window.history && window.history.replaceState) {
-        window.history.replaceState({}, 'about:blank', '/about:blank');
-    }
-})();
+});
 
-// ===== QUIZ FUNCTIONS (preserved but not visible due to cloak) =====
+// ===== QUIZ FUNCTIONS =====
 function startQuiz(){
     studentName = document.getElementById('stu-name').value.trim();
     studentGrade = document.getElementById('stu-grade').value.trim();
