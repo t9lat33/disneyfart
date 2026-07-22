@@ -1659,12 +1659,10 @@ t9wWeather();
 
 <div id="t9Div" onclick="if(!event.target.closest('.app-icon') && !event.target.closest('.t9-search')) closeT9()">
  
-  <!-- GNOME-style top search bar -->
   <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); width: 60%; max-width: 500px; z-index: 2;">
     <input type="text" id="t9AppSearch" class="t9-search" placeholder="Type to search applications..." oninput="filterT9Apps()" style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: white; font-size: 14px; outline: none; box-sizing: border-box; font-family: 'Inter', sans-serif;">
   </div>
 
-  <!-- Centered Linux-style Grid -->
   <div id="t9AppGrid" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -45%); width: 80%; max-width: 600px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start;">
 
     <div class="app-icon" onclick="closeT9(); hidden3()">
@@ -1709,8 +1707,8 @@ t9wWeather();
       <span>Wallpapers</span>
     </div>
      <div class="app-icon" onclick="closeT9(); blk()">
-      <img src="mc.jpg">
-      <span>Minecraft</span>
+      <img src="cloud.png">
+      <span>Cloud Gaming</span>
     </div>
     
   </div>
